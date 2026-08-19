@@ -22,7 +22,11 @@ const messages = defineMessages({
 
 export interface ColumnDef {
   label: string;
+  /** Data accessor key. Must be unique across columns unless `id` is provided. */
   key: string;
+  /** Explicit unique column id (defaults to `key`). Use for display/action columns
+   *  that reuse a data key, to avoid react-table "Duplicate columns" errors. */
+  id?: string;
   /** Custom cell renderer; receives the raw cell value and the full row object */
   renderCell?: (value: unknown, row: Record<string, unknown>) => ReactNode;
 }
@@ -48,6 +52,7 @@ export interface AdminDataTableProps {
 const buildTableColumns = (cols: ColumnDef[]) => cols.map((col) => ({
   Header: col.label,
   accessor: col.key,
+  id: col.id ?? col.key,
   ...(col.renderCell
     ? {
       // eslint-disable-next-line react/no-unstable-nested-components
@@ -88,26 +93,30 @@ const AdminDataTable = ({
   }
 
   return (
-    <DataTable
-      columns={buildTableColumns(columns)}
-      data={data}
-      itemCount={pagination ? pagination.pageCount * 10 : data.length}
-      pageCount={pagination?.pageCount}
-      initialState={{
-        pageSize: 10,
-        pageIndex: pagination ? pagination.currentPage - 1 : 0,
-      }}
-      manualPagination={!!pagination}
-    >
-      {caption && <caption className="sr-only">{caption}</caption>}
-      <DataTable.Table />
-      {pagination && (
-        <DataTable.TableFooter>
-          <DataTable.RowStatus />
-          <DataTable.TablePagination />
-        </DataTable.TableFooter>
-      )}
-    </DataTable>
+    <>
+      {/* sr-only heading instead of a raw <caption> (which is invalid nested in
+          DataTable's wrapper <div> and triggers a DOM-nesting warning). */}
+      {caption && <div className="sr-only" role="heading" aria-level={2}>{caption}</div>}
+      <DataTable
+        columns={buildTableColumns(columns)}
+        data={data}
+        itemCount={pagination ? pagination.pageCount * 10 : data.length}
+        pageCount={pagination?.pageCount}
+        initialState={{
+          pageSize: 10,
+          pageIndex: pagination ? pagination.currentPage - 1 : 0,
+        }}
+        manualPagination={!!pagination}
+      >
+        <DataTable.Table />
+        {pagination && (
+          <DataTable.TableFooter>
+            <DataTable.RowStatus />
+            <DataTable.TablePagination />
+          </DataTable.TableFooter>
+        )}
+      </DataTable>
+    </>
   );
 };
 

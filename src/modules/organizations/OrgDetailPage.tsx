@@ -206,12 +206,13 @@ const ProfileForm = ({ shortName, initialValues }: ProfileFormProps) => {
           <Form.Group className="mb-3" controlId="profile-is-featured">
             <Form.Checkbox
               id="profile-is-featured"
-              label={intl.formatMessage(messages.isFeatured)}
               checked={values.is_featured ?? false}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => (
                 setValues({ ...values, is_featured: e.target.checked })
               )}
-            />
+            >
+              {intl.formatMessage(messages.isFeatured)}
+            </Form.Checkbox>
           </Form.Group>
 
           <Button
@@ -303,7 +304,8 @@ const MembersPanel = ({ shortName, members }: MembersPanelProps) => {
     { label: intl.formatMessage(messages.colAddedBy), key: 'added_by' },
     {
       label: intl.formatMessage(messages.colActions),
-      key: 'email',
+      // Unique id: 'email' is already used by the email data column above.
+      key: 'actions',
       renderCell: (_value, row) => (
         <Button
           variant="outline-danger"

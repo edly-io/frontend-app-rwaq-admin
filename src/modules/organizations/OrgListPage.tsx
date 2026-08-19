@@ -73,7 +73,9 @@ const OrgListPage = () => {
     { label: intl.formatMessage(messages.colAdmins), key: 'admin_count' },
     {
       label: '',
-      key: 'short_name',
+      // Must be unique: Paragon/react-table derives the column id from the key,
+      // and 'short_name' is already used by the data column above.
+      key: 'actions',
       renderCell: (_value, row) => (
         <Button
           variant="outline-primary"
