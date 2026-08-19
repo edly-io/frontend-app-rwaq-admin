@@ -1,0 +1,54 @@
+// Rwaq Admin Panel — shell chrome: soft gradient background (matching the
+// edly-panel reference) + dark-mode overrides keyed on the same
+// `data-paragon-theme-variant` attribute the rest of the Rwaq MFEs use.
+
+.rwaq-admin-shell {
+  // Soft cool→warm gradient instead of a flat gray fill.
+  background: linear-gradient(157deg, #eef2fc 0%, #f8f7f4 48%, #fdf6ed 100%);
+}
+
+.rwaq-admin-content {
+  background: transparent;
+}
+
+.rwaq-admin-sidebar {
+  background: linear-gradient(180deg, #ebeffb 0%, #f5f4f1 55%, #fbf5ec 100%) !important;
+}
+
+.rwaq-admin-topbar {
+  background: transparent;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.rwaq-admin-topbar__welcome {
+  color: var(--pgn-color-gray-500, #6b757f);
+}
+
+.rwaq-admin-topbar__name {
+  color: var(--pgn-color-gray-700, #273f58);
+}
+
+.rwaq-admin-footer {
+  background: transparent;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  color: var(--pgn-color-gray-500, #6b757f);
+}
+
+// ── Dark mode ────────────────────────────────────────────────────────────────
+html[data-paragon-theme-variant='dark'] {
+  .rwaq-admin-shell { background: #0f1011; }
+
+  .rwaq-admin-sidebar {
+    background: #17181a !important;
+    border-inline-end-color: #2a2c2f !important;
+  }
+
+  .rwaq-admin-topbar { border-bottom-color: rgba(255, 255, 255, 0.08); }
+  .rwaq-admin-topbar__welcome { color: #9aa0a6; }
+  .rwaq-admin-topbar__name { color: #e8eaed; }
+
+  .rwaq-admin-footer {
+    border-top-color: rgba(255, 255, 255, 0.08);
+    color: #9aa0a6;
+  }
+}

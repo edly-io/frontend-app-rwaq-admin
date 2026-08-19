@@ -152,11 +152,11 @@ const AdminShell = () => {
 
   return (
     <div
+      className="rwaq-admin-shell"
       style={{
         display: 'flex',
         height: '100vh',
         overflow: 'hidden',
-        background: 'var(--pgn-color-gray-100, #F6F6F5)',
       }}
     >
       {/* ── Desktop: persistent sidebar ──────────────────────────────────── */}
@@ -192,6 +192,7 @@ const AdminShell = () => {
         {/* ── Scrollable content area ───────────────────────────────────── */}
         <main
           id="main-content"
+          className="rwaq-admin-content"
           style={{
             flex: 1,
             overflowY: 'auto',
@@ -205,13 +206,11 @@ const AdminShell = () => {
         {/* ── Footer ───────────────────────────────────────────────────── */}
         <footer
           role="contentinfo"
+          className="rwaq-admin-footer"
           style={{
-            borderTop: '1px solid var(--pgn-color-gray-200, #dee2e6)',
-            background: 'var(--pgn-color-white, #fff)',
             padding: '0.75rem 1.5rem',
             textAlign: 'center',
             fontSize: '0.8125rem',
-            color: 'var(--pgn-color-gray-500, #6B757F)',
             flexShrink: 0,
           }}
         >

@@ -34,6 +34,8 @@ export interface ColumnDef {
 export interface ServerPaginationState {
   currentPage: number;
   pageCount: number;
+  /** Total number of items across all pages (drives the "Showing X of Y" status). */
+  itemCount?: number;
   onPageChange: (page: number) => void;
 }
 
@@ -100,7 +102,7 @@ const AdminDataTable = ({
       <DataTable
         columns={buildTableColumns(columns)}
         data={data}
-        itemCount={pagination ? pagination.pageCount * 10 : data.length}
+        itemCount={pagination?.itemCount ?? data.length}
         pageCount={pagination?.pageCount}
         initialState={{
           pageSize: 10,

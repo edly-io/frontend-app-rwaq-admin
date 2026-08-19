@@ -1,11 +1,18 @@
 // ── Organization API types ─────────────────────────────────────────────────
 
-/** Paginated list response from GET /rwaq/api/organizations/ */
-export interface OrgListResponse {
-  count: number;
+/** Pagination envelope nested in the org list response */
+export interface OrgListPagination {
   next: string | null;
   previous: string | null;
+  count: number;
+  num_pages: number;
+}
+
+/** Paginated list response from GET /rwaq/api/organizations/
+ *  Shape: { results: [...], pagination: { count, num_pages, next, previous } } */
+export interface OrgListResponse {
   results: OrgSummary[];
+  pagination: OrgListPagination;
 }
 
 /** Org row returned by the list endpoint */

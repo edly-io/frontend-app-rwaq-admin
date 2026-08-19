@@ -69,7 +69,6 @@ const NAV_ITEMS: NavItemDef[] = [
 const sidebarStyle: React.CSSProperties = {
   width: '260px',
   minWidth: '260px',
-  background: 'var(--pgn-color-light-100, #F6F6F5)',
   display: 'flex',
   flexDirection: 'column',
   height: '100vh',
@@ -226,7 +225,7 @@ const SideNav = ({ onNavigate }: SideNavProps) => {
   const logoUrl = config?.LOGO_WHITE_URL ?? config?.LOGO_URL ?? '';
 
   return (
-    <div style={sidebarStyle}>
+    <div className="rwaq-admin-sidebar" style={sidebarStyle}>
       {/* Logo band */}
       <div style={logoBandStyle}>
         {logoUrl ? (

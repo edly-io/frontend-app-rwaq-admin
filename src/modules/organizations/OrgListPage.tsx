@@ -119,7 +119,9 @@ const OrgListPage = () => {
               data
                 ? {
                   currentPage: page,
-                  pageCount: Math.ceil(data.count / PAGE_SIZE),
+                  pageCount: data.pagination?.num_pages
+                    ?? Math.max(1, Math.ceil((data.pagination?.count ?? 0) / PAGE_SIZE)),
+                  itemCount: data.pagination?.count ?? data.results.length,
                   onPageChange: () => {},
                 }
                 : undefined
