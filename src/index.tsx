@@ -1,6 +1,6 @@
 import { StrictMode, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppProvider, ErrorPage } from '@edx/frontend-platform/react';
 import {
@@ -34,27 +34,27 @@ subscribe(APP_READY, () => {
   root.render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
+        {/* AppProvider already supplies a BrowserRouter (basename from PUBLIC_PATH);
+            do NOT add another Router here or React Router throws "Router inside Router". */}
         <AppProvider>
-          <BrowserRouter basename={process.env.PUBLIC_PATH}>
-            <Suspense fallback={<LoadingPage />}>
-              <Routes>
-                <Route element={<AdminShell />}>
-                  {/* Live modules */}
-                  <Route index element={<DashboardPage />} />
-                  <Route path="organizations" element={<OrgListPage />} />
-                  <Route path="organizations/:shortName" element={<OrgDetailPage />} />
+          <Suspense fallback={<LoadingPage />}>
+            <Routes>
+              <Route element={<AdminShell />}>
+                {/* Live modules */}
+                <Route index element={<DashboardPage />} />
+                <Route path="organizations" element={<OrgListPage />} />
+                <Route path="organizations/:shortName" element={<OrgDetailPage />} />
 
-                  {/* Coming soon */}
-                  <Route path="users" element={<ComingSoon />} />
-                  <Route path="enrollment" element={<ComingSoon />} />
-                  <Route path="analytics" element={<ComingSoon />} />
+                {/* Coming soon */}
+                <Route path="users" element={<ComingSoon />} />
+                <Route path="enrollment" element={<ComingSoon />} />
+                <Route path="analytics" element={<ComingSoon />} />
 
-                  {/* Catch-all */}
-                  <Route path="*" element={<ComingSoon />} />
-                </Route>
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
+                {/* Catch-all */}
+                <Route path="*" element={<ComingSoon />} />
+              </Route>
+            </Routes>
+          </Suspense>
         </AppProvider>
       </QueryClientProvider>
     </StrictMode>,
