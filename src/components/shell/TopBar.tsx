@@ -8,6 +8,7 @@
  *
  * No notification bell (the platform has no notifications surface here).
  */
+import { forwardRef } from 'react';
 import {
   Dropdown,
   Form,
@@ -15,14 +16,13 @@ import {
 } from '@openedx/paragon';
 import {
   MenuIcon,
-  AccountCircle,
   LightMode,
   DarkMode,
 } from '@openedx/paragon/icons';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { getConfig } from '@edx/frontend-platform';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-import useThemeVariant from './useThemeVariant';
+import { useThemeVariant } from './useThemeVariant';
 
 const messages = defineMessages({
   welcome: { id: 'rwaq.admin.topbar.welcome', defaultMessage: 'Welcome' },
@@ -57,6 +57,33 @@ const circleBtn: React.CSSProperties = {
   color: 'var(--pgn-color-gray-600, #454545)',
   flexShrink: 0,
 };
+
+// Custom dropdown toggle: the avatar circle only, with no default caret.
+interface AccountToggleProps {
+  onClick?: (e: React.MouseEvent) => void;
+  label: string;
+  initial: string;
+}
+const AccountToggle = forwardRef<HTMLButtonElement, AccountToggleProps>(
+  ({ onClick, label, initial }, ref) => (
+    <button
+      ref={ref}
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      style={{
+        ...circleBtn,
+        background: 'var(--pgn-color-primary-500, #449cc2)',
+        color: '#fff',
+        border: 'none',
+        fontSize: '0.875rem',
+        fontWeight: 700,
+      }}
+    >
+      {initial}
+    </button>
+  ),
+);
 
 const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
   const intl = useIntl();
@@ -146,22 +173,12 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
 
         {/* Account menu */}
         <Dropdown>
-          <Dropdown.Toggle id="topbar-account-menu" as="div" style={{ cursor: 'pointer' }}>
-            <button
-              type="button"
-              aria-label={intl.formatMessage(messages.account)}
-              style={{
-                ...circleBtn,
-                background: 'var(--pgn-color-primary-500, #0070D2)',
-                color: '#fff',
-                border: 'none',
-                fontSize: '0.875rem',
-                fontWeight: 700,
-              }}
-            >
-              {displayName ? displayName.charAt(0).toUpperCase() : <Icon src={AccountCircle} />}
-            </button>
-          </Dropdown.Toggle>
+          <Dropdown.Toggle
+            as={AccountToggle}
+            id="topbar-account-menu"
+            label={intl.formatMessage(messages.account)}
+            initial={displayName ? displayName.charAt(0).toUpperCase() : 'A'}
+          />
           <Dropdown.Menu className="rwaq-admin-usermenu" style={{ minWidth: '15rem' }}>
             {/* Identity block */}
             <div className="px-3 py-2">
@@ -171,12 +188,8 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
             </div>
             <Dropdown.Divider />
 
-            {/* Dark mode toggle (does not close the menu) */}
-            {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
-            <div
-              className="px-3 py-2 d-flex align-items-center"
-              onClick={(e) => e.stopPropagation()}
-            >
+            {/* Dark mode toggle */}
+            <div className="px-3 py-2 d-flex align-items-center">
               <Form.Switch checked={isDark} onChange={toggle}>
                 {intl.formatMessage(messages.darkMode)}
               </Form.Switch>

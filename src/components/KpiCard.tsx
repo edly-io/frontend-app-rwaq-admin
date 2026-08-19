@@ -108,7 +108,7 @@ const KpiCard = ({
         <p
           className="small text-uppercase mb-1"
           style={{
-            color: 'var(--pgn-color-gray-500, #6B757F)',
+            color: 'var(--rwaq-muted, #6B757F)',
             letterSpacing: '0.04em',
             fontWeight: 600,
           }}
@@ -136,7 +136,7 @@ const KpiCard = ({
                 fontSize: '2rem',
                 fontWeight: 700,
                 lineHeight: 1.1,
-                color: 'var(--pgn-color-gray-700, #273F58)',
+                color: 'var(--rwaq-heading, #273F58)',
               }}
             >
               {value}

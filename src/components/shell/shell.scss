@@ -1,54 +1,203 @@
-// Rwaq Admin Panel — shell chrome: soft gradient background (matching the
-// edly-panel reference) + dark-mode overrides keyed on the same
-// `data-paragon-theme-variant` attribute the rest of the Rwaq MFEs use.
+// ============================================================================
+// Rwaq Admin Panel — Design System
+// Tokens (light + dark) + shared layout/card/form/table primitives.
+// Dark mode is self-contained (does NOT rely on the brand's dark Paragon CSS,
+// which is not reliably available), keyed on `data-paragon-theme-variant`.
+// ============================================================================
 
+:root {
+  // Spacing scale
+  --rwaq-space-1: 0.25rem;
+  --rwaq-space-2: 0.5rem;
+  --rwaq-space-3: 0.75rem;
+  --rwaq-space-4: 1rem;
+  --rwaq-space-5: 1.5rem;
+  --rwaq-space-6: 2rem;
+
+  // Layout
+  --rwaq-content-max: 1200px;
+  --rwaq-radius: 0.75rem;
+  --rwaq-radius-sm: 0.5rem;
+
+  // Surfaces / text (light)
+  --rwaq-card-bg: #ffffff;
+  --rwaq-card-border: #e6e8ec;
+  --rwaq-card-shadow: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --rwaq-text: #1f2937;
+  --rwaq-heading: #111827;
+  --rwaq-muted: #6b7280;
+  --rwaq-border: #e6e8ec;
+  --rwaq-input-bg: #ffffff;
+  --rwaq-input-border: #d0d5dd;
+  --rwaq-table-head-bg: #f7f8fa;
+  --rwaq-row-hover: #f9fafb;
+  --rwaq-accent: #449cc2; // Rwaq primary
+}
+
+html[data-paragon-theme-variant='dark'] {
+  --rwaq-card-bg: #1c1d20;
+  --rwaq-card-border: #2c2e33;
+  --rwaq-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --rwaq-text: #e4e6eb;
+  --rwaq-heading: #f3f5f7;
+  --rwaq-muted: #9aa0a6;
+  --rwaq-border: #2c2e33;
+  --rwaq-input-bg: #26282c;
+  --rwaq-input-border: #3a3d42;
+  --rwaq-table-head-bg: #242629;
+  --rwaq-row-hover: #232529;
+}
+
+// ── Shell chrome ─────────────────────────────────────────────────────────────
 .rwaq-admin-shell {
-  // Soft cool→warm gradient instead of a flat gray fill.
   background: linear-gradient(157deg, #eef2fc 0%, #f8f7f4 48%, #fdf6ed 100%);
 }
-
-.rwaq-admin-content {
-  background: transparent;
-}
-
+.rwaq-admin-content { background: transparent; }
 .rwaq-admin-sidebar {
   background: linear-gradient(180deg, #ebeffb 0%, #f5f4f1 55%, #fbf5ec 100%) !important;
 }
-
 .rwaq-admin-topbar {
   background: transparent;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
-
-.rwaq-admin-topbar__welcome {
-  color: var(--pgn-color-gray-500, #6b757f);
-}
-
-.rwaq-admin-topbar__name {
-  color: var(--pgn-color-gray-700, #273f58);
-}
-
+.rwaq-admin-topbar__welcome { color: var(--rwaq-muted); }
+.rwaq-admin-topbar__name { color: var(--rwaq-heading); }
 .rwaq-admin-footer {
   background: transparent;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
-  color: var(--pgn-color-gray-500, #6b757f);
+  color: var(--rwaq-muted);
 }
 
-// ── Dark mode ────────────────────────────────────────────────────────────────
+// ── Content layout primitives ────────────────────────────────────────────────
+.rwaq-page {
+  max-width: var(--rwaq-content-max);
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rwaq-space-5);
+}
+
+.rwaq-card {
+  background: var(--rwaq-card-bg);
+  border: 1px solid var(--rwaq-card-border);
+  border-radius: var(--rwaq-radius);
+  box-shadow: var(--rwaq-card-shadow);
+  padding: var(--rwaq-space-5);
+  color: var(--rwaq-text);
+}
+
+.rwaq-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rwaq-space-2);
+}
+.rwaq-page-header__breadcrumb { font-size: 0.8125rem; color: var(--rwaq-muted); }
+.rwaq-page-header__breadcrumb a { color: var(--rwaq-muted); text-decoration: none; }
+.rwaq-page-header__breadcrumb a:hover { color: var(--rwaq-accent); }
+.rwaq-page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--rwaq-heading);
+  margin: 0;
+}
+.rwaq-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--rwaq-heading);
+  margin: 0 0 var(--rwaq-space-4);
+}
+
+// ── Forms ────────────────────────────────────────────────────────────────────
+.rwaq-form { display: flex; flex-direction: column; gap: var(--rwaq-space-4); max-width: 720px; }
+.rwaq-field { display: flex; flex-direction: column; gap: var(--rwaq-space-2); }
+.rwaq-field__label { font-size: 0.875rem; font-weight: 600; color: var(--rwaq-text); }
+.rwaq-field__label .required { color: #d92d20; margin-inline-start: 2px; }
+
+// Normalize Paragon inputs to the design system (covers .rwaq-card and Paragon Card)
+.rwaq-admin-content {
+  .pgn__form-control,
+  .form-control,
+  input[type='text'],
+  input[type='email'],
+  input[type='url'],
+  textarea,
+  select {
+    background: var(--rwaq-input-bg) !important;
+    border: 1px solid var(--rwaq-input-border) !important;
+    color: var(--rwaq-text) !important;
+    border-radius: var(--rwaq-radius-sm) !important;
+    min-height: 44px;
+  }
+  textarea { min-height: 120px; }
+  .pgn__form-label,
+  label { color: var(--rwaq-text); font-weight: 600; font-size: 0.875rem; }
+
+  // Paragon Card as a design-system surface
+  .pgn__card {
+    background: var(--rwaq-card-bg);
+    border: 1px solid var(--rwaq-card-border);
+    border-radius: var(--rwaq-radius);
+    box-shadow: var(--rwaq-card-shadow);
+  }
+}
+
+// ── Data tables ──────────────────────────────────────────────────────────────
+.rwaq-admin-content {
+  table { color: var(--rwaq-text); }
+  thead th {
+    background: var(--rwaq-table-head-bg) !important;
+    color: var(--rwaq-heading) !important;
+    border-bottom: 1px solid var(--rwaq-border) !important;
+    font-weight: 700;
+  }
+  tbody td { border-bottom: 1px solid var(--rwaq-border) !important; }
+  tbody tr:hover td { background: var(--rwaq-row-hover); }
+}
+
+// ── Account dropdown (fix transparency + caret) ──────────────────────────────
+.rwaq-admin-topbar .pgn__dropdown-toggle::after,
+.rwaq-admin-topbar .dropdown-toggle::after { display: none !important; } // kill stray caret
+
+.rwaq-admin-usermenu.dropdown-menu,
+.rwaq-admin-usermenu {
+  background: var(--rwaq-card-bg) !important;
+  border: 1px solid var(--rwaq-card-border) !important;
+  border-radius: var(--rwaq-radius-sm) !important;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.18) !important;
+  color: var(--rwaq-text);
+  padding: var(--rwaq-space-2) 0;
+  overflow: hidden;
+
+  .dropdown-item { color: var(--rwaq-text); padding: 0.5rem 1rem; }
+  .dropdown-item:hover { background: var(--rwaq-row-hover); color: var(--rwaq-text); }
+  .dropdown-divider { border-color: var(--rwaq-border); }
+  .text-muted { color: var(--rwaq-muted) !important; }
+}
+
+// ── Dark-mode overrides for Paragon components used in the app ───────────────
 html[data-paragon-theme-variant='dark'] {
   .rwaq-admin-shell { background: #0f1011; }
-
   .rwaq-admin-sidebar {
     background: #17181a !important;
     border-inline-end-color: #2a2c2f !important;
   }
-
   .rwaq-admin-topbar { border-bottom-color: rgba(255, 255, 255, 0.08); }
-  .rwaq-admin-topbar__welcome { color: #9aa0a6; }
-  .rwaq-admin-topbar__name { color: #e8eaed; }
+  .rwaq-admin-footer { border-top-color: rgba(255, 255, 255, 0.08); }
 
-  .rwaq-admin-footer {
-    border-top-color: rgba(255, 255, 255, 0.08);
-    color: #9aa0a6;
+  // Cards / surfaces (Paragon + ours) go dark
+  .pgn__card,
+  .card {
+    background: var(--rwaq-card-bg) !important;
+    border-color: var(--rwaq-card-border) !important;
+    color: var(--rwaq-text) !important;
   }
+  .pgn__card *,
+  .rwaq-card { color: var(--rwaq-text); }
+
+  h1, h2, h3, h4, h5, h6, .rwaq-page-title, .rwaq-section-title { color: var(--rwaq-heading) !important; }
+  .text-muted { color: var(--rwaq-muted) !important; }
+
+  // Circular header buttons
+  .rwaq-admin-topbar button { background: var(--rwaq-card-bg) !important; border-color: var(--rwaq-border) !important; color: var(--rwaq-text) !important; }
 }

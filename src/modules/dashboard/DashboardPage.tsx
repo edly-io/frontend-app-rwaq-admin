@@ -70,23 +70,8 @@ const messages = defineMessages({
 // ── Card wrapper ──────────────────────────────────────────────────────────────
 
 const ChartCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div
-    style={{
-      background: 'var(--pgn-color-white, #fff)',
-      borderRadius: '0.75rem',
-      padding: '1.25rem',
-      boxShadow: '0 1px 4px rgba(0,0,0,.06)',
-      height: '100%',
-    }}
-  >
-    <h3
-      style={{
-        fontSize: '0.9375rem',
-        fontWeight: 600,
-        color: 'var(--pgn-color-gray-700, #273F58)',
-        marginBottom: '1rem',
-      }}
-    >
+  <div className="rwaq-card h-100" style={{ padding: '1.25rem' }}>
+    <h3 className="rwaq-section-title" style={{ fontSize: '0.9375rem', marginBottom: '1rem' }}>
       {title}
     </h3>
     {children}
@@ -119,19 +104,12 @@ const DashboardPage = () => {
   } = useDashboardCharts();
 
   return (
-    <div>
+    <div className="rwaq-page">
       {/* ── Section header (matches edly-panel "Analytics Header") ──── */}
-      <div className="mb-4">
-        <h2
-          style={{
-            fontSize: '1.375rem',
-            fontWeight: 700,
-            color: 'var(--pgn-color-gray-700, #273F58)',
-            marginBottom: '0.25rem',
-          }}
-        >
+      <div>
+        <h1 className="rwaq-page-title" style={{ fontSize: '1.375rem', marginBottom: '0.25rem' }}>
           {intl.formatMessage(messages.sectionTitle)}
-        </h2>
+        </h1>
         <Alert variant="info" className="mt-2 py-2 px-3" style={{ fontSize: '0.875rem' }}>
           <strong>{intl.formatMessage(messages.placeholderBannerTitle)}</strong>{' '}
           {intl.formatMessage(messages.placeholderBannerBody)}

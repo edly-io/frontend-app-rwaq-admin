@@ -8,12 +8,11 @@
  * the API returns 403 for that case which we surface as a user-friendly message.
  */
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
   Button, Form, Card, Alert, Spinner, Badge,
 } from '@openedx/paragon';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-import PageHeader from '@src/components/shell/PageHeader';
 import ErrorState from '@src/components/ErrorState';
 import LoadingPage from '@src/components/LoadingPage';
 import AdminDataTable from '@src/components/AdminDataTable';
@@ -391,18 +390,15 @@ const OrgDetailPage = () => {
   if (!org) { return null; }
 
   return (
-    <div>
-      <PageHeader
-        title={org.name}
-        breadcrumbs={[
-          { label: intl.formatMessage(messages.backToOrgs), href: '/organizations' },
-          { label: org.name },
-        ]}
-      />
-
-      <div className="mt-3">
-        {/* Status badges */}
-        <div className="mb-3 d-flex gap-2">
+    <div className="rwaq-page">
+      <div className="rwaq-page-header">
+        <div className="rwaq-page-header__breadcrumb">
+          <Link to="/organizations">{intl.formatMessage(messages.backToOrgs)}</Link>
+          {' / '}
+          {org.name}
+        </div>
+        <h1 className="rwaq-page-title">{org.name}</h1>
+        <div className="d-flex align-items-center gap-2 mt-1 flex-wrap">
           <Badge variant={org.active ? 'success' : 'secondary'}>
             {org.active ? 'Active' : 'Inactive'}
           </Badge>
@@ -411,22 +407,22 @@ const OrgDetailPage = () => {
             {org.course_count} courses · {org.admin_count} admins
           </span>
         </div>
-
-        <ProfileForm
-          shortName={org.short_name}
-          initialValues={{
-            arabic_name: org.arabic_name,
-            detail: org.detail,
-            featured_video: org.featured_video,
-            is_featured: org.is_featured,
-          }}
-        />
-
-        <MembersPanel
-          shortName={org.short_name}
-          members={org.members}
-        />
       </div>
+
+      <ProfileForm
+        shortName={org.short_name}
+        initialValues={{
+          arabic_name: org.arabic_name,
+          detail: org.detail,
+          featured_video: org.featured_video,
+          is_featured: org.is_featured,
+        }}
+      />
+
+      <MembersPanel
+        shortName={org.short_name}
+        members={org.members}
+      />
     </div>
   );
 };

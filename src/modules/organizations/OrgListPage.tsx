@@ -1,7 +1,6 @@
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@openedx/paragon';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-import PageHeader from '@src/components/shell/PageHeader';
 import FilterBar from '@src/components/shell/FilterBar';
 import AdminDataTable from '@src/components/AdminDataTable';
 import ErrorState from '@src/components/ErrorState';
@@ -93,29 +92,32 @@ const OrgListPage = () => {
     : undefined;
 
   return (
-    <div>
-      <PageHeader title={intl.formatMessage(messages.title)} />
+    <div className="rwaq-page">
+      <div className="rwaq-page-header">
+        <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
+      </div>
 
-      <div className="mt-3">
+      <div className="rwaq-card">
         <FilterBar
           searchParam="search"
           orderingParam="ordering"
           sortOptions={SORT_OPTIONS}
         />
 
-        {isError ? (
-          <ErrorState
-            statusCode={statusCode}
-            title={intl.formatMessage(messages.errorTitle)}
-            onRetry={() => refetch()}
-          />
-        ) : (
-          <AdminDataTable
-            columns={columns}
-            data={(data?.results ?? []) as unknown as Record<string, unknown>[]}
-            isLoading={isLoading}
-            caption={intl.formatMessage(messages.title)}
-            pagination={
+        <div className="mt-4">
+          {isError ? (
+            <ErrorState
+              statusCode={statusCode}
+              title={intl.formatMessage(messages.errorTitle)}
+              onRetry={() => refetch()}
+            />
+          ) : (
+            <AdminDataTable
+              columns={columns}
+              data={(data?.results ?? []) as unknown as Record<string, unknown>[]}
+              isLoading={isLoading}
+              caption={intl.formatMessage(messages.title)}
+              pagination={
               data
                 ? {
                   currentPage: page,
@@ -126,8 +128,9 @@ const OrgListPage = () => {
                 }
                 : undefined
             }
-          />
-        )}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
