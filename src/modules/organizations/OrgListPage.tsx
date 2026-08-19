@@ -102,6 +102,7 @@ const OrgListPage = () => {
           searchParam="search"
           orderingParam="ordering"
           sortOptions={SORT_OPTIONS}
+          defaultSortOption={SORT_OPTIONS[0]}
         />
 
         <div className="mt-4">

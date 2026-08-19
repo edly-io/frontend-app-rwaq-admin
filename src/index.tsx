@@ -17,6 +17,7 @@ const AdminShell = lazy(() => import('./components/shell/AdminShell'));
 const DashboardPage = lazy(() => import('./modules/dashboard/DashboardPage'));
 const OrgListPage = lazy(() => import('./modules/organizations/OrgListPage'));
 const OrgDetailPage = lazy(() => import('./modules/organizations/OrgDetailPage'));
+const UsersListPage = lazy(() => import('./modules/users/UsersListPage'));
 const ComingSoon = lazy(() => import('./components/ComingSoon'));
 
 const queryClient = new QueryClient({
@@ -45,8 +46,8 @@ subscribe(APP_READY, () => {
                 <Route path="organizations" element={<OrgListPage />} />
                 <Route path="organizations/:shortName" element={<OrgDetailPage />} />
 
-                {/* Coming soon */}
-                <Route path="users" element={<ComingSoon />} />
+                {/* Users */}
+                <Route path="users" element={<UsersListPage />} />
                 <Route path="enrollment" element={<ComingSoon />} />
                 <Route path="analytics" element={<ComingSoon />} />
 

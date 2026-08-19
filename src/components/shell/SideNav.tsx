@@ -51,7 +51,7 @@ const NAV_ITEMS: NavItemDef[] = [
     to: '/', labelId: 'dashboard', iconSrc: Dashboard, isLive: true, exact: true,
   },
   {
-    to: '/users', labelId: 'users', iconSrc: Person, isLive: false,
+    to: '/users', labelId: 'users', iconSrc: Person, isLive: true,
   },
   {
     to: '/organizations', labelId: 'organizations', iconSrc: Groups, isLive: true,
