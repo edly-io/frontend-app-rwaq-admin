@@ -33,6 +33,9 @@ export interface OrgMember {
   id: number;
   email: string;
   username: string;
+  /** Display name from UserProfile; may be blank, so fall back to username. */
+  name: string;
+  image: string | null;
   dateAdded: string | null;
   addedBy: string | null;
   /** Short names of the *other* orgs this person also administers. */

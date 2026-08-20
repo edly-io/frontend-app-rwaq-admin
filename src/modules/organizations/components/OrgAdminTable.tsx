@@ -70,9 +70,9 @@ const OrgAdminTable = ({ shortName, members }: OrgAdminTableProps) => {
               <tr key={member.email}>
                 <td>
                   <div className="rwaq-user-cell">
-                    <ProfileAvatar name={member.username} size="sm" />
+                    <ProfileAvatar src={member.image} name={member.name || member.username} size="sm" />
                     <div className="min-width-0">
-                      <div className="rwaq-user-cell__name">{member.username}</div>
+                      <div className="rwaq-user-cell__name">{member.name || member.username}</div>
                       <div className="rwaq-user-cell__meta">{member.email}</div>
                     </div>
                   </div>

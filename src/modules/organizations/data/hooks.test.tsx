@@ -68,6 +68,8 @@ const mockOrgDetail = {
     {
       id: 7,
       username: 'admin1',
+      name: 'Admin One',
+      image: null,
       email: 'a@x.com',
       date_added: '2026-08-01T00:00:00Z',
       added_by: 'staff',
@@ -130,6 +132,7 @@ describe('useOrganization', () => {
     expect(get).toHaveBeenCalledWith(`${BASE}/Rwaq/`);
     expect(result.current.data?.isFeatured).toBe(false);
     expect(result.current.data?.members[0].otherOrganizations).toEqual(['OTHER']);
+    expect(result.current.data?.members[0].name).toBe('Admin One');
   });
 
   it('does not fetch without a short name', () => {
