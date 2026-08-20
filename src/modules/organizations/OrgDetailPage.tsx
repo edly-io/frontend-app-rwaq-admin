@@ -29,7 +29,7 @@ const messages = defineMessages({
   },
   profileSection: {
     id: 'rwaq.admin.orgs.detail.profileSection',
-    defaultMessage: 'Profile',
+    defaultMessage: 'Details',
   },
   membersSection: {
     id: 'rwaq.admin.orgs.detail.membersSection',
@@ -157,7 +157,7 @@ const ProfileForm = ({ shortName, initialValues }: ProfileFormProps) => {
   };
 
   return (
-    <Card className="mb-4">
+    <Card className="mb-4 p-4">
       <Card.Header title={intl.formatMessage(messages.profileSection)} />
       <Card.Body>
         {successMsg && <Alert variant="success" dismissible onClose={() => setSuccessMsg('')}>{successMsg}</Alert>}
@@ -319,7 +319,7 @@ const MembersPanel = ({ shortName, members }: MembersPanelProps) => {
   ];
 
   return (
-    <Card>
+    <Card className="p-4">
       <Card.Header title={intl.formatMessage(messages.membersSection)} />
       <Card.Body>
         {addSuccess && <Alert variant="success" dismissible onClose={() => setAddSuccess('')}>{addSuccess}</Alert>}

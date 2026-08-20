@@ -14,7 +14,7 @@ const messages = defineMessages({
   },
   searchPlaceholder: {
     id: 'rwaq.admin.filterBar.searchPlaceholder',
-    defaultMessage: 'Search…',
+    defaultMessage: 'Enter Org name',
   },
   sortLabel: {
     id: 'rwaq.admin.filterBar.sortLabel',
@@ -38,6 +38,7 @@ export interface FilterBarProps {
   sortOptions?: SortOption[];
   /** Additional filter slot — e.g. a status <Select> */
   additionalFilters?: React.ReactNode;
+  defaultSortOption?: SortOption;
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -47,6 +48,7 @@ const FilterBar = ({
   orderingParam = 'ordering',
   sortOptions,
   additionalFilters,
+  defaultSortOption,
 }: FilterBarProps) => {
   const intl = useIntl();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -80,23 +82,20 @@ const FilterBar = ({
         onSubmit={(val) => updateParam(searchParam, val)}
         onClear={() => updateParam(searchParam, '')}
         value={currentSearch}
-        label={intl.formatMessage(messages.searchLabel)}
         placeholder={intl.formatMessage(messages.searchPlaceholder)}
         inputProps={{ 'aria-label': intl.formatMessage(messages.searchLabel) }}
-        style={{ minWidth: '240px' }}
       />
 
       {sortOptions && sortOptions.length > 0 && (
-        <Form.Group className="mb-0" controlId="filterbar-ordering">
+        <Form.Group className="mb-0 ml-2" controlId="filterbar-ordering">
           <Form.Label className="sr-only">
             {intl.formatMessage(messages.sortLabel)}
           </Form.Label>
           <Form.Control
             as="select"
-            value={currentOrdering}
+            value={currentOrdering || defaultSortOption?.value || ''}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateParam(orderingParam, e.target.value)}
             aria-label={intl.formatMessage(messages.sortLabel)}
-            style={{ minWidth: '160px' }}
           >
             <option value="">{intl.formatMessage(messages.sortLabel)}</option>
             {sortOptions.map((opt) => (
