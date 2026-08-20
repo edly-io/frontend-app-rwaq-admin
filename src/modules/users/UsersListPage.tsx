@@ -101,6 +101,7 @@ const UsersListPage = () => {
   const searchBy = (searchParams.get('search_by') as SearchBy | null) ?? DEFAULT_SEARCH_BY;
   const searchTerm = searchParams.get('search_term') ?? '';
   const filter = (searchParams.get('filter') as UserFilter | null) ?? 'all';
+  const hasExplicitOrdering = searchParams.get('ordering') !== null;
   const ordering = (searchParams.get('ordering') as UserOrdering | null) ?? DEFAULT_ORDERING;
 
   const updateParams = useCallback(
@@ -196,19 +197,23 @@ const UsersListPage = () => {
       });
     }
 
-    // Always chip the sort, including the default: an admin who picks
-    // "Newest first" explicitly got no feedback that anything happened.
-    chips.push({
-      key: 'ordering',
-      label: intl.formatMessage(messages.chipSort, {
-        label: sortOptions.find((option) => option.value === ordering)?.label ?? ordering,
-      }),
-      onRemove: () => updateParams({ ordering: '' }),
-    });
+    // Chip whenever the sort was chosen explicitly — i.e. the URL param is
+    // present. Comparing against the default instead meant picking the default
+    // produced no chip, and always chipping meant "Clear all" could never
+    // empty the list.
+    if (hasExplicitOrdering) {
+      chips.push({
+        key: 'ordering',
+        label: intl.formatMessage(messages.chipSort, {
+          label: sortOptions.find((option) => option.value === ordering)?.label ?? ordering,
+        }),
+        onRemove: () => updateParams({ ordering: '' }),
+      });
+    }
 
     return chips;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, searchBy, filter, ordering, intl, updateParams]);
+  }, [searchTerm, searchBy, filter, ordering, hasExplicitOrdering, intl, updateParams]);
 
   // ── Columns ───────────────────────────────────────────────────────────────
 
@@ -318,7 +323,9 @@ const UsersListPage = () => {
               label: intl.formatMessage(messages.sortLabel),
               value: ordering,
               options: sortOptions,
-              onChange: (value) => updateParams({ ordering: value === DEFAULT_ORDERING ? '' : value }),
+              // Always write the param, even for the default value, so the choice
+              // is visible as a chip and reversible via Clear all.
+              onChange: (value) => updateParams({ ordering: value }),
             },
           ]}
           appliedChips={appliedChips}

@@ -1,6 +1,10 @@
 /**
  * An organization's Organization Admin roster.
  *
+ * Built on AdminDataTable with the same column shape as the user list — avatar
+ * first, then name over email — so the two tables in this app are recognisably
+ * the same component rather than one styled table and one hand-rolled one.
+ *
  * "Other organizations" is the column that matters operationally: revoking
  * someone here only affects this org, and seeing that they also administer
  * three others is what tells an admin whether that's the whole story.
@@ -11,6 +15,8 @@ import {
 } from '@openedx/paragon';
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import AdminDataTable from '@src/components/AdminDataTable';
+import type { ColumnDef } from '@src/components/AdminDataTable';
 import ChipOverflowList from '@src/components/ChipOverflowList';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
@@ -45,6 +51,67 @@ const OrgAdminTable = ({ shortName, members }: OrgAdminTableProps) => {
     }
   };
 
+  const columns: ColumnDef[] = [
+    {
+      label: intl.formatMessage(messages.adminColAvatar),
+      key: 'image',
+      renderCell: (value, row) => (
+        <ProfileAvatar
+          src={value as string | null}
+          name={(row.name as string) || (row.username as string)}
+          size="sm"
+        />
+      ),
+    },
+    {
+      label: intl.formatMessage(messages.adminColName),
+      key: 'name',
+      renderCell: (value, row) => (
+        <div className="min-width-0">
+          <div className="rwaq-user-cell__name">
+            {(value as string) || (row.username as string)}
+          </div>
+          <div className="rwaq-user-cell__meta">{row.email as string}</div>
+        </div>
+      ),
+    },
+    {
+      label: intl.formatMessage(messages.adminColOtherOrgs),
+      key: 'otherOrganizations',
+      renderCell: (value, row) => (
+        <ChipOverflowList
+          id={`org-admin-${row.id}-orgs`}
+          maxVisible={MAX_ORG_CHIPS}
+          emptyLabel={intl.formatMessage(messages.detailNone)}
+          items={(value as string[]).map((org) => ({ key: org, label: org, variant: 'info' }))}
+        />
+      ),
+    },
+    {
+      label: intl.formatMessage(messages.adminColAdded),
+      key: 'dateAdded',
+      renderCell: (value) => (value
+        ? new Date(value as string).toLocaleDateString()
+        : intl.formatMessage(messages.detailNone)),
+    },
+    {
+      label: intl.formatMessage(messages.adminColActions),
+      key: 'actions',
+      renderCell: (_value, row) => (
+        <div className="rwaq-row-actions">
+          <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={() => setPendingRemoval(row as unknown as OrgMember)}
+            aria-label={`${intl.formatMessage(messages.remove)} ${row.email as string}`}
+          >
+            {intl.formatMessage(messages.remove)}
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   if (members.length === 0) {
     return (
       <p className="text-muted text-center py-5 mb-0">
@@ -55,60 +122,11 @@ const OrgAdminTable = ({ shortName, members }: OrgAdminTableProps) => {
 
   return (
     <>
-      <div className="rwaq-table-scroll">
-        <table className="table table-sm mb-0 rwaq-enrollments__table">
-          <thead>
-            <tr>
-              <th scope="col">{intl.formatMessage(messages.adminColName)}</th>
-              <th scope="col">{intl.formatMessage(messages.adminColOtherOrgs)}</th>
-              <th scope="col">{intl.formatMessage(messages.adminColAdded)}</th>
-              <th scope="col" className="text-right">{intl.formatMessage(messages.adminColActions)}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((member) => (
-              <tr key={member.email}>
-                <td>
-                  <div className="rwaq-user-cell">
-                    <ProfileAvatar src={member.image} name={member.name || member.username} size="sm" />
-                    <div className="min-width-0">
-                      <div className="rwaq-user-cell__name">{member.name || member.username}</div>
-                      <div className="rwaq-user-cell__meta">{member.email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <ChipOverflowList
-                    id={`org-admin-${member.id}-orgs`}
-                    maxVisible={MAX_ORG_CHIPS}
-                    emptyLabel={intl.formatMessage(messages.detailNone)}
-                    items={member.otherOrganizations.map((org) => ({
-                      key: org,
-                      label: org,
-                      variant: 'info',
-                    }))}
-                  />
-                </td>
-                <td className="text-nowrap">
-                  {member.dateAdded
-                    ? new Date(member.dateAdded).toLocaleDateString()
-                    : intl.formatMessage(messages.detailNone)}
-                </td>
-                <td className="text-right">
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={() => setPendingRemoval(member)}
-                    aria-label={`${intl.formatMessage(messages.remove)} ${member.email}`}
-                  >
-                    {intl.formatMessage(messages.remove)}
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <AdminDataTable
+        columns={columns}
+        data={members as unknown as Record<string, unknown>[]}
+        caption={intl.formatMessage(messages.detailAdmins)}
+      />
 
       <AlertModal
         title={intl.formatMessage(messages.removeTitle)}

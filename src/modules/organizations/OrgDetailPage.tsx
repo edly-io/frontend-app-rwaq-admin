@@ -68,9 +68,14 @@ const OrgDetailPage = () => {
             </div>
           </div>
 
-          <Button variant="outline-primary" onClick={() => setIsEditing(true)}>
-            {intl.formatMessage(messages.editOrg)}
-          </Button>
+          <div className="d-flex align-items-center flex-wrap gap-2">
+            <Button variant="outline-primary" onClick={() => setIsEditing(true)}>
+              {intl.formatMessage(messages.editOrg)}
+            </Button>
+            <Button variant="primary" onClick={() => setIsAddingAdmin(true)}>
+              {intl.formatMessage(messages.addAdmin)}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -82,7 +87,7 @@ const OrgDetailPage = () => {
             {
               label: intl.formatMessage(messages.detailArabicName),
               value: organization.arabicName
-                ? <span dir="rtl">{organization.arabicName}</span>
+                ? <span dir="auto">{organization.arabicName}</span>
                 : dash,
             },
             { label: intl.formatMessage(messages.detailCourses), value: organization.courseCount },
@@ -111,14 +116,9 @@ const OrgDetailPage = () => {
       </div>
 
       <div className="rwaq-card mt-4">
-        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-          <h2 className="rwaq-section-title mb-0">
-            {intl.formatMessage(messages.detailAdmins)}
-          </h2>
-          <Button variant="primary" size="sm" onClick={() => setIsAddingAdmin(true)}>
-            {intl.formatMessage(messages.addAdmin)}
-          </Button>
-        </div>
+        <h2 className="rwaq-section-title mb-4">
+          {intl.formatMessage(messages.detailAdmins)}
+        </h2>
 
         <OrgAdminTable shortName={organization.shortName} members={organization.members ?? []} />
       </div>

@@ -100,58 +100,18 @@ const NavItem = ({ def, onNavigate }: NavItemProps) => {
       to={def.to}
       end={def.exact ?? false}
       onClick={onNavigate}
-      style={({ isActive }) => ({
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.75rem',
-        padding: '0.625rem 1rem',
-        borderRadius: '0.5rem',
-        textDecoration: 'none',
-        marginBottom: '0.125rem',
-        fontWeight: isActive ? 700 : 500,
-        fontSize: '0.9375rem',
-        color: isActive
-          ? 'var(--pgn-color-primary-700, #003F70)'
-          : 'var(--pgn-color-gray-700, #273F58)',
-        background: isActive
-          ? 'var(--pgn-color-white, #fff)'
-          : 'transparent',
-        boxShadow: isActive
-          ? '0 1px 4px rgba(0,0,0,.08)'
-          : 'none',
-        transition: 'background 150ms ease, box-shadow 150ms ease',
-      })}
+      // Styling moved to shell.scss so the active state can follow the theme
+      // tokens: the pill's background was a hardcoded white, which in dark mode
+      // was a glaring white block in an otherwise near-black sidebar.
+      className={({ isActive }) => `rwaq-navitem${isActive ? ' rwaq-navitem--active' : ''}`}
       aria-label={def.isLive ? label : `${label} — ${intl.formatMessage(messages.comingSoon)}`}
     >
-      {({ isActive }) => (
-        <>
-          <Icon
-            src={def.iconSrc}
-            style={{
-              color: isActive
-                ? 'var(--pgn-color-primary-500, #0070D2)'
-                : 'var(--pgn-color-gray-500, #6B757F)',
-              flexShrink: 0,
-            }}
-          />
-          <span style={{ flex: 1 }}>{label}</span>
-          {!def.isLive && (
-            <span
-              style={{
-                fontSize: '0.625rem',
-                fontWeight: 700,
-                letterSpacing: '0.04em',
-                padding: '0.15rem 0.4rem',
-                borderRadius: '0.75rem',
-                background: 'var(--pgn-color-gray-300, #d2d2d2)',
-                color: 'var(--pgn-color-gray-600, #454545)',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {intl.formatMessage(messages.comingSoon)}
-            </span>
-          )}
-        </>
+      <Icon src={def.iconSrc} className="rwaq-navitem__icon" />
+      <span className="rwaq-navitem__label">{label}</span>
+      {!def.isLive && (
+        <span className="rwaq-navitem__soon">
+          {intl.formatMessage(messages.comingSoon)}
+        </span>
       )}
     </NavLink>
   );

@@ -31,11 +31,13 @@
   --rwaq-input-border: #d0d5dd;
   --rwaq-table-head-bg: #f7f8fa;
   --rwaq-row-hover: #f9fafb;
-  --rwaq-row-stripe: #fcfcfd;
+  --rwaq-row-stripe: transparent;
   --rwaq-page-bg: transparent;
   --rwaq-surface-raised: #ffffff;
   --rwaq-accent: #449cc2; // Rwaq primary (brand light theme --pgn-color-primary-base)
+  --rwaq-accent-hover: #3a86a7;
   --rwaq-accent-contrast: #ffffff;
+  --rwaq-accent-soft: rgba(68, 156, 194, 0.12);
 }
 
 // Dark palette, taken from the Rwaq brand package's own dark theme
@@ -45,22 +47,33 @@
 //   secondary text #DDDFE2 · accent #AEC7F6 (light-on-dark, not the light
 //   theme's #449CC2, which fails contrast on a dark surface).
 html[data-paragon-theme-variant='dark'] {
+  // One stepped surface scale — page darkest, then card, then raised — so
+  // depth reads as a sequence instead of unrelated greys. Anchored on the
+  // brand's own dark body (#0D0D0E) and text (#F8F8F8).
   --rwaq-page-bg: #0d0d0e;
-  --rwaq-card-bg: #1a1b1e;
-  --rwaq-surface-raised: #36383b;
-  --rwaq-card-border: #2f3134;
-  --rwaq-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  --rwaq-text: #ddDFe2;
+  --rwaq-card-bg: #16181b;
+  --rwaq-surface-raised: #1e2126;
+  --rwaq-card-border: #292d33;
+  --rwaq-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  --rwaq-text: #dee1e6;
   --rwaq-heading: #f8f8f8;
-  --rwaq-muted: #9ba1a9;
-  --rwaq-border: #2f3134;
-  --rwaq-input-bg: #232427;
-  --rwaq-input-border: #3d4045;
-  --rwaq-table-head-bg: #222326;
-  --rwaq-row-hover: #292a2c;
-  --rwaq-row-stripe: #1e1f22;
-  --rwaq-accent: #aec7f6;
-  --rwaq-accent-contrast: #112f6b;
+  --rwaq-muted: #98a0aa;
+  --rwaq-border: #292d33;
+  --rwaq-input-bg: #1b1e22;
+  --rwaq-input-border: #343941;
+  --rwaq-table-head-bg: #1b1e22;
+  --rwaq-row-hover: #21252b;
+  // No striping in dark: rows share the card surface and are separated by
+  // borders. Alternating tones on a near-black table is noise, and it was the
+  // black/white banding in the screenshots.
+  --rwaq-row-stripe: transparent;
+  // The accent stays in the Rwaq teal family in both themes rather than
+  // switching to the brand's pale periwinkle, which read as a washed-out
+  // lavender button against near-black.
+  --rwaq-accent: #4aa3c9;
+  --rwaq-accent-hover: #63b4d6;
+  --rwaq-accent-contrast: #08222c;
+  --rwaq-accent-soft: rgba(74, 163, 201, 0.16);
 }
 
 // ── Rwaq brand palette applied to Paragon ────────────────────────────────────
@@ -96,18 +109,25 @@ html[data-paragon-theme-variant='dark'] {
 
 // Dark uses the brand's own dark accent (#AEC7F6): the light theme's #449CC2
 // does not carry enough contrast on a #0D0D0E surface.
+// Dark keeps the same teal family, one step brighter so it holds up against
+// a near-black surface. The brand's pale periwinkle (#AEC7F6) is reserved for
+// links and soft tints — as a button fill it read as washed-out lavender.
 html[data-paragon-theme-variant='dark'] {
-  --pgn-color-primary-base: #aec7f6;
-  --pgn-color-primary-500: #aec7f6;
-  --pgn-color-primary-600: #8e9fbf;
-  --pgn-color-primary-700: #747e92;
-  --pgn-color-btn-bg-primary: #aec7f6;
-  --pgn-color-btn-border-primary: #aec7f6;
-  --pgn-color-btn-hover-bg-primary: #8e9fbf;
-  --pgn-color-btn-active-bg-primary: #747e92;
-  --pgn-color-btn-text-primary: #112f6b;
-  --pgn-color-btn-hover-text-primary: #112f6b;
-  --pgn-color-link-base: #aec7f6;
+  --pgn-color-primary-base: #4aa3c9;
+  --pgn-color-primary-100: #12222a;
+  --pgn-color-primary-200: #1a3540;
+  --pgn-color-primary-300: #276578;
+  --pgn-color-primary-400: #38879f;
+  --pgn-color-primary-500: #4aa3c9;
+  --pgn-color-primary-600: #63b4d6;
+  --pgn-color-primary-700: #85c7e3;
+  --pgn-color-btn-bg-primary: #4aa3c9;
+  --pgn-color-btn-border-primary: #4aa3c9;
+  --pgn-color-btn-hover-bg-primary: #63b4d6;
+  --pgn-color-btn-active-bg-primary: #38879f;
+  --pgn-color-btn-text-primary: #08222c;
+  --pgn-color-btn-hover-text-primary: #08222c;
+  --pgn-color-link-base: #85c7e3;
 }
 
 // ── Shell chrome ─────────────────────────────────────────────────────────────
@@ -236,8 +256,16 @@ select.rwaq-select--compact { max-width: 18rem; }
     white-space: nowrap;
   }
 
-  tbody tr { background: var(--rwaq-card-bg); }
-  tbody tr:nth-of-type(even) { background: var(--rwaq-row-stripe); }
+  // Uniform rows separated by borders. The previous version striped only
+  // even rows, which left Paragon's own light odd-row stripe in place — in
+  // dark mode that produced alternating white bands with light text on them.
+  // !important is needed because Paragon's .table-striped rules are more
+  // specific than a class-scoped descendant selector.
+  tbody tr,
+  tbody tr:nth-of-type(odd),
+  tbody tr:nth-of-type(even) {
+    background: var(--rwaq-card-bg) !important;
+  }
 
   tbody td {
     background: transparent !important;
@@ -245,8 +273,11 @@ select.rwaq-select--compact { max-width: 18rem; }
     color: var(--rwaq-text);
   }
 
-  tbody tr:hover { background: var(--rwaq-row-hover); }
-  tbody tr:hover td { background: transparent !important; }
+  tbody tr:hover,
+  tbody tr:hover:nth-of-type(odd),
+  tbody tr:hover:nth-of-type(even) {
+    background: var(--rwaq-row-hover) !important;
+  }
 
   // DataTable's own chrome (footer, row status, pagination) is outside the
   // <table>, so it needs the same treatment.
@@ -871,3 +902,140 @@ html[data-paragon-theme-variant='dark'] {
 
 .rwaq-detail-block { padding-top: var(--rwaq-space-5); }
 .rwaq-detail-block + .rwaq-detail-block { border-top: 1px solid var(--rwaq-border); }
+
+// ── Filters toggle ───────────────────────────────────────────────────────────
+// Pressed state is an accent-tinted surface from the palette, so it belongs to
+// the theme in both variants.
+.rwaq-filter-toggle.btn {
+  border-color: var(--rwaq-input-border);
+  color: var(--rwaq-text);
+  background: transparent;
+}
+
+.rwaq-filter-toggle.btn:hover {
+  background: var(--rwaq-accent-soft);
+  border-color: var(--rwaq-accent);
+  color: var(--rwaq-accent);
+}
+
+.rwaq-filter-toggle--open.btn,
+.rwaq-filter-toggle--open.btn:hover {
+  background: var(--rwaq-accent);
+  border-color: var(--rwaq-accent);
+  color: var(--rwaq-accent-contrast);
+}
+
+// ── Table footer (our own — see AdminDataTable) ───────────────────────────────
+.rwaq-table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rwaq-space-3);
+  flex-wrap: wrap;
+  padding: var(--rwaq-space-3) var(--rwaq-space-1) 0;
+  border-top: 1px solid var(--rwaq-border);
+  margin-top: -1px;
+}
+
+.rwaq-table-footer__status {
+  font-size: 0.8125rem;
+  color: var(--rwaq-muted);
+}
+
+.rwaq-table-footer .pagination { margin-bottom: 0; }
+
+.rwaq-table-footer .page-link {
+  background: transparent;
+  border-color: var(--rwaq-border);
+  color: var(--rwaq-text);
+}
+
+.rwaq-table-footer .page-item.active .page-link {
+  background: var(--rwaq-accent);
+  border-color: var(--rwaq-accent);
+  color: var(--rwaq-accent-contrast);
+}
+
+.rwaq-table-footer .page-item.disabled .page-link {
+  color: var(--rwaq-muted);
+  opacity: 0.6;
+}
+
+// ── Sidebar nav items ────────────────────────────────────────────────────────
+// Token-driven so the active pill belongs to whichever theme is on. It used to
+// be a hardcoded white background set inline, which in dark mode was a glaring
+// white block in a near-black sidebar.
+.rwaq-navitem {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-3);
+  padding: 0.625rem var(--rwaq-space-4);
+  border-radius: var(--rwaq-radius-sm);
+  text-decoration: none;
+  margin-bottom: 0.125rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--rwaq-text);
+  background: transparent;
+  transition: background 150ms ease, color 150ms ease;
+
+  &:hover {
+    background: var(--rwaq-row-hover);
+    color: var(--rwaq-heading);
+    text-decoration: none;
+  }
+}
+
+.rwaq-navitem__icon { color: var(--rwaq-muted); flex-shrink: 0; }
+.rwaq-navitem__label { flex: 1; }
+
+.rwaq-navitem__soon {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.75rem;
+  background: var(--rwaq-surface-raised);
+  color: var(--rwaq-muted);
+  white-space: nowrap;
+}
+
+.rwaq-navitem--active {
+  font-weight: 700;
+  color: var(--rwaq-accent);
+  background: var(--rwaq-accent-soft);
+  box-shadow: inset 3px 0 0 0 var(--rwaq-accent);
+
+  .rwaq-navitem__icon { color: var(--rwaq-accent); }
+}
+
+// Light mode keeps the raised-card look the design started from, but tinted
+// rather than plain white so the accent still reads.
+html:not([data-paragon-theme-variant='dark']) .rwaq-navitem--active {
+  background: #ffffff;
+  color: #2f6d89;
+  box-shadow: inset 3px 0 0 0 var(--rwaq-accent), 0 1px 4px rgba(16, 24, 40, 0.08);
+}
+
+// ── Dark mode: chip tints on the reworked surface scale ──────────────────────
+html[data-paragon-theme-variant='dark'] {
+  .rwaq-chip--light.pgn__chip,
+  .rwaq-chip--applied.pgn__chip {
+    background: var(--rwaq-surface-raised);
+    border-color: var(--rwaq-card-border);
+    color: var(--rwaq-text);
+  }
+
+  .rwaq-chip--info.pgn__chip {
+    background: var(--rwaq-accent-soft);
+    border-color: var(--rwaq-accent);
+    color: var(--rwaq-accent);
+  }
+
+  .rwaq-navitem__soon { background: #23272d; }
+}
+
+// Bidi text inside an otherwise LTR cell: keep it aligned with the line above
+// it and let the browser resolve direction per string.
+.rwaq-user-cell__meta[dir='auto'],
+.rwaq-detail-grid__value [dir='auto'] { text-align: start; unicode-bidi: plaintext; }

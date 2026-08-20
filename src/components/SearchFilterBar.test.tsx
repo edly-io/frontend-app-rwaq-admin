@@ -82,7 +82,9 @@ describe('SearchFilterBar', () => {
     expect(screen.getByLabelText('Filter by')).toBeEnabled();
   });
 
-  it('starts expanded when filters are already applied', () => {
+  it('stays collapsed even when chips are already applied', () => {
+    // Deriving the open state from "are there chips?" made the panel
+    // permanently open, because a chip was always present.
     renderWrapper(
       <SearchFilterBar
         searchTerm=""
@@ -92,7 +94,20 @@ describe('SearchFilterBar', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: 'Filters' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Filters' })).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('closes again when Filters is pressed a second time', () => {
+    renderWrapper(
+      <SearchFilterBar searchTerm="" onSearch={jest.fn()} filterGroups={filterGroups()} />,
+    );
+
+    const toggle = screen.getByRole('button', { name: 'Filters' });
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('renders applied chips with a clear-all action', () => {

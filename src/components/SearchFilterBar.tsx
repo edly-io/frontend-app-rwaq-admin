@@ -91,9 +91,10 @@ const SearchFilterBar = ({
   const intl = useIntl();
   const [term, setTerm] = useState(searchTerm);
   const [localError, setLocalError] = useState('');
-  // Open the panel when arriving on a URL that already has filters applied —
-  // otherwise the controls that produced the chips are hidden.
-  const [isPanelOpen, setIsPanelOpen] = useState(appliedChips.length > 0);
+  // Closed until the admin asks for it. This used to open itself whenever any
+  // chip was present, which — with a chip always shown for the sort — meant it
+  // was permanently open and the toggle looked broken.
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   useEffect(() => setTerm(searchTerm), [searchTerm]);
 
@@ -197,7 +198,11 @@ const SearchFilterBar = ({
           {actions}
           {filterGroups.length > 0 && (
             <Button
-              variant={isPanelOpen ? 'dark' : 'outline-primary'}
+              variant="outline-primary"
+              // Pressed state comes from the design system rather than
+              // Paragon's `dark` variant, which is a near-black green with no
+              // relationship to the Rwaq palette.
+              className={`rwaq-filter-toggle${isPanelOpen ? ' rwaq-filter-toggle--open' : ''}`}
               iconBefore={FilterList}
               onClick={() => setIsPanelOpen((open) => !open)}
               aria-expanded={isPanelOpen}

@@ -53,6 +53,7 @@ const OrgListPage = () => {
   const page = Number(searchParams.get('page') ?? 1);
   const search = searchParams.get('search') ?? '';
   const filter = (searchParams.get('filter') as OrgFilter | null) ?? 'all';
+  const hasExplicitOrdering = searchParams.get('ordering') !== null;
   const ordering = (searchParams.get('ordering') as OrgOrdering | null) ?? DEFAULT_ORDERING;
 
   const updateParams = useCallback(
@@ -125,17 +126,23 @@ const OrgListPage = () => {
       });
     }
 
-    chips.push({
-      key: 'ordering',
-      label: intl.formatMessage(messages.chipSort, {
-        label: sortOptions.find((option) => option.value === ordering)?.label ?? ordering,
-      }),
-      onRemove: () => updateParams({ ordering: '' }),
-    });
+    // Chip whenever the sort was chosen explicitly — i.e. the URL param is
+    // present. Comparing against the default instead meant picking the default
+    // produced no chip, and always chipping meant "Clear all" could never
+    // empty the list.
+    if (hasExplicitOrdering) {
+      chips.push({
+        key: 'ordering',
+        label: intl.formatMessage(messages.chipSort, {
+          label: sortOptions.find((option) => option.value === ordering)?.label ?? ordering,
+        }),
+        onRemove: () => updateParams({ ordering: '' }),
+      });
+    }
 
     return chips;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, filter, ordering, intl, updateParams]);
+  }, [search, filter, ordering, hasExplicitOrdering, intl, updateParams]);
 
   const columns: ColumnDef[] = [
     {
@@ -145,7 +152,11 @@ const OrgListPage = () => {
         <div className="min-width-0">
           <div className="rwaq-user-cell__name">{value as string}</div>
           {!!row.arabicName && (
-            <div className="rwaq-user-cell__meta" dir="rtl">{row.arabicName as string}</div>
+            // dir="auto" lets the browser pick per-string direction while the
+            // block itself stays start-aligned under the name. Forcing
+            // dir="rtl" right-aligned it inside the cell, detaching it from
+            // the name it belongs to.
+            <div className="rwaq-user-cell__meta" dir="auto">{row.arabicName as string}</div>
           )}
         </div>
       ),
@@ -217,7 +228,9 @@ const OrgListPage = () => {
               label: intl.formatMessage(messages.sortLabel),
               value: ordering,
               options: sortOptions,
-              onChange: (value) => updateParams({ ordering: value === DEFAULT_ORDERING ? '' : value }),
+              // Always write the param, even for the default value, so the choice
+              // is visible as a chip and reversible via Clear all.
+              onChange: (value) => updateParams({ ordering: value }),
             },
           ]}
           appliedChips={appliedChips}

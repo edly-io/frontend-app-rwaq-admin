@@ -88,6 +88,7 @@ const messages = defineMessages({
 
   // ── Admin roster ───────────────────────────────────────────────────────────
   addAdmin: { id: 'rwaq.admin.orgs.admins.add', defaultMessage: 'Add org admin' },
+  adminColAvatar: { id: 'rwaq.admin.orgs.admins.colAvatar', defaultMessage: 'Photo' },
   adminColName: { id: 'rwaq.admin.orgs.admins.colName', defaultMessage: 'Name' },
   adminColOtherOrgs: { id: 'rwaq.admin.orgs.admins.colOtherOrgs', defaultMessage: 'Other organizations' },
   adminColAdded: { id: 'rwaq.admin.orgs.admins.colAdded', defaultMessage: 'Added' },

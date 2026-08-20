@@ -4,7 +4,7 @@
  * loading/empty/error handling without repeating it.
  */
 import { ReactNode } from 'react';
-import { DataTable, Spinner } from '@openedx/paragon';
+import { DataTable, Pagination, Spinner } from '@openedx/paragon';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
 
 const messages = defineMessages({
@@ -16,6 +16,16 @@ const messages = defineMessages({
     id: 'rwaq.admin.dataTable.noResults',
     defaultMessage: 'No results found.',
   },
+  rowStatus: {
+    id: 'rwaq.admin.dataTable.rowStatus',
+    defaultMessage: 'Showing {first}–{last} of {total}',
+  },
+  paginationLabel: { id: 'rwaq.admin.dataTable.paginationLabel', defaultMessage: 'Table pages' },
+  previousPage: { id: 'rwaq.admin.dataTable.previousPage', defaultMessage: 'Previous' },
+  nextPage: { id: 'rwaq.admin.dataTable.nextPage', defaultMessage: 'Next' },
+  page: { id: 'rwaq.admin.dataTable.page', defaultMessage: 'Page' },
+  currentPage: { id: 'rwaq.admin.dataTable.currentPage', defaultMessage: 'Current page' },
+  pageOfCount: { id: 'rwaq.admin.dataTable.pageOfCount', defaultMessage: 'of' },
 });
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -82,6 +92,14 @@ const AdminDataTable = ({
 }: AdminDataTableProps) => {
   const intl = useIntl();
 
+  // Range comes from the server-side page, not react-table, which only ever
+  // holds the current page's rows.
+  const pageSize = pagination?.pageSize ?? DEFAULT_PAGE_SIZE;
+  const rangeStart = pagination ? (pagination.currentPage - 1) * pageSize + 1 : 1;
+  const rangeEnd = pagination
+    ? Math.min(rangeStart + data.length - 1, pagination.itemCount ?? data.length)
+    : data.length;
+
   if (isLoading) {
     return (
       <div className="d-flex justify-content-center py-5" aria-label={intl.formatMessage(messages.loadingLabel)}>
@@ -130,14 +148,41 @@ const AdminDataTable = ({
             : undefined}
         >
           <DataTable.Table />
-          {pagination && (
-          <DataTable.TableFooter>
-            <DataTable.RowStatus />
-            <DataTable.TablePagination />
-          </DataTable.TableFooter>
-          )}
         </DataTable>
       </div>
+
+      {/* Our own footer rather than DataTable.TableFooter: its TablePagination
+          hardcodes Paragon's `reduced` variant with `leftIcon: null,
+          rightIcon: null`, so it has no previous/next controls at all.
+          Paragon's Pagination in its default variant gives real arrows. */}
+      {pagination && (
+        <div className="rwaq-table-footer">
+          <span className="rwaq-table-footer__status">
+            {intl.formatMessage(messages.rowStatus, {
+              first: rangeStart,
+              last: rangeEnd,
+              total: pagination.itemCount ?? data.length,
+            })}
+          </span>
+
+          {pagination.pageCount > 1 && (
+            <Pagination
+              variant="secondary"
+              currentPage={pagination.currentPage}
+              pageCount={pagination.pageCount}
+              onPageSelect={(page: number) => pagination.onPageChange(page)}
+              paginationLabel={intl.formatMessage(messages.paginationLabel)}
+              buttonLabels={{
+                previous: intl.formatMessage(messages.previousPage),
+                next: intl.formatMessage(messages.nextPage),
+                page: intl.formatMessage(messages.page),
+                currentPage: intl.formatMessage(messages.currentPage),
+                pageOfCount: intl.formatMessage(messages.pageOfCount),
+              }}
+            />
+          )}
+        </div>
+      )}
     </>
   );
 };
