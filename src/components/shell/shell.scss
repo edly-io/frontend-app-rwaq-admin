@@ -118,6 +118,7 @@ html[data-paragon-theme-variant='dark'] {
 .rwaq-admin-content {
   .pgn__form-control,
   .form-control,
+
   input[type='text'],
   input[type='email'],
   input[type='url'],
@@ -139,6 +140,10 @@ html[data-paragon-theme-variant='dark'] {
     border: 1px solid var(--rwaq-card-border);
     border-radius: var(--rwaq-radius);
     box-shadow: var(--rwaq-card-shadow);
+  }
+
+  input[name='searchfield-input'] {
+    border: none !important;
   }
 }
 
