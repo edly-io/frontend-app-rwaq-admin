@@ -2,10 +2,11 @@ import { StrictMode, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AppProvider, ErrorPage } from '@edx/frontend-platform/react';
 import {
+  mergeConfig,
   APP_INIT_ERROR, APP_READY, subscribe, initialize,
 } from '@edx/frontend-platform';
+import { AppProvider, ErrorPage } from '@edx/frontend-platform/react';
 import { ToastProvider } from './components/ToastContext';
 
 import messages from './i18n';
@@ -78,4 +79,18 @@ subscribe(APP_INIT_ERROR, (error) => {
 initialize({
   messages,
   requireAuthenticatedUser: true,
+  handlers: {
+    config: () => {
+      // Declared here so every consumer reads them through getConfig() and a
+      // missing value is an explicit null rather than undefined. The runtime
+      // MFE_CONFIG supplies these when the corresponding MFE is deployed;
+      // ACCOUNT_PROFILE_URL in particular is absent in deployments that don't
+      // run the profile MFE, which is why the Profile link pointed nowhere.
+      mergeConfig({
+        ACCOUNT_PROFILE_URL: process.env.ACCOUNT_PROFILE_URL || null,
+        ACCOUNT_SETTINGS_URL: process.env.ACCOUNT_SETTINGS_URL || null,
+        LEARNER_DASHBOARD_URL: process.env.LEARNER_DASHBOARD_URL || null,
+      }, 'RwaqAdminAppConfig');
+    },
+  },
 });

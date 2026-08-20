@@ -30,6 +30,7 @@ const messages = defineMessages({
 
   // ── Columns ────────────────────────────────────────────────────────────────
   colName: { id: 'rwaq.admin.orgs.col.name', defaultMessage: 'Organization' },
+  colArabicName: { id: 'rwaq.admin.orgs.col.arabicName', defaultMessage: 'Arabic name' },
   colShortName: { id: 'rwaq.admin.orgs.col.shortName', defaultMessage: 'Short name' },
   colStatus: { id: 'rwaq.admin.orgs.col.status', defaultMessage: 'Status' },
   colCourses: { id: 'rwaq.admin.orgs.col.courses', defaultMessage: 'Courses' },

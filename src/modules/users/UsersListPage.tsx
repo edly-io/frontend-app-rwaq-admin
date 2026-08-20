@@ -220,6 +220,9 @@ const UsersListPage = () => {
   const columns: ColumnDef[] = [
     {
       label: intl.formatMessage(messages.colAvatar),
+      // Heading is for screen readers only — an avatar needs no visible title.
+      isLabelHidden: true,
+      headerClassName: 'rwaq-th--avatar',
       key: 'image',
       renderCell: (value, row) => (
         <ProfileAvatar src={value as string | null} name={row.name as string} size="sm" />
@@ -263,6 +266,7 @@ const UsersListPage = () => {
     },
     {
       label: intl.formatMessage(messages.colActions),
+      headerClassName: 'rwaq-th--actions',
       key: 'actions',
       renderCell: (_value, row) => (
         <div className="rwaq-row-actions">

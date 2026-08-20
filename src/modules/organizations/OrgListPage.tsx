@@ -148,18 +148,16 @@ const OrgListPage = () => {
     {
       label: intl.formatMessage(messages.colName),
       key: 'name',
-      renderCell: (value, row) => (
-        <div className="min-width-0">
-          <div className="rwaq-user-cell__name">{value as string}</div>
-          {!!row.arabicName && (
-            // dir="auto" lets the browser pick per-string direction while the
-            // block itself stays start-aligned under the name. Forcing
-            // dir="rtl" right-aligned it inside the cell, detaching it from
-            // the name it belongs to.
-            <div className="rwaq-user-cell__meta" dir="auto">{row.arabicName as string}</div>
-          )}
-        </div>
-      ),
+      renderCell: (value) => <span className="rwaq-user-cell__name">{value as string}</span>,
+    },
+    {
+      // Its own column: stacked under the Latin name, a bidi string never
+      // aligned cleanly with the line above it.
+      label: intl.formatMessage(messages.colArabicName),
+      key: 'arabicName',
+      renderCell: (value) => (value
+        ? <span className="rwaq-bidi" dir="auto">{value as string}</span>
+        : <span className="text-muted">{intl.formatMessage(messages.detailNone)}</span>),
     },
     { label: intl.formatMessage(messages.colShortName), key: 'shortName' },
     {
@@ -175,6 +173,7 @@ const OrgListPage = () => {
     { label: intl.formatMessage(messages.colAdmins), key: 'adminCount' },
     {
       label: intl.formatMessage(messages.colActions),
+      headerClassName: 'rwaq-th--actions',
       key: 'actions',
       renderCell: (_value, row) => (
         <div className="rwaq-row-actions">

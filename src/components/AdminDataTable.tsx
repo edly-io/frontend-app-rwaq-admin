@@ -32,6 +32,12 @@ const messages = defineMessages({
 
 export interface ColumnDef {
   label: string;
+  /** Render the heading for screen readers only — for columns whose content
+   *  speaks for itself, like an avatar. Keeps the column accessible without a
+   *  redundant visible title. */
+  isLabelHidden?: boolean;
+  /** Extra class on the <th>, e.g. for alignment or width. */
+  headerClassName?: string;
   /** Data accessor key. Must be unique across columns unless `id` is provided. */
   key: string;
   /** Explicit unique column id (defaults to `key`). Use for display/action columns
@@ -68,9 +74,13 @@ const DEFAULT_PAGE_SIZE = 10;
 
 /** Build the column spec format that Paragon DataTable expects */
 const buildTableColumns = (cols: ColumnDef[]) => cols.map((col) => ({
-  Header: col.label,
+  Header: col.isLabelHidden
+    // eslint-disable-next-line react/no-unstable-nested-components
+    ? () => <span className="sr-only">{col.label}</span>
+    : col.label,
   accessor: col.key,
   id: col.id ?? col.key,
+  headerClassName: col.headerClassName,
   ...(col.renderCell
     ? {
       // eslint-disable-next-line react/no-unstable-nested-components
@@ -126,26 +136,17 @@ const AdminDataTable = ({
       {/* Below ~1200px eight columns can't fit; letting the browser shrink them
           wraps every cell to one character per line. Scroll the table instead. */}
       <div className="rwaq-table-scroll">
+        {/* No pagination wiring on DataTable itself. It was keeping its own
+            pageIndex alongside our URL state, and its fetchData callback fired
+            with that stale index — so pressing Previous re-wrote the page back
+            and rendered the wrong rows. The data is already one server page,
+            so DataTable just renders what it is given and our footer owns
+            paging entirely. */}
         <DataTable
           columns={buildTableColumns(columns)}
           data={data}
-          itemCount={pagination?.itemCount ?? data.length}
-          pageCount={pagination?.pageCount}
-          initialState={{
-            pageSize: pagination?.pageSize ?? DEFAULT_PAGE_SIZE,
-            pageIndex: pagination ? pagination.currentPage - 1 : 0,
-          }}
-          manualPagination={!!pagination}
-          fetchData={pagination
-          // DataTable owns the page controls but the data is server-side, so
-          // its page changes have to be handed back to the caller's URL state.
-            ? ({ pageIndex }: { pageIndex: number }) => {
-              const nextPage = pageIndex + 1;
-              if (nextPage !== pagination.currentPage) {
-                pagination.onPageChange(nextPage);
-              }
-            }
-            : undefined}
+          itemCount={data.length}
+          initialState={{ pageSize: Math.max(data.length, 1) }}
         >
           <DataTable.Table />
         </DataTable>

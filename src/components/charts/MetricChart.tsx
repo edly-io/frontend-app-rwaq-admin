@@ -219,7 +219,10 @@ const MetricChart = ({
     <div
       role="img"
       aria-label={ariaLabel}
-      style={{ width: '100%' }}
+      // rwaq-chart centres the plot and its legend: Recharts lays the SVG out
+      // from its own margins, so in a wide card it sat left of centre with the
+      // legend anchored to the plot rather than the card.
+      className="rwaq-chart"
     >
       <ResponsiveContainer width="100%" height={height}>
         {/* @ts-ignore — ResponsiveContainer accepts a single child element */}

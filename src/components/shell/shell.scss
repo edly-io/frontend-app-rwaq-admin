@@ -130,6 +130,47 @@ html[data-paragon-theme-variant='dark'] {
   --pgn-color-link-base: #85c7e3;
 }
 
+// ── Dark mode: Paragon's own tokens ──────────────────────────────────────────
+// Paragon ships a light token set only (styles/css/themes/light), so with the
+// light variables bundled, dark mode would otherwise inherit light values for
+// every component Paragon styles itself. These are the tokens that actually
+// decide whether a surface is readable.
+html[data-paragon-theme-variant='dark'] {
+  --pgn-color-bg-base: #0d0d0e;
+  --pgn-color-text-base: #f8f8f8;
+  --pgn-color-text-default: #dee1e6;
+  --pgn-color-text-muted: #98a0aa;
+
+  --pgn-color-modal-content-bg: #16181b;
+  --pgn-color-modal-backdrop-bg: rgba(0, 0, 0, 0.72);
+
+  --pgn-color-card-bg-base: #16181b;
+  --pgn-color-card-border-base: #292d33;
+  --pgn-color-card-divider-bg: #292d33;
+
+  --pgn-color-form-control-bg: #1b1e22;
+  --pgn-color-form-control-border-base: #343941;
+  --pgn-color-form-control-base: #dee1e6;
+  --pgn-color-form-control-label-base: #dee1e6;
+  --pgn-color-form-control-select-base: #dee1e6;
+  --pgn-color-form-control-indicator-bg-base: #1b1e22;
+  --pgn-color-form-control-indicator-border: #343941;
+
+  --pgn-color-light-100: #1b1e22;
+  --pgn-color-light-200: #1e2126;
+  --pgn-color-light-300: #23272d;
+  --pgn-color-light-400: #292d33;
+  --pgn-color-light-500: #343941;
+  --pgn-color-light-base: #1e2126;
+
+  --pgn-color-gray-100: #1b1e22;
+  --pgn-color-gray-200: #23272d;
+  --pgn-color-gray-300: #343941;
+  --pgn-color-gray-500: #98a0aa;
+  --pgn-color-gray-700: #dee1e6;
+  --pgn-color-gray-900: #f8f8f8;
+}
+
 // ── Shell chrome ─────────────────────────────────────────────────────────────
 .rwaq-admin-shell {
   background: linear-gradient(157deg, #eef2fc 0%, #f8f7f4 48%, #fdf6ed 100%);
@@ -838,12 +879,37 @@ html[data-paragon-theme-variant='dark'] {
   overflow-wrap: anywhere;
 }
 
+// Row action buttons line up under their column heading rather than hugging the
+// right edge, and carry a visible border plus a hover state so they read as
+// buttons. `start` alignment matches the "Actions" header, which is start-aligned
+// like every other th.
 .rwaq-row-actions {
   display: flex;
   align-items: center;
   gap: var(--rwaq-space-2);
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
+
+.rwaq-row-actions .btn {
+  border: 1px solid var(--rwaq-input-border);
+  color: var(--rwaq-text);
+  background: transparent;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.rwaq-row-actions .btn:hover,
+.rwaq-row-actions .btn:focus-visible {
+  background: var(--rwaq-accent-soft);
+  border-color: var(--rwaq-accent);
+  color: var(--rwaq-accent);
+}
+
+// Header cells for action columns align with the buttons beneath them.
+.rwaq-admin-content thead th.rwaq-th--actions { text-align: start; }
+
+// Avatar columns carry no heading text, so the cell still needs a width and an
+// accessible name (provided sr-only in the component).
+.rwaq-admin-content thead th.rwaq-th--avatar { width: 3.5rem; }
 
 .rwaq-enrollments__table {
   th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--rwaq-muted); }
@@ -1039,3 +1105,52 @@ html[data-paragon-theme-variant='dark'] {
 // it and let the browser resolve direction per string.
 .rwaq-user-cell__meta[dir='auto'],
 .rwaq-detail-grid__value [dir='auto'] { text-align: start; unicode-bidi: plaintext; }
+
+// ── Page-header action groups ────────────────────────────────────────────────
+// An explicit gap rather than a `gap-*` utility: this Bootstrap build doesn't
+// ship the flex-gap utilities, so the buttons rendered flush against each other.
+.rwaq-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--rwaq-space-3);
+}
+
+// ── Bidi text ────────────────────────────────────────────────────────────────
+// Let the browser resolve direction per string while the box stays in the
+// column's own flow, so an Arabic value lines up with its Latin neighbours.
+.rwaq-bidi {
+  unicode-bidi: plaintext;
+  text-align: start;
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+// Breathing room between the tab strip and its panel, and between the tabs
+// themselves — they were butted together and the panel started immediately
+// under the underline.
+.nav-tabs {
+  gap: var(--rwaq-space-4);
+  margin-bottom: var(--rwaq-space-4);
+}
+
+.nav-tabs .nav-link { padding-inline: 0; }
+.tab-content { padding-top: var(--rwaq-space-2); }
+
+// ── Charts ───────────────────────────────────────────────────────────────────
+// Recharts' ResponsiveContainer fills its parent but the SVG inside is laid out
+// from its own margins, so the plot sat left of centre in a wide card.
+.rwaq-chart {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.rwaq-chart > * { margin-inline: auto; }
+.rwaq-chart .recharts-wrapper { margin-inline: auto; }
+
+.rwaq-chart .recharts-legend-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100% !important;
+  left: 0 !important;
+}

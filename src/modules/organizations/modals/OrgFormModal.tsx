@@ -6,6 +6,7 @@
  * organization, so changing it would orphan existing courses, and the backend
  * treats both as read-only on PATCH.
  */
+import { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -77,6 +78,9 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
   const isEdit = organization !== null;
+  // Guidance for filling the field in, so it appears on focus and leaves on
+  // blur rather than standing permanently under the input.
+  const [isShortNameFocused, setIsShortNameFocused] = useState(false);
 
   const createMutation = useCreateOrganization();
   const updateMutation = useUpdateOrganization(organization?.shortName ?? '');
@@ -172,10 +176,14 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
                 name="shortName"
                 value={formik.values.shortName}
                 onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
+                onFocus={() => setIsShortNameFocused(true)}
+                onBlur={(event: React.FocusEvent<HTMLInputElement>) => {
+                  setIsShortNameFocused(false);
+                  formik.handleBlur(event);
+                }}
                 disabled={isEdit}
               />
-              {!isEdit && !fieldError('shortName') && (
+              {!isEdit && isShortNameFocused && !fieldError('shortName') && (
                 <Form.Text muted>{intl.formatMessage(messages.fieldShortNameHelp)}</Form.Text>
               )}
               {fieldError('shortName') && (

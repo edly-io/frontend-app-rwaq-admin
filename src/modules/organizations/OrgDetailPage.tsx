@@ -68,7 +68,7 @@ const OrgDetailPage = () => {
             </div>
           </div>
 
-          <div className="d-flex align-items-center flex-wrap gap-2">
+          <div className="rwaq-header-actions">
             <Button variant="outline-primary" onClick={() => setIsEditing(true)}>
               {intl.formatMessage(messages.editOrg)}
             </Button>
