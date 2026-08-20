@@ -280,6 +280,7 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
           <Form.Control
             as="select"
             name="profileVisibility"
+            className="rwaq-select--compact"
             value={formik.values.profileVisibility}
             onChange={formik.handleChange}
           >

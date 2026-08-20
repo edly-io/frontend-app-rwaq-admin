@@ -17,6 +17,10 @@ const messages = defineMessages({
   searchByJob: { id: 'rwaq.admin.users.search.byJob', defaultMessage: 'Job title' },
   searchTermLabel: { id: 'rwaq.admin.users.search.termLabel', defaultMessage: 'Search term' },
   searchTermPlaceholder: { id: 'rwaq.admin.users.search.placeholder', defaultMessage: 'Search users…' },
+  searchPlaceholderEmail: { id: 'rwaq.admin.users.search.phEmail', defaultMessage: 'Search by email address…' },
+  searchPlaceholderName: { id: 'rwaq.admin.users.search.phName', defaultMessage: 'Search by full name…' },
+  searchPlaceholderUserId: { id: 'rwaq.admin.users.search.phUserId', defaultMessage: 'Search by numeric user ID…' },
+  searchPlaceholderJob: { id: 'rwaq.admin.users.search.phJob', defaultMessage: 'Search by job title…' },
   searchButton: { id: 'rwaq.admin.users.search.submit', defaultMessage: 'Search' },
   clearButton: { id: 'rwaq.admin.users.search.clear', defaultMessage: 'Clear' },
   validationUserIdInvalid: {

@@ -52,7 +52,7 @@ export interface AdminDataTableProps {
 }
 
 /** Fallback rows-per-page when the caller doesn't say. */
-const DEFAULT_PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 10;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -105,35 +105,39 @@ const AdminDataTable = ({
       {/* sr-only heading instead of a raw <caption> (which is invalid nested in
           DataTable's wrapper <div> and triggers a DOM-nesting warning). */}
       {caption && <div className="sr-only" role="heading" aria-level={2}>{caption}</div>}
-      <DataTable
-        columns={buildTableColumns(columns)}
-        data={data}
-        itemCount={pagination?.itemCount ?? data.length}
-        pageCount={pagination?.pageCount}
-        initialState={{
-          pageSize: pagination?.pageSize ?? DEFAULT_PAGE_SIZE,
-          pageIndex: pagination ? pagination.currentPage - 1 : 0,
-        }}
-        manualPagination={!!pagination}
-        fetchData={pagination
+      {/* Below ~1200px eight columns can't fit; letting the browser shrink them
+          wraps every cell to one character per line. Scroll the table instead. */}
+      <div className="rwaq-table-scroll">
+        <DataTable
+          columns={buildTableColumns(columns)}
+          data={data}
+          itemCount={pagination?.itemCount ?? data.length}
+          pageCount={pagination?.pageCount}
+          initialState={{
+            pageSize: pagination?.pageSize ?? DEFAULT_PAGE_SIZE,
+            pageIndex: pagination ? pagination.currentPage - 1 : 0,
+          }}
+          manualPagination={!!pagination}
+          fetchData={pagination
           // DataTable owns the page controls but the data is server-side, so
           // its page changes have to be handed back to the caller's URL state.
-          ? ({ pageIndex }: { pageIndex: number }) => {
-            const nextPage = pageIndex + 1;
-            if (nextPage !== pagination.currentPage) {
-              pagination.onPageChange(nextPage);
+            ? ({ pageIndex }: { pageIndex: number }) => {
+              const nextPage = pageIndex + 1;
+              if (nextPage !== pagination.currentPage) {
+                pagination.onPageChange(nextPage);
+              }
             }
-          }
-          : undefined}
-      >
-        <DataTable.Table />
-        {pagination && (
+            : undefined}
+        >
+          <DataTable.Table />
+          {pagination && (
           <DataTable.TableFooter>
             <DataTable.RowStatus />
             <DataTable.TablePagination />
           </DataTable.TableFooter>
-        )}
-      </DataTable>
+          )}
+        </DataTable>
+      </div>
     </>
   );
 };

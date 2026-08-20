@@ -31,7 +31,7 @@ import type {
 } from './data/types';
 import messages from './messages';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 const DEFAULT_ORDERING: UserOrdering = '-created';
 const DEFAULT_SEARCH_BY: SearchBy = 'email';
 const DIGITS_RE = /^\d+$/;
@@ -45,6 +45,15 @@ const SEARCH_SCOPES: { value: SearchBy; label: MessageKey }[] = [
   { value: 'user_id', label: 'searchByUserId' },
   { value: 'job', label: 'searchByJob' },
 ];
+
+/** What each scope actually accepts, so the field stops asking for an email
+ *  when the admin has chosen to search by name. */
+const SEARCH_PLACEHOLDERS: Record<SearchBy, typeof messages[MessageKey]> = {
+  email: messages.searchPlaceholderEmail,
+  name: messages.searchPlaceholderName,
+  user_id: messages.searchPlaceholderUserId,
+  job: messages.searchPlaceholderJob,
+};
 
 /** Every ?filter= value the backend accepts, in the order the spec lists them. */
 const FILTER_OPTIONS: { value: UserFilter; label: MessageKey }[] = [
@@ -187,15 +196,15 @@ const UsersListPage = () => {
       });
     }
 
-    if (ordering !== DEFAULT_ORDERING) {
-      chips.push({
-        key: 'ordering',
-        label: intl.formatMessage(messages.chipSort, {
-          label: sortOptions.find((option) => option.value === ordering)?.label ?? ordering,
-        }),
-        onRemove: () => updateParams({ ordering: '' }),
-      });
-    }
+    // Always chip the sort, including the default: an admin who picks
+    // "Newest first" explicitly got no feedback that anything happened.
+    chips.push({
+      key: 'ordering',
+      label: intl.formatMessage(messages.chipSort, {
+        label: sortOptions.find((option) => option.value === ordering)?.label ?? ordering,
+      }),
+      onRemove: () => updateParams({ ordering: '' }),
+    });
 
     return chips;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -288,13 +297,13 @@ const UsersListPage = () => {
         <SearchFilterBar
           scopes={scopeOptions}
           scope={searchBy}
-          onScopeChange={(next) => {
-            // Only re-request when a term is already in play.
-            if (searchTerm) { updateParams({ search_by: next }); }
-          }}
+          // Always persist the scope, even with no term yet: the select is
+          // driven by this URL param, so not writing it made the choice snap
+          // straight back to Email.
+          onScopeChange={(next) => updateParams({ search_by: next })}
           searchTerm={searchTerm}
           onSearch={(term) => updateParams({ search_by: term ? searchBy : '', search_term: term })}
-          searchPlaceholder={intl.formatMessage(messages.searchTermPlaceholder)}
+          searchPlaceholder={intl.formatMessage(SEARCH_PLACEHOLDERS[searchBy] ?? messages.searchTermPlaceholder)}
           validateSearch={validateSearch}
           filterGroups={[
             {

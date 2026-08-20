@@ -12,6 +12,7 @@ import {
 import { useIntl } from '@edx/frontend-platform/i18n';
 import DetailGrid from '@src/components/DetailGrid';
 import ProfileAvatar from '@src/components/ProfileAvatar';
+import { countryName } from '../data/countries';
 import RoleBadges from '../components/RoleBadges';
 import StatusBadges from '../components/StatusBadges';
 import UserEnrollmentsTab from '../components/UserEnrollmentsTab';
@@ -67,7 +68,11 @@ const UserDetailModal = ({ userId, onClose, onEdit }: UserDetailModalProps) => {
         title={intl.formatMessage(messages.sectionProfileDetails)}
         items={[
           { label: intl.formatMessage(messages.detailJob), value: detail.job || dash },
-          { label: intl.formatMessage(messages.detailCountry), value: detail.country || dash },
+          {
+            label: intl.formatMessage(messages.detailCountry),
+            // The API stores the ISO code; a reader wants the country.
+            value: countryName(detail.country) || dash,
+          },
           {
             label: intl.formatMessage(messages.detailVisibility),
             value: intl.formatMessage(detail.profileVisibility === 'public'

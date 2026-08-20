@@ -1,15 +1,17 @@
-// ── Organization API types ─────────────────────────────────────────────────
+// ── Organization API types ───────────────────────────────────────────────────
+//
+// camelCase above the API boundary; api.ts normalizes the snake_case wire
+// format both ways.
 
 /** Pagination envelope nested in the org list response */
 export interface OrgListPagination {
   next: string | null;
   previous: string | null;
   count: number;
-  num_pages: number;
+  numPages: number;
 }
 
-/** Paginated list response from GET /rwaq/api/organizations/
- *  Shape: { results: [...], pagination: { count, num_pages, next, previous } } */
+/** Paginated list response from GET /rwaq/api/organizations/ */
 export interface OrgListResponse {
   results: OrgSummary[];
   pagination: OrgListPagination;
@@ -19,45 +21,69 @@ export interface OrgListResponse {
 export interface OrgSummary {
   id: number;
   name: string;
-  short_name: string;
-  logo: string | null;
+  shortName: string;
+  arabicName: string;
   active: boolean;
-  course_count: number;
-  admin_count: number;
+  courseCount: number;
+  adminCount: number;
 }
 
-/** Org admin member — from GET /rwaq/api/organizations/<short_name>/ members[] */
+/** One Organization Admin in an org's roster */
 export interface OrgMember {
+  id: number;
   email: string;
   username: string;
-  full_name: string;
-  date_added: string;
-  added_by: string;
-  other_organizations: string[];
+  dateAdded: string | null;
+  addedBy: string | null;
+  /** Short names of the *other* orgs this person also administers. */
+  otherOrganizations: string[];
 }
 
 /** Full org detail — from GET /rwaq/api/organizations/<short_name>/ */
 export interface OrgDetail extends OrgSummary {
-  arabic_name: string;
   detail: string;
-  featured_video: string;
-  is_featured: boolean;
+  featuredVideo: string;
+  isFeatured: boolean;
+  logo: string | null;
+  organizationLogo: string | null;
   members: OrgMember[];
 }
 
-/** Fields the PATCH /rwaq/api/organizations/<short_name>/ accepts */
-export interface OrgProfilePatch {
-  arabic_name?: string;
+/** POST /rwaq/api/organizations/ body */
+export interface OrgCreatePayload {
+  name: string;
+  /** Becomes the org prefix of every course key here; immutable afterwards. */
+  shortName: string;
+  description?: string;
+  arabicName?: string;
   detail?: string;
-  featured_video?: string;
-  is_featured?: boolean;
-  logo?: string;
+  featuredVideo?: string;
+  isFeatured?: boolean;
 }
+
+/** Fields PATCH /rwaq/api/organizations/<short_name>/ accepts */
+export interface OrgProfilePatch {
+  arabicName?: string;
+  detail?: string;
+  featuredVideo?: string;
+  isFeatured?: boolean;
+}
+
+/** Sortable columns supported by the backend's OrderingFilter. */
+export type OrgOrdering =
+  | 'name' | '-name'
+  | 'course_count' | '-course_count'
+  | 'admin_count' | '-admin_count'
+  | 'created' | '-created';
+
+/** Single-select filter values, mapped to backend query params in api.ts. */
+export type OrgFilter = 'all' | 'active' | 'inactive' | 'has_admins' | 'no_admins';
 
 /** Query params for the org list endpoint */
 export interface OrgListParams {
   search?: string;
-  ordering?: string;
+  filter?: OrgFilter;
+  ordering?: OrgOrdering;
   page?: number;
-  page_size?: number;
+  pageSize?: number;
 }

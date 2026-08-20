@@ -31,21 +31,83 @@
   --rwaq-input-border: #d0d5dd;
   --rwaq-table-head-bg: #f7f8fa;
   --rwaq-row-hover: #f9fafb;
-  --rwaq-accent: #449cc2; // Rwaq primary
+  --rwaq-row-stripe: #fcfcfd;
+  --rwaq-page-bg: transparent;
+  --rwaq-surface-raised: #ffffff;
+  --rwaq-accent: #449cc2; // Rwaq primary (brand light theme --pgn-color-primary-base)
+  --rwaq-accent-contrast: #ffffff;
 }
 
+// Dark palette, taken from the Rwaq brand package's own dark theme
+// (@edx/brand dist/dark.min.css) rather than invented here, so the admin panel
+// reads as the same product as the learner-facing MFEs:
+//   body #0D0D0E · surface #36383B · hover #383938 · text #F8F8F8
+//   secondary text #DDDFE2 · accent #AEC7F6 (light-on-dark, not the light
+//   theme's #449CC2, which fails contrast on a dark surface).
 html[data-paragon-theme-variant='dark'] {
-  --rwaq-card-bg: #1c1d20;
-  --rwaq-card-border: #2c2e33;
-  --rwaq-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --rwaq-text: #e4e6eb;
-  --rwaq-heading: #f3f5f7;
-  --rwaq-muted: #9aa0a6;
-  --rwaq-border: #2c2e33;
-  --rwaq-input-bg: #26282c;
-  --rwaq-input-border: #3a3d42;
-  --rwaq-table-head-bg: #242629;
-  --rwaq-row-hover: #232529;
+  --rwaq-page-bg: #0d0d0e;
+  --rwaq-card-bg: #1a1b1e;
+  --rwaq-surface-raised: #36383b;
+  --rwaq-card-border: #2f3134;
+  --rwaq-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --rwaq-text: #ddDFe2;
+  --rwaq-heading: #f8f8f8;
+  --rwaq-muted: #9ba1a9;
+  --rwaq-border: #2f3134;
+  --rwaq-input-bg: #232427;
+  --rwaq-input-border: #3d4045;
+  --rwaq-table-head-bg: #222326;
+  --rwaq-row-hover: #292a2c;
+  --rwaq-row-stripe: #1e1f22;
+  --rwaq-accent: #aec7f6;
+  --rwaq-accent-contrast: #112f6b;
+}
+
+// ── Rwaq brand palette applied to Paragon ────────────────────────────────────
+// Why this is here rather than coming from @edx/brand: the Rwaq brand package
+// is installed into the image *outside* package.json (tutor-mfe's convention),
+// so nothing emits `brand.theme.variants.*.css` — verified by the build output,
+// which contains only paragon-theme-core and paragon-theme-variants-light. With
+// no brand override and no dark variant CSS, Paragon's stock navy palette wins
+// and dark mode has nothing to load.
+//
+// Mapping Paragon's primary scale onto the Rwaq palette here makes the brand
+// identity hold in every environment, whether or not the brand CSS resolves.
+// Values are the brand package's own (dist/light.min.css, dist/dark.min.css) —
+// not invented.
+:root {
+  --pgn-color-primary-base: #449cc2;
+  --pgn-color-primary-100: #eaf4f8;
+  --pgn-color-primary-200: #c5e1eb;
+  --pgn-color-primary-300: #9bcbdd;
+  --pgn-color-primary-400: #6fb4cf;
+  --pgn-color-primary-500: #449cc2;
+  --pgn-color-primary-600: #3a86a7;
+  --pgn-color-primary-700: #2f6d89;
+  --pgn-color-primary-800: #24546b;
+  --pgn-color-primary-900: #1a3d4e;
+
+  --pgn-color-btn-bg-primary: #449cc2;
+  --pgn-color-btn-border-primary: #449cc2;
+  --pgn-color-btn-hover-bg-primary: #3a86a7;
+  --pgn-color-btn-active-bg-primary: #2f6d89;
+  --pgn-color-link-base: #2f6d89;
+}
+
+// Dark uses the brand's own dark accent (#AEC7F6): the light theme's #449CC2
+// does not carry enough contrast on a #0D0D0E surface.
+html[data-paragon-theme-variant='dark'] {
+  --pgn-color-primary-base: #aec7f6;
+  --pgn-color-primary-500: #aec7f6;
+  --pgn-color-primary-600: #8e9fbf;
+  --pgn-color-primary-700: #747e92;
+  --pgn-color-btn-bg-primary: #aec7f6;
+  --pgn-color-btn-border-primary: #aec7f6;
+  --pgn-color-btn-hover-bg-primary: #8e9fbf;
+  --pgn-color-btn-active-bg-primary: #747e92;
+  --pgn-color-btn-text-primary: #112f6b;
+  --pgn-color-btn-hover-text-primary: #112f6b;
+  --pgn-color-link-base: #aec7f6;
 }
 
 // ── Shell chrome ─────────────────────────────────────────────────────────────
@@ -114,16 +176,23 @@ html[data-paragon-theme-variant='dark'] {
 .rwaq-field__label { font-size: 0.875rem; font-weight: 600; color: var(--rwaq-text); }
 .rwaq-field__label .required { color: #d92d20; margin-inline-start: 2px; }
 
+// A two- or three-option select doesn't need the full row width; a very wide
+// control also makes its native option popup span the whole field.
+.rwaq-field--compact select,
+select.rwaq-select--compact { max-width: 18rem; }
+
 // Normalize Paragon inputs to the design system (covers .rwaq-card and Paragon Card)
 .rwaq-admin-content {
-  .pgn__form-control,
-  .form-control,
-
-  input[type='text'],
-  input[type='email'],
-  input[type='url'],
-  textarea,
-  select {
+  // :not(.rwaq-searchgroup *) — the merged search unit draws one border on its
+  // wrapper, and this rule's !important was re-adding a border to the scope
+  // select and the input inside it, so they read as three separate fields.
+  .pgn__form-control:not(.rwaq-searchgroup *),
+  .form-control:not(.rwaq-searchgroup *),
+  input[type='text']:not(.rwaq-searchgroup *),
+  input[type='email']:not(.rwaq-searchgroup *),
+  input[type='url']:not(.rwaq-searchgroup *),
+  textarea:not(.rwaq-searchgroup *),
+  select:not(.rwaq-searchgroup *) {
     background: var(--rwaq-input-bg) !important;
     border: 1px solid var(--rwaq-input-border) !important;
     color: var(--rwaq-text) !important;
@@ -148,17 +217,70 @@ html[data-paragon-theme-variant='dark'] {
 }
 
 // ── Data tables ──────────────────────────────────────────────────────────────
+// Every surface here is palette-driven, including row backgrounds. The earlier
+// version styled only thead, so in dark mode the cells kept Paragon's own light
+// table background while the text tokens flipped to light — an unreadable
+// white-on-white table. Anything with a colour needs a token, or dark mode
+// only half-applies.
 .rwaq-admin-content {
-  table { color: var(--rwaq-text); }
+  table {
+    color: var(--rwaq-text);
+    background: var(--rwaq-card-bg);
+  }
+
   thead th {
     background: var(--rwaq-table-head-bg) !important;
     color: var(--rwaq-heading) !important;
     border-bottom: 1px solid var(--rwaq-border) !important;
     font-weight: 700;
+    white-space: nowrap;
   }
-  tbody td { border-bottom: 1px solid var(--rwaq-border) !important; }
-  tbody tr:hover td { background: var(--rwaq-row-hover); }
+
+  tbody tr { background: var(--rwaq-card-bg); }
+  tbody tr:nth-of-type(even) { background: var(--rwaq-row-stripe); }
+
+  tbody td {
+    background: transparent !important;
+    border-bottom: 1px solid var(--rwaq-border) !important;
+    color: var(--rwaq-text);
+  }
+
+  tbody tr:hover { background: var(--rwaq-row-hover); }
+  tbody tr:hover td { background: transparent !important; }
+
+  // DataTable's own chrome (footer, row status, pagination) is outside the
+  // <table>, so it needs the same treatment.
+  .pgn__data-table-footer,
+  .pgn__data-table-status {
+    background: var(--rwaq-card-bg);
+    color: var(--rwaq-muted);
+    border-top: 1px solid var(--rwaq-border);
+  }
+
+  .pgn__data-table-footer .pagination .page-link,
+  .pgn__data-table-footer .btn {
+    background: transparent;
+    color: var(--rwaq-text);
+    border-color: var(--rwaq-border);
+  }
+
+  .pgn__data-table-footer .pagination .page-item.active .page-link {
+    background: var(--rwaq-accent);
+    border-color: var(--rwaq-accent);
+    color: var(--rwaq-accent-contrast);
+  }
 }
+
+// Horizontal scroll rather than squeezing columns: below ~1200px the eight
+// columns can't all fit, and letting the browser shrink them wraps every cell
+// to one character per line (which is what happened at 1024px).
+.rwaq-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rwaq-table-scroll > * { min-width: 60rem; }
 
 // ── Account dropdown (fix transparency + caret) ──────────────────────────────
 .rwaq-admin-topbar .pgn__dropdown-toggle::after,
@@ -205,6 +327,192 @@ html[data-paragon-theme-variant='dark'] {
 
   // Circular header buttons
   .rwaq-admin-topbar button { background: var(--rwaq-card-bg) !important; border-color: var(--rwaq-border) !important; color: var(--rwaq-text) !important; }
+}
+
+// ── Dark mode: the rest of the Paragon surface ───────────────────────────────
+// Dark mode here is self-contained by design (see the file header): the brand's
+// dark Paragon CSS is not reliably present in every environment, so anything
+// this app renders must carry its own dark treatment. Each block below is a
+// component that was still light-on-light before.
+html[data-paragon-theme-variant='dark'] {
+  body,
+  .rwaq-admin-content { background: var(--rwaq-page-bg); }
+
+  // Modals — the single biggest gap: a white sheet with light text on it.
+  .pgn__modal,
+  .pgn__modal-layer .modal-content {
+    background: var(--rwaq-card-bg) !important;
+    color: var(--rwaq-text) !important;
+    border-color: var(--rwaq-card-border) !important;
+  }
+
+  .pgn__modal-header,
+  .pgn__modal-footer,
+  .rwaq-form-modal__header,
+  .rwaq-form-modal__footer {
+    background: var(--rwaq-card-bg) !important;
+    border-color: var(--rwaq-border) !important;
+  }
+
+  .pgn__modal-title,
+  .pgn__modal-header .pgn__modal-title { color: var(--rwaq-heading) !important; }
+  .pgn__modal-backdrop { background: rgba(0, 0, 0, 0.7); }
+
+  // Tabs
+  .nav-tabs {
+    border-bottom-color: var(--rwaq-border);
+
+    .nav-link {
+      color: var(--rwaq-muted);
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .nav-link:hover { color: var(--rwaq-text); border-bottom-color: var(--rwaq-border); }
+
+    .nav-link.active {
+      color: var(--rwaq-heading);
+      background: transparent;
+      border-bottom-color: var(--rwaq-accent);
+    }
+  }
+
+  // Native select popups render with the OS palette unless the control itself
+  // declares a scheme, which is why the options were unreadable grey-on-grey.
+  select,
+  select option,
+  .pgn__form-control,
+  .form-control,
+  textarea,
+  input { color-scheme: dark; }
+
+  select option { background: var(--rwaq-input-bg); color: var(--rwaq-text); }
+
+  // Chips: the variant tints are tuned for a light surface, so they need
+  // dark-surface equivalents rather than opacity over white.
+  .rwaq-chip--light.pgn__chip {
+    background: var(--rwaq-surface-raised);
+    border-color: var(--rwaq-border);
+    color: var(--rwaq-text);
+  }
+
+  .rwaq-chip--applied.pgn__chip {
+    background: var(--rwaq-surface-raised);
+    border-color: var(--rwaq-border);
+    color: var(--rwaq-text);
+  }
+
+  .rwaq-chip--overflow.pgn__chip {
+    background: transparent;
+    border-color: var(--rwaq-input-border);
+    color: var(--rwaq-text);
+  }
+
+  .rwaq-chip--dark.pgn__chip {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.28);
+    color: var(--rwaq-heading);
+  }
+
+  .rwaq-chip--success.pgn__chip {
+    background: rgba(108, 223, 165, 0.16);
+    border-color: rgba(108, 223, 165, 0.4);
+    color: #6cdfa5;
+  }
+
+  .rwaq-chip--danger.pgn__chip {
+    background: rgba(255, 138, 128, 0.16);
+    border-color: rgba(255, 138, 128, 0.4);
+    color: #ff8a80;
+  }
+
+  .rwaq-chip--info.pgn__chip {
+    background: rgba(174, 199, 246, 0.16);
+    border-color: rgba(174, 199, 246, 0.42);
+    color: var(--rwaq-accent);
+  }
+
+  .rwaq-chip--warning.pgn__chip {
+    background: rgba(247, 179, 84, 0.16);
+    border-color: rgba(247, 179, 84, 0.42);
+    color: #f7b354;
+  }
+
+  // Outline buttons (the View/Edit row actions) — invisible against dark.
+  .btn-outline-primary {
+    color: var(--rwaq-accent);
+    border-color: var(--rwaq-accent);
+    background: transparent;
+  }
+
+  .btn-outline-primary:hover {
+    background: var(--rwaq-accent);
+    color: var(--rwaq-accent-contrast);
+  }
+
+  .btn-outline-secondary {
+    color: var(--rwaq-text);
+    border-color: var(--rwaq-input-border);
+    background: transparent;
+  }
+
+  .btn-outline-secondary:hover { background: var(--rwaq-row-hover); color: var(--rwaq-heading); }
+  .btn-tertiary,
+  .btn-link { color: var(--rwaq-accent); }
+
+  // The action bar
+  .rwaq-searchgroup {
+    background: var(--rwaq-input-bg);
+    border-color: var(--rwaq-input-border);
+  }
+
+  .rwaq-searchgroup__scope,
+  .rwaq-searchgroup__input {
+    background: transparent;
+    color: var(--rwaq-text);
+  }
+
+  .rwaq-searchgroup:focus-within { box-shadow: 0 0 0 3px rgba(174, 199, 246, 0.22); }
+  .rwaq-role-notes { background: var(--rwaq-surface-raised); border-color: var(--rwaq-border); }
+  .rwaq-applied__title,
+  .rwaq-detail-grid__title,
+  .rwaq-form-section__title { color: var(--rwaq-muted); }
+  .rwaq-detail-grid__value,
+  .rwaq-user-cell__name { color: var(--rwaq-text); }
+  .rwaq-detail-header__name { color: var(--rwaq-heading); }
+
+  // Toasts and alerts
+  .pgn__toast .toast,
+  .pgn__toast {
+    background: var(--rwaq-surface-raised);
+    color: var(--rwaq-text);
+    border-color: var(--rwaq-border);
+  }
+
+  .alert-danger {
+    background: rgba(255, 138, 128, 0.14);
+    border-color: rgba(255, 138, 128, 0.4);
+    color: #ff8a80;
+  }
+
+  // Tooltips and dropdown menus
+  .tooltip-inner {
+    background: var(--rwaq-surface-raised);
+    color: var(--rwaq-text);
+  }
+
+  .dropdown-menu {
+    background: var(--rwaq-card-bg);
+    border-color: var(--rwaq-border);
+    color: var(--rwaq-text);
+  }
+
+  // Paragon's default avatar is a dark glyph on transparent, so it disappears.
+  .pgn__avatar {
+    background: var(--rwaq-surface-raised);
+    border-radius: 50%;
+    filter: invert(1) hue-rotate(180deg);
+  }
 }
 
 // ── Action bar: search + filter/sort + applied chips ─────────────────────────

@@ -60,6 +60,8 @@ export interface SearchFilterBarProps {
   onScopeChange?: (scope: string) => void;
   searchTerm: string;
   onSearch: (term: string) => void;
+  /** Placeholder for the current scope — pass a per-scope string so the field
+   *  says what it actually accepts. */
   searchPlaceholder?: string;
   /** Client-side validation message for the search term. */
   searchError?: string;
@@ -113,9 +115,9 @@ const SearchFilterBar = ({
   const handleScopeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const next = event.target.value;
     onScopeChange?.(next);
-    if (term.trim() && validateSearch) {
-      setLocalError(validateSearch(next, term));
-    }
+    // Re-validate against the new scope: a term that was invalid as an email
+    // ("bob") is perfectly valid as a name, and vice versa.
+    setLocalError(term.trim() && validateSearch ? validateSearch(next, term) : '');
   };
 
   return (
