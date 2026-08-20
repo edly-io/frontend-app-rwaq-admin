@@ -1,0 +1,224 @@
+/**
+ * User Management i18n messages, colocated with the feature.
+ */
+import { defineMessages } from '@edx/frontend-platform/i18n';
+
+const messages = defineMessages({
+  // ── Page ───────────────────────────────────────────────────────────────────
+  title: { id: 'rwaq.admin.users.title', defaultMessage: 'User Management' },
+  addUser: { id: 'rwaq.admin.users.addUser', defaultMessage: 'Add user' },
+  errorTitle: { id: 'rwaq.admin.users.error.title', defaultMessage: 'Could not load users' },
+
+  // ── Search ─────────────────────────────────────────────────────────────────
+  searchByLabel: { id: 'rwaq.admin.users.search.byLabel', defaultMessage: 'Search by' },
+  searchByEmail: { id: 'rwaq.admin.users.search.byEmail', defaultMessage: 'Email' },
+  searchByName: { id: 'rwaq.admin.users.search.byName', defaultMessage: 'Name' },
+  searchByUserId: { id: 'rwaq.admin.users.search.byUserId', defaultMessage: 'User ID' },
+  searchByJob: { id: 'rwaq.admin.users.search.byJob', defaultMessage: 'Job title' },
+  searchTermLabel: { id: 'rwaq.admin.users.search.termLabel', defaultMessage: 'Search term' },
+  searchTermPlaceholder: { id: 'rwaq.admin.users.search.placeholder', defaultMessage: 'Search users…' },
+  searchButton: { id: 'rwaq.admin.users.search.submit', defaultMessage: 'Search' },
+  clearButton: { id: 'rwaq.admin.users.search.clear', defaultMessage: 'Clear' },
+  validationUserIdInvalid: {
+    id: 'rwaq.admin.users.validation.userId',
+    defaultMessage: 'User ID must be a number.',
+  },
+  validationEmailInvalid: {
+    id: 'rwaq.admin.users.validation.email',
+    defaultMessage: 'Enter a valid email address.',
+  },
+
+  // ── Filter ─────────────────────────────────────────────────────────────────
+  filterLabel: { id: 'rwaq.admin.users.filter.label', defaultMessage: 'Filter' },
+  filterAll: { id: 'rwaq.admin.users.filter.all', defaultMessage: 'All users' },
+  filterGlobalStaff: { id: 'rwaq.admin.users.filter.globalStaff', defaultMessage: 'Global Staff' },
+  filterCourseCreator: { id: 'rwaq.admin.users.filter.courseCreator', defaultMessage: 'Course Creators' },
+  filterSupportStaff: { id: 'rwaq.admin.users.filter.supportStaff', defaultMessage: 'Support Staff' },
+  filterOrgAdmin: { id: 'rwaq.admin.users.filter.orgAdmin', defaultMessage: 'Organization Admins' },
+  filterLearner: { id: 'rwaq.admin.users.filter.learner', defaultMessage: 'Learners' },
+  filterActive: { id: 'rwaq.admin.users.filter.active', defaultMessage: 'Active' },
+  filterInactive: { id: 'rwaq.admin.users.filter.inactive', defaultMessage: 'Inactive' },
+  filterConfirmed: { id: 'rwaq.admin.users.filter.confirmed', defaultMessage: 'Email confirmed' },
+  filterUnconfirmed: { id: 'rwaq.admin.users.filter.unconfirmed', defaultMessage: 'Email unconfirmed' },
+  filterPublicProfile: { id: 'rwaq.admin.users.filter.publicProfile', defaultMessage: 'Public profile' },
+  filterPrivateProfile: { id: 'rwaq.admin.users.filter.privateProfile', defaultMessage: 'Private profile' },
+  filterPasswordOnly: { id: 'rwaq.admin.users.filter.passwordOnly', defaultMessage: 'Password sign-in' },
+  filterFacebook: { id: 'rwaq.admin.users.filter.facebook', defaultMessage: 'Facebook sign-in' },
+  filterGoogle: { id: 'rwaq.admin.users.filter.google', defaultMessage: 'Google sign-in' },
+  filterTwitter: { id: 'rwaq.admin.users.filter.twitter', defaultMessage: 'Twitter sign-in' },
+  filterLegacy: { id: 'rwaq.admin.users.filter.legacy', defaultMessage: 'Legacy accounts' },
+
+  // ── Sort ───────────────────────────────────────────────────────────────────
+  sortLabel: { id: 'rwaq.admin.users.sort.label', defaultMessage: 'Sort by' },
+  sortCreatedDesc: { id: 'rwaq.admin.users.sort.createdDesc', defaultMessage: 'Newest first' },
+  sortCreatedAsc: { id: 'rwaq.admin.users.sort.createdAsc', defaultMessage: 'Oldest first' },
+  sortNameAsc: { id: 'rwaq.admin.users.sort.nameAsc', defaultMessage: 'Name (A–Z)' },
+  sortEmailAsc: { id: 'rwaq.admin.users.sort.emailAsc', defaultMessage: 'Email (A–Z)' },
+  sortLastLoginDesc: { id: 'rwaq.admin.users.sort.lastLoginDesc', defaultMessage: 'Last login' },
+  sortIdAsc: { id: 'rwaq.admin.users.sort.idAsc', defaultMessage: 'User ID' },
+
+  // ── Columns ────────────────────────────────────────────────────────────────
+  colName: { id: 'rwaq.admin.users.col.name', defaultMessage: 'Name' },
+  colEmail: { id: 'rwaq.admin.users.col.email', defaultMessage: 'Email' },
+  colStatus: { id: 'rwaq.admin.users.col.status', defaultMessage: 'Status' },
+  colRoles: { id: 'rwaq.admin.users.col.roles', defaultMessage: 'Roles' },
+  colCreated: { id: 'rwaq.admin.users.col.created', defaultMessage: 'Created' },
+  colLastLogin: { id: 'rwaq.admin.users.col.lastLogin', defaultMessage: 'Last login' },
+  colActions: { id: 'rwaq.admin.users.col.actions', defaultMessage: 'Actions' },
+  never: { id: 'rwaq.admin.users.never', defaultMessage: 'Never' },
+
+  // ── Status badges ──────────────────────────────────────────────────────────
+  statusActive: { id: 'rwaq.admin.users.status.active', defaultMessage: 'Active' },
+  statusInactive: { id: 'rwaq.admin.users.status.inactive', defaultMessage: 'Inactive' },
+  emailConfirmed: { id: 'rwaq.admin.users.status.emailConfirmed', defaultMessage: 'Email confirmed' },
+  emailUnconfirmed: { id: 'rwaq.admin.users.status.emailUnconfirmed', defaultMessage: 'Email not confirmed' },
+  legacyBadge: { id: 'rwaq.admin.users.status.legacy', defaultMessage: 'Legacy account' },
+
+  // ── Role badges ────────────────────────────────────────────────────────────
+  roleSuperuser: { id: 'rwaq.admin.users.role.superuser', defaultMessage: 'Superuser' },
+  roleGlobalStaff: { id: 'rwaq.admin.users.role.globalStaff', defaultMessage: 'Global Staff' },
+  roleCourseCreator: { id: 'rwaq.admin.users.role.courseCreator', defaultMessage: 'Course Creator' },
+  roleSupportStaff: { id: 'rwaq.admin.users.role.supportStaff', defaultMessage: 'Support Staff' },
+  roleOrgAdmin: { id: 'rwaq.admin.users.role.orgAdmin', defaultMessage: 'Organization Admin' },
+  roleLearner: { id: 'rwaq.admin.users.role.learner', defaultMessage: 'Learner' },
+
+  // ── Role tooltips ──────────────────────────────────────────────────────────
+  tooltipLearner: {
+    id: 'rwaq.admin.users.tooltip.learner',
+    defaultMessage: 'Standard user. Can enrol and take courses. No admin access.',
+  },
+  tooltipGlobalStaff: {
+    id: 'rwaq.admin.users.tooltip.globalStaff',
+    defaultMessage: 'Full platform administrator — access to all courses and the Django admin. Highest routine privilege.',
+  },
+  tooltipCourseCreator: {
+    id: 'rwaq.admin.users.tooltip.courseCreator',
+    defaultMessage: 'Can create new courses in Studio.',
+  },
+  tooltipSupportStaff: {
+    id: 'rwaq.admin.users.tooltip.supportStaff',
+    defaultMessage: 'Access to Support Tools — look up users, view/manage enrolments, reset passwords.',
+  },
+  tooltipSuperuser: {
+    id: 'rwaq.admin.users.tooltip.superuser',
+    defaultMessage: 'Unrestricted access. Assigned by devops only, never from this screen.',
+  },
+  tooltipOrgAdmin: {
+    id: 'rwaq.admin.users.tooltip.orgAdmin',
+    defaultMessage: 'Administers one organization. Granted on the Organizations screen, not here.',
+  },
+  moreInfo: { id: 'rwaq.admin.users.tooltip.moreInfo', defaultMessage: 'What does this grant?' },
+
+  // ── Form ───────────────────────────────────────────────────────────────────
+  createTitle: { id: 'rwaq.admin.users.form.createTitle', defaultMessage: 'Add user' },
+  editTitle: { id: 'rwaq.admin.users.form.editTitle', defaultMessage: 'Edit user' },
+  fieldEmail: { id: 'rwaq.admin.users.form.email', defaultMessage: 'Email' },
+  fieldEmailHelp: {
+    id: 'rwaq.admin.users.form.emailHelp',
+    defaultMessage: 'The username is generated from the email and cannot be changed later.',
+  },
+  fieldName: { id: 'rwaq.admin.users.form.name', defaultMessage: 'Full name' },
+  fieldJob: { id: 'rwaq.admin.users.form.job', defaultMessage: 'Job title' },
+  fieldCountry: { id: 'rwaq.admin.users.form.country', defaultMessage: 'Country' },
+  fieldCountryNone: { id: 'rwaq.admin.users.form.countryNone', defaultMessage: '— Select a country —' },
+  fieldBiography: { id: 'rwaq.admin.users.form.biography', defaultMessage: 'Biography' },
+  fieldVisibility: { id: 'rwaq.admin.users.form.visibility', defaultMessage: 'Profile visibility' },
+  visibilityPrivate: { id: 'rwaq.admin.users.form.visibilityPrivate', defaultMessage: 'Private' },
+  visibilityPublic: { id: 'rwaq.admin.users.form.visibilityPublic', defaultMessage: 'Public' },
+  fieldActive: { id: 'rwaq.admin.users.form.active', defaultMessage: 'Account active' },
+  fieldActiveHelp: {
+    id: 'rwaq.admin.users.form.activeHelp',
+    defaultMessage: 'Turning this off blocks the account from signing in. Accounts are never deleted.',
+  },
+  sectionProfile: { id: 'rwaq.admin.users.form.sectionProfile', defaultMessage: 'Profile' },
+  sectionRoles: { id: 'rwaq.admin.users.form.sectionRoles', defaultMessage: 'Platform roles' },
+  sectionStatus: { id: 'rwaq.admin.users.form.sectionStatus', defaultMessage: 'Status' },
+  rolesHelp: {
+    id: 'rwaq.admin.users.form.rolesHelp',
+    defaultMessage: 'Every user is a learner. These grants are platform-wide and add to that.',
+  },
+  courseRolesNote: {
+    id: 'rwaq.admin.users.form.courseRolesNote',
+    defaultMessage: 'Course Instructor, Course Staff and Forum Moderator are per-course roles — assign them in Studio, on the course\'s Course Team page.',
+  },
+  orgAdminNote: {
+    id: 'rwaq.admin.users.form.orgAdminNote',
+    defaultMessage: 'Organization Admin is granted on the Organizations screen.',
+  },
+  save: { id: 'rwaq.admin.users.form.save', defaultMessage: 'Save' },
+  create: { id: 'rwaq.admin.users.form.create', defaultMessage: 'Create user' },
+  cancel: { id: 'rwaq.admin.users.form.cancel', defaultMessage: 'Cancel' },
+  requiredField: { id: 'rwaq.admin.users.form.required', defaultMessage: 'This field is required.' },
+  invalidEmail: { id: 'rwaq.admin.users.form.invalidEmail', defaultMessage: 'Enter a valid email address.' },
+  tooLong: { id: 'rwaq.admin.users.form.tooLong', defaultMessage: 'This value is too long.' },
+
+  // ── Guardrails / confirmations ─────────────────────────────────────────────
+  confirmGlobalStaffTitle: {
+    id: 'rwaq.admin.users.confirm.globalStaffTitle',
+    defaultMessage: 'Grant Global Staff access?',
+  },
+  confirmGlobalStaffBody: {
+    id: 'rwaq.admin.users.confirm.globalStaffBody',
+    defaultMessage: 'Global Staff can access every course and the Django admin, and can manage other administrators. Only grant this to people who need full platform access.',
+  },
+  confirmGlobalStaffAction: {
+    id: 'rwaq.admin.users.confirm.globalStaffAction',
+    defaultMessage: 'Yes, grant Global Staff',
+  },
+  selfDeactivateBlocked: {
+    id: 'rwaq.admin.users.guard.selfDeactivate',
+    defaultMessage: 'You cannot deactivate your own account.',
+  },
+  selfRevokeBlocked: {
+    id: 'rwaq.admin.users.guard.selfRevoke',
+    defaultMessage: 'You cannot revoke your own Global Staff access.',
+  },
+
+  // ── Toasts ─────────────────────────────────────────────────────────────────
+  toastCreated: { id: 'rwaq.admin.users.toast.created', defaultMessage: '{name} was created.' },
+  toastUpdated: { id: 'rwaq.admin.users.toast.updated', defaultMessage: '{name} was updated.' },
+  toastError: { id: 'rwaq.admin.users.toast.error', defaultMessage: 'Could not save: {reason}' },
+  genericError: { id: 'rwaq.admin.users.toast.genericError', defaultMessage: 'Something went wrong. Please try again.' },
+
+  // ── Detail drawer ──────────────────────────────────────────────────────────
+  detailTitle: { id: 'rwaq.admin.users.detail.title', defaultMessage: 'User details' },
+  tabProfile: { id: 'rwaq.admin.users.detail.tabProfile', defaultMessage: 'Profile' },
+  tabEnrollments: { id: 'rwaq.admin.users.detail.tabEnrollments', defaultMessage: 'Enrollments' },
+  detailUsername: { id: 'rwaq.admin.users.detail.username', defaultMessage: 'Username' },
+  detailUserId: { id: 'rwaq.admin.users.detail.userId', defaultMessage: 'User ID' },
+  detailEmail: { id: 'rwaq.admin.users.detail.email', defaultMessage: 'Email' },
+  detailJob: { id: 'rwaq.admin.users.detail.job', defaultMessage: 'Job title' },
+  detailCountry: { id: 'rwaq.admin.users.detail.country', defaultMessage: 'Country' },
+  detailBiography: { id: 'rwaq.admin.users.detail.biography', defaultMessage: 'Biography' },
+  detailVisibility: { id: 'rwaq.admin.users.detail.visibility', defaultMessage: 'Profile visibility' },
+  detailAuthMethods: { id: 'rwaq.admin.users.detail.authMethods', defaultMessage: 'Sign-in methods' },
+  detailCreated: { id: 'rwaq.admin.users.detail.created', defaultMessage: 'Created' },
+  detailLastLogin: { id: 'rwaq.admin.users.detail.lastLogin', defaultMessage: 'Last login' },
+  detailOrgAdminOf: { id: 'rwaq.admin.users.detail.orgAdminOf', defaultMessage: 'Organization Admin of' },
+  detailNone: { id: 'rwaq.admin.users.detail.none', defaultMessage: '—' },
+  close: { id: 'rwaq.admin.users.detail.close', defaultMessage: 'Close' },
+  edit: { id: 'rwaq.admin.users.detail.edit', defaultMessage: 'Edit' },
+  view: { id: 'rwaq.admin.users.detail.view', defaultMessage: 'View' },
+
+  // ── Enrollments tab ────────────────────────────────────────────────────────
+  enrollmentsEmpty: {
+    id: 'rwaq.admin.users.enrollments.empty',
+    defaultMessage: 'This user is not enrolled in any course.',
+  },
+  enrollmentsError: {
+    id: 'rwaq.admin.users.enrollments.error',
+    defaultMessage: 'Could not load enrollments.',
+  },
+  enrollmentCourse: { id: 'rwaq.admin.users.enrollments.course', defaultMessage: 'Course' },
+  enrollmentDate: { id: 'rwaq.admin.users.enrollments.date', defaultMessage: 'Enrolled' },
+  enrollmentStatus: { id: 'rwaq.admin.users.enrollments.status', defaultMessage: 'Status' },
+  enrollmentCertificate: { id: 'rwaq.admin.users.enrollments.certificate', defaultMessage: 'Certificate' },
+  enrollmentActive: { id: 'rwaq.admin.users.enrollments.active', defaultMessage: 'Active' },
+  enrollmentInactive: { id: 'rwaq.admin.users.enrollments.inactive', defaultMessage: 'Unenrolled' },
+  enrollmentsReadOnly: {
+    id: 'rwaq.admin.users.enrollments.readOnly',
+    defaultMessage: 'Read-only. Enrollments are managed from the Instructor dashboard.',
+  },
+});
+
+export default messages;

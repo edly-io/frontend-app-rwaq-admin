@@ -1,5 +1,9 @@
 /**
- * Users hooks tests — covers list, detail, create, and update mutations.
+ * Users hooks tests — list, detail, enrollments, create and update.
+ *
+ * The wire format is snake_case and the app is camelCase, so these also pin
+ * the normalization in api.ts: params/bodies go out snake_cased, responses
+ * come back camelCased.
  */
 import { ReactNode } from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
@@ -8,6 +12,7 @@ import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import {
   useUsers,
   useUser,
+  useUserEnrollments,
   useCreateUser,
   useUpdateUser,
 } from './hooks';
@@ -16,9 +21,13 @@ jest.mock('@edx/frontend-platform/auth', () => ({
   getAuthenticatedHttpClient: jest.fn(),
 }));
 
-jest.mock('@edx/frontend-platform', () => ({
-  getConfig: jest.fn(() => ({ LMS_BASE_URL: 'http://localhost:8000' })),
-}));
+jest.mock('@edx/frontend-platform', () => {
+  const actual = jest.requireActual('@edx/frontend-platform');
+  return {
+    ...actual,
+    getConfig: jest.fn(() => ({ STUDIO_BASE_URL: 'http://studio.local:8001' })),
+  };
+});
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -30,7 +39,15 @@ const createWrapper = () => {
   return wrapper;
 };
 
-// ── Fixtures ──────────────────────────────────────────────────────────────────
+// ── Fixtures (snake_case, exactly as the backend sends them) ──────────────────
+
+const rolesPayload = {
+  is_global_staff: false,
+  is_superuser: false,
+  is_course_creator: false,
+  is_support_staff: false,
+  org_admin_of: [],
+};
 
 const mockUserList = {
   results: [
@@ -39,207 +56,153 @@ const mockUserList = {
       image: null,
       name: 'Awais Ansari',
       email: 'a@x.com',
-      role: 'instructor',
+      roles: { ...rolesPayload, is_global_staff: true },
+      role_badges: ['global_staff'],
       created_at: '2026-01-02T00:00:00Z',
+      last_login: null,
+      is_active: true,
+      is_email_confirmed: true,
       authentication_method: 'Password',
-      is_blocked: false,
-      is_confirmed: true,
       is_profile_public: false,
-    },
-    {
-      id: 8,
-      image: null,
-      name: 'Test User',
-      email: 'test@x.com',
-      role: 'student',
-      created_at: '2026-02-01T00:00:00Z',
-      authentication_method: 'Password',
-      is_blocked: false,
-      is_confirmed: true,
-      is_profile_public: true,
     },
   ],
   pagination: {
-    count: 2,
-    num_pages: 1,
-    next: null,
-    previous: null,
+    next: null, previous: null, count: 1, num_pages: 1,
   },
 };
 
 const mockUserDetail = {
-  id: 7,
-  image: null,
-  name: 'Awais Ansari',
-  email: 'a@x.com',
-  role: 'instructor',
-  created_at: '2026-01-02T00:00:00Z',
-  authentication_method: 'Password',
-  is_blocked: false,
-  is_confirmed: true,
-  is_profile_public: false,
-  username: 'awaisansari',
+  ...mockUserList.results[0],
+  username: 'awais',
   country: 'SA',
-  biography: 'A developer.',
+  biography: 'Hello',
   job: 'Engineer',
+  profile_visibility: 'private',
   authentication_methods: ['Password'],
-  roles: ['instructor'],
-  is_active: true,
-  last_login: '2026-08-01T10:00:00Z',
+  is_legacy: false,
 };
 
-// ── useUsers ──────────────────────────────────────────────────────────────────
+const mockEnrollments = [
+  {
+    course_id: 'course-v1:RWAQ+CS1+2026',
+    course_name: 'Intro',
+    enrolled_at: '2026-03-01T00:00:00Z',
+    mode: 'honor',
+    is_active: true,
+    certificate_status: null,
+  },
+];
 
 describe('useUsers', () => {
-  beforeEach(() => jest.clearAllMocks());
+  it('camelCases the response and snake_cases the params', async () => {
+    const get = jest.fn().mockResolvedValue({ data: mockUserList });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
 
-  it('returns user list data on success', async () => {
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({
-      get: jest.fn().mockResolvedValueOnce({ data: mockUserList }),
-    });
-
-    const { result } = renderHook(() => useUsers(), { wrapper: createWrapper() });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.results).toHaveLength(2);
-    expect(result.current.data?.results[0].name).toBe('Awais Ansari');
-    expect(result.current.data?.pagination.count).toBe(2);
-  });
-
-  it('passes query params to the API call', async () => {
-    const getMock = jest.fn().mockResolvedValueOnce({ data: mockUserList });
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get: getMock });
-
-    const params = {
-      search_by: 'email' as const,
-      search_term: 'a@x.com',
-      filter: 'instructor' as const,
-      page: 2,
-    };
     const { result } = renderHook(
-      () => useUsers(params),
+      () => useUsers({ searchBy: 'email', searchTerm: 'a@x.com', pageSize: 20 }),
       { wrapper: createWrapper() },
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(getMock).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/admin/users/'),
-      expect.objectContaining({
-        params: expect.objectContaining({
-          search_by: 'email',
-          search_term: 'a@x.com',
-          filter: 'instructor',
-          page: 2,
-        }),
-      }),
+
+    expect(get).toHaveBeenCalledWith(
+      'http://studio.local:8001/api/v1/admin/users/',
+      { params: { search_by: 'email', search_term: 'a@x.com', page_size: 20 } },
     );
-  });
-
-  it('sets isError on API failure', async () => {
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({
-      get: jest.fn().mockRejectedValueOnce(new Error('Network error')),
-    });
-
-    const { result } = renderHook(() => useUsers(), { wrapper: createWrapper() });
-
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.data?.results[0].roleBadges).toEqual(['global_staff']);
+    expect(result.current.data?.results[0].roles.isGlobalStaff).toBe(true);
+    expect(result.current.data?.results[0].isEmailConfirmed).toBe(true);
+    expect(result.current.data?.pagination.numPages).toBe(1);
   });
 });
 
-// ── useUser ───────────────────────────────────────────────────────────────────
-
 describe('useUser', () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it('fetches user detail by id', async () => {
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({
-      get: jest.fn().mockResolvedValueOnce({ data: mockUserDetail }),
-    });
+  it('fetches one user and camelCases the detail fields', async () => {
+    const get = jest.fn().mockResolvedValue({ data: mockUserDetail });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
 
     const { result } = renderHook(() => useUser(7), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.username).toBe('awaisansari');
-    expect(result.current.data?.roles).toContain('instructor');
+    expect(get).toHaveBeenCalledWith('http://studio.local:8001/api/v1/admin/users/7/');
+    expect(result.current.data?.profileVisibility).toBe('private');
+    expect(result.current.data?.isLegacy).toBe(false);
   });
 
-  it('does not fire if id is 0', async () => {
-    const getMock = jest.fn();
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get: getMock });
+  it('does not fetch for a zero id', () => {
+    const get = jest.fn();
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
 
     renderHook(() => useUser(0), { wrapper: createWrapper() });
 
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
-    expect(getMock).not.toHaveBeenCalled();
+    expect(get).not.toHaveBeenCalled();
   });
 });
 
-// ── useCreateUser ─────────────────────────────────────────────────────────────
+describe('useUserEnrollments', () => {
+  it('fetches the read-only enrollment list', async () => {
+    const get = jest.fn().mockResolvedValue({ data: mockEnrollments });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
+
+    const { result } = renderHook(() => useUserEnrollments(7), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(get).toHaveBeenCalledWith('http://studio.local:8001/api/v1/admin/users/7/enrollments/');
+    expect(result.current.data?.[0].courseId).toBe('course-v1:RWAQ+CS1+2026');
+    expect(result.current.data?.[0].certificateStatus).toBeNull();
+  });
+});
 
 describe('useCreateUser', () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it('calls POST with payload and returns created user', async () => {
-    const postMock = jest.fn().mockResolvedValueOnce({ data: mockUserDetail });
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ post: postMock });
+  it('posts a snake_cased body including the grants', async () => {
+    const post = jest.fn().mockResolvedValue({ data: mockUserDetail });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ post });
 
     const { result } = renderHook(() => useCreateUser(), { wrapper: createWrapper() });
 
     result.current.mutate({
-      email: 'a@x.com',
-      name: 'Awais Ansari',
-      role: 'instructor',
+      email: 'new@x.com',
+      name: 'New',
+      isGlobalStaff: true,
+      isCourseCreator: false,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(postMock).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/admin/users/'),
-      expect.objectContaining({ email: 'a@x.com', role: 'instructor' }),
+    expect(post).toHaveBeenCalledWith(
+      'http://studio.local:8001/api/v1/admin/users/',
+      {
+        email: 'new@x.com',
+        name: 'New',
+        is_global_staff: true,
+        is_course_creator: false,
+      },
     );
-  });
-
-  it('sets isError when POST fails', async () => {
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({
-      post: jest.fn().mockRejectedValueOnce(new Error('Server error')),
-    });
-
-    const { result } = renderHook(() => useCreateUser(), { wrapper: createWrapper() });
-
-    result.current.mutate({ email: 'bad@x.com', name: 'Bad User', role: 'student' });
-
-    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });
 
-// ── useUpdateUser ─────────────────────────────────────────────────────────────
-
 describe('useUpdateUser', () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it('calls PATCH and invalidates queries on success', async () => {
-    const patchMock = jest.fn().mockResolvedValueOnce({
-      data: { ...mockUserDetail, name: 'Updated Name' },
-    });
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ patch: patchMock });
+  it('patches only the fields it is given', async () => {
+    const patch = jest.fn().mockResolvedValue({ data: mockUserDetail });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ patch });
 
     const { result } = renderHook(() => useUpdateUser(7), { wrapper: createWrapper() });
 
-    result.current.mutate({ name: 'Updated Name' });
+    result.current.mutate({ isActive: false });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(patchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/admin/users/7/'),
-      expect.objectContaining({ name: 'Updated Name' }),
+    expect(patch).toHaveBeenCalledWith(
+      'http://studio.local:8001/api/v1/admin/users/7/',
+      { is_active: false },
     );
   });
 
-  it('rolls back optimistic update on failure', async () => {
-    const patchMock = jest.fn().mockRejectedValueOnce(new Error('Server error'));
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ patch: patchMock });
+  it('surfaces a failed patch as an error', async () => {
+    const patch = jest.fn().mockRejectedValue(new Error('boom'));
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ patch });
 
     const { result } = renderHook(() => useUpdateUser(7), { wrapper: createWrapper() });
 
-    result.current.mutate({ name: 'Bad Name' });
+    result.current.mutate({ name: 'X' });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
   });

@@ -6,6 +6,7 @@ import { AppProvider, ErrorPage } from '@edx/frontend-platform/react';
 import {
   APP_INIT_ERROR, APP_READY, subscribe, initialize,
 } from '@edx/frontend-platform';
+import { ToastProvider } from './components/ToastContext';
 
 import messages from './i18n';
 import LoadingPage from './components/LoadingPage';
@@ -38,24 +39,26 @@ subscribe(APP_READY, () => {
         {/* AppProvider already supplies a BrowserRouter (basename from PUBLIC_PATH);
             do NOT add another Router here or React Router throws "Router inside Router". */}
         <AppProvider>
-          <Suspense fallback={<LoadingPage />}>
-            <Routes>
-              <Route element={<AdminShell />}>
-                {/* Live modules */}
-                <Route index element={<DashboardPage />} />
-                <Route path="organizations" element={<OrgListPage />} />
-                <Route path="organizations/:shortName" element={<OrgDetailPage />} />
+          <ToastProvider>
+            <Suspense fallback={<LoadingPage />}>
+              <Routes>
+                <Route element={<AdminShell />}>
+                  {/* Live modules */}
+                  <Route index element={<DashboardPage />} />
+                  <Route path="organizations" element={<OrgListPage />} />
+                  <Route path="organizations/:shortName" element={<OrgDetailPage />} />
 
-                {/* Users */}
-                <Route path="users" element={<UsersListPage />} />
-                <Route path="enrollment" element={<ComingSoon />} />
-                <Route path="analytics" element={<ComingSoon />} />
+                  {/* Users */}
+                  <Route path="users" element={<UsersListPage />} />
+                  <Route path="enrollment" element={<ComingSoon />} />
+                  <Route path="analytics" element={<ComingSoon />} />
 
-                {/* Catch-all */}
-                <Route path="*" element={<ComingSoon />} />
-              </Route>
-            </Routes>
-          </Suspense>
+                  {/* Catch-all */}
+                  <Route path="*" element={<ComingSoon />} />
+                </Route>
+              </Routes>
+            </Suspense>
+          </ToastProvider>
         </AppProvider>
       </QueryClientProvider>
     </StrictMode>,
