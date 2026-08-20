@@ -1,11 +1,13 @@
 /**
- * Role badges for the list column and the detail drawer.
+ * Role chips for a user.
  *
- * Badge slugs come from the backend already ordered most-privileged first,
- * so this component only maps them to a label and a variant.
+ * The backend returns badges already ordered most-privileged first, so the
+ * table can show the highest one and collapse the rest into a "+N" chip
+ * without re-deriving any ranking here. `maxVisible={0}`-style expansion is
+ * expressed by passing a large maxVisible — the detail view shows them all.
  */
-import { Badge } from '@openedx/paragon';
 import { useIntl, MessageDescriptor } from '@edx/frontend-platform/i18n';
+import ChipOverflowList from '@src/components/ChipOverflowList';
 import type { RoleBadge } from '../data/types';
 import messages from '../messages';
 
@@ -29,19 +31,24 @@ const BADGE_VARIANTS: Record<RoleBadge, string> = {
 
 interface RoleBadgesProps {
   badges: RoleBadge[];
+  /** How many chips before collapsing; the detail view passes them all. */
+  maxVisible?: number;
+  id: string;
 }
 
-const RoleBadges = ({ badges }: RoleBadgesProps) => {
+const RoleBadges = ({ badges, maxVisible = 1, id }: RoleBadgesProps) => {
   const intl = useIntl();
 
   return (
-    <span className="d-inline-flex flex-wrap gap-1">
-      {badges.map((badge) => (
-        <Badge key={badge} variant={BADGE_VARIANTS[badge] ?? 'light'}>
-          {BADGE_LABELS[badge] ? intl.formatMessage(BADGE_LABELS[badge]) : badge}
-        </Badge>
-      ))}
-    </span>
+    <ChipOverflowList
+      id={id}
+      maxVisible={maxVisible}
+      items={badges.map((badge) => ({
+        key: badge,
+        label: BADGE_LABELS[badge] ? intl.formatMessage(BADGE_LABELS[badge]) : badge,
+        variant: BADGE_VARIANTS[badge] ?? 'light',
+      }))}
+    />
   );
 };
 

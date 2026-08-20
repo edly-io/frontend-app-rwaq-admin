@@ -206,3 +206,360 @@ html[data-paragon-theme-variant='dark'] {
   // Circular header buttons
   .rwaq-admin-topbar button { background: var(--rwaq-card-bg) !important; border-color: var(--rwaq-border) !important; color: var(--rwaq-text) !important; }
 }
+
+// ── Action bar: search + filter/sort + applied chips ─────────────────────────
+// The scope select, text input and icon buttons read as one control, so the
+// border lives on the wrapper and the inner fields are transparent.
+.rwaq-actionbar { margin-bottom: var(--rwaq-space-5); }
+
+.rwaq-actionbar__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rwaq-space-3);
+  flex-wrap: wrap;
+}
+
+.rwaq-actionbar__form { flex: 1 1 22rem; min-width: 0; }
+
+.rwaq-actionbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-2);
+  flex-wrap: wrap;
+}
+
+.rwaq-actionbar__error {
+  margin-top: var(--rwaq-space-2);
+  font-size: 0.8125rem;
+  color: #d92d20;
+}
+
+.rwaq-searchgroup {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-1);
+  padding: 0.125rem 0.25rem 0.125rem 0;
+  background: var(--rwaq-input-bg);
+  border: 1px solid var(--rwaq-input-border);
+  border-radius: var(--rwaq-radius-sm);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+
+  &:focus-within {
+    border-color: var(--rwaq-accent);
+    box-shadow: 0 0 0 3px rgba(68, 156, 194, 0.18);
+  }
+}
+
+.rwaq-searchgroup--invalid {
+  border-color: #d92d20;
+
+  &:focus-within { box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.18); }
+}
+
+.rwaq-searchgroup__scope {
+  flex: 0 0 auto;
+  max-width: 9.5rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--rwaq-text);
+  font-size: 0.9375rem;
+
+  &:focus { outline: none; }
+}
+
+.rwaq-searchgroup__divider {
+  flex: 0 0 auto;
+  width: 1px;
+  align-self: stretch;
+  margin: 0.375rem 0;
+  background: var(--rwaq-input-border);
+}
+
+.rwaq-searchgroup__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--rwaq-text);
+  font-size: 0.9375rem;
+
+  &:focus { outline: none; }
+  &::placeholder { color: var(--rwaq-muted); }
+}
+
+.rwaq-searchgroup__clear.btn,
+.rwaq-searchgroup__submit.btn { flex: 0 0 auto; }
+
+// ── Collapsible filter/sort panel ────────────────────────────────────────────
+// Animating max-height (not height/display) keeps the reveal on a cheap
+// property and lets the panel size itself to its content.
+.rwaq-filterpanel {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 220ms ease, opacity 180ms ease;
+}
+
+.rwaq-filterpanel--open {
+  max-height: 30rem;
+  opacity: 1;
+}
+
+.rwaq-filterpanel__inner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--rwaq-space-4);
+  padding: var(--rwaq-space-4) 0 var(--rwaq-space-1);
+}
+
+.rwaq-filterpanel__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--rwaq-text);
+  margin-bottom: var(--rwaq-space-1);
+}
+
+// ── Applied filter chips ─────────────────────────────────────────────────────
+.rwaq-applied { padding-top: var(--rwaq-space-3); }
+
+.rwaq-applied__title {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--rwaq-heading);
+  margin-bottom: var(--rwaq-space-2);
+}
+
+.rwaq-applied__chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--rwaq-space-2);
+}
+
+.rwaq-applied__clear.btn {
+  padding: 0 var(--rwaq-space-1);
+  font-size: 0.8125rem;
+}
+
+// ── Chips ────────────────────────────────────────────────────────────────────
+// Gap on the list rather than margins on the chip, so a wrapped second line
+// stays evenly spaced.
+.rwaq-chip-list {
+  gap: var(--rwaq-space-2);
+  row-gap: var(--rwaq-space-1);
+}
+
+.rwaq-chip.pgn__chip {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.rwaq-chip--light.pgn__chip {
+  background: var(--rwaq-table-head-bg);
+  border-color: var(--rwaq-border);
+  color: var(--rwaq-text);
+}
+
+.rwaq-chip--danger.pgn__chip {
+  background: rgba(217, 45, 32, 0.1);
+  border-color: rgba(217, 45, 32, 0.35);
+  color: #b42318;
+}
+
+.rwaq-chip--dark.pgn__chip {
+  background: rgba(17, 24, 39, 0.08);
+  border-color: rgba(17, 24, 39, 0.3);
+  color: var(--rwaq-heading);
+}
+
+.rwaq-chip--success.pgn__chip {
+  background: rgba(3, 152, 85, 0.1);
+  border-color: rgba(3, 152, 85, 0.35);
+  color: #027a48;
+}
+
+.rwaq-chip--info.pgn__chip {
+  background: rgba(68, 156, 194, 0.12);
+  border-color: rgba(68, 156, 194, 0.4);
+  color: #10648a;
+}
+
+.rwaq-chip--warning.pgn__chip {
+  background: rgba(247, 144, 9, 0.12);
+  border-color: rgba(247, 144, 9, 0.4);
+  color: #b54708;
+}
+
+.rwaq-chip--overflow.pgn__chip {
+  background: transparent;
+  border-color: var(--rwaq-input-border);
+  color: var(--rwaq-muted);
+  cursor: default;
+}
+
+.rwaq-chip--applied.pgn__chip {
+  background: var(--rwaq-table-head-bg);
+  border-color: var(--rwaq-border);
+  color: var(--rwaq-text);
+  font-weight: 500;
+}
+
+// ── Detail grid (read-only views) ────────────────────────────────────────────
+.rwaq-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--rwaq-space-4) var(--rwaq-space-5);
+  margin: 0;
+}
+
+.rwaq-detail-grid__title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rwaq-muted);
+  margin-bottom: var(--rwaq-space-3);
+}
+
+.rwaq-detail-grid__row { min-width: 0; }
+.rwaq-detail-grid__row--wide { grid-column: 1 / -1; }
+
+.rwaq-detail-grid__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--rwaq-muted);
+  margin-bottom: 0.125rem;
+}
+
+.rwaq-detail-grid__value {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--rwaq-text);
+  overflow-wrap: anywhere;
+}
+
+// ── Form modal ───────────────────────────────────────────────────────────────
+// `display: contents` hoists Header/Body/Footer back into the dialog's flex
+// column: without it the <form> becomes the single flex child, the Body stops
+// being the scroll container, and its content scrolls over the header.
+.rwaq-form-modal__form { display: contents; }
+
+.rwaq-form-modal__header {
+  border-bottom: 1px solid var(--rwaq-border);
+  background: var(--rwaq-card-bg);
+}
+
+.rwaq-form-modal__footer {
+  border-top: 1px solid var(--rwaq-border);
+  background: var(--rwaq-card-bg);
+  gap: var(--rwaq-space-3);
+}
+
+.rwaq-form-modal__body { padding-top: var(--rwaq-space-4); }
+
+.rwaq-form-section + .rwaq-form-section {
+  margin-top: var(--rwaq-space-5);
+  padding-top: var(--rwaq-space-5);
+  border-top: 1px solid var(--rwaq-border);
+}
+
+.rwaq-form-section__title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rwaq-muted);
+  margin-bottom: var(--rwaq-space-4);
+}
+
+// ── Table cells ──────────────────────────────────────────────────────────────
+.rwaq-user-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-3);
+  min-width: 0;
+}
+
+.rwaq-user-cell__name {
+  font-weight: 600;
+  color: var(--rwaq-heading);
+  overflow-wrap: anywhere;
+}
+
+.rwaq-user-cell__meta {
+  font-size: 0.8125rem;
+  color: var(--rwaq-muted);
+  overflow-wrap: anywhere;
+}
+
+.rwaq-row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-2);
+  justify-content: flex-end;
+}
+
+.rwaq-enrollments__table {
+  th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--rwaq-muted); }
+  td { vertical-align: middle; }
+}
+
+// ── "Roles assigned elsewhere" note block ────────────────────────────────────
+.rwaq-role-notes {
+  margin-top: var(--rwaq-space-4);
+  padding: var(--rwaq-space-3) var(--rwaq-space-4);
+  background: var(--rwaq-table-head-bg);
+  border: 1px solid var(--rwaq-border);
+  border-radius: var(--rwaq-radius-sm);
+}
+
+.rwaq-role-notes__title {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rwaq-muted);
+  margin-bottom: var(--rwaq-space-2);
+}
+
+.rwaq-role-notes__list {
+  margin: 0;
+  padding-inline-start: 1.125rem;
+  font-size: 0.8125rem;
+  color: var(--rwaq-text);
+
+  li + li { margin-top: var(--rwaq-space-1); }
+}
+
+// ── Detail view header + sections ────────────────────────────────────────────
+.rwaq-detail-header {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-4);
+  padding-bottom: var(--rwaq-space-4);
+  border-bottom: 1px solid var(--rwaq-border);
+}
+
+.rwaq-detail-header__name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--rwaq-heading);
+  overflow-wrap: anywhere;
+}
+
+.rwaq-detail-header__email {
+  font-size: 0.875rem;
+  color: var(--rwaq-muted);
+  overflow-wrap: anywhere;
+}
+
+.rwaq-detail-block { padding-top: var(--rwaq-space-5); }
+.rwaq-detail-block + .rwaq-detail-block { border-top: 1px solid var(--rwaq-border); }

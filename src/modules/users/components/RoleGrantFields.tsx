@@ -146,8 +146,16 @@ const RoleGrantFields = ({
         </div>
       )}
 
-      <p className="small text-muted mb-1">{intl.formatMessage(messages.orgAdminNote)}</p>
-      <p className="small text-muted mb-0">{intl.formatMessage(messages.courseRolesNote)}</p>
+      {/* Where the roles this screen can't grant actually come from — stated as
+          a labelled list rather than two loose sentences, so it reads as
+          guidance instead of a disclaimer. */}
+      <div className="rwaq-role-notes">
+        <span className="rwaq-role-notes__title">{intl.formatMessage(messages.notesTitle)}</span>
+        <ul className="rwaq-role-notes__list">
+          <li>{intl.formatMessage(messages.orgAdminNote)}</li>
+          <li>{intl.formatMessage(messages.courseRolesNote)}</li>
+        </ul>
+      </div>
 
       <AlertModal
         title={intl.formatMessage(messages.confirmGlobalStaffTitle)}

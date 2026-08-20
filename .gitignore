@@ -17,3 +17,6 @@ temp/babel-plugin-react-intl
 *~
 /temp
 /.vscode
+
+# Tutor dev-mount artifact (generated into the container at runtime)
+webpack.dev-tutor.config.js

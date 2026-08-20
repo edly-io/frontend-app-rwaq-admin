@@ -1,25 +1,27 @@
 /**
  * UsersListPage — User Management (v2).
  *
- * Roles are platform grants, not one field, so the table shows badges rather
- * than a role column, and Status splits into Active/Inactive plus a separate
- * email-confirmation signal.
+ * Table shape: the avatar gets its own narrow column so the name column can
+ * hold a real name; Status shows only Active/Inactive (email confirmation is a
+ * separate fact, shown in the detail view); Roles shows the highest grant plus
+ * a "+N" chip so a multi-role user doesn't inflate its row.
  *
- * Search (email/name/user ID/job), the single-select filter, sort and page are
- * all URL-driven, so any view is linkable and survives a refresh.
- *
- * Modals: Add (create) · View (read-only detail + enrollments) · Edit.
+ * Search, filter, sort and page all live in the URL, so any view is linkable
+ * and survives a refresh. Filter and sort sit behind the Filters toggle in
+ * SearchFilterBar and echo back as removable chips.
  */
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Button, Form } from '@openedx/paragon';
+import { Button } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import ErrorState from '@src/components/ErrorState';
+import ProfileAvatar from '@src/components/ProfileAvatar';
+import SearchFilterBar from '@src/components/SearchFilterBar';
+import type { AppliedChip, SelectOption } from '@src/components/SearchFilterBar';
 import RoleBadges from './components/RoleBadges';
 import StatusBadges from './components/StatusBadges';
-import UserSearchBar from './components/UserSearchBar';
 import EditUserModal from './modals/EditUserModal';
 import UserDetailModal from './modals/UserDetailModal';
 import UserFormModal from './modals/UserFormModal';
@@ -31,9 +33,21 @@ import messages from './messages';
 
 const PAGE_SIZE = 20;
 const DEFAULT_ORDERING: UserOrdering = '-created';
+const DEFAULT_SEARCH_BY: SearchBy = 'email';
+const DIGITS_RE = /^\d+$/;
 
-/** Filter dropdown options, in the order the spec lists them. */
-const FILTER_OPTIONS: { value: UserFilter; label: keyof typeof messages }[] = [
+type MessageKey = keyof typeof messages;
+
+/** Search scopes, matching the backend's search_by values. */
+const SEARCH_SCOPES: { value: SearchBy; label: MessageKey }[] = [
+  { value: 'email', label: 'searchByEmail' },
+  { value: 'name', label: 'searchByName' },
+  { value: 'user_id', label: 'searchByUserId' },
+  { value: 'job', label: 'searchByJob' },
+];
+
+/** Every ?filter= value the backend accepts, in the order the spec lists them. */
+const FILTER_OPTIONS: { value: UserFilter; label: MessageKey }[] = [
   { value: 'all', label: 'filterAll' },
   { value: 'global_staff', label: 'filterGlobalStaff' },
   { value: 'course_creator', label: 'filterCourseCreator' },
@@ -53,8 +67,8 @@ const FILTER_OPTIONS: { value: UserFilter; label: keyof typeof messages }[] = [
   { value: 'legacy', label: 'filterLegacy' },
 ];
 
-/** Sort options — real columns only; derived values (role, auth method) can't be sorted server-side. */
-const SORT_OPTIONS: { value: UserOrdering; label: keyof typeof messages }[] = [
+/** Sort options — real DB columns only; role and auth method are derived. */
+const SORT_OPTIONS: { value: UserOrdering; label: MessageKey }[] = [
   { value: '-created', label: 'sortCreatedDesc' },
   { value: 'created', label: 'sortCreatedAsc' },
   { value: 'name', label: 'sortNameAsc' },
@@ -69,17 +83,13 @@ type ModalState =
   | { kind: 'view'; userId: number }
   | { kind: 'edit'; userId: number };
 
-const avatarFallback = (name: string) => (
-  `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=32&rounded=true&background=449cc2&color=fff`
-);
-
 const UsersListPage = () => {
   const intl = useIntl();
   const [searchParams, setSearchParams] = useSearchParams();
   const [modal, setModal] = useState<ModalState>({ kind: 'none' });
 
   const page = Number(searchParams.get('page') ?? 1);
-  const searchBy = (searchParams.get('search_by') as SearchBy | null) ?? 'email';
+  const searchBy = (searchParams.get('search_by') as SearchBy | null) ?? DEFAULT_SEARCH_BY;
   const searchTerm = searchParams.get('search_term') ?? '';
   const filter = (searchParams.get('filter') as UserFilter | null) ?? 'all';
   const ordering = (searchParams.get('ordering') as UserOrdering | null) ?? DEFAULT_ORDERING;
@@ -91,7 +101,7 @@ const UsersListPage = () => {
         Object.entries(updates).forEach(([key, value]) => {
           if (value) { next.set(key, value); } else { next.delete(key); }
         });
-        next.delete('page'); // any filter/search/sort change resets to page 1
+        next.delete('page'); // any search/filter/sort change resets to page 1
         return next;
       }, { replace: true });
     },
@@ -122,39 +132,108 @@ const UsersListPage = () => {
 
   const statusCode = isError && (error as { response?: { status: number } })?.response?.status;
 
+  // ── Action bar wiring ──────────────────────────────────────────────────────
+
+  const scopeOptions: SelectOption[] = SEARCH_SCOPES.map((scope) => ({
+    value: scope.value,
+    label: intl.formatMessage(messages[scope.label]),
+  }));
+
+  const scopeLabel = (value: string) => scopeOptions.find((option) => option.value === value)?.label ?? value;
+
+  /** Mirrors the backend's own validation, so a bad term never costs a request. */
+  const validateSearch = (scope: string, term: string): string => {
+    if (!term.trim()) { return ''; }
+    if (scope === 'user_id' && !DIGITS_RE.test(term.trim())) {
+      return intl.formatMessage(messages.validationUserIdInvalid);
+    }
+    if (scope === 'email' && !term.includes('@')) {
+      return intl.formatMessage(messages.validationEmailInvalid);
+    }
+    return '';
+  };
+
+  const filterOptions = FILTER_OPTIONS.map((option) => ({
+    value: option.value,
+    label: intl.formatMessage(messages[option.label]),
+  }));
+
+  const sortOptions = SORT_OPTIONS.map((option) => ({
+    value: option.value,
+    label: intl.formatMessage(messages[option.label]),
+  }));
+
+  const appliedChips = useMemo(() => {
+    const chips: AppliedChip[] = [];
+
+    if (searchTerm) {
+      chips.push({
+        key: 'search',
+        label: intl.formatMessage(messages.chipSearch, {
+          scope: scopeLabel(searchBy),
+          term: searchTerm,
+        }),
+        onRemove: () => updateParams({ search_term: '', search_by: '' }),
+      });
+    }
+
+    if (filter !== 'all') {
+      chips.push({
+        key: 'filter',
+        label: intl.formatMessage(messages.chipFilter, {
+          label: filterOptions.find((option) => option.value === filter)?.label ?? filter,
+        }),
+        onRemove: () => updateParams({ filter: '' }),
+      });
+    }
+
+    if (ordering !== DEFAULT_ORDERING) {
+      chips.push({
+        key: 'ordering',
+        label: intl.formatMessage(messages.chipSort, {
+          label: sortOptions.find((option) => option.value === ordering)?.label ?? ordering,
+        }),
+        onRemove: () => updateParams({ ordering: '' }),
+      });
+    }
+
+    return chips;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, searchBy, filter, ordering, intl, updateParams]);
+
+  // ── Columns ───────────────────────────────────────────────────────────────
+
   const columns: ColumnDef[] = [
+    {
+      label: intl.formatMessage(messages.colAvatar),
+      key: 'image',
+      renderCell: (value, row) => (
+        <ProfileAvatar src={value as string | null} name={row.name as string} size="sm" />
+      ),
+    },
     {
       label: intl.formatMessage(messages.colName),
       key: 'name',
       renderCell: (value, row) => (
-        <div className="d-flex align-items-center gap-2">
-          <img
-            src={(row.image as string | null) ?? avatarFallback(value as string)}
-            alt=""
-            width={32}
-            height={32}
-            className="rounded-circle"
-            style={{ objectFit: 'cover' }}
-          />
-          <span>{value as string}</span>
+        <div className="rwaq-user-cell">
+          <div className="min-width-0">
+            <div className="rwaq-user-cell__name">{(value as string) || '—'}</div>
+            <div className="rwaq-user-cell__meta">{row.email as string}</div>
+          </div>
         </div>
       ),
     },
-    { label: intl.formatMessage(messages.colEmail), key: 'email' },
     {
       label: intl.formatMessage(messages.colStatus),
       key: 'isActive',
-      renderCell: (value, row) => (
-        <StatusBadges
-          isActive={value as boolean}
-          isEmailConfirmed={row.isEmailConfirmed as boolean}
-        />
-      ),
+      renderCell: (value) => <StatusBadges isActive={value as boolean} />,
     },
     {
       label: intl.formatMessage(messages.colRoles),
       key: 'roleBadges',
-      renderCell: (value) => <RoleBadges badges={value as RoleBadge[]} />,
+      renderCell: (value, row) => (
+        <RoleBadges badges={value as RoleBadge[]} id={`user-${row.id}-roles`} />
+      ),
     },
     {
       label: intl.formatMessage(messages.colCreated),
@@ -172,7 +251,7 @@ const UsersListPage = () => {
       label: intl.formatMessage(messages.colActions),
       key: 'actions',
       renderCell: (_value, row) => (
-        <div className="d-flex gap-1">
+        <div className="rwaq-row-actions">
           <Button
             variant="outline-primary"
             size="sm"
@@ -206,52 +285,38 @@ const UsersListPage = () => {
       </div>
 
       <div className="rwaq-card">
-        <div className="d-flex flex-wrap gap-3 align-items-start mb-4">
-          <div className="flex-grow-1">
-            <UserSearchBar
-              onSearch={(by, term) => updateParams({ search_by: by, search_term: term })}
-              onClear={() => updateParams({ search_by: '', search_term: '' })}
-              initialBy={searchBy}
-              initialTerm={searchTerm}
-            />
-          </div>
-
-          <Form.Group className="mb-0" controlId="user-filter">
-            <Form.Label className="sr-only">{intl.formatMessage(messages.filterLabel)}</Form.Label>
-            <Form.Control
-              as="select"
-              value={filter}
-              onChange={(event: React.ChangeEvent<HTMLSelectElement>) => updateParams({
-                filter: event.target.value === 'all' ? '' : event.target.value,
-              })}
-              aria-label={intl.formatMessage(messages.filterLabel)}
-            >
-              {FILTER_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {intl.formatMessage(messages[option.label])}
-                </option>
-              ))}
-            </Form.Control>
-          </Form.Group>
-
-          <Form.Group className="mb-0" controlId="user-sort">
-            <Form.Label className="sr-only">{intl.formatMessage(messages.sortLabel)}</Form.Label>
-            <Form.Control
-              as="select"
-              value={ordering}
-              onChange={(event: React.ChangeEvent<HTMLSelectElement>) => updateParams({
-                ordering: event.target.value === DEFAULT_ORDERING ? '' : event.target.value,
-              })}
-              aria-label={intl.formatMessage(messages.sortLabel)}
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {intl.formatMessage(messages[option.label])}
-                </option>
-              ))}
-            </Form.Control>
-          </Form.Group>
-        </div>
+        <SearchFilterBar
+          scopes={scopeOptions}
+          scope={searchBy}
+          onScopeChange={(next) => {
+            // Only re-request when a term is already in play.
+            if (searchTerm) { updateParams({ search_by: next }); }
+          }}
+          searchTerm={searchTerm}
+          onSearch={(term) => updateParams({ search_by: term ? searchBy : '', search_term: term })}
+          searchPlaceholder={intl.formatMessage(messages.searchTermPlaceholder)}
+          validateSearch={validateSearch}
+          filterGroups={[
+            {
+              id: 'filter',
+              label: intl.formatMessage(messages.filterGroupLabel),
+              value: filter,
+              options: filterOptions,
+              onChange: (value) => updateParams({ filter: value === 'all' ? '' : value }),
+            },
+            {
+              id: 'ordering',
+              label: intl.formatMessage(messages.sortLabel),
+              value: ordering,
+              options: sortOptions,
+              onChange: (value) => updateParams({ ordering: value === DEFAULT_ORDERING ? '' : value }),
+            },
+          ]}
+          appliedChips={appliedChips}
+          onClearAll={() => updateParams({
+            search_by: '', search_term: '', filter: '', ordering: '',
+          })}
+        />
 
         {isError ? (
           <ErrorState
@@ -270,6 +335,7 @@ const UsersListPage = () => {
               pageCount: data.pagination?.numPages
                 ?? Math.max(1, Math.ceil((data.pagination?.count ?? 0) / PAGE_SIZE)),
               itemCount: data.pagination?.count ?? data.results.length,
+              pageSize: PAGE_SIZE,
               onPageChange: handlePageChange,
             } : undefined}
           />

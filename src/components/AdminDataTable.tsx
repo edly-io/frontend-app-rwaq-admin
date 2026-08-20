@@ -36,6 +36,9 @@ export interface ServerPaginationState {
   pageCount: number;
   /** Total number of items across all pages (drives the "Showing X of Y" status). */
   itemCount?: number;
+  /** Rows per page. Must match what the API actually returns, or the footer's
+   *  "Showing X of Y" range and the page count disagree with the data. */
+  pageSize?: number;
   onPageChange: (page: number) => void;
 }
 
@@ -47,6 +50,9 @@ export interface AdminDataTableProps {
   /** Optional caption for accessibility */
   caption?: string;
 }
+
+/** Fallback rows-per-page when the caller doesn't say. */
+const DEFAULT_PAGE_SIZE = 20;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -105,10 +111,20 @@ const AdminDataTable = ({
         itemCount={pagination?.itemCount ?? data.length}
         pageCount={pagination?.pageCount}
         initialState={{
-          pageSize: 10,
+          pageSize: pagination?.pageSize ?? DEFAULT_PAGE_SIZE,
           pageIndex: pagination ? pagination.currentPage - 1 : 0,
         }}
         manualPagination={!!pagination}
+        fetchData={pagination
+          // DataTable owns the page controls but the data is server-side, so
+          // its page changes have to be handed back to the caller's URL state.
+          ? ({ pageIndex }: { pageIndex: number }) => {
+            const nextPage = pageIndex + 1;
+            if (nextPage !== pagination.currentPage) {
+              pagination.onPageChange(nextPage);
+            }
+          }
+          : undefined}
       >
         <DataTable.Table />
         {pagination && (

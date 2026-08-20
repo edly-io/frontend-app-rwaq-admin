@@ -58,6 +58,7 @@ const messages = defineMessages({
   sortIdAsc: { id: 'rwaq.admin.users.sort.idAsc', defaultMessage: 'User ID' },
 
   // ── Columns ────────────────────────────────────────────────────────────────
+  colAvatar: { id: 'rwaq.admin.users.col.avatar', defaultMessage: 'Photo' },
   colName: { id: 'rwaq.admin.users.col.name', defaultMessage: 'Name' },
   colEmail: { id: 'rwaq.admin.users.col.email', defaultMessage: 'Email' },
   colStatus: { id: 'rwaq.admin.users.col.status', defaultMessage: 'Status' },
@@ -109,6 +110,12 @@ const messages = defineMessages({
   },
   moreInfo: { id: 'rwaq.admin.users.tooltip.moreInfo', defaultMessage: 'What does this grant?' },
 
+  // ── Filter / sort labels for the collapsible panel and applied chips ───────
+  filterGroupLabel: { id: 'rwaq.admin.users.filter.groupLabel', defaultMessage: 'Filter by' },
+  chipSearch: { id: 'rwaq.admin.users.chip.search', defaultMessage: '{scope}: {term}' },
+  chipFilter: { id: 'rwaq.admin.users.chip.filter', defaultMessage: 'Filter: {label}' },
+  chipSort: { id: 'rwaq.admin.users.chip.sort', defaultMessage: 'Sorted by: {label}' },
+
   // ── Form ───────────────────────────────────────────────────────────────────
   createTitle: { id: 'rwaq.admin.users.form.createTitle', defaultMessage: 'Add user' },
   editTitle: { id: 'rwaq.admin.users.form.editTitle', defaultMessage: 'Edit user' },
@@ -137,13 +144,17 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.form.rolesHelp',
     defaultMessage: 'Every user is a learner. These grants are platform-wide and add to that.',
   },
-  courseRolesNote: {
-    id: 'rwaq.admin.users.form.courseRolesNote',
-    defaultMessage: 'Course Instructor, Course Staff and Forum Moderator are per-course roles — assign them in Studio, on the course\'s Course Team page.',
+  notesTitle: {
+    id: 'rwaq.admin.users.form.notesTitle',
+    defaultMessage: 'Roles assigned elsewhere',
   },
   orgAdminNote: {
     id: 'rwaq.admin.users.form.orgAdminNote',
-    defaultMessage: 'Organization Admin is granted on the Organizations screen.',
+    defaultMessage: 'Organization Admin — granted on the Organizations screen.',
+  },
+  courseRolesNote: {
+    id: 'rwaq.admin.users.form.courseRolesNote',
+    defaultMessage: 'Course Instructor, Course Staff and Forum Moderator — per-course roles, assigned in Studio on the course\'s Course Team page.',
   },
   save: { id: 'rwaq.admin.users.form.save', defaultMessage: 'Save' },
   create: { id: 'rwaq.admin.users.form.create', defaultMessage: 'Create user' },
@@ -200,6 +211,13 @@ const messages = defineMessages({
   edit: { id: 'rwaq.admin.users.detail.edit', defaultMessage: 'Edit' },
   view: { id: 'rwaq.admin.users.detail.view', defaultMessage: 'View' },
 
+  sectionIdentity: { id: 'rwaq.admin.users.detail.sectionIdentity', defaultMessage: 'Identity' },
+  sectionProfileDetails: { id: 'rwaq.admin.users.detail.sectionProfileDetails', defaultMessage: 'Profile' },
+  sectionAccess: { id: 'rwaq.admin.users.detail.sectionAccess', defaultMessage: 'Access' },
+  sectionActivity: { id: 'rwaq.admin.users.detail.sectionActivity', defaultMessage: 'Activity' },
+  detailStatus: { id: 'rwaq.admin.users.detail.status', defaultMessage: 'Status' },
+  detailRoles: { id: 'rwaq.admin.users.detail.roles', defaultMessage: 'Platform roles' },
+
   // ── Enrollments tab ────────────────────────────────────────────────────────
   enrollmentsEmpty: {
     id: 'rwaq.admin.users.enrollments.empty',
@@ -213,6 +231,15 @@ const messages = defineMessages({
   enrollmentDate: { id: 'rwaq.admin.users.enrollments.date', defaultMessage: 'Enrolled' },
   enrollmentStatus: { id: 'rwaq.admin.users.enrollments.status', defaultMessage: 'Status' },
   enrollmentCertificate: { id: 'rwaq.admin.users.enrollments.certificate', defaultMessage: 'Certificate' },
+  enrollmentMode: { id: 'rwaq.admin.users.enrollments.mode', defaultMessage: 'Mode' },
+  enrollmentCount: {
+    id: 'rwaq.admin.users.enrollments.count',
+    defaultMessage: '{count, plural, one {# enrollment} other {# enrollments}}',
+  },
+  enrollmentNoCertificate: {
+    id: 'rwaq.admin.users.enrollments.noCertificate',
+    defaultMessage: 'None',
+  },
   enrollmentActive: { id: 'rwaq.admin.users.enrollments.active', defaultMessage: 'Active' },
   enrollmentInactive: { id: 'rwaq.admin.users.enrollments.inactive', defaultMessage: 'Unenrolled' },
   enrollmentsReadOnly: {

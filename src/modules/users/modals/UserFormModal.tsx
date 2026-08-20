@@ -2,20 +2,23 @@
  * Create / edit user modal.
  *
  * One component for both modes: the fields are identical apart from email,
- * which is only settable at creation (the username is derived from it).
+ * which is settable only at creation because the username is derived from it
+ * and renaming a username breaks course and forum references.
  *
- * On edit only the changed fields are sent, so an untouched grant is never
- * re-asserted and the audit log stays honest about what an admin actually did.
+ * On edit only changed fields are sent, so an untouched grant is never
+ * re-asserted and the backend's audit log stays honest about what an admin
+ * actually did.
  */
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
-  ActionRow, Alert, Button, Col, Form, ModalDialog, Row, StatefulButton,
+  Alert, Col, Form, Row,
 } from '@openedx/paragon';
 import { AppContext } from '@edx/frontend-platform/react';
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
 import RoleGrantFields, { RoleGrantValues } from '../components/RoleGrantFields';
 import COUNTRIES from '../data/countries';
@@ -27,6 +30,7 @@ import messages from '../messages';
 
 const MAX_NAME = 255;
 const MAX_BIO = 3000;
+const BIO_ROWS = 4;
 
 interface FormValues extends RoleGrantValues {
   email: string;
@@ -70,7 +74,7 @@ const toFormValues = (user: UserDetail | null): FormValues => (user
 const changedFields = (values: FormValues, initial: FormValues): UserPatchPayload => {
   const patch: UserPatchPayload = {};
   (Object.keys(values) as (keyof FormValues)[]).forEach((key) => {
-    if (key === 'email') { return; } // never editable
+    if (key === 'email') { return; } // creation-only
     if (values[key] !== initial[key]) {
       Object.assign(patch, { [key]: values[key] });
     }
@@ -101,6 +105,10 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
   const { authenticatedUser } = useContext(AppContext) as {
     authenticatedUser?: { userId?: number };
   };
+  // The email hint is guidance for filling the field in, not a standing
+  // statement about the form — so it appears on focus and leaves on blur.
+  const [isEmailFocused, setIsEmailFocused] = useState(false);
+
   const isEdit = user !== null;
   const isSelf = isEdit && authenticatedUser?.userId === user.id;
 
@@ -163,185 +171,162 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''
   );
 
-  const submitState = () => {
-    if (mutation.isPending) { return 'pending'; }
-    return 'default';
-  };
-
   return (
-    <ModalDialog
+    <FormModal
       title={intl.formatMessage(isEdit ? messages.editTitle : messages.createTitle)}
       isOpen={isOpen}
       onClose={onClose}
-      size="lg"
-      isFullscreenOnMobile
-      hasCloseButton
-      isOverflowVisible={false}
+      onSubmit={formik.handleSubmit}
+      submitLabel={intl.formatMessage(isEdit ? messages.save : messages.create)}
+      cancelLabel={intl.formatMessage(messages.cancel)}
+      isSubmitting={mutation.isPending}
     >
-      <ModalDialog.Header>
-        <ModalDialog.Title>
-          {intl.formatMessage(isEdit ? messages.editTitle : messages.createTitle)}
-        </ModalDialog.Title>
-      </ModalDialog.Header>
+      <section className="rwaq-form-section">
+        <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionProfile)}</h3>
 
-      <Form onSubmit={formik.handleSubmit} noValidate>
-        <ModalDialog.Body>
-          <h3 className="h5 mb-3">{intl.formatMessage(messages.sectionProfile)}</h3>
+        <Row>
+          <Col xs={12} md={6}>
+            <Form.Group className="mb-4" isInvalid={!!fieldError('email')} controlId="user-form-email">
+              <Form.Label>{intl.formatMessage(messages.fieldEmail)}</Form.Label>
+              <Form.Control
+                name="email"
+                type="email"
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                onFocus={() => setIsEmailFocused(true)}
+                onBlur={(event: React.FocusEvent<HTMLInputElement>) => {
+                  setIsEmailFocused(false);
+                  formik.handleBlur(event);
+                }}
+                disabled={isEdit}
+              />
+              {!isEdit && isEmailFocused && !fieldError('email') && (
+                <Form.Text muted>{intl.formatMessage(messages.fieldEmailHelp)}</Form.Text>
+              )}
+              {fieldError('email') && (
+                <Form.Control.Feedback type="invalid">{fieldError('email')}</Form.Control.Feedback>
+              )}
+            </Form.Group>
+          </Col>
 
-          <Row>
-            <Col xs={12} md={6}>
-              <Form.Group className="mb-4" isInvalid={!!fieldError('email')} controlId="user-form-email">
-                <Form.Label>{intl.formatMessage(messages.fieldEmail)}</Form.Label>
-                <Form.Control
-                  name="email"
-                  type="email"
-                  value={formik.values.email}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  disabled={isEdit}
-                />
-                {isEdit
-                  ? null
-                  : <Form.Text muted>{intl.formatMessage(messages.fieldEmailHelp)}</Form.Text>}
-                {fieldError('email') && (
-                  <Form.Control.Feedback type="invalid">{fieldError('email')}</Form.Control.Feedback>
-                )}
-              </Form.Group>
-            </Col>
+          <Col xs={12} md={6}>
+            <Form.Group className="mb-4" isInvalid={!!fieldError('name')} controlId="user-form-name">
+              <Form.Label>{intl.formatMessage(messages.fieldName)}</Form.Label>
+              <Form.Control
+                name="name"
+                value={formik.values.name}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {fieldError('name') && (
+                <Form.Control.Feedback type="invalid">{fieldError('name')}</Form.Control.Feedback>
+              )}
+            </Form.Group>
+          </Col>
 
-            <Col xs={12} md={6}>
-              <Form.Group className="mb-4" isInvalid={!!fieldError('name')} controlId="user-form-name">
-                <Form.Label>{intl.formatMessage(messages.fieldName)}</Form.Label>
-                <Form.Control
-                  name="name"
-                  value={formik.values.name}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                {fieldError('name') && (
-                  <Form.Control.Feedback type="invalid">{fieldError('name')}</Form.Control.Feedback>
-                )}
-              </Form.Group>
-            </Col>
+          <Col xs={12} md={6}>
+            <Form.Group className="mb-4" isInvalid={!!fieldError('job')} controlId="user-form-job">
+              <Form.Label>{intl.formatMessage(messages.fieldJob)}</Form.Label>
+              <Form.Control
+                name="job"
+                value={formik.values.job}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {fieldError('job') && (
+                <Form.Control.Feedback type="invalid">{fieldError('job')}</Form.Control.Feedback>
+              )}
+            </Form.Group>
+          </Col>
 
-            <Col xs={12} md={6}>
-              <Form.Group className="mb-4" isInvalid={!!fieldError('job')} controlId="user-form-job">
-                <Form.Label>{intl.formatMessage(messages.fieldJob)}</Form.Label>
-                <Form.Control
-                  name="job"
-                  value={formik.values.job}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                {fieldError('job') && (
-                  <Form.Control.Feedback type="invalid">{fieldError('job')}</Form.Control.Feedback>
-                )}
-              </Form.Group>
-            </Col>
+          <Col xs={12} md={6}>
+            <Form.Group className="mb-4" controlId="user-form-country">
+              <Form.Label>{intl.formatMessage(messages.fieldCountry)}</Form.Label>
+              <Form.Control
+                as="select"
+                name="country"
+                value={formik.values.country}
+                onChange={formik.handleChange}
+              >
+                <option value="">{intl.formatMessage(messages.fieldCountryNone)}</option>
+                {COUNTRIES.filter((country) => country.code).map((country) => (
+                  <option key={country.code} value={country.code}>{country.name}</option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+          </Col>
+        </Row>
 
-            <Col xs={12} md={6}>
-              <Form.Group className="mb-4" controlId="user-form-country">
-                <Form.Label>{intl.formatMessage(messages.fieldCountry)}</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="country"
-                  value={formik.values.country}
-                  onChange={formik.handleChange}
-                >
-                  <option value="">{intl.formatMessage(messages.fieldCountryNone)}</option>
-                  {COUNTRIES.filter((country) => country.code).map((country) => (
-                    <option key={country.code} value={country.code}>{country.name}</option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Form.Group className="mb-4" isInvalid={!!fieldError('biography')} controlId="user-form-biography">
-            <Form.Label>{intl.formatMessage(messages.fieldBiography)}</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              name="biography"
-              value={formik.values.biography}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
-            {fieldError('biography') && (
-              <Form.Control.Feedback type="invalid">{fieldError('biography')}</Form.Control.Feedback>
-            )}
-          </Form.Group>
-
-          <Form.Group className="mb-4" controlId="user-form-visibility">
-            <Form.Label>{intl.formatMessage(messages.fieldVisibility)}</Form.Label>
-            <Form.Control
-              as="select"
-              name="profileVisibility"
-              value={formik.values.profileVisibility}
-              onChange={formik.handleChange}
-            >
-              <option value="private">{intl.formatMessage(messages.visibilityPrivate)}</option>
-              <option value="public">{intl.formatMessage(messages.visibilityPublic)}</option>
-            </Form.Control>
-          </Form.Group>
-
-          <hr className="my-4" />
-          <h3 className="h5 mb-3">{intl.formatMessage(messages.sectionStatus)}</h3>
-
-          <Form.Group className="mb-4">
-            <Form.Switch
-              name="isActive"
-              checked={formik.values.isActive}
-              disabled={isSelf}
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) => formik.setFieldValue('isActive', event.target.checked)}
-            >
-              {intl.formatMessage(messages.fieldActive)}
-            </Form.Switch>
-            <Form.Text muted>
-              {intl.formatMessage(isSelf ? messages.selfDeactivateBlocked : messages.fieldActiveHelp)}
-            </Form.Text>
-          </Form.Group>
-
-          <hr className="my-4" />
-          <h3 className="h5 mb-3">{intl.formatMessage(messages.sectionRoles)}</h3>
-
-          <RoleGrantFields
-            values={{
-              isGlobalStaff: formik.values.isGlobalStaff,
-              isCourseCreator: formik.values.isCourseCreator,
-              isSupportStaff: formik.values.isSupportStaff,
-            }}
-            onChange={(field, value) => formik.setFieldValue(field, value)}
-            isSuperuser={user?.roles.isSuperuser}
-            orgAdminOf={user?.roles.orgAdminOf}
-            canRevokeGlobalStaff={!isSelf}
+        {/* Plain textarea, deliberately: a biography is short prose, and a rich
+            text editor here would let markup into a field the learner-facing
+            profile renders as text. */}
+        <Form.Group className="mb-4" isInvalid={!!fieldError('biography')} controlId="user-form-biography">
+          <Form.Label>{intl.formatMessage(messages.fieldBiography)}</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={BIO_ROWS}
+            name="biography"
+            value={formik.values.biography}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
           />
-
-          {mutation.isError && (
-            <Alert variant="danger" className="mt-4 mb-0">
-              {errorReason(mutation.error) ?? intl.formatMessage(messages.genericError)}
-            </Alert>
+          {fieldError('biography') && (
+            <Form.Control.Feedback type="invalid">{fieldError('biography')}</Form.Control.Feedback>
           )}
-        </ModalDialog.Body>
+        </Form.Group>
 
-        <ModalDialog.Footer>
-          <ActionRow>
-            <Button variant="tertiary" type="button" onClick={onClose}>
-              {intl.formatMessage(messages.cancel)}
-            </Button>
-            <StatefulButton
-              type="submit"
-              state={submitState()}
-              labels={{
-                default: intl.formatMessage(isEdit ? messages.save : messages.create),
-                pending: intl.formatMessage(isEdit ? messages.save : messages.create),
-              }}
-              disabledStates={['pending']}
-            />
-          </ActionRow>
-        </ModalDialog.Footer>
-      </Form>
-    </ModalDialog>
+        <Form.Group className="mb-0" controlId="user-form-visibility">
+          <Form.Label>{intl.formatMessage(messages.fieldVisibility)}</Form.Label>
+          <Form.Control
+            as="select"
+            name="profileVisibility"
+            value={formik.values.profileVisibility}
+            onChange={formik.handleChange}
+          >
+            <option value="private">{intl.formatMessage(messages.visibilityPrivate)}</option>
+            <option value="public">{intl.formatMessage(messages.visibilityPublic)}</option>
+          </Form.Control>
+        </Form.Group>
+      </section>
+
+      <section className="rwaq-form-section">
+        <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionStatus)}</h3>
+        <Form.Group className="mb-0">
+          <Form.Switch
+            name="isActive"
+            checked={formik.values.isActive}
+            disabled={isSelf}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => formik.setFieldValue('isActive', event.target.checked)}
+          >
+            {intl.formatMessage(messages.fieldActive)}
+          </Form.Switch>
+          <Form.Text muted>
+            {intl.formatMessage(isSelf ? messages.selfDeactivateBlocked : messages.fieldActiveHelp)}
+          </Form.Text>
+        </Form.Group>
+      </section>
+
+      <section className="rwaq-form-section">
+        <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionRoles)}</h3>
+        <RoleGrantFields
+          values={{
+            isGlobalStaff: formik.values.isGlobalStaff,
+            isCourseCreator: formik.values.isCourseCreator,
+            isSupportStaff: formik.values.isSupportStaff,
+          }}
+          onChange={(field, value) => formik.setFieldValue(field, value)}
+          isSuperuser={user?.roles.isSuperuser}
+          orgAdminOf={user?.roles.orgAdminOf}
+          canRevokeGlobalStaff={!isSelf}
+        />
+      </section>
+
+      {mutation.isError && (
+        <Alert variant="danger" className="mt-4 mb-0">
+          {errorReason(mutation.error) ?? intl.formatMessage(messages.genericError)}
+        </Alert>
+      )}
+    </FormModal>
   );
 };
 
