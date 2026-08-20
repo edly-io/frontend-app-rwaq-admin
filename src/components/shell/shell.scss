@@ -1154,3 +1154,66 @@ html[data-paragon-theme-variant='dark'] {
   width: 100% !important;
   left: 0 !important;
 }
+
+// ── Viewport-fitted list pages ───────────────────────────────────────────────
+// The document itself must never scroll: the shell is already 100vh with
+// overflow hidden, but html/body kept their default margin and intrinsic
+// height, which was enough to push a scrollbar onto the page and let the whole
+// chrome — logo, topbar — scroll out of view.
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+// A list page fills the content area and hands its own overflow to the table,
+// so the page header and the search bar stay put while rows scroll. Detail
+// pages deliberately opt out and scroll in <main> as before, since they are a
+// stack of cards rather than one long list.
+.rwaq-page--fit {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.rwaq-page--fit > .rwaq-page-header { flex: 0 0 auto; }
+
+.rwaq-card--fit {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  // Without min-height: 0 a flex child refuses to shrink below its content, so
+  // the card would grow and push the scrollbar back onto the document.
+  min-height: 0;
+  overflow: hidden;
+}
+
+.rwaq-card--fit > .rwaq-actionbar { flex: 0 0 auto; }
+
+// ── Table shell: scrolling body, pinned footer ───────────────────────────────
+.rwaq-table-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.rwaq-card--fit .rwaq-table-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.rwaq-card--fit .rwaq-table-footer { flex: 0 0 auto; }
+
+// The header has to stay readable while the body scrolls under it, so it needs
+// its own background — a transparent sticky header shows rows through itself.
+.rwaq-card--fit .rwaq-table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--rwaq-table-head-bg) !important;
+}

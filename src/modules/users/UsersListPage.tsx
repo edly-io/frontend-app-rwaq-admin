@@ -291,8 +291,10 @@ const UsersListPage = () => {
     },
   ];
 
+  // rwaq-page--fit: the page fills the viewport and the table scrolls
+  // inside itself, so the document never grows past the fold.
   return (
-    <div className="rwaq-page">
+    <div className="rwaq-page rwaq-page--fit">
       <div className="rwaq-page-header">
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
           <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
@@ -302,7 +304,7 @@ const UsersListPage = () => {
         </div>
       </div>
 
-      <div className="rwaq-card">
+      <div className="rwaq-card rwaq-card--fit">
         <SearchFilterBar
           scopes={scopeOptions}
           scope={searchBy}

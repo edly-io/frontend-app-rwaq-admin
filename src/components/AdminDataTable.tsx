@@ -112,7 +112,7 @@ const AdminDataTable = ({
 
   if (isLoading) {
     return (
-      <div className="d-flex justify-content-center py-5" aria-label={intl.formatMessage(messages.loadingLabel)}>
+      <div className="rwaq-table-shell d-flex justify-content-center py-5" aria-label={intl.formatMessage(messages.loadingLabel)}>
         <Spinner animation="border" variant="primary" role="status">
           <span className="sr-only">{intl.formatMessage(messages.loadingLabel)}</span>
         </Spinner>
@@ -122,14 +122,16 @@ const AdminDataTable = ({
 
   if (!isLoading && data.length === 0) {
     return (
-      <p className="text-center py-4 text-muted">
-        {intl.formatMessage(messages.noResults)}
-      </p>
+      <div className="rwaq-table-shell">
+        <p className="text-center py-5 text-muted mb-0">
+          {intl.formatMessage(messages.noResults)}
+        </p>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="rwaq-table-shell">
       {/* sr-only heading instead of a raw <caption> (which is invalid nested in
           DataTable's wrapper <div> and triggers a DOM-nesting warning). */}
       {caption && <div className="sr-only" role="heading" aria-level={2}>{caption}</div>}
@@ -184,7 +186,7 @@ const AdminDataTable = ({
           )}
         </div>
       )}
-    </>
+    </div>
   );
 };
 
