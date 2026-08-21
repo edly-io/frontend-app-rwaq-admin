@@ -1359,12 +1359,15 @@ body {
 // earlier this ran at list-page proportions and each card was mostly air.
 
 .rwaq-dash-grid {
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  // Cards take their natural height instead of stretching to the tallest in
-  // the row. Stretching left a two-row table sitting in a card sized for a
-  // five-row one, which is where the large empty areas came from.
-  align-items: start;
+  // Tighter vertically than horizontally: rows of cards should read as one
+  // block, while columns still need breathing room to separate.
+  column-gap: 0.75rem;
+  row-gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  // Cards in a row share a height. Letting them size to their own content
+  // produced a ragged edge along every band — a short donut card beside a tall
+  // chart — which read as broken rather than compact.
+  align-items: stretch;
 }
 
 .rwaq-dash-grid--kpi { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
@@ -1382,6 +1385,9 @@ body {
 .rwaq-dash-grid > .rwaq-dash-card {
   padding: 1.125rem 1.25rem;
   margin: 0;
+  // Fill the row's shared height, so every card in a band lines up top and
+  // bottom regardless of how much content it holds.
+  height: 100%;
 }
 
 .rwaq-dash-card {
@@ -1390,6 +1396,10 @@ body {
   gap: 0.75rem;
   min-width: 0;
 }
+
+// Content stays top-aligned inside a stretched card, so two cards of equal
+// height still line their headings and first rows up with each other.
+.rwaq-dash-card > *:last-child { margin-bottom: auto; }
 
 .rwaq-dash-card__head { display: flex; flex-direction: column; gap: 0.15rem; }
 
