@@ -1,55 +1,57 @@
 /**
- * Dashboard API — the ONLY file to change when the analytics backend is ready.
+ * Dashboard analytics API — the ONLY file that changes when the backend evolves.
+ * Components call the hooks in hooks.ts, never this file directly.
  *
- * ⚠ PLACEHOLDER DATA — Backend endpoints are NOT built yet.
- * These functions return clearly-marked mock data shaped like the real contract.
- * When the backend analytics spike (analytics-spike.md) lands, replace the
- * placeholder bodies with real getAuthenticatedHttpClient() calls.
+ *   GET /api/v1/admin/analytics/summary/
+ *   GET /api/v1/admin/analytics/trends/?months=12
+ *   GET /api/v1/admin/analytics/breakdowns/
  *
- * TODO(backend): Implement GET /rwaq/api/analytics/dashboard/kpis/
- *   Expected response: { total_learners, new_registrations_this_month,
- *     new_registrations_prev_month, total_courses, active_courses }
+ * Three calls rather than one, matching the backend's split by query cost: the
+ * KPI row renders as soon as the cheap counts land instead of waiting on the
+ * grouped aggregates.
  *
- * TODO(backend): Implement GET /rwaq/api/analytics/dashboard/charts/
- *   Expected response: { enrollment_trend: TrendPoint[], completion_trend: TrendPoint[],
- *     course_status: CourseStatusPoint[] }
- *   (enrollment_trend and course_status from new rwaq-features MySQL aggregate;
- *    see docs/research/rwaq-admin-panel-analytics-spike.md)
+ * Host: Studio (CMS), matching the users and organizations modules.
+ * Authentication: Global Staff (IsGlobalStaff on every endpoint).
+ * Case: snake_case on the wire, camelCase in the app.
  */
-import type { DashboardCharts, DashboardKpis } from './types';
+import { camelCaseObject, snakeCaseObject } from '@edx/frontend-platform';
+import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
+import { getStudioApiUrl } from '@src/data/utils';
+import type {
+  AnalyticsBreakdowns,
+  AnalyticsParams,
+  AnalyticsSummary,
+  AnalyticsTrends,
+} from './types';
 
-// ── Placeholder KPI data ───────────────────────────────────────────────────────
+const getAnalyticsBaseUrl = () => getStudioApiUrl('/api/v1/admin/analytics');
 
-/**
- * TODO(backend): GET /rwaq/api/analytics/dashboard/kpis/
- * Replace with:
- *   const { data } = await getAuthenticatedHttpClient()
- *     .get(getApiUrl('/rwaq/api/analytics/dashboard/kpis/'));
- */
-export const getDashboardKpis = async (): Promise<DashboardKpis> => ({
-  total_learners: 0,
-  new_registrations_this_month: 0,
-  new_registrations_prev_month: 0,
-  total_courses: 0,
-  active_courses: 0,
-});
+/** GET summary/ — headline counts. */
+export const getAnalyticsSummary = async (
+  params: AnalyticsParams = {},
+): Promise<AnalyticsSummary> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getAnalyticsBaseUrl()}/summary/`, {
+    params: snakeCaseObject(params),
+  });
+  return camelCaseObject(data) as AnalyticsSummary;
+};
 
-// ── Placeholder chart data ────────────────────────────────────────────────────
+/** GET trends/ — bounded monthly series. */
+export const getAnalyticsTrends = async (
+  params: AnalyticsParams = {},
+): Promise<AnalyticsTrends> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getAnalyticsBaseUrl()}/trends/`, {
+    params: snakeCaseObject(params),
+  });
+  return camelCaseObject(data) as AnalyticsTrends;
+};
 
-const MONTH_LABELS = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
-
-/**
- * TODO(backend): GET /rwaq/api/analytics/dashboard/charts/
- * Replace with:
- *   const { data } = await getAuthenticatedHttpClient()
- *     .get(getApiUrl('/rwaq/api/analytics/dashboard/charts/'));
- */
-export const getDashboardCharts = async (): Promise<DashboardCharts> => ({
-  enrollment_trend: MONTH_LABELS.map((name) => ({ name, value: 0 })),
-  completion_trend: MONTH_LABELS.map((name) => ({ name, value: 0 })),
-  course_status: [
-    { name: 'Active', value: 0 },
-    { name: 'Archived', value: 0 },
-    { name: 'Draft', value: 0 },
-  ],
-});
+/** GET breakdowns/ — grouped aggregates. */
+export const getAnalyticsBreakdowns = async (
+  params: AnalyticsParams = {},
+): Promise<AnalyticsBreakdowns> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getAnalyticsBaseUrl()}/breakdowns/`, {
+    params: snakeCaseObject(params),
+  });
+  return camelCaseObject(data) as AnalyticsBreakdowns;
+};

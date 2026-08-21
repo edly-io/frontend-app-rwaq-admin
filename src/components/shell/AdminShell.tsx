@@ -155,14 +155,20 @@ const AdminShell = () => {
       className="rwaq-admin-shell"
       style={{
         display: 'flex',
-        height: '100vh',
+        // 100dvh, not 100%: React mounts the app inside wrapper divs that
+        // have no height of their own, so a percentage resolves against an
+        // auto-height parent and collapses to content height — the shell then
+        // grows to 2500px and nothing inside it can ever scroll. The dynamic
+        // viewport unit also tracks mobile browser chrome, which plain 100vh
+        // does not.
+        height: '100dvh',
         overflow: 'hidden',
       }}
     >
       {/* ── Desktop: persistent sidebar ──────────────────────────────────── */}
       {isDesktop && (
         <div style={{
-          flexShrink: 0, height: '100vh', position: 'sticky', top: 0,
+          flexShrink: 0, height: '100dvh', position: 'sticky', top: 0,
         }}
         >
           <SideNav />
@@ -182,6 +188,11 @@ const AdminShell = () => {
           flexDirection: 'column',
           overflow: 'hidden',
           minWidth: 0,
+          // minHeight: 0 is load-bearing. A flex item defaults to
+          // min-height: auto, which refuses to shrink below its content — so
+          // this column grew to content height and the scroll never reached
+          // <main> below.
+          minHeight: 0,
         }}
       >
         <TopBar
@@ -190,11 +201,17 @@ const AdminShell = () => {
         />
 
         {/* ── Scrollable content area ───────────────────────────────────── */}
+        {/* The scroll container for every page that isn't viewport-fitted.
+            Without minHeight: 0 it expanded to its content instead of
+            scrolling: a long page simply had its bottom clipped by the
+            shell's overflow: hidden, and each time a table swapped a spinner
+            for rows the whole column resized, which is the blink on load. */}
         <main
           id="main-content"
           className="rwaq-admin-content"
           style={{
             flex: 1,
+            minHeight: 0,
             overflowY: 'auto',
             overflowX: 'hidden',
             padding: '1.5rem',

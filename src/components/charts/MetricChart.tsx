@@ -39,6 +39,21 @@ export const resolveParagonToken = (token: string, fallback: string): string => 
   return value || fallback;
 };
 
+/**
+ * A tonal ramp of the brand accent, for slices of one whole.
+ *
+ * The categorical palette below jumps teal → blue → yellow → red, which on a
+ * course-lifecycle donut implies the states are unrelated and that one of them
+ * is an error. They are four parts of the same total, so they read better as
+ * one hue stepping down in weight.
+ */
+export const getSequentialChartColors = (): string[] => [
+  resolveParagonToken('--rwaq-accent', '#449cc2'),
+  'rgba(68, 156, 194, 0.72)',
+  'rgba(68, 156, 194, 0.48)',
+  'rgba(68, 156, 194, 0.26)',
+];
+
 /** Brand-aligned chart palette sourced from Paragon tokens. */
 export const getChartColors = (): string[] => [
   resolveParagonToken('--pgn-color-primary-500', '#0D7D4D'),
@@ -131,18 +146,71 @@ const MetricChart = ({
 }: MetricChartProps) => {
   const reducedMotion = usePrefersReducedMotion();
   const colors = getChartColors();
+  // Slices of one total read as one hue; independent series need distinct ones.
+  const sliceColors = getSequentialChartColors();
 
   const chartProps = {
     isAnimationActive: !reducedMotion,
   };
 
+  // Chart chrome is deliberately quiet: the data is the subject, and a dashed
+  // grid plus boxed axes competes with it. Horizontal rules only, no axis
+  // lines, no tick marks, muted labels — the reading aids stay, the scaffolding
+  // goes.
+  const mutedTick = {
+    fontSize: 11,
+    fill: resolveParagonToken('--rwaq-muted', '#6b7280'),
+  };
+  const ruleColor = resolveParagonToken('--rwaq-border', '#e6e8ec');
+
   const axisProps = compact
     ? {}
     : {
-      xAxis: <XAxis dataKey="name" tick={{ fontSize: 12 }} />,
-      yAxis: <YAxis tick={{ fontSize: 12 }} />,
-      grid: <CartesianGrid strokeDasharray="3 3" stroke={resolveParagonToken('--pgn-color-gray-300', '#dee2e6')} />,
+      xAxis: (
+        <XAxis
+          dataKey="name"
+          tick={mutedTick}
+          axisLine={false}
+          tickLine={false}
+          dy={6}
+        />
+      ),
+      yAxis: (
+        <YAxis
+          tick={mutedTick}
+          axisLine={false}
+          tickLine={false}
+          // These series are counts. Without this Recharts invents fractional
+          // ticks (0, 0.75, 1.5…) for small integer data, which reads as a
+          // measurement error rather than a tally.
+          allowDecimals={false}
+          width={36}
+        />
+      ),
+      grid: (
+        <CartesianGrid
+          horizontal
+          vertical={false}
+          stroke={ruleColor}
+        />
+      ),
     };
+
+  /** Tooltip styled from the design tokens rather than Recharts' defaults. */
+  const tooltipStyle = {
+    contentStyle: {
+      background: resolveParagonToken('--rwaq-card-bg', '#ffffff'),
+      border: `1px solid ${ruleColor}`,
+      borderRadius: '0.5rem',
+      boxShadow: '0 4px 12px rgba(16, 24, 40, 0.1)',
+      fontSize: '0.8125rem',
+    },
+    labelStyle: {
+      color: resolveParagonToken('--rwaq-muted', '#6b7280'),
+      marginBottom: '0.25rem',
+    },
+    cursor: { fill: resolveParagonToken('--rwaq-row-hover', 'rgba(0,0,0,0.04)') },
+  };
 
   const renderContent = () => {
     if (type === 'line') {
@@ -151,7 +219,7 @@ const MetricChart = ({
           {!compact && axisProps.grid}
           {!compact && axisProps.xAxis}
           {!compact && axisProps.yAxis}
-          <Tooltip />
+          <Tooltip {...tooltipStyle} />
           {!hideLegend && !compact && <Legend />}
           {series.map((key, i) => (
             <Line
@@ -160,7 +228,10 @@ const MetricChart = ({
               dataKey={key}
               stroke={colors[i % colors.length]}
               strokeWidth={2}
-              dot={!compact}
+              // A dot per month clutters a 12-point series; the endpoint is
+              // the one that carries meaning.
+              dot={false}
+              activeDot={{ r: 4 }}
               {...chartProps}
             />
           ))}
@@ -174,15 +245,27 @@ const MetricChart = ({
           {!compact && axisProps.grid}
           {!compact && axisProps.xAxis}
           {!compact && axisProps.yAxis}
-          <Tooltip />
+          <Tooltip {...tooltipStyle} />
           {!hideLegend && !compact && <Legend />}
           {series.map((key, i) => (
             <Bar
               key={key}
               dataKey={key}
               fill={colors[i % colors.length]}
+              radius={[3, 3, 0, 0]}
+              maxBarSize={44}
               {...chartProps}
-            />
+            >
+              {/* The latest period is what a reader looks for first, so it
+                  carries full weight and the history sits back. */}
+              {data.map((entry, index) => (
+                <Cell
+                  key={`${key}-${entry.name}`}
+                  fill={colors[i % colors.length]}
+                  fillOpacity={index === data.length - 1 ? 1 : 0.55}
+                />
+              ))}
+            </Bar>
           ))}
         </BarChart>
       );
@@ -197,16 +280,17 @@ const MetricChart = ({
             nameKey="name"
             cx="50%"
             cy="50%"
-            innerRadius="55%"
-            outerRadius="80%"
+            innerRadius="58%"
+            outerRadius="82%"
+            paddingAngle={2}
+            stroke="none"
             {...chartProps}
           >
-            {data.map((_entry, index) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+            {data.map((entry, index) => (
+              <Cell key={entry.name} fill={sliceColors[index % sliceColors.length]} />
             ))}
           </Pie>
-          <Tooltip />
+          <Tooltip {...tooltipStyle} />
           {!hideLegend && <Legend />}
         </PieChart>
       );

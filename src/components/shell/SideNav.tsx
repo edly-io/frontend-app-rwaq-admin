@@ -13,7 +13,10 @@ import {
   Person,
   Groups,
   List,
-  BarChart,
+  MenuBook,
+  School,
+  Assessment,
+  Category,
   Settings,
   ExpandMore,
   ExpandLess,
@@ -27,7 +30,10 @@ const messages = defineMessages({
   users: { id: 'rwaq.admin.sidenav.users', defaultMessage: 'Users' },
   organizations: { id: 'rwaq.admin.sidenav.organizations', defaultMessage: 'Organizations' },
   enrollment: { id: 'rwaq.admin.sidenav.enrollment', defaultMessage: 'Enrollment' },
-  analytics: { id: 'rwaq.admin.sidenav.analytics', defaultMessage: 'Analytics' },
+  courses: { id: 'rwaq.admin.sidenav.courses', defaultMessage: 'Courses' },
+  programs: { id: 'rwaq.admin.sidenav.programs', defaultMessage: 'Programs' },
+  reports: { id: 'rwaq.admin.sidenav.reports', defaultMessage: 'Reports' },
+  categories: { id: 'rwaq.admin.sidenav.categories', defaultMessage: 'Categories' },
   settings: { id: 'rwaq.admin.sidenav.settings', defaultMessage: 'Settings' },
   comingSoon: { id: 'rwaq.admin.sidenav.comingSoon', defaultMessage: 'Soon' },
   navAriaLabel: { id: 'rwaq.admin.sidenav.navAriaLabel', defaultMessage: 'Admin navigation' },
@@ -60,7 +66,16 @@ const NAV_ITEMS: NavItemDef[] = [
     to: '/enrollment', labelId: 'enrollment', iconSrc: List, isLive: false,
   },
   {
-    to: '/analytics', labelId: 'analytics', iconSrc: BarChart, isLive: false,
+    to: '/courses', labelId: 'courses', iconSrc: MenuBook, isLive: false,
+  },
+  {
+    to: '/programs', labelId: 'programs', iconSrc: School, isLive: false,
+  },
+  {
+    to: '/reports', labelId: 'reports', iconSrc: Assessment, isLive: false,
+  },
+  {
+    to: '/categories', labelId: 'categories', iconSrc: Category, isLive: false,
   },
 ];
 

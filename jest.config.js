@@ -9,6 +9,9 @@ module.exports = createConfig('jest', {
   moduleNameMapper: {
     '^@src/(.*)$': '<rootDir>/src/$1',
   },
+  // e2e/ holds Playwright specs, which have their own runner and their own
+  // globals — Jest picking them up fails at import time.
+  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/e2e/'],
   coveragePathIgnorePatterns: [
     'src/setupTest.tsx',
     'src/i18n',

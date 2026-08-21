@@ -1160,11 +1160,20 @@ html[data-paragon-theme-variant='dark'] {
 // overflow hidden, but html/body kept their default margin and intrinsic
 // height, which was enough to push a scrollbar onto the page and let the whole
 // chrome — logo, topbar — scroll out of view.
+// The document never scrolls; the content area inside the shell does.
+// #root and the wrapper React mounts into need an explicit height, or any
+// percentage height inside them resolves against auto and collapses to
+// content height.
 html,
 body {
   height: 100%;
   margin: 0;
   overflow: hidden;
+}
+
+#root,
+#root > div {
+  height: 100%;
 }
 
 // A list page fills the content area and hands its own overflow to the table,
@@ -1178,6 +1187,10 @@ body {
   min-height: 0;
   overflow: hidden;
 }
+
+// Reserve the card's box from the first paint. Without this the card is sized
+// by its content while loading, so the page reflows the moment rows arrive.
+.rwaq-card--fit > .rwaq-table-shell { flex: 1 1 auto; min-height: 0; }
 
 .rwaq-page--fit > .rwaq-page-header { flex: 0 0 auto; }
 
@@ -1217,3 +1230,304 @@ body {
   z-index: 2;
   background: var(--rwaq-table-head-bg) !important;
 }
+
+// ── Table loading / empty state ──────────────────────────────────────────────
+// Centred on both axes. The utility-class version only centred one, because
+// .rwaq-table-shell is a flex column and justify-content therefore controls
+// the vertical axis — the spinner sat left of centre as a result.
+// Fills the same box the loaded table will occupy, so switching from spinner
+// to rows changes nothing about the layout. A short fixed height here made the
+// card collapse while loading and then jump when data arrived.
+.rwaq-table-state {
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 12rem;
+  padding: var(--rwaq-space-6) var(--rwaq-space-4);
+}
+
+// ── Dashboard ────────────────────────────────────────────────────────────────
+// Bands of cards rather than one grid: each band is a group of related figures,
+// and auto-fit lets a band reflow without inventing new breakpoints.
+.rwaq-dash-grid {
+  display: grid;
+  gap: var(--rwaq-space-4);
+  margin-bottom: var(--rwaq-space-4);
+}
+
+.rwaq-dash-grid--kpi { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+.rwaq-dash-grid--thirds { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+.rwaq-dash-grid--halves { grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr)); }
+
+// The trend band is deliberately asymmetric: a 12-month series needs width, a
+// four-slice donut does not.
+.rwaq-dash-grid--split { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+
+@media (max-width: 62rem) {
+  .rwaq-dash-grid--split { grid-template-columns: 1fr; }
+}
+
+.rwaq-dash-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rwaq-space-3);
+  min-width: 0;
+}
+
+.rwaq-dash-card__head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.rwaq-dash-card__sub {
+  font-size: 0.8125rem;
+  color: var(--rwaq-muted);
+}
+
+// Reserves the chart's height while loading, so the band doesn't collapse and
+// then shove everything below it down when data lands.
+.rwaq-dash-card__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 15rem;
+}
+
+.rwaq-dash-list {
+  margin: 0;
+  padding-inline-start: 1.15rem;
+  font-size: 0.875rem;
+  color: var(--rwaq-text);
+
+  li + li { margin-top: var(--rwaq-space-1); }
+}
+
+// ── Stat tile ────────────────────────────────────────────────────────────────
+.rwaq-stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.rwaq-stat-tile__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rwaq-muted);
+}
+
+.rwaq-stat-tile__value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--rwaq-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+// An unreadable metric is set at body weight, so it never reads as a headline
+// figure the way a bold "0" would.
+.rwaq-stat-tile__value--muted {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--rwaq-muted);
+}
+
+.rwaq-stat-tile__hint {
+  font-size: 0.8125rem;
+  color: var(--rwaq-muted);
+  line-height: 1.45;
+}
+
+// ── Mini table (dashboard cards) ─────────────────────────────────────────────
+.rwaq-mini-table {
+  th { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rwaq-muted); }
+  td { vertical-align: middle; }
+}
+
+.rwaq-mini-table__num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+// ── Dashboard ────────────────────────────────────────────────────────────────
+// A denser scale than the list pages. A dashboard is scanned, not read, so the
+// figures need to sit close enough together to be compared at a glance —
+// earlier this ran at list-page proportions and each card was mostly air.
+
+.rwaq-dash-grid {
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  // Cards take their natural height instead of stretching to the tallest in
+  // the row. Stretching left a two-row table sitting in a card sized for a
+  // five-row one, which is where the large empty areas came from.
+  align-items: start;
+}
+
+.rwaq-dash-grid--kpi { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
+.rwaq-dash-grid--thirds { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.rwaq-dash-grid--halves { grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr)); }
+.rwaq-dash-grid--split { grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); }
+
+@media (max-width: 62rem) {
+  .rwaq-dash-grid--split { grid-template-columns: 1fr; }
+}
+
+// Cards in a row share a height, so a sparse card next to a dense one doesn't
+// leave a ragged edge along the band.
+.rwaq-dash-grid > .rwaq-card,
+.rwaq-dash-grid > .rwaq-dash-card {
+  padding: 1.125rem 1.25rem;
+  margin: 0;
+}
+
+.rwaq-dash-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.rwaq-dash-card__head { display: flex; flex-direction: column; gap: 0.15rem; }
+
+.rwaq-dash-card .rwaq-section-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.rwaq-dash-card__sub {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--rwaq-muted);
+}
+
+// Charts sit lower than they did; a 12-point series does not need 240px to
+// read, and the extra height was pushing the lower bands off screen.
+.rwaq-dash-card__loading,
+.rwaq-dash-card__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 11rem;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--rwaq-muted);
+}
+
+.rwaq-dash-list {
+  margin: 0;
+  padding-inline-start: 1.05rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--rwaq-text);
+
+  li + li { margin-top: 0.3rem; }
+}
+
+.rwaq-kpi-context {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--rwaq-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+// ── Stat tile ────────────────────────────────────────────────────────────────
+.rwaq-stat-tile { display: flex; flex-direction: column; gap: 0.25rem; }
+
+.rwaq-stat-tile__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rwaq-muted);
+}
+
+// 1.5rem, not 1.75: at the larger size a two-digit percentage dominated a card
+// that also has to carry a caption.
+.rwaq-stat-tile__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--rwaq-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.rwaq-stat-tile__value--muted {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--rwaq-muted);
+  letter-spacing: 0;
+}
+
+.rwaq-stat-tile__hint {
+  font-size: 0.75rem;
+  color: var(--rwaq-muted);
+  line-height: 1.45;
+}
+
+// ── Mini tables ──────────────────────────────────────────────────────────────
+// Headers were colliding: three right-aligned numeric columns with no
+// horizontal padding read as one run-on word ("COURSES ENROLLMENTS ADMINS").
+.rwaq-minitable-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rwaq-mini-table {
+  // Explicit, because Bootstrap's .table width can be overridden by the
+  // scroll container and the table was collapsing to its content width,
+  // leaving a gap between the last column and the card edge.
+  width: 100%;
+  font-size: 0.8125rem;
+
+  th,
+  td {
+    padding: 0.4rem 0.5rem;
+    border-top: none;
+    border-bottom: 1px solid var(--rwaq-border);
+    vertical-align: middle;
+  }
+
+  th:first-child,
+  td:first-child { padding-inline-start: 0; }
+
+  th:last-child,
+  td:last-child { padding-inline-end: 0; }
+
+  thead th {
+    padding-block: 0 0.4rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--rwaq-muted);
+    background: transparent !important;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  // The course-key line under a title is reference detail, not content.
+  .rwaq-user-cell__name { font-size: 0.8125rem; font-weight: 600; }
+  .rwaq-user-cell__meta { font-size: 0.6875rem; }
+}
+
+.rwaq-mini-table__num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  // Keeps a right-aligned numeric column clear of the one before it.
+  padding-inline-start: 1.25rem !important;
+}
+
+// Recharts paints from the SVG up, so axis text has to be token-driven or it
+// stays dark in dark mode.
+.rwaq-chart .recharts-cartesian-axis-tick text { fill: var(--rwaq-muted); }
+.rwaq-chart .recharts-cartesian-grid line { stroke: var(--rwaq-border); }

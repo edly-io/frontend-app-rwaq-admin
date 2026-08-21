@@ -51,8 +51,12 @@ subscribe(APP_READY, () => {
 
                   {/* Users */}
                   <Route path="users" element={<UsersListPage />} />
+                  {/* Placeholders — the nav marks these "Soon". */}
                   <Route path="enrollment" element={<ComingSoon />} />
-                  <Route path="analytics" element={<ComingSoon />} />
+                  <Route path="courses" element={<ComingSoon />} />
+                  <Route path="programs" element={<ComingSoon />} />
+                  <Route path="reports" element={<ComingSoon />} />
+                  <Route path="categories" element={<ComingSoon />} />
 
                   {/* Catch-all */}
                   <Route path="*" element={<ComingSoon />} />

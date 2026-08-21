@@ -112,7 +112,10 @@ const AdminDataTable = ({
 
   if (isLoading) {
     return (
-      <div className="rwaq-table-shell d-flex justify-content-center py-5" aria-label={intl.formatMessage(messages.loadingLabel)}>
+      // rwaq-table-shell is a flex *column*, which flips what
+      // justify-content-center does — so centring is handled by a dedicated
+      // class rather than utilities that assume a row.
+      <div className="rwaq-table-shell rwaq-table-state" aria-label={intl.formatMessage(messages.loadingLabel)}>
         <Spinner animation="border" variant="primary" role="status">
           <span className="sr-only">{intl.formatMessage(messages.loadingLabel)}</span>
         </Spinner>
@@ -122,10 +125,8 @@ const AdminDataTable = ({
 
   if (!isLoading && data.length === 0) {
     return (
-      <div className="rwaq-table-shell">
-        <p className="text-center py-5 text-muted mb-0">
-          {intl.formatMessage(messages.noResults)}
-        </p>
+      <div className="rwaq-table-shell rwaq-table-state">
+        <p className="text-muted mb-0">{intl.formatMessage(messages.noResults)}</p>
       </div>
     );
   }
