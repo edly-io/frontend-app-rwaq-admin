@@ -41,20 +41,24 @@ const UserEnrollmentsTab = ({ userId }: UserEnrollmentsTabProps) => {
 
   return (
     <>
-      <div className="d-flex justify-content-between align-items-baseline flex-wrap gap-2 mb-3">
-        <span className="rwaq-detail-grid__title mb-0">
+      <div className="rwaq-enrollments__head">
+        <span className="rwaq-enrollments__count">
           {intl.formatMessage(messages.enrollmentCount, { count: data.length })}
         </span>
-        <span className="small text-muted">{intl.formatMessage(messages.enrollmentsReadOnly)}</span>
+        <span className="rwaq-enrollments__note">
+          {intl.formatMessage(messages.enrollmentsReadOnly)}
+        </span>
       </div>
 
-      <div className="table-responsive">
-        <table className="table table-sm mb-0 rwaq-enrollments__table">
+      <div className="rwaq-minitable-scroll">
+        <table className="table table-sm mb-0 rwaq-mini-table rwaq-enrollments__table">
           <thead>
             <tr>
               <th scope="col">{intl.formatMessage(messages.enrollmentCourse)}</th>
               <th scope="col">{intl.formatMessage(messages.enrollmentMode)}</th>
-              <th scope="col">{intl.formatMessage(messages.enrollmentDate)}</th>
+              <th scope="col" className="rwaq-mini-table__num">
+                {intl.formatMessage(messages.enrollmentDate)}
+              </th>
               <th scope="col">{intl.formatMessage(messages.enrollmentStatus)}</th>
               <th scope="col">{intl.formatMessage(messages.enrollmentCertificate)}</th>
             </tr>
@@ -66,8 +70,10 @@ const UserEnrollmentsTab = ({ userId }: UserEnrollmentsTabProps) => {
                   <div className="rwaq-user-cell__name">{enrollment.courseName}</div>
                   <div className="rwaq-user-cell__meta">{enrollment.courseId}</div>
                 </td>
-                <td className="text-nowrap">{enrollment.mode}</td>
-                <td className="text-nowrap">
+                <td>
+                  <span className="rwaq-enrollments__mode">{enrollment.mode}</span>
+                </td>
+                <td className="rwaq-mini-table__num">
                   {enrollment.enrolledAt
                     ? new Date(enrollment.enrolledAt).toLocaleDateString()
                     : intl.formatMessage(messages.detailNone)}
@@ -80,9 +86,15 @@ const UserEnrollmentsTab = ({ userId }: UserEnrollmentsTabProps) => {
                   </Chip>
                 </td>
                 <td className="text-nowrap">
-                  {enrollment.certificateStatus ?? (
-                    <span className="text-muted">{intl.formatMessage(messages.enrollmentNoCertificate)}</span>
-                  )}
+                  {enrollment.certificateStatus
+                    ? (
+                      <span className="rwaq-enrollments__cert">{enrollment.certificateStatus}</span>
+                    )
+                    : (
+                      <span className="rwaq-enrollments__cert--none">
+                        {intl.formatMessage(messages.enrollmentNoCertificate)}
+                      </span>
+                    )}
                 </td>
               </tr>
             ))}
