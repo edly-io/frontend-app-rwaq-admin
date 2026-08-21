@@ -30,7 +30,7 @@ const messages = defineMessages({
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export interface ColumnDef {
+export interface ColumnDef<Row extends object = Record<string, unknown>> {
   label: string;
   /** Render the heading for screen readers only — for columns whose content
    *  speaks for itself, like an avatar. Keeps the column accessible without a
@@ -44,7 +44,7 @@ export interface ColumnDef {
    *  that reuse a data key, to avoid react-table "Duplicate columns" errors. */
   id?: string;
   /** Custom cell renderer; receives the raw cell value and the full row object */
-  renderCell?: (value: unknown, row: Record<string, unknown>) => ReactNode;
+  renderCell?: (value: unknown, row: Row) => ReactNode;
 }
 
 export interface ServerPaginationState {
@@ -58,9 +58,9 @@ export interface ServerPaginationState {
   onPageChange: (page: number) => void;
 }
 
-export interface AdminDataTableProps {
-  columns: ColumnDef[];
-  data: Record<string, unknown>[];
+export interface AdminDataTableProps<Row extends object = Record<string, unknown>> {
+  columns: ColumnDef<Row>[];
+  data: Row[];
   isLoading?: boolean;
   pagination?: ServerPaginationState;
   /** Optional caption for accessibility */
@@ -73,7 +73,7 @@ const DEFAULT_PAGE_SIZE = 10;
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /** Build the column spec format that Paragon DataTable expects */
-const buildTableColumns = (cols: ColumnDef[]) => cols.map((col) => ({
+const buildTableColumns = <Row extends object>(cols: ColumnDef<Row>[]) => cols.map((col) => ({
   Header: col.isLabelHidden
     // eslint-disable-next-line react/no-unstable-nested-components
     ? () => <span className="sr-only">{col.label}</span>
@@ -84,7 +84,7 @@ const buildTableColumns = (cols: ColumnDef[]) => cols.map((col) => ({
   ...(col.renderCell
     ? {
       // eslint-disable-next-line react/no-unstable-nested-components
-      Cell: ({ value, row }: { value: unknown; row: { original: Record<string, unknown> } }) => (
+      Cell: ({ value, row }: { value: unknown; row: { original: Row } }) => (
         <>{col.renderCell!(value, row.original)}</>
       ),
     }
@@ -93,13 +93,17 @@ const buildTableColumns = (cols: ColumnDef[]) => cols.map((col) => ({
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-const AdminDataTable = ({
+// Generic over the row type so callers keep their real types instead of
+// casting through Record<string, unknown>. `Row extends object` rather than a
+// bare `<Row>`: in a .tsx file a bare type parameter is ambiguous with a JSX
+// tag. Defaulted, so existing untyped call sites still compile.
+const AdminDataTable = <Row extends object>({
   columns,
   data,
   isLoading = false,
   pagination,
   caption,
-}: AdminDataTableProps) => {
+}: AdminDataTableProps<Row>) => {
   const intl = useIntl();
 
   // Range comes from the server-side page, not react-table, which only ever

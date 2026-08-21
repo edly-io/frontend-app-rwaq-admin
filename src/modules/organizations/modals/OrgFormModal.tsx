@@ -16,6 +16,7 @@ import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
+import { getErrorReason } from '@src/data/httpError';
 import { useCreateOrganization, useUpdateOrganization } from '../data/hooks';
 import type { OrgCreatePayload, OrgDetail, OrgProfilePatch } from '../data/types';
 import messages from '../messages';
@@ -56,16 +57,6 @@ const toFormValues = (organization: OrgDetail | null): FormValues => (organizati
     isFeatured: organization.isFeatured ?? false,
   }
   : emptyValues);
-
-/** Pull a human-readable reason out of a DRF error response. */
-const errorReason = (error: unknown): string | null => {
-  const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data;
-  if (!data) { return null; }
-  const firstValue = Object.values(data)[0];
-  if (Array.isArray(firstValue)) { return String(firstValue[0]); }
-  if (typeof firstValue === 'string') { return firstValue; }
-  return null;
-};
 
 interface OrgFormModalProps {
   isOpen: boolean;
@@ -262,7 +253,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
 
       {mutation.isError && (
         <Alert variant="danger" className="mt-4 mb-0">
-          {errorReason(mutation.error) ?? intl.formatMessage(messages.genericError)}
+          {getErrorReason(mutation.error) ?? intl.formatMessage(messages.genericError)}
         </Alert>
       )}
     </FormModal>

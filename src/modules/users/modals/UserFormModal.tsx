@@ -20,6 +20,7 @@ import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
+import { getErrorReason } from '@src/data/httpError';
 import RoleGrantFields, { RoleGrantValues } from '../components/RoleGrantFields';
 import COUNTRIES from '../data/countries';
 import { useCreateUser, useUpdateUser } from '../data/hooks';
@@ -80,16 +81,6 @@ const changedFields = (values: FormValues, initial: FormValues): UserPatchPayloa
     }
   });
   return patch;
-};
-
-/** Pull a human-readable reason out of a DRF error response. */
-const errorReason = (error: unknown): string | null => {
-  const data = (error as { response?: { data?: Record<string, unknown> } })?.response?.data;
-  if (!data) { return null; }
-  const firstValue = Object.values(data)[0];
-  if (Array.isArray(firstValue)) { return String(firstValue[0]); }
-  if (typeof firstValue === 'string') { return firstValue; }
-  return null;
 };
 
 interface UserFormModalProps {
@@ -161,7 +152,7 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
       } catch (error) {
         logError(error);
         showToast(intl.formatMessage(messages.toastError, {
-          reason: errorReason(error) ?? intl.formatMessage(messages.genericError),
+          reason: getErrorReason(error) ?? intl.formatMessage(messages.genericError),
         }));
       }
     },
@@ -324,7 +315,7 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
 
       {mutation.isError && (
         <Alert variant="danger" className="mt-4 mb-0">
-          {errorReason(mutation.error) ?? intl.formatMessage(messages.genericError)}
+          {getErrorReason(mutation.error) ?? intl.formatMessage(messages.genericError)}
         </Alert>
       )}
     </FormModal>

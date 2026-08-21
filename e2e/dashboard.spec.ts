@@ -84,9 +84,16 @@ test('dashboard renders its KPI row, charts and breakdowns', async ({ page }) =>
 
   await expect(page.getByRole('heading', { name: 'Dashboard', level: 1 })).toBeVisible();
 
+  // networkidle can settle before the breakdowns query resolves, so wait for
+  // the last band to exist rather than racing it.
+  await expect(page.getByRole('heading', { name: 'Busiest courses' })).toBeVisible();
+
   // KPI row: every card present, and none of them showing a literal "null".
+  // Scoped to the KPI band — several of these words also appear as table
+  // column headers further down, which makes a page-wide text match ambiguous.
+  const kpiRow = page.locator('.rwaq-dash-grid--kpi');
   for (const label of ['Learners', 'Enrollments', 'Courses running', 'Programs active']) {
-    await expect(page.getByText(label, { exact: true })).toBeVisible();
+    await expect(kpiRow.getByText(label, { exact: true })).toBeVisible();
   }
   await expect(page.getByText('null')).toHaveCount(0);
   await expect(page.getByText('NaN')).toHaveCount(0);

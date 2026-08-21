@@ -1255,117 +1255,12 @@ body {
 }
 
 // ── Dashboard ────────────────────────────────────────────────────────────────
-// Bands of cards rather than one grid: each band is a group of related figures,
-// and auto-fit lets a band reflow without inventing new breakpoints.
-.rwaq-dash-grid {
-  display: grid;
-  gap: var(--rwaq-space-4);
-  margin-bottom: var(--rwaq-space-4);
-}
-
-.rwaq-dash-grid--kpi { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
-.rwaq-dash-grid--thirds { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
-.rwaq-dash-grid--halves { grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr)); }
-
-// The trend band is deliberately asymmetric: a 12-month series needs width, a
-// four-slice donut does not.
-.rwaq-dash-grid--split { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
-
-@media (max-width: 62rem) {
-  .rwaq-dash-grid--split { grid-template-columns: 1fr; }
-}
-
-.rwaq-dash-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rwaq-space-3);
-  min-width: 0;
-}
-
-.rwaq-dash-card__head {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.rwaq-dash-card__sub {
-  font-size: 0.8125rem;
-  color: var(--rwaq-muted);
-}
-
-// Reserves the chart's height while loading, so the band doesn't collapse and
-// then shove everything below it down when data lands.
-.rwaq-dash-card__loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 15rem;
-}
-
-.rwaq-dash-list {
-  margin: 0;
-  padding-inline-start: 1.15rem;
-  font-size: 0.875rem;
-  color: var(--rwaq-text);
-
-  li + li { margin-top: var(--rwaq-space-1); }
-}
-
-// ── Stat tile ────────────────────────────────────────────────────────────────
-.rwaq-stat-tile {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.rwaq-stat-tile__label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--rwaq-muted);
-}
-
-.rwaq-stat-tile__value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--rwaq-heading);
-  font-variant-numeric: tabular-nums;
-}
-
-// An unreadable metric is set at body weight, so it never reads as a headline
-// figure the way a bold "0" would.
-.rwaq-stat-tile__value--muted {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--rwaq-muted);
-}
-
-.rwaq-stat-tile__hint {
-  font-size: 0.8125rem;
-  color: var(--rwaq-muted);
-  line-height: 1.45;
-}
-
-// ── Mini table (dashboard cards) ─────────────────────────────────────────────
-.rwaq-mini-table {
-  th { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rwaq-muted); }
-  td { vertical-align: middle; }
-}
-
-.rwaq-mini-table__num {
-  text-align: end;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-// ── Dashboard ────────────────────────────────────────────────────────────────
 // A denser scale than the list pages. A dashboard is scanned, not read, so the
 // figures need to sit close enough together to be compared at a glance —
 // earlier this ran at list-page proportions and each card was mostly air.
 
 .rwaq-dash-grid {
+  display: grid;
   // Tighter vertically than horizontally: rows of cards should read as one
   // block, while columns still need breathing room to separate.
   column-gap: 0.75rem;
@@ -1503,6 +1398,7 @@ body {
   // leaving a gap between the last column and the card edge.
   width: 100%;
   font-size: 0.8125rem;
+  color: var(--rwaq-text);
 
   th,
   td {

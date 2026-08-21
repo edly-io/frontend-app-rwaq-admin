@@ -13,11 +13,12 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import ErrorState from '@src/components/ErrorState';
+import { getErrorStatus } from '@src/data/httpError';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
 import OrgFormModal from './modals/OrgFormModal';
 import { useOrganization, useOrganizations } from './data/hooks';
-import type { OrgFilter, OrgOrdering } from './data/types';
+import type { OrgFilter, OrgOrdering, OrgSummary } from './data/types';
 import messages from './messages';
 
 const PAGE_SIZE = 10;
@@ -93,7 +94,7 @@ const OrgListPage = () => {
 
   const { data: editingOrg } = useOrganization(editingShortName ?? '');
 
-  const statusCode = isError && (error as { response?: { status: number } })?.response?.status;
+  const statusCode = isError ? getErrorStatus(error) : undefined;
 
   const filterOptions = FILTER_OPTIONS.map((option) => ({
     value: option.value,
@@ -144,7 +145,7 @@ const OrgListPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, filter, ordering, hasExplicitOrdering, intl, updateParams]);
 
-  const columns: ColumnDef[] = [
+  const columns: ColumnDef<OrgSummary>[] = [
     {
       label: intl.formatMessage(messages.colName),
       key: 'name',
@@ -247,7 +248,7 @@ const OrgListPage = () => {
         ) : (
           <AdminDataTable
             columns={columns}
-            data={(data?.results ?? []) as unknown as Record<string, unknown>[]}
+            data={data?.results ?? []}
             isLoading={isLoading}
             caption={intl.formatMessage(messages.title)}
             pagination={data ? {

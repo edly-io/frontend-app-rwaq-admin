@@ -51,7 +51,7 @@ const OrgAdminTable = ({ shortName, members }: OrgAdminTableProps) => {
     }
   };
 
-  const columns: ColumnDef[] = [
+  const columns: ColumnDef<OrgMember>[] = [
     {
       label: intl.formatMessage(messages.adminColAvatar),
       // Heading is for screen readers only — an avatar needs no visible title.
@@ -106,7 +106,7 @@ const OrgAdminTable = ({ shortName, members }: OrgAdminTableProps) => {
           <Button
             variant="outline-primary"
             size="sm"
-            onClick={() => setPendingRemoval(row as unknown as OrgMember)}
+            onClick={() => setPendingRemoval(row)}
             aria-label={`${intl.formatMessage(messages.remove)} ${row.email as string}`}
           >
             {intl.formatMessage(messages.remove)}
@@ -128,7 +128,7 @@ const OrgAdminTable = ({ shortName, members }: OrgAdminTableProps) => {
     <>
       <AdminDataTable
         columns={columns}
-        data={members as unknown as Record<string, unknown>[]}
+        data={members}
         caption={intl.formatMessage(messages.detailAdmins)}
       />
 

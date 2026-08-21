@@ -20,6 +20,7 @@ import { useMemo } from 'react';
 import { Alert, Spinner } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
+import { getErrorStatus } from '@src/data/httpError';
 import KpiCard from '@src/components/KpiCard';
 import MetricChart from '@src/components/charts/MetricChart';
 import type { ChartDataPoint, ChartType } from '@src/components/charts/MetricChart';
@@ -100,9 +101,7 @@ const DashboardPage = () => {
   }, [breakdowns, intl]);
 
   const statusCode = (query: { isError: boolean; error: unknown }) => (
-    query.isError
-      ? (query.error as { response?: { status: number } })?.response?.status
-      : undefined
+    query.isError ? getErrorStatus(query.error) : undefined
   );
 
   // A dashboard with no readable numbers at all is an error page, not an empty

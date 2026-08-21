@@ -14,6 +14,7 @@ import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
+import { getErrorStatus } from '@src/data/httpError';
 import { useAddOrgAdmin } from '../data/hooks';
 import messages from '../messages';
 
@@ -62,7 +63,7 @@ const AddOrgAdminModal = ({ isOpen, onClose, shortName }: AddOrgAdminModalProps)
 
   /** 404 means "no such account", which deserves a real explanation. */
   const failureMessage = (): string => {
-    const status = (mutation.error as { response?: { status?: number } })?.response?.status;
+    const status = getErrorStatus(mutation.error);
     if (status === 404) { return intl.formatMessage(messages.addAdminNotFound); }
     const data = (mutation.error as { response?: { data?: { detail?: string } } })?.response?.data;
     return data?.detail ?? intl.formatMessage(messages.genericError);

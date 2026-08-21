@@ -17,6 +17,7 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import ErrorState from '@src/components/ErrorState';
+import { getErrorStatus } from '@src/data/httpError';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip, SelectOption } from '@src/components/SearchFilterBar';
@@ -27,7 +28,7 @@ import UserDetailModal from './modals/UserDetailModal';
 import UserFormModal from './modals/UserFormModal';
 import { useUsers } from './data/hooks';
 import type {
-  RoleBadge, SearchBy, UserFilter, UserOrdering,
+  RoleBadge, SearchBy, UserFilter, UserOrdering, UserSummary,
 } from './data/types';
 import messages from './messages';
 
@@ -140,7 +141,7 @@ const UsersListPage = () => {
     pageSize: PAGE_SIZE,
   });
 
-  const statusCode = isError && (error as { response?: { status: number } })?.response?.status;
+  const statusCode = isError ? getErrorStatus(error) : undefined;
 
   // ── Action bar wiring ──────────────────────────────────────────────────────
 
@@ -217,7 +218,7 @@ const UsersListPage = () => {
 
   // ── Columns ───────────────────────────────────────────────────────────────
 
-  const columns: ColumnDef[] = [
+  const columns: ColumnDef<UserSummary>[] = [
     {
       label: intl.formatMessage(messages.colAvatar),
       // Heading is for screen readers only — an avatar needs no visible title.
@@ -349,7 +350,7 @@ const UsersListPage = () => {
         ) : (
           <AdminDataTable
             columns={columns}
-            data={(data?.results ?? []) as unknown as Record<string, unknown>[]}
+            data={data?.results ?? []}
             isLoading={isLoading}
             caption={intl.formatMessage(messages.title)}
             pagination={data ? {
