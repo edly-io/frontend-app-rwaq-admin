@@ -911,9 +911,86 @@ html[data-paragon-theme-variant='dark'] {
 // accessible name (provided sr-only in the component).
 .rwaq-admin-content thead th.rwaq-th--avatar { width: 3.5rem; }
 
+// ── Enrollments tab ──────────────────────────────────────────────────────────
+// Inherits .rwaq-mini-table for type scale, header treatment and row rules, so
+// it reads as the same component as the dashboard tables. Only the things
+// specific to this table live here: column widths, and the two value styles.
+.rwaq-enrollments__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--rwaq-space-2) var(--rwaq-space-4);
+  margin-bottom: var(--rwaq-space-3);
+}
+
+.rwaq-enrollments__count {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rwaq-muted);
+}
+
+.rwaq-enrollments__note {
+  font-size: 0.75rem;
+  color: var(--rwaq-muted);
+}
+
 .rwaq-enrollments__table {
-  th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--rwaq-muted); }
-  td { vertical-align: middle; }
+  // Explicit widths, because the course title is far longer than every other
+  // value: left to itself the browser gave the title most of the row and then
+  // crushed the remaining four columns together, which is why the headers
+  // read as "MODE ENROLLED" and "STATUS CERTIFICATE".
+  table-layout: fixed;
+
+  th:nth-child(1), td:nth-child(1) { width: 42%; }
+  th:nth-child(2), td:nth-child(2) { width: 12%; }
+  th:nth-child(3), td:nth-child(3) { width: 16%; }
+  th:nth-child(4), td:nth-child(4) { width: 14%; }
+  th:nth-child(5), td:nth-child(5) { width: 16%; }
+
+  // The course key is reference detail under the title, not a second heading.
+  .rwaq-user-cell__name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .rwaq-user-cell__meta {
+    font-size: 0.6875rem;
+    font-family: var(--pgn-typography-font-family-monospace, ui-monospace, monospace);
+    overflow-wrap: anywhere;
+  }
+
+  td { padding-block: 0.55rem; }
+}
+
+// Mode is an enum value, so it is set as one rather than as prose.
+.rwaq-enrollments__mode {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  background: var(--rwaq-surface-raised);
+  border: 1px solid var(--rwaq-border);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--rwaq-text);
+  text-transform: lowercase;
+}
+
+.rwaq-enrollments__cert {
+  font-size: 0.75rem;
+  color: var(--rwaq-text);
+}
+
+// "None" is the absence of a value, so it recedes rather than competing with
+// the real statuses in the same column.
+.rwaq-enrollments__cert--none {
+  font-size: 0.75rem;
+  color: var(--rwaq-muted);
 }
 
 // ── "Roles assigned elsewhere" note block ────────────────────────────────────
