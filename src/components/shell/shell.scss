@@ -1531,3 +1531,12 @@ body {
 // stays dark in dark mode.
 .rwaq-chart .recharts-cartesian-axis-tick text { fill: var(--rwaq-muted); }
 .rwaq-chart .recharts-cartesian-grid line { stroke: var(--rwaq-border); }
+
+// Route-chunk fallback: fills the content area so the chrome stays put and
+// nothing resizes when the page swaps in.
+.rwaq-content-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}

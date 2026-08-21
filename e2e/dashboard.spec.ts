@@ -167,3 +167,28 @@ test('the four placeholder nav items are present and Analytics is gone', async (
   }
   await expect(page.getByRole('link', { name: /Analytics/ })).toHaveCount(0);
 });
+
+test('the shell stays mounted across navigation', async ({ page }) => {
+  // Regression: every page is lazy() and the single Suspense boundary sat
+  // above <AdminShell/>, so the first visit to a route suspended the whole
+  // tree — the fallback replaced the sidebar and the shell remounted once the
+  // chunk arrived. Tagging the live node proves the chrome survives.
+  await page.goto('/admin/', { waitUntil: 'networkidle' });
+  await expect(page.locator('.rwaq-admin-sidebar')).toBeVisible();
+
+  await page.evaluate(() => {
+    const nav = document.querySelector('.rwaq-admin-sidebar');
+    if (nav) { (nav as HTMLElement).dataset.mountMarker = 'original'; }
+  });
+
+  for (const label of ['Users', 'Organizations']) {
+    await page.getByRole('link', { name: new RegExp(`^${label}`) }).click();
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(600);
+    const marker = await page.evaluate(() => {
+      const nav = document.querySelector('.rwaq-admin-sidebar');
+      return nav ? (nav as HTMLElement).dataset.mountMarker ?? 'REMOUNTED' : 'MISSING';
+    });
+    expect(marker, `sidebar remounted when navigating to ${label}`).toBe('original');
+  }
+});

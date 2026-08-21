@@ -10,9 +10,11 @@
  * Global-Staff guard: non-staff see an access-denied message.
  * Server enforces IsGlobalStaff; this guard is defense-in-depth only.
  */
-import { useState, useEffect, useRef } from 'react';
+import {
+  Suspense, useEffect, useRef, useState,
+} from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { Container } from '@openedx/paragon';
+import { Container, Spinner } from '@openedx/paragon';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
 import SideNav from './SideNav';
@@ -127,6 +129,13 @@ const OverlaySidebar = ({ open, onClose }: OverlaySidebarProps) => {
 
 // ── Main AdminShell ───────────────────────────────────────────────────────────
 
+/** Fills the content area while a route's chunk loads, so nothing resizes. */
+const ContentLoading = () => (
+  <div className="rwaq-content-loading">
+    <Spinner animation="border" variant="primary" screenReaderText="Loading" />
+  </div>
+);
+
 const AdminShell = () => {
   const intl = useIntl();
   const guardState = useStaffGuard();
@@ -217,7 +226,17 @@ const AdminShell = () => {
             padding: '1.5rem',
           }}
         >
-          <Outlet />
+          {/* The Suspense boundary lives here, around the outlet only.
+              Previously the single boundary sat above <AdminShell/> in
+              index.tsx, so the first visit to any lazily-loaded route
+              suspended the entire tree: the fallback replaced the sidebar and
+              topbar too, and the shell remounted once the chunk arrived. That
+              is the full-screen reload on the first click of each menu item.
+              Scoped here, the chrome stays mounted and only the content area
+              swaps. */}
+          <Suspense fallback={<ContentLoading />}>
+            <Outlet />
+          </Suspense>
         </main>
 
         {/* ── Footer ───────────────────────────────────────────────────── */}
