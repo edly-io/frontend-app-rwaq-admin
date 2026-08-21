@@ -155,7 +155,7 @@ const UserDetailModal = ({ userId, onClose, onEdit }: UserDetailModalProps) => {
               {renderProfile(user)}
             </Tab>
             <Tab eventKey="enrollments" title={intl.formatMessage(messages.tabEnrollments)} className="pt-4">
-              <UserEnrollmentsTab userId={user.id} />
+              <UserEnrollmentsTab userId={user.id} userName={user.name || user.username} />
             </Tab>
           </Tabs>
         )}

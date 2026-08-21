@@ -73,6 +73,46 @@ export interface UserEnrollment {
   isActive: boolean;
   /** null when the certificates app isn't available on the API host. */
   certificateStatus: string | null;
+  /** Modes assignable for this course — the course's own, plus the platform
+   *  default floor. Travels with the row so the change-mode form needs no
+   *  extra request. */
+  availableModes: string[];
+  /** All null when no admin has ever changed this enrollment. A self-service
+   *  enrollment has no audit row, which is different from an empty reason. */
+  lastChangeReason: string | null;
+  lastChangeBy: string | null;
+  lastChangeAt: string | null;
+}
+
+/** One row of the course picker behind the enroll form. */
+export interface EnrollableCourse {
+  courseId: string;
+  displayName: string;
+  org: string;
+  availableModes: string[];
+  start: string | null;
+  end: string | null;
+}
+
+/** POST /api/v1/admin/users/{id}/enrollments/ */
+export interface EnrollPayload {
+  courseId: string;
+  mode: string;
+  /** Required by the API. Without it the audit trail explains nothing. */
+  reason: string;
+}
+
+/** PATCH /api/v1/admin/users/{id}/enrollments/{courseId}/ */
+export interface ChangeModePayload {
+  /** Sent so the server can reject a change made against stale state. */
+  oldMode: string;
+  newMode: string;
+  reason: string;
+}
+
+/** DELETE /api/v1/admin/users/{id}/enrollments/{courseId}/ */
+export interface UnenrollPayload {
+  reason: string;
 }
 
 /** Profile visibility values */

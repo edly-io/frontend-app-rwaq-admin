@@ -21,8 +21,8 @@ import {
   ExpandMore,
   ExpandLess,
 } from '@openedx/paragon/icons';
-import { getConfig } from '@edx/frontend-platform';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+import { RWAQ_LOGO } from '@src/assets/rwaqLogo';
 
 const messages = defineMessages({
   logoAlt: { id: 'rwaq.admin.sidenav.logoAlt', defaultMessage: 'Rwaq' },
@@ -196,8 +196,10 @@ export interface SideNavProps {
 
 const SideNav = ({ onNavigate }: SideNavProps) => {
   const intl = useIntl();
-  const config = getConfig();
-  const logoUrl = config?.LOGO_WHITE_URL ?? config?.LOGO_URL ?? '';
+  // Not config.LOGO_WHITE_URL / LOGO_URL: those resolve through the LMS's
+  // host-sensitive theming redirect, which serves the stock grey Open edX mark
+  // on any host without the indigo theme bound. See assets/rwaqLogo.
+  const logoUrl = RWAQ_LOGO;
 
   return (
     <div className="rwaq-admin-sidebar" style={sidebarStyle}>

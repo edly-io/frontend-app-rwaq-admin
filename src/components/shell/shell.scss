@@ -932,11 +932,6 @@ html[data-paragon-theme-variant='dark'] {
   color: var(--rwaq-muted);
 }
 
-.rwaq-enrollments__note {
-  font-size: 0.75rem;
-  color: var(--rwaq-muted);
-}
-
 .rwaq-enrollments__table {
   // Explicit widths, because the course title is far longer than every other
   // value: left to itself the browser gave the title most of the row and then
@@ -944,11 +939,15 @@ html[data-paragon-theme-variant='dark'] {
   // read as "MODE ENROLLED" and "STATUS CERTIFICATE".
   table-layout: fixed;
 
-  th:nth-child(1), td:nth-child(1) { width: 42%; }
-  th:nth-child(2), td:nth-child(2) { width: 12%; }
-  th:nth-child(3), td:nth-child(3) { width: 16%; }
-  th:nth-child(4), td:nth-child(4) { width: 14%; }
-  th:nth-child(5), td:nth-child(5) { width: 16%; }
+  // The actions column is sized in rem, not a percentage: its content is two
+  // buttons of fixed label width, so a percentage would crush them on a narrow
+  // modal while leaving dead space on a wide one. The rest share what's left.
+  th:nth-child(1), td:nth-child(1) { width: 38%; }
+  th:nth-child(2), td:nth-child(2) { width: 10%; }
+  th:nth-child(3), td:nth-child(3) { width: 13%; }
+  th:nth-child(4), td:nth-child(4) { width: 12%; }
+  th:nth-child(5), td:nth-child(5) { width: 13%; }
+  th:nth-child(6), td:nth-child(6) { width: 8.5rem; }
 
   // The course key is reference detail under the title, not a second heading.
   .rwaq-user-cell__name {
@@ -965,6 +964,27 @@ html[data-paragon-theme-variant='dark'] {
   }
 
   td { padding-block: 0.55rem; }
+}
+
+// The last admin change, as a third line under the course key. Muted and
+// smaller than the key above it, so scanning the column still lands on titles
+// while the provenance is there when a row looks wrong.
+.rwaq-enrollments__audit {
+  margin-top: 0.2rem;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--rwaq-muted);
+  overflow-wrap: anywhere;
+}
+
+// Two sm buttons in an 8.5rem column don't fit side by side, so they stack —
+// which also keeps them from being a wide row's widest element. Right-aligned
+// against the table edge rather than floating in the middle of the cell.
+.rwaq-enrollments__table .rwaq-row-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
 }
 
 // Mode is an enum value, so it is set as one rather than as prose.
@@ -1529,4 +1549,102 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 60vh;
+}
+
+// ── Course picker (enroll form) ──────────────────────────────────────────────
+// A search box with its results directly beneath, rather than a dropdown: the
+// list sits inside a modal whose body scrolls, and an absolutely-positioned
+// menu would be clipped by it. Flowing in the document also means the modal
+// grows to fit the results instead of overlaying its own footer.
+.rwaq-course-picker__results {
+  list-style: none;
+  margin: var(--rwaq-space-2) 0 0;
+  padding: 0;
+  // Capped against the viewport as well as in rem: on a short window a 15rem
+  // list pushed the Reason field below the fold, so the form looked like it
+  // ended at the course picker.
+  max-height: min(15rem, 30vh);
+  overflow-y: auto;
+  border: 1px solid var(--rwaq-border);
+  border-radius: var(--rwaq-radius-sm, 4px);
+  background: var(--rwaq-card-bg);
+}
+
+.rwaq-course-picker__option {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-bottom: 1px solid var(--rwaq-border);
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+
+  &:last-child { border-bottom: 0; }
+
+  &:hover:not(:disabled),
+  &:focus-visible { background: var(--rwaq-surface-raised); }
+
+  // An already-enrolled course stays listed so the admin can see why it isn't
+  // selectable, so it needs to read as unavailable rather than merely faint.
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+  }
+
+  .rwaq-user-cell__name,
+  .rwaq-user-cell__meta { display: block; }
+
+  .rwaq-user-cell__meta {
+    font-family: var(--pgn-typography-font-family-monospace, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    overflow-wrap: anywhere;
+  }
+}
+
+.rwaq-course-picker__option-note {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--rwaq-muted);
+}
+
+// The chosen course, once picked: the same two lines as a table row, with the
+// escape hatch beside it so changing course never means cancelling the form.
+.rwaq-course-picker__chosen {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rwaq-space-3);
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--rwaq-border);
+  border-radius: var(--rwaq-radius-sm, 4px);
+  background: var(--rwaq-surface-raised);
+}
+
+.rwaq-course-picker__chosen-text {
+  min-width: 0;
+
+  .rwaq-user-cell__meta {
+    font-family: var(--pgn-typography-font-family-monospace, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    overflow-wrap: anywhere;
+  }
+}
+
+// The course a mode change or unenrollment is about, at the top of those
+// dialogs. Named separately from the picker's chosen state because it is not
+// changeable there — there is no "change course" affordance to leave room for.
+.rwaq-enrollments__subject {
+  margin-bottom: var(--rwaq-space-4);
+  padding: 0.6rem 0.75rem;
+  border-left: 3px solid var(--rwaq-accent, var(--rwaq-border));
+  background: var(--rwaq-surface-raised);
+
+  .rwaq-user-cell__meta {
+    font-family: var(--pgn-typography-font-family-monospace, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    overflow-wrap: anywhere;
+  }
 }

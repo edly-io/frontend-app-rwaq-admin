@@ -27,6 +27,12 @@ export interface FormModalProps {
   cancelLabel: string;
   isSubmitting?: boolean;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  /**
+   * Submit button variant. Defaults to primary; 'danger' is for a form whose
+   * submit removes something, where a teal button would read as the
+   * encouraged choice.
+   */
+  submitVariant?: 'primary' | 'danger';
   /** Extra footer content, left-aligned before the action buttons. */
   footerNote?: ReactNode;
 }
@@ -41,6 +47,7 @@ const FormModal = ({
   cancelLabel,
   isSubmitting = false,
   size = 'lg',
+  submitVariant = 'primary',
   footerNote,
 }: FormModalProps) => (
   <ModalDialog
@@ -70,6 +77,7 @@ const FormModal = ({
           </Button>
           <StatefulButton
             type="submit"
+            variant={submitVariant}
             state={isSubmitting ? 'pending' : 'default'}
             labels={{ default: submitLabel, pending: submitLabel }}
             disabledStates={['pending']}
