@@ -198,7 +198,7 @@ html[data-paragon-theme-variant='dark'] {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--rwaq-space-5);
+  gap: var(--rwaq-space-3);
 }
 
 .rwaq-card {
@@ -1190,14 +1190,19 @@ body {
 
 // Reserve the card's box from the first paint. Without this the card is sized
 // by its content while loading, so the page reflows the moment rows arrive.
-.rwaq-card--fit > .rwaq-table-shell { flex: 1 1 auto; min-height: 0; }
+.rwaq-card--fit > .rwaq-table-shell { flex: 0 1 auto; min-height: 0; }
 
 .rwaq-page--fit > .rwaq-page-header { flex: 0 0 auto; }
 
 .rwaq-card--fit {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
+  // flex-grow: 0 — the card is as tall as its rows and no taller. Growing to
+  // fill the viewport stretched a two-row table down the whole page and left
+  // the footer stranded at the bottom, far below the last row.
+  // flex-shrink: 1 still caps it at the available height, at which point the
+  // table body scrolls inside it.
+  flex: 0 1 auto;
   // Without min-height: 0 a flex child refuses to shrink below its content, so
   // the card would grow and push the scrollbar back onto the document.
   min-height: 0;
@@ -1214,8 +1219,10 @@ body {
   min-height: 0;
 }
 
+// Same reasoning one level down: the scroll area hugs its rows, and only
+// starts scrolling once the card has been squeezed to the viewport.
 .rwaq-card--fit .rwaq-table-scroll {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   overflow: auto;
 }
