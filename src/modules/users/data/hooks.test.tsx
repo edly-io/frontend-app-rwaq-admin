@@ -15,6 +15,10 @@ import {
   useUserEnrollments,
   useCreateUser,
   useUpdateUser,
+  useEnrollableCourses,
+  useEnrollUser,
+  useChangeEnrollmentMode,
+  useUnenrollUser,
 } from './hooks';
 
 jest.mock('@edx/frontend-platform/auth', () => ({
@@ -205,5 +209,116 @@ describe('useUpdateUser', () => {
     result.current.mutate({ name: 'X' });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+// ── Enrollment writes ─────────────────────────────────────────────────────────
+// These pin the wire contract of the three write endpoints, because each one
+// has a detail that is easy to get wrong and impossible to see from the UI:
+// the course key needs URL-encoding, the mode change has to send old_mode, and
+// the unenroll reason travels in a DELETE body.
+
+describe('useEnrollableCourses', () => {
+  it('passes the search term through as a query param', async () => {
+    const get = jest.fn().mockResolvedValue({ data: [] });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
+
+    const { result } = renderHook(
+      () => useEnrollableCourses('poetry'),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(get).toHaveBeenCalledWith(
+      'http://studio.local:8001/api/v1/admin/courses/enrollable/',
+      { params: { search: 'poetry' } },
+    );
+  });
+
+  it('stays idle while disabled, so an unopened form fetches nothing', () => {
+    const get = jest.fn();
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
+
+    renderHook(() => useEnrollableCourses('poetry', false), { wrapper: createWrapper() });
+
+    expect(get).not.toHaveBeenCalled();
+  });
+});
+
+describe('useEnrollUser', () => {
+  it('posts the course, mode and reason snake_cased', async () => {
+    const post = jest.fn().mockResolvedValue({ data: { course_id: 'course-v1:X+Y+Z' } });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ post });
+
+    const { result } = renderHook(() => useEnrollUser(7), { wrapper: createWrapper() });
+
+    result.current.mutate({
+      courseId: 'course-v1:X+Y+Z', mode: 'honor', reason: 'Financial assistance',
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(post).toHaveBeenCalledWith(
+      'http://studio.local:8001/api/v1/admin/users/7/enrollments/',
+      { course_id: 'course-v1:X+Y+Z', mode: 'honor', reason: 'Financial assistance' },
+    );
+  });
+});
+
+describe('useChangeEnrollmentMode', () => {
+  it('encodes the course key into the path and sends old_mode', async () => {
+    const patch = jest.fn().mockResolvedValue({ data: { mode: 'audit' } });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ patch });
+
+    const { result } = renderHook(
+      () => useChangeEnrollmentMode(7),
+      { wrapper: createWrapper() },
+    );
+
+    result.current.mutate({
+      courseId: 'course-v1:X+Y+Z',
+      oldMode: 'honor',
+      newMode: 'audit',
+      reason: 'Enrollment correction',
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    // The ':' and '+' in a course key are both reserved in a path segment.
+    expect(patch).toHaveBeenCalledWith(
+      'http://studio.local:8001/api/v1/admin/users/7/enrollments/course-v1%3AX%2BY%2BZ/',
+      { old_mode: 'honor', new_mode: 'audit', reason: 'Enrollment correction' },
+    );
+  });
+
+  it('surfaces a 409 rather than treating it as success', async () => {
+    const patch = jest.fn().mockRejectedValue({ response: { status: 409 } });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ patch });
+
+    const { result } = renderHook(
+      () => useChangeEnrollmentMode(7),
+      { wrapper: createWrapper() },
+    );
+
+    result.current.mutate({
+      courseId: 'c', oldMode: 'honor', newMode: 'audit', reason: 'r',
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('useUnenrollUser', () => {
+  it('sends the reason in the DELETE body, not the query string', async () => {
+    const httpDelete = jest.fn().mockResolvedValue({ data: undefined });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ delete: httpDelete });
+
+    const { result } = renderHook(() => useUnenrollUser(7), { wrapper: createWrapper() });
+
+    result.current.mutate({ courseId: 'course-v1:X+Y+Z', reason: 'Testing / QA' });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(httpDelete).toHaveBeenCalledWith(
+      'http://studio.local:8001/api/v1/admin/users/7/enrollments/course-v1%3AX%2BY%2BZ/',
+      { data: { reason: 'Testing / QA' } },
+    );
   });
 });

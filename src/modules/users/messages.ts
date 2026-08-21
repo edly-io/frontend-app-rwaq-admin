@@ -197,7 +197,6 @@ const messages = defineMessages({
 
   // ── Detail drawer ──────────────────────────────────────────────────────────
   detailTitle: { id: 'rwaq.admin.users.detail.title', defaultMessage: 'User details' },
-  tabProfile: { id: 'rwaq.admin.users.detail.tabProfile', defaultMessage: 'Profile' },
   tabEnrollments: { id: 'rwaq.admin.users.detail.tabEnrollments', defaultMessage: 'Enrollments' },
   detailUsername: { id: 'rwaq.admin.users.detail.username', defaultMessage: 'Username' },
   detailUserId: { id: 'rwaq.admin.users.detail.userId', defaultMessage: 'User ID' },
@@ -211,7 +210,6 @@ const messages = defineMessages({
   detailLastLogin: { id: 'rwaq.admin.users.detail.lastLogin', defaultMessage: 'Last login' },
   detailOrgAdminOf: { id: 'rwaq.admin.users.detail.orgAdminOf', defaultMessage: 'Organization Admin of' },
   detailNone: { id: 'rwaq.admin.users.detail.none', defaultMessage: '—' },
-  close: { id: 'rwaq.admin.users.detail.close', defaultMessage: 'Close' },
   edit: { id: 'rwaq.admin.users.detail.edit', defaultMessage: 'Edit' },
   view: { id: 'rwaq.admin.users.detail.view', defaultMessage: 'View' },
 
@@ -246,9 +244,116 @@ const messages = defineMessages({
   },
   enrollmentActive: { id: 'rwaq.admin.users.enrollments.active', defaultMessage: 'Active' },
   enrollmentInactive: { id: 'rwaq.admin.users.enrollments.inactive', defaultMessage: 'Unenrolled' },
-  enrollmentsReadOnly: {
-    id: 'rwaq.admin.users.enrollments.readOnly',
-    defaultMessage: 'Read-only. Enrollments are managed from the Instructor dashboard.',
+  enrollmentActions: { id: 'rwaq.admin.users.enrollments.actions', defaultMessage: 'Actions' },
+  enrollmentLastChangeBy: {
+    id: 'rwaq.admin.users.enrollments.lastChangeBy',
+    defaultMessage: '{reason} — {actor}, {date}',
+  },
+
+  // ── Enrollment actions ─────────────────────────────────────────────────────
+  editUser: { id: 'rwaq.admin.users.detail.editUser', defaultMessage: 'Edit user' },
+  enrollAction: { id: 'rwaq.admin.users.enroll.action', defaultMessage: 'Enroll in a course' },
+  enrollTitle: { id: 'rwaq.admin.users.enroll.title', defaultMessage: 'Enroll {name} in a course' },
+  enrollSubmit: { id: 'rwaq.admin.users.enroll.submit', defaultMessage: 'Enroll' },
+  enrollCourseLabel: { id: 'rwaq.admin.users.enroll.courseLabel', defaultMessage: 'Course' },
+  enrollCoursePlaceholder: {
+    id: 'rwaq.admin.users.enroll.coursePlaceholder',
+    defaultMessage: 'Search by course name or ID',
+  },
+  enrollCourseHelp: {
+    id: 'rwaq.admin.users.enroll.courseHelp',
+    defaultMessage: 'Start typing to search. Only the first {limit} matches are shown.',
+  },
+  enrollCourseRequired: {
+    id: 'rwaq.admin.users.enroll.courseRequired',
+    defaultMessage: 'Choose a course.',
+  },
+  enrollNoCourses: {
+    id: 'rwaq.admin.users.enroll.noCourses',
+    defaultMessage: 'No courses match that search.',
+  },
+  enrollSearching: { id: 'rwaq.admin.users.enroll.searching', defaultMessage: 'Searching…' },
+  enrollCoursesError: {
+    id: 'rwaq.admin.users.enroll.coursesError',
+    defaultMessage: 'Could not load courses. Try again.',
+  },
+  enrollSelected: { id: 'rwaq.admin.users.enroll.selected', defaultMessage: 'Selected course' },
+  enrollClear: { id: 'rwaq.admin.users.enroll.clear', defaultMessage: 'Change course' },
+  enrollAlready: {
+    id: 'rwaq.admin.users.enroll.already',
+    defaultMessage: 'Already enrolled in this course.',
+  },
+  enrollReactivates: {
+    id: 'rwaq.admin.users.enroll.reactivates',
+    defaultMessage: 'This learner unenrolled from this course before. Enrolling again restores '
+      + 'their original enrollment, along with any progress on it.',
+  },
+
+  modeChangeTitle: {
+    id: 'rwaq.admin.users.modeChange.title',
+    defaultMessage: 'Change enrollment mode',
+  },
+  modeChangeSubmit: { id: 'rwaq.admin.users.modeChange.submit', defaultMessage: 'Change mode' },
+  modeChangeAction: { id: 'rwaq.admin.users.modeChange.action', defaultMessage: 'Change mode' },
+  modeCurrent: { id: 'rwaq.admin.users.modeChange.current', defaultMessage: 'Current mode' },
+  modeNew: { id: 'rwaq.admin.users.modeChange.new', defaultMessage: 'New mode' },
+  modeSame: {
+    id: 'rwaq.admin.users.modeChange.same',
+    defaultMessage: 'Choose a different mode.',
+  },
+  modeOnlyOne: {
+    id: 'rwaq.admin.users.modeChange.onlyOne',
+    defaultMessage: 'This course offers only one mode, so there is nothing to change it to.',
+  },
+  modeLabel: { id: 'rwaq.admin.users.modeChange.label', defaultMessage: 'Mode' },
+  modeRequired: { id: 'rwaq.admin.users.modeChange.required', defaultMessage: 'Choose a mode.' },
+
+  unenrollTitle: { id: 'rwaq.admin.users.unenroll.title', defaultMessage: 'Unenroll from course' },
+  unenrollAction: { id: 'rwaq.admin.users.unenroll.action', defaultMessage: 'Unenroll' },
+  unenrollSubmit: { id: 'rwaq.admin.users.unenroll.submit', defaultMessage: 'Unenroll' },
+  unenrollBody: {
+    id: 'rwaq.admin.users.unenroll.body',
+    defaultMessage: 'Unenroll {name} from {course}? Their grades and any certificate stay on '
+      + 'record, and they can be enrolled again later.',
+  },
+
+  reasonLabel: { id: 'rwaq.admin.users.reason.label', defaultMessage: 'Reason' },
+  reasonHelp: {
+    id: 'rwaq.admin.users.reason.help',
+    defaultMessage: 'Recorded against this change, and visible to other admins.',
+  },
+  reasonRequired: {
+    id: 'rwaq.admin.users.reason.required',
+    defaultMessage: 'A reason is required.',
+  },
+  reasonOther: { id: 'rwaq.admin.users.reason.other', defaultMessage: 'Something else…' },
+  reasonOtherLabel: {
+    id: 'rwaq.admin.users.reason.otherLabel',
+    defaultMessage: 'Describe the reason',
+  },
+  reasonSelect: { id: 'rwaq.admin.users.reason.select', defaultMessage: 'Choose a reason' },
+
+  enrollSuccess: {
+    id: 'rwaq.admin.users.enroll.success',
+    defaultMessage: 'Enrolled in {course}. Grades and certificates update shortly.',
+  },
+  modeChangeSuccess: {
+    id: 'rwaq.admin.users.modeChange.success',
+    defaultMessage: 'Mode changed to {mode}. Grades and certificates update shortly.',
+  },
+  unenrollSuccess: {
+    id: 'rwaq.admin.users.unenroll.success',
+    defaultMessage: 'Unenrolled from {course}.',
+  },
+  enrollmentConflict: {
+    id: 'rwaq.admin.users.enrollments.conflict',
+    defaultMessage: 'This enrollment changed while you had it open. Reload to see where it '
+      + 'stands now, then try again.',
+  },
+  enrollmentReload: { id: 'rwaq.admin.users.enrollments.reload', defaultMessage: 'Reload' },
+  enrollmentWriteError: {
+    id: 'rwaq.admin.users.enrollments.writeError',
+    defaultMessage: 'Could not save the change.',
   },
 });
 

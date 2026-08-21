@@ -22,6 +22,7 @@ import {
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { getConfig } from '@edx/frontend-platform';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+import { RWAQ_LOGO } from '@src/assets/rwaqLogo';
 import { useThemeVariant } from './useThemeVariant';
 
 const messages = defineMessages({
@@ -100,7 +101,9 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
 
   const lms = (config?.LMS_BASE_URL as string) || '';
   const logoutUrl = (config?.LOGOUT_URL as string) ?? `${lms}/logout`;
-  const logoUrl = (config?.LOGO_URL as string) || '';
+  // Same reason as SideNav: the configured URL is a theming redirect that can
+  // resolve to the stock Open edX logo depending on the request host.
+  const logoUrl = RWAQ_LOGO;
 
   // Cross-platform destinations (fall back to LMS-relative paths that redirect
   // to the corresponding MFE when the explicit config URL is absent).
