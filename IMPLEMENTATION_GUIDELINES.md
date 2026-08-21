@@ -43,9 +43,16 @@ Read config only via `getConfig()`. Declare any new `ENABLE_*` / URL var once in
 - **DO** keep `PARAGON_THEME_URLS={}` in every `.env*` (the build injects a local fallback; deployed envs get real URLs from tutor-indigo).
 - **`@edx/brand`** is the brand-override layer — never `import` it in app code; the Paragon webpack plugin consumes it.
 
-> 🔧 **Known fix for this repo:** `src/components/shell/useThemeVariant.ts` currently sets
-> `data-paragon-theme-variant` + localStorage by hand. Refactor it to delegate to
-> `AppContext.paragonTheme.setThemeVariant()` (keep the same public API for TopBar).
+> ⚠️ **Exception, with a reason: this app owns `data-paragon-theme-variant` itself.**
+> Paragon ships **no dark theme** — `@openedx/paragon/styles/css/themes/` contains
+> `light` only, and the Rwaq brand's dark stylesheet lives in a private repo whose raw
+> URL 404s in a browser. With no dark variant registered, `setThemeVariant('dark')`
+> stores the preference and then **removes** the attribute rather than setting it
+> (verified in a browser: localStorage `"dark"`, attribute `null`). Since every dark
+> rule in `shell.scss` keys off that attribute, the whole dark theme silently fails.
+> So `useThemeVariant` lets Paragon own persistence and OS detection, and mirrors the
+> resolved variant onto the attribute itself. Covered by `e2e/theme.spec.ts`. If a
+> real dark stylesheet is ever wired up, this mirror can go.
 
 ## 5. Layout & responsiveness
 - **Content pages:** wrap page content in Paragon **`<Container size="xl" className="p-4 mt-3">`** (`size="md"` for a narrow single-purpose form). Loading/error states reuse the **same** wrapper so width never jumps.
