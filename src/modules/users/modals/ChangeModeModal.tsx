@@ -112,10 +112,14 @@ const ChangeModeModal = ({
         <div className="rwaq-user-cell__meta">{enrollment.courseId}</div>
       </div>
 
-      <Form.Group>
-        <Form.Label>{intl.formatMessage(messages.modeCurrent)}</Form.Label>
-        <p className="rwaq-enrollments__mode mb-0">{enrollment.mode}</p>
-      </Form.Group>
+      {/* Not a Form.Group: this is a fact, not a field, and Paragon's inline
+          Form.Label left the chip touching the text. */}
+      <div className="rwaq-mode-current">
+        <span className="rwaq-detail-grid__label mb-0">
+          {intl.formatMessage(messages.modeCurrent)}
+        </span>
+        <span className="rwaq-enrollments__mode">{enrollment.mode}</span>
+      </div>
 
       {hasNoTarget
         ? <Alert variant="info">{intl.formatMessage(messages.modeOnlyOne)}</Alert>

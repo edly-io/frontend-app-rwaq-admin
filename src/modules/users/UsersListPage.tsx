@@ -11,7 +11,7 @@
  * SearchFilterBar and echo back as removable chips.
  */
 import { useCallback, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
@@ -24,7 +24,6 @@ import type { AppliedChip, SelectOption } from '@src/components/SearchFilterBar'
 import RoleBadges from './components/RoleBadges';
 import StatusBadges from './components/StatusBadges';
 import EditUserModal from './modals/EditUserModal';
-import UserDetailModal from './modals/UserDetailModal';
 import UserFormModal from './modals/UserFormModal';
 import { useUsers } from './data/hooks';
 import type {
@@ -87,14 +86,15 @@ const SORT_OPTIONS: { value: UserOrdering; label: MessageKey }[] = [
   { value: 'id', label: 'sortIdAsc' },
 ];
 
+// No 'view' any more: viewing a user is a route, not a dialog.
 type ModalState =
   | { kind: 'none' }
   | { kind: 'add' }
-  | { kind: 'view'; userId: number }
   | { kind: 'edit'; userId: number };
 
 const UsersListPage = () => {
   const intl = useIntl();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [modal, setModal] = useState<ModalState>({ kind: 'none' });
 
@@ -274,7 +274,7 @@ const UsersListPage = () => {
           <Button
             variant="outline-primary"
             size="sm"
-            onClick={() => setModal({ kind: 'view', userId: row.id as number })}
+            onClick={() => navigate(`/users/${row.id as number}`)}
             aria-label={`${intl.formatMessage(messages.view)} ${row.name as string}`}
           >
             {intl.formatMessage(messages.view)}
@@ -369,12 +369,6 @@ const UsersListPage = () => {
         isOpen={modal.kind === 'add'}
         onClose={() => setModal({ kind: 'none' })}
         user={null}
-      />
-
-      <UserDetailModal
-        userId={modal.kind === 'view' ? modal.userId : null}
-        onClose={() => setModal({ kind: 'none' })}
-        onEdit={(userId) => setModal({ kind: 'edit', userId })}
       />
 
       <EditUserModal

@@ -33,7 +33,13 @@ const authenticate = async (page: Page) => {
  */
 const dialog = (page: Page) => page.getByRole('dialog').last();
 
-/** Open the learner's detail modal on its Enrollments tab. */
+/**
+ * Open the learner's detail *page*.
+ *
+ * View used to open a modal whose Enrollments tab then opened more modals on
+ * top of it. It is a route now, so this navigates and waits for the page's
+ * enrollments card rather than clicking through a dialog.
+ */
 const openEnrollmentsTab = async (page: Page) => {
   await page.goto(
     `/admin/users?search_by=name&search_term=${encodeURIComponent(LEARNER)}`,
@@ -41,8 +47,11 @@ const openEnrollmentsTab = async (page: Page) => {
   );
   await expect(page.locator('tbody tr').first()).toBeVisible();
   await page.getByRole('button', { name: /^View/ }).first().click();
-  await page.getByRole('tab', { name: 'Enrollments' }).click();
+  await expect(page).toHaveURL(/\/admin\/users\/\d+$/);
   await expect(page.getByRole('button', { name: 'Enroll in a course' })).toBeVisible();
+  // The enrollments table is the second card; wait for it rather than for the
+  // profile card, which renders first from an already-cached detail query.
+  await expect(page.locator('.rwaq-card').nth(1)).toBeVisible();
 };
 
 test.beforeEach(async ({ page }) => {
@@ -101,7 +110,7 @@ test('enrolls, then changes the mode, then unenrolls', async ({ page }) => {
   // second run of this test re-enrolls the course it unenrolled last time, and
   // that is a reactivation — the row already exists, so the count correctly
   // does not move. Counting made the test fail on its own success.
-  const row = page.locator('.rwaq-enrollments__table tbody tr')
+  const row = page.locator('.rwaq-card tbody tr')
     .filter({ hasText: courseName });
   await expect(row).toHaveCount(1);
   await expect(row.getByText('Active', { exact: true })).toBeVisible();
@@ -146,7 +155,7 @@ test('shows an already-enrolled course as unpickable', async ({ page }) => {
   // Specifically an *active* row. The first row may be one a previous test
   // unenrolled from, and that one is legitimately selectable again — picking it
   // here would assert the opposite of the rule.
-  const activeRow = page.locator('.rwaq-enrollments__table tbody tr')
+  const activeRow = page.locator('.rwaq-card tbody tr')
     .filter({ has: page.getByText('Active', { exact: true }) })
     .first();
   await expect(activeRow).toBeVisible();
@@ -185,7 +194,7 @@ test('asks the admin to reload when the enrollment changed underneath them', asy
     await route.continue();
   });
 
-  const row = page.locator('.rwaq-enrollments__table tbody tr')
+  const row = page.locator('.rwaq-card tbody tr')
     .filter({ has: page.getByText('Active', { exact: true }) }).first();
   const modeBefore = (await row.locator('.rwaq-enrollments__mode').innerText()).trim();
   await row.getByRole('button', { name: /^Change mode/ }).click();

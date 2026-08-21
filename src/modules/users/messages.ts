@@ -197,7 +197,6 @@ const messages = defineMessages({
 
   // ── Detail drawer ──────────────────────────────────────────────────────────
   detailTitle: { id: 'rwaq.admin.users.detail.title', defaultMessage: 'User details' },
-  tabProfile: { id: 'rwaq.admin.users.detail.tabProfile', defaultMessage: 'Profile' },
   tabEnrollments: { id: 'rwaq.admin.users.detail.tabEnrollments', defaultMessage: 'Enrollments' },
   detailUsername: { id: 'rwaq.admin.users.detail.username', defaultMessage: 'Username' },
   detailUserId: { id: 'rwaq.admin.users.detail.userId', defaultMessage: 'User ID' },
@@ -211,7 +210,6 @@ const messages = defineMessages({
   detailLastLogin: { id: 'rwaq.admin.users.detail.lastLogin', defaultMessage: 'Last login' },
   detailOrgAdminOf: { id: 'rwaq.admin.users.detail.orgAdminOf', defaultMessage: 'Organization Admin of' },
   detailNone: { id: 'rwaq.admin.users.detail.none', defaultMessage: '—' },
-  close: { id: 'rwaq.admin.users.detail.close', defaultMessage: 'Close' },
   edit: { id: 'rwaq.admin.users.detail.edit', defaultMessage: 'Edit' },
   view: { id: 'rwaq.admin.users.detail.view', defaultMessage: 'View' },
 
@@ -253,6 +251,7 @@ const messages = defineMessages({
   },
 
   // ── Enrollment actions ─────────────────────────────────────────────────────
+  editUser: { id: 'rwaq.admin.users.detail.editUser', defaultMessage: 'Edit user' },
   enrollAction: { id: 'rwaq.admin.users.enroll.action', defaultMessage: 'Enroll in a course' },
   enrollTitle: { id: 'rwaq.admin.users.enroll.title', defaultMessage: 'Enroll {name} in a course' },
   enrollSubmit: { id: 'rwaq.admin.users.enroll.submit', defaultMessage: 'Enroll' },

@@ -529,6 +529,32 @@ html[data-paragon-theme-variant='dark'] {
   }
 
   .btn-outline-secondary:hover { background: var(--rwaq-row-hover); color: var(--rwaq-heading); }
+
+  // Row actions stay uniform, as they already are in light. The two rules
+  // above outrank `.rwaq-row-actions .btn` in dark only (the html[data-…]
+  // prefix adds specificity light has no counterpart for), so an
+  // outline-primary/outline-secondary pair in one cell rendered as one accent
+  // button beside one neutral one — Change mode blue, Unenroll white, for two
+  // actions of equal weight. This restores the shared treatment for every
+  // table's row actions, this one and the user list's View/Edit alike.
+  .rwaq-row-actions .btn {
+    color: var(--rwaq-text);
+    border-color: var(--rwaq-input-border);
+    background: transparent;
+  }
+
+  .rwaq-row-actions .btn:hover,
+  .rwaq-row-actions .btn:focus-visible {
+    background: var(--rwaq-accent-soft);
+    border-color: var(--rwaq-accent);
+    color: var(--rwaq-accent);
+  }
+
+  // A disabled row action must read as unavailable rather than merely faint.
+  .rwaq-row-actions .btn:disabled {
+    color: var(--rwaq-muted);
+    border-color: var(--rwaq-border);
+  }
   .btn-tertiary,
   .btn-link { color: var(--rwaq-accent); }
 
@@ -551,7 +577,6 @@ html[data-paragon-theme-variant='dark'] {
   .rwaq-form-section__title { color: var(--rwaq-muted); }
   .rwaq-detail-grid__value,
   .rwaq-user-cell__name { color: var(--rwaq-text); }
-  .rwaq-detail-header__name { color: var(--rwaq-heading); }
 
   // Toasts and alerts
   .pgn__toast .toast,
@@ -793,19 +818,39 @@ html[data-paragon-theme-variant='dark'] {
 
 // ── Detail grid (read-only views) ────────────────────────────────────────────
 .rwaq-detail-grid {
+  // A fixed three-column track, not `auto-fit`. With auto-fit each section
+  // computed its own column count from its own item widths, so Identity's
+  // three fields and Access's two landed on different x positions and the card
+  // read as several unaligned grids stacked up. A shared track means every
+  // field in the card lines up with the one above it.
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  gap: var(--rwaq-space-4) var(--rwaq-space-5);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--rwaq-space-5) var(--rwaq-space-6);
   margin: 0;
 }
 
+@media (max-width: 75rem) {
+  .rwaq-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 48rem) {
+  .rwaq-detail-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+// The section heading has to outrank the field labels beneath it. It used to be
+// 0.75rem/700/muted against labels at 0.75rem/600/muted — all but identical, so
+// there was no hierarchy to read and the card looked like one undifferentiated
+// list of twelve things. It now carries the heading colour and a rule beneath
+// it; the labels stepped back to compensate.
 .rwaq-detail-grid__title {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--rwaq-muted);
-  margin-bottom: var(--rwaq-space-3);
+  color: var(--rwaq-heading);
+  margin: 0 0 var(--rwaq-space-4);
+  padding-bottom: var(--rwaq-space-2);
+  border-bottom: 1px solid var(--rwaq-border);
 }
 
 .rwaq-detail-grid__row { min-width: 0; }
@@ -813,14 +858,18 @@ html[data-paragon-theme-variant='dark'] {
 
 .rwaq-detail-grid__label {
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--rwaq-muted);
-  margin-bottom: 0.125rem;
+  // 2px read as one blob of two type sizes; a label needs to be visibly a
+  // label of the thing under it.
+  margin-bottom: 0.3rem;
 }
 
 .rwaq-detail-grid__value {
   margin: 0;
   font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.45;
   color: var(--rwaq-text);
   overflow-wrap: anywhere;
 }
@@ -911,80 +960,12 @@ html[data-paragon-theme-variant='dark'] {
 // accessible name (provided sr-only in the component).
 .rwaq-admin-content thead th.rwaq-th--avatar { width: 3.5rem; }
 
-// ── Enrollments tab ──────────────────────────────────────────────────────────
-// Inherits .rwaq-mini-table for type scale, header treatment and row rules, so
-// it reads as the same component as the dashboard tables. Only the things
-// specific to this table live here: column widths, and the two value styles.
-.rwaq-enrollments__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--rwaq-space-2) var(--rwaq-space-4);
-  margin-bottom: var(--rwaq-space-3);
-}
-
-.rwaq-enrollments__count {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--rwaq-muted);
-}
-
-.rwaq-enrollments__table {
-  // Explicit widths, because the course title is far longer than every other
-  // value: left to itself the browser gave the title most of the row and then
-  // crushed the remaining four columns together, which is why the headers
-  // read as "MODE ENROLLED" and "STATUS CERTIFICATE".
-  table-layout: fixed;
-
-  // The actions column is sized in rem, not a percentage: its content is two
-  // buttons of fixed label width, so a percentage would crush them on a narrow
-  // modal while leaving dead space on a wide one. The rest share what's left.
-  th:nth-child(1), td:nth-child(1) { width: 38%; }
-  th:nth-child(2), td:nth-child(2) { width: 10%; }
-  th:nth-child(3), td:nth-child(3) { width: 13%; }
-  th:nth-child(4), td:nth-child(4) { width: 12%; }
-  th:nth-child(5), td:nth-child(5) { width: 13%; }
-  th:nth-child(6), td:nth-child(6) { width: 8.5rem; }
-
-  // The course key is reference detail under the title, not a second heading.
-  .rwaq-user-cell__name {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    line-height: 1.35;
-    overflow-wrap: anywhere;
-  }
-
-  .rwaq-user-cell__meta {
-    font-size: 0.6875rem;
-    font-family: var(--pgn-typography-font-family-monospace, ui-monospace, monospace);
-    overflow-wrap: anywhere;
-  }
-
-  td { padding-block: 0.55rem; }
-}
-
-// The last admin change, as a third line under the course key. Muted and
-// smaller than the key above it, so scanning the column still lands on titles
-// while the provenance is there when a row looks wrong.
 .rwaq-enrollments__audit {
   margin-top: 0.2rem;
   font-size: 0.6875rem;
   line-height: 1.4;
   color: var(--rwaq-muted);
   overflow-wrap: anywhere;
-}
-
-// Two sm buttons in an 8.5rem column don't fit side by side, so they stack —
-// which also keeps them from being a wide row's widest element. Right-aligned
-// against the table edge rather than floating in the middle of the cell.
-.rwaq-enrollments__table .rwaq-row-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.35rem;
 }
 
 // Mode is an enum value, so it is set as one rather than as prose.
@@ -1042,19 +1023,14 @@ html[data-paragon-theme-variant='dark'] {
 }
 
 // ── Detail view header + sections ────────────────────────────────────────────
+// The avatar-and-name block. It used to open a modal body, where a bottom
+// border separated it from the fields beneath; it now sits in a page header
+// beside the action buttons, so that border rendered as a rule stopping
+// mid-page. The header's own divider does that job.
 .rwaq-detail-header {
   display: flex;
   align-items: center;
   gap: var(--rwaq-space-4);
-  padding-bottom: var(--rwaq-space-4);
-  border-bottom: 1px solid var(--rwaq-border);
-}
-
-.rwaq-detail-header__name {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--rwaq-heading);
-  overflow-wrap: anywhere;
 }
 
 .rwaq-detail-header__email {
@@ -1063,8 +1039,10 @@ html[data-paragon-theme-variant='dark'] {
   overflow-wrap: anywhere;
 }
 
-.rwaq-detail-block { padding-top: var(--rwaq-space-5); }
-.rwaq-detail-block + .rwaq-detail-block { border-top: 1px solid var(--rwaq-border); }
+// Space between sections instead of a rule between them: the section headings
+// carry their own underline now, and two horizontal lines per boundary was one
+// of the things making the card look busy.
+.rwaq-detail-block + .rwaq-detail-block { margin-top: var(--rwaq-space-6); }
 
 // ── Filters toggle ───────────────────────────────────────────────────────────
 // Pressed state is an accent-tinted surface from the palette, so it belongs to
@@ -1647,4 +1625,14 @@ body {
     font-size: 0.6875rem;
     overflow-wrap: anywhere;
   }
+}
+
+// ── Change-mode dialog: the current mode ─────────────────────────────────────
+// Was a Form.Label followed by the chip, which are both inline — so it read as
+// "Current mode honor" with no separation. A label/value pair with a real gap.
+.rwaq-mode-current {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-3);
+  margin-bottom: var(--rwaq-space-4);
 }

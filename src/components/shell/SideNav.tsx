@@ -3,7 +3,7 @@
  * - Brand logo at top
  * - Icon + label NavLink items; active item = white rounded "pill" with brand-accent icon
  * - Collapsible "Settings" section (caret)
- * - "Coming soon" badge on Users/Enrollment/Analytics
+ * - "Coming soon" badge on the not-yet-built modules
  */
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
@@ -12,7 +12,6 @@ import {
   Dashboard,
   Person,
   Groups,
-  List,
   MenuBook,
   School,
   Assessment,
@@ -29,7 +28,6 @@ const messages = defineMessages({
   dashboard: { id: 'rwaq.admin.sidenav.dashboard', defaultMessage: 'Dashboard' },
   users: { id: 'rwaq.admin.sidenav.users', defaultMessage: 'Users' },
   organizations: { id: 'rwaq.admin.sidenav.organizations', defaultMessage: 'Organizations' },
-  enrollment: { id: 'rwaq.admin.sidenav.enrollment', defaultMessage: 'Enrollment' },
   courses: { id: 'rwaq.admin.sidenav.courses', defaultMessage: 'Courses' },
   programs: { id: 'rwaq.admin.sidenav.programs', defaultMessage: 'Programs' },
   reports: { id: 'rwaq.admin.sidenav.reports', defaultMessage: 'Reports' },
@@ -61,9 +59,6 @@ const NAV_ITEMS: NavItemDef[] = [
   },
   {
     to: '/organizations', labelId: 'organizations', iconSrc: Groups, isLive: true,
-  },
-  {
-    to: '/enrollment', labelId: 'enrollment', iconSrc: List, isLive: false,
   },
   {
     to: '/courses', labelId: 'courses', iconSrc: MenuBook, isLive: false,
