@@ -1,11 +1,15 @@
-// ── User API types ──────────────────────────────────────────────────────────
+// ── User API types (v2) ──────────────────────────────────────────────────────
+//
+// camelCase throughout: api.ts normalizes the snake_case wire format at the
+// boundary, so nothing above it ever sees snake_case *keys*.  Enum *values*
+// (role badges, filters) stay exactly as the backend defines them.
 
 /** Pagination envelope from the user list response */
 export interface UserListPagination {
   next: string | null;
   previous: string | null;
   count: number;
-  num_pages: number;
+  numPages: number;
 }
 
 /** Paginated list response from GET /api/v1/admin/users/ */
@@ -14,18 +18,39 @@ export interface UserListResponse {
   pagination: UserListPagination;
 }
 
+/** The platform grants a user holds. isSuperuser and orgAdminOf are read-only. */
+export interface UserRoleGrants {
+  isGlobalStaff: boolean;
+  isSuperuser: boolean;
+  isCourseCreator: boolean;
+  isSupportStaff: boolean;
+  /** Short names of the organizations this user administers (granted on the Organizations screen). */
+  orgAdminOf: string[];
+}
+
+/** Display badge slugs, most-privileged first. */
+export type RoleBadge =
+  | 'superuser'
+  | 'global_staff'
+  | 'course_creator'
+  | 'support_staff'
+  | 'org_admin'
+  | 'learner';
+
 /** User row from the list endpoint */
 export interface UserSummary {
   id: number;
   image: string | null;
   name: string;
   email: string;
-  role: UserRole;
-  created_at: string;
-  authentication_method: string;
-  is_blocked: boolean;
-  is_confirmed: boolean;
-  is_profile_public: boolean;
+  roles: UserRoleGrants;
+  roleBadges: RoleBadge[];
+  createdAt: string;
+  lastLogin: string | null;
+  isActive: boolean;
+  isEmailConfirmed: boolean;
+  authenticationMethod: string;
+  isProfilePublic: boolean;
 }
 
 /** Full user detail from GET /api/v1/admin/users/{id}/ */
@@ -34,63 +59,90 @@ export interface UserDetail extends UserSummary {
   country: string;
   biography: string;
   job: string;
-  authentication_methods: string[];
-  roles: string[];
-  is_active: boolean;
-  last_login: string | null;
+  profileVisibility: ProfileVisibility;
+  authenticationMethods: string[];
+  isLegacy: boolean;
 }
 
-/** Role values accepted by create/patch */
-export type UserRole = 'instructor' | 'moderator' | 'student';
+/** One row of GET /api/v1/admin/users/{id}/enrollments/ */
+export interface UserEnrollment {
+  courseId: string;
+  courseName: string;
+  enrolledAt: string | null;
+  mode: string;
+  isActive: boolean;
+  /** null when the certificates app isn't available on the API host. */
+  certificateStatus: string | null;
+}
 
 /** Profile visibility values */
 export type ProfileVisibility = 'private' | 'public';
 
+/** The assignable grants, as sent on create/patch. */
+export interface UserGrantPayload {
+  isGlobalStaff?: boolean;
+  isCourseCreator?: boolean;
+  isSupportStaff?: boolean;
+}
+
 /** POST /api/v1/admin/users/ body */
-export interface UserCreatePayload {
+export interface UserCreatePayload extends UserGrantPayload {
   email: string;
   name: string;
-  role: UserRole;
-  profile_visibility?: ProfileVisibility;
+  profileVisibility?: ProfileVisibility;
   job?: string;
   country?: string;
   biography?: string;
-  is_blocked?: boolean;
+  isActive?: boolean;
 }
 
 /** PATCH /api/v1/admin/users/{id}/ body */
-export interface UserPatchPayload {
+export interface UserPatchPayload extends UserGrantPayload {
   name?: string;
-  role?: UserRole;
-  profile_visibility?: ProfileVisibility;
+  profileVisibility?: ProfileVisibility;
   job?: string;
   country?: string;
   biography?: string;
-  is_blocked?: boolean;
+  isActive?: boolean;
 }
 
 /** Search-by values supported by the backend */
-export type SearchBy = 'email' | 'name' | 'user_id';
+export type SearchBy = 'email' | 'name' | 'user_id' | 'job';
 
-/** Filter values supported by the backend */
+/** Single-select filter values supported by the backend */
 export type UserFilter =
   | 'all'
-  | 'instructor'
-  | 'moderators'
-  | 'students'
-  | 'blocked'
+  | 'global_staff'
+  | 'course_creator'
+  | 'support_staff'
+  | 'org_admin'
+  | 'learner'
+  | 'active'
+  | 'inactive'
   | 'confirmed'
   | 'unconfirmed'
-  | 'private_profile'
   | 'public_profile'
+  | 'private_profile'
+  | 'password_only'
   | 'facebook'
-  | 'twitter';
+  | 'google'
+  | 'twitter'
+  | 'legacy';
+
+/** Sortable columns — real DB columns only; role/auth method are derived and not sortable. */
+export type UserOrdering =
+  | 'created' | '-created'
+  | 'name' | '-name'
+  | 'email' | '-email'
+  | 'last_login' | '-last_login'
+  | 'id' | '-id';
 
 /** Query params for GET /api/v1/admin/users/ */
 export interface UserListParams {
-  search_by?: SearchBy;
-  search_term?: string;
+  searchBy?: SearchBy;
+  searchTerm?: string;
   filter?: UserFilter;
+  ordering?: UserOrdering;
   page?: number;
-  page_size?: number;
+  pageSize?: number;
 }

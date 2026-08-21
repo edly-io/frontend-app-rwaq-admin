@@ -13,6 +13,7 @@ import type {
 import {
   createUser,
   getUser,
+  getUserEnrollments,
   getUsers,
   updateUser,
 } from './api';
@@ -25,43 +26,54 @@ const userQueryKeys = {
   list: (params: UserListParams) => [...userQueryKeys.lists(), params] as const,
   details: () => [...userQueryKeys.all, 'detail'] as const,
   detail: (id: number) => [...userQueryKeys.details(), id] as const,
+  enrollments: (id: number) => [...userQueryKeys.detail(id), 'enrollments'] as const,
 };
 
 // ── Queries ───────────────────────────────────────────────────────────────────
 
-/** Paginated user list with search/filter/page support. */
+/** Paginated user list with search/filter/sort/page support. */
 export const useUsers = (params: UserListParams = {}) => useQuery({
   queryKey: userQueryKeys.list(params),
   queryFn: () => getUsers(params),
 });
 
-/** Single user detail for the View/Edit modal. */
+/** Single user detail for the View/Edit modals. */
 export const useUser = (id: number) => useQuery({
   queryKey: userQueryKeys.detail(id),
   queryFn: () => getUser(id),
   enabled: id > 0,
 });
 
+/** Read-only enrollments for the detail drawer's Enrollments tab. */
+export const useUserEnrollments = (id: number, enabled = true) => useQuery({
+  queryKey: userQueryKeys.enrollments(id),
+  queryFn: () => getUserEnrollments(id),
+  enabled: enabled && id > 0,
+});
+
 // ── Mutations ─────────────────────────────────────────────────────────────────
 
-/**
- * POST new user — invalidates the list so it refetches after creation.
- */
+/** POST new user — invalidates the list so it refetches after creation. */
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (payload: UserCreatePayload) => createUser(payload),
 
-    onSuccess: () => {
+    onSuccess: (created: UserDetail) => {
+      queryClient.setQueryData(userQueryKeys.detail(created.id), created);
       queryClient.invalidateQueries({ queryKey: userQueryKeys.lists() });
     },
   });
 };
 
 /**
- * PATCH user — optimistic update against the cached detail with rollback on failure.
- * Also invalidates the list so the table row updates after settling.
+ * PATCH user.
+ *
+ * No optimistic update: a patch can carry role grants whose *effects* (badges,
+ * derived org scope) only the server can compute, so guessing the resulting row
+ * would show a state that never existed.  The response is the full detail, so
+ * it is written straight into the cache instead.
  */
 export const useUpdateUser = (id: number) => {
   const queryClient = useQueryClient();
@@ -69,22 +81,8 @@ export const useUpdateUser = (id: number) => {
   return useMutation({
     mutationFn: (patch: UserPatchPayload) => updateUser(id, patch),
 
-    onMutate: async (patch) => {
-      await queryClient.cancelQueries({ queryKey: userQueryKeys.detail(id) });
-      const previous = queryClient.getQueryData<UserDetail>(userQueryKeys.detail(id));
-      if (previous) {
-        queryClient.setQueryData<UserDetail>(userQueryKeys.detail(id), {
-          ...previous,
-          ...patch,
-        });
-      }
-      return { previous };
-    },
-
-    onError: (_err, _patch, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(userQueryKeys.detail(id), context.previous);
-      }
+    onSuccess: (updated: UserDetail) => {
+      queryClient.setQueryData(userQueryKeys.detail(id), updated);
     },
 
     onSettled: () => {

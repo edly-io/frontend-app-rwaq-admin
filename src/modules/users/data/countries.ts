@@ -179,4 +179,17 @@ const COUNTRIES: Country[] = [
   { code: 'ZW', name: 'Zimbabwe' },
 ];
 
+/** Code -> display name, for read-only views that receive only the code. */
+const COUNTRY_NAMES: Record<string, string> = COUNTRIES.reduce(
+  (accumulator, country) => (country.code
+    ? { ...accumulator, [country.code]: country.name }
+    : accumulator),
+  {},
+);
+
+/** Full country name for an ISO alpha-2 code; falls back to the code itself. */
+export const countryName = (code?: string | null): string => (
+  code ? COUNTRY_NAMES[code.toUpperCase()] ?? code : ''
+);
+
 export default COUNTRIES;

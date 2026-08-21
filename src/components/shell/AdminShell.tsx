@@ -10,9 +10,11 @@
  * Global-Staff guard: non-staff see an access-denied message.
  * Server enforces IsGlobalStaff; this guard is defense-in-depth only.
  */
-import { useState, useEffect, useRef } from 'react';
+import {
+  Suspense, useEffect, useRef, useState,
+} from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { Container } from '@openedx/paragon';
+import { Container, Spinner } from '@openedx/paragon';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
 import SideNav from './SideNav';
@@ -127,6 +129,13 @@ const OverlaySidebar = ({ open, onClose }: OverlaySidebarProps) => {
 
 // ── Main AdminShell ───────────────────────────────────────────────────────────
 
+/** Fills the content area while a route's chunk loads, so nothing resizes. */
+const ContentLoading = () => (
+  <div className="rwaq-content-loading">
+    <Spinner animation="border" variant="primary" screenReaderText="Loading" />
+  </div>
+);
+
 const AdminShell = () => {
   const intl = useIntl();
   const guardState = useStaffGuard();
@@ -155,14 +164,20 @@ const AdminShell = () => {
       className="rwaq-admin-shell"
       style={{
         display: 'flex',
-        height: '100vh',
+        // 100dvh, not 100%: React mounts the app inside wrapper divs that
+        // have no height of their own, so a percentage resolves against an
+        // auto-height parent and collapses to content height — the shell then
+        // grows to 2500px and nothing inside it can ever scroll. The dynamic
+        // viewport unit also tracks mobile browser chrome, which plain 100vh
+        // does not.
+        height: '100dvh',
         overflow: 'hidden',
       }}
     >
       {/* ── Desktop: persistent sidebar ──────────────────────────────────── */}
       {isDesktop && (
         <div style={{
-          flexShrink: 0, height: '100vh', position: 'sticky', top: 0,
+          flexShrink: 0, height: '100dvh', position: 'sticky', top: 0,
         }}
         >
           <SideNav />
@@ -182,6 +197,11 @@ const AdminShell = () => {
           flexDirection: 'column',
           overflow: 'hidden',
           minWidth: 0,
+          // minHeight: 0 is load-bearing. A flex item defaults to
+          // min-height: auto, which refuses to shrink below its content — so
+          // this column grew to content height and the scroll never reached
+          // <main> below.
+          minHeight: 0,
         }}
       >
         <TopBar
@@ -190,17 +210,33 @@ const AdminShell = () => {
         />
 
         {/* ── Scrollable content area ───────────────────────────────────── */}
+        {/* The scroll container for every page that isn't viewport-fitted.
+            Without minHeight: 0 it expanded to its content instead of
+            scrolling: a long page simply had its bottom clipped by the
+            shell's overflow: hidden, and each time a table swapped a spinner
+            for rows the whole column resized, which is the blink on load. */}
         <main
           id="main-content"
           className="rwaq-admin-content"
           style={{
             flex: 1,
+            minHeight: 0,
             overflowY: 'auto',
             overflowX: 'hidden',
             padding: '1.5rem',
           }}
         >
-          <Outlet />
+          {/* The Suspense boundary lives here, around the outlet only.
+              Previously the single boundary sat above <AdminShell/> in
+              index.tsx, so the first visit to any lazily-loaded route
+              suspended the entire tree: the fallback replaced the sidebar and
+              topbar too, and the shell remounted once the chunk arrived. That
+              is the full-screen reload on the first click of each menu item.
+              Scoped here, the chrome stays mounted and only the content area
+              swaps. */}
+          <Suspense fallback={<ContentLoading />}>
+            <Outlet />
+          </Suspense>
         </main>
 
         {/* ── Footer ───────────────────────────────────────────────────── */}

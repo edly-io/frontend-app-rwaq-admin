@@ -104,10 +104,14 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
 
   // Cross-platform destinations (fall back to LMS-relative paths that redirect
   // to the corresponding MFE when the explicit config URL is absent).
+  // Profile needs both a configured MFE *and* a username to address. The LMS
+  // /u/<username> fallback only redirects to PROFILE_MICROFRONTEND_URL, which
+  // in deployments without the profile MFE points at an address nothing serves
+  // — so a link was rendered that could never resolve. Absent either, the menu
+  // item is omitted rather than shown broken.
+  const profileBase = (config?.ACCOUNT_PROFILE_URL as string) || '';
   const links = {
-    profile: (config?.ACCOUNT_PROFILE_URL as string)
-      ? `${config.ACCOUNT_PROFILE_URL}/u/${username}`
-      : `${lms}/u/${username}`,
+    profile: profileBase && username ? `${profileBase}/u/${username}` : '',
     account: (config?.ACCOUNT_SETTINGS_URL as string) || `${lms}/account`,
     studio: (config?.STUDIO_BASE_URL as string) || '',
     dashboard: (config?.LEARNER_DASHBOARD_URL as string) || `${lms}/dashboard`,
@@ -197,7 +201,9 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
             <Dropdown.Divider />
 
             {/* Cross-platform navigation */}
-            <Dropdown.Item href={links.profile}>{intl.formatMessage(messages.profile)}</Dropdown.Item>
+            {!!links.profile && (
+              <Dropdown.Item href={links.profile}>{intl.formatMessage(messages.profile)}</Dropdown.Item>
+            )}
             <Dropdown.Item href={links.account}>{intl.formatMessage(messages.accountSettings)}</Dropdown.Item>
             {links.studio && (
               <Dropdown.Item href={links.studio}>{intl.formatMessage(messages.studio)}</Dropdown.Item>

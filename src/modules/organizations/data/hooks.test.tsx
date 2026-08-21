@@ -1,206 +1,229 @@
 /**
- * Organizations hooks tests — covers list, detail, and optimistic mutations.
+ * Organizations hooks tests — list, detail, create, update, and membership.
+ *
+ * These also pin the api.ts seam: params/bodies go out snake_cased, responses
+ * come back camelCased, and the single-select UI filter is translated into the
+ * backend's own ?active=/?has_admins= params.
  */
 import { ReactNode } from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import {
-  useOrganizations,
-  useOrganization,
-  useUpdateOrganization,
   useAddOrgAdmin,
+  useCreateOrganization,
+  useOrganization,
+  useOrganizations,
   useRemoveOrgAdmin,
+  useUpdateOrganization,
 } from './hooks';
 
 jest.mock('@edx/frontend-platform/auth', () => ({
   getAuthenticatedHttpClient: jest.fn(),
 }));
 
+jest.mock('@edx/frontend-platform', () => {
+  const actual = jest.requireActual('@edx/frontend-platform');
+  return {
+    ...actual,
+    getConfig: jest.fn(() => ({ STUDIO_BASE_URL: 'http://studio.local:8001' })),
+  };
+});
+
+const BASE = 'http://studio.local:8001/rwaq/api/organizations';
+
 const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
   return wrapper;
 };
 
-// ── Fixtures ──────────────────────────────────────────────────────────────────
-
 const mockOrgList = {
-  count: 2,
-  next: null,
-  previous: null,
   results: [
     {
-      id: 1, name: 'Rwaq', short_name: 'rwaq', logo: null, active: true, course_count: 5, admin_count: 2,
-    },
-    {
-      id: 2, name: 'TestOrg', short_name: 'testorg', logo: null, active: true, course_count: 1, admin_count: 1,
+      id: 1,
+      name: 'Rwaq',
+      short_name: 'Rwaq',
+      arabic_name: 'رواق',
+      active: true,
+      course_count: 4,
+      admin_count: 2,
     },
   ],
+  pagination: {
+    next: null, previous: null, count: 1, num_pages: 1,
+  },
 };
 
 const mockOrgDetail = {
-  id: 1,
-  name: 'Rwaq',
-  short_name: 'rwaq',
-  logo: null,
-  active: true,
-  course_count: 5,
-  admin_count: 1,
-  arabic_name: 'رواق',
-  detail: 'A platform for Arabic learning.',
+  ...mockOrgList.results[0],
+  detail: 'About Rwaq',
   featured_video: '',
-  is_featured: true,
+  is_featured: false,
+  logo: null,
+  organization_logo: null,
   members: [
     {
-      email: 'admin@rwaq.org',
-      username: 'adminuser',
-      full_name: 'Admin User',
-      date_added: '2026-01-01T00:00:00Z',
-      added_by: 'superadmin',
-      other_organizations: [],
+      id: 7,
+      username: 'admin1',
+      name: 'Admin One',
+      image: null,
+      email: 'a@x.com',
+      date_added: '2026-08-01T00:00:00Z',
+      added_by: 'staff',
+      other_organizations: ['OTHER'],
     },
   ],
 };
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
-
 describe('useOrganizations', () => {
-  beforeEach(() => jest.clearAllMocks());
+  it('camelCases the response and targets Studio', async () => {
+    const get = jest.fn().mockResolvedValue({ data: mockOrgList });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
 
-  it('returns org list data on success', async () => {
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({
-      get: jest.fn().mockResolvedValueOnce({ data: mockOrgList }),
+    const { result } = renderHook(() => useOrganizations({ search: 'rw', pageSize: 10 }), {
+      wrapper: createWrapper(),
     });
-
-    const { result } = renderHook(() => useOrganizations(), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.results).toHaveLength(2);
-    expect(result.current.data?.results[0].name).toBe('Rwaq');
+    expect(get).toHaveBeenCalledWith(`${BASE}/`, {
+      params: { search: 'rw', page_size: 10 },
+    });
+    expect(result.current.data?.results[0].shortName).toBe('Rwaq');
+    expect(result.current.data?.results[0].adminCount).toBe(2);
+    expect(result.current.data?.pagination.numPages).toBe(1);
   });
 
-  it('sets isError on API failure', async () => {
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({
-      get: jest.fn().mockRejectedValueOnce(new Error('Network error')),
+  it('translates the single-select filter into the backend params', async () => {
+    const get = jest.fn().mockResolvedValue({ data: mockOrgList });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
+
+    const { result } = renderHook(() => useOrganizations({ filter: 'no_admins' }), {
+      wrapper: createWrapper(),
     });
 
-    const { result } = renderHook(() => useOrganizations(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(get).toHaveBeenCalledWith(`${BASE}/`, { params: { has_admins: 'false' } });
+  });
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
+  it('maps the inactive filter to active=false', async () => {
+    const get = jest.fn().mockResolvedValue({ data: mockOrgList });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
+
+    const { result } = renderHook(() => useOrganizations({ filter: 'inactive' }), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(get).toHaveBeenCalledWith(`${BASE}/`, { params: { active: 'false' } });
   });
 });
 
 describe('useOrganization', () => {
-  beforeEach(() => jest.clearAllMocks());
+  it('camelCases the detail, including the member roster', async () => {
+    const get = jest.fn().mockResolvedValue({ data: mockOrgDetail });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
 
-  it('fetches org detail by short_name', async () => {
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({
-      get: jest.fn().mockResolvedValueOnce({ data: mockOrgDetail }),
-    });
-
-    const { result } = renderHook(() => useOrganization('rwaq'), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useOrganization('Rwaq'), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.arabic_name).toBe('رواق');
-    expect(result.current.data?.members).toHaveLength(1);
+    expect(get).toHaveBeenCalledWith(`${BASE}/Rwaq/`);
+    expect(result.current.data?.isFeatured).toBe(false);
+    expect(result.current.data?.members[0].otherOrganizations).toEqual(['OTHER']);
+    expect(result.current.data?.members[0].name).toBe('Admin One');
   });
 
-  it('does not fire if shortName is empty', async () => {
-    const getMock = jest.fn();
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get: getMock });
+  it('does not fetch without a short name', () => {
+    const get = jest.fn();
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
 
     renderHook(() => useOrganization(''), { wrapper: createWrapper() });
 
-    // enabled: false when shortName is empty
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
-    expect(getMock).not.toHaveBeenCalled();
+    expect(get).not.toHaveBeenCalled();
+  });
+});
+
+describe('useCreateOrganization', () => {
+  it('posts a snake_cased body', async () => {
+    const post = jest.fn().mockResolvedValue({ data: mockOrgDetail });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ post });
+
+    const { result } = renderHook(() => useCreateOrganization(), { wrapper: createWrapper() });
+
+    result.current.mutate({ name: 'New Org', shortName: 'NEWORG', isFeatured: true });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(post).toHaveBeenCalledWith(`${BASE}/`, {
+      name: 'New Org',
+      short_name: 'NEWORG',
+      is_featured: true,
+    });
+  });
+
+  it('surfaces a duplicate-short-name rejection', async () => {
+    const post = jest.fn().mockRejectedValue({ response: { status: 400 } });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ post });
+
+    const { result } = renderHook(() => useCreateOrganization(), { wrapper: createWrapper() });
+
+    result.current.mutate({ name: 'Dup', shortName: 'DUP' });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });
 
 describe('useUpdateOrganization', () => {
-  beforeEach(() => jest.clearAllMocks());
+  it('always sends detail, which the backend requires on every write', async () => {
+    const patch = jest.fn().mockResolvedValue({ data: mockOrgDetail });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ patch });
 
-  it('calls PATCH and invalidates the detail query on success', async () => {
-    const patchMock = jest.fn().mockResolvedValueOnce({
-      data: { ...mockOrgDetail, arabic_name: 'رواق المحدث' },
-    });
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ patch: patchMock });
+    const { result } = renderHook(() => useUpdateOrganization('Rwaq'), { wrapper: createWrapper() });
 
-    const { result } = renderHook(() => useUpdateOrganization('rwaq'), { wrapper: createWrapper() });
-
-    result.current.mutate({ arabic_name: 'رواق المحدث' });
+    result.current.mutate({ arabicName: 'رواق' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(patchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/rwaq/'),
-      expect.objectContaining({ arabic_name: 'رواق المحدث' }),
-    );
-  });
-
-  it('rolls back on failure', async () => {
-    const patchMock = jest.fn().mockRejectedValueOnce(new Error('Server error'));
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ patch: patchMock });
-
-    const { result } = renderHook(() => useUpdateOrganization('rwaq'), { wrapper: createWrapper() });
-
-    result.current.mutate({ arabic_name: 'bad' });
-
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(patch).toHaveBeenCalledWith(`${BASE}/Rwaq/`, {
+      detail: '',
+      arabic_name: 'رواق',
+    });
   });
 });
 
-describe('useAddOrgAdmin', () => {
-  beforeEach(() => jest.clearAllMocks());
+describe('org admin membership', () => {
+  it('adds an admin by url-encoded email', async () => {
+    const post = jest.fn().mockResolvedValue({ data: {} });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ post });
 
-  it('calls POST to add a member', async () => {
-    const postMock = jest.fn().mockResolvedValueOnce({
-      data: {
-        email: 'new@rwaq.org', username: 'newuser', full_name: 'New User', date_added: '2026-01-01T00:00:00Z', added_by: 'staff', other_organizations: [],
-      },
-    });
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ post: postMock });
+    const { result } = renderHook(() => useAddOrgAdmin('Rwaq'), { wrapper: createWrapper() });
 
-    const { result } = renderHook(() => useAddOrgAdmin('rwaq'), { wrapper: createWrapper() });
-
-    result.current.mutate('new@rwaq.org');
+    result.current.mutate('a+b@x.com');
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(postMock).toHaveBeenCalledWith(
-      expect.stringContaining('members/new%40rwaq.org/'),
-    );
+    expect(post).toHaveBeenCalledWith(`${BASE}/Rwaq/members/a%2Bb%40x.com/`);
   });
 
-  it('sets isError when POST fails', async () => {
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({
-      post: jest.fn().mockRejectedValueOnce(new Error('Fail')),
-    });
+  it('reports a 404 when the email has no account', async () => {
+    const post = jest.fn().mockRejectedValue({ response: { status: 404 } });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ post });
 
-    const { result } = renderHook(() => useAddOrgAdmin('rwaq'), { wrapper: createWrapper() });
-    result.current.mutate('bad@rwaq.org');
+    const { result } = renderHook(() => useAddOrgAdmin('Rwaq'), { wrapper: createWrapper() });
+
+    result.current.mutate('nobody@x.com');
 
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
-});
 
-describe('useRemoveOrgAdmin', () => {
-  beforeEach(() => jest.clearAllMocks());
+  it('removes an admin', async () => {
+    const httpDelete = jest.fn().mockResolvedValue({});
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ delete: httpDelete });
 
-  it('calls DELETE to remove a member', async () => {
-    const deleteMock = jest.fn().mockResolvedValueOnce({});
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ delete: deleteMock });
+    const { result } = renderHook(() => useRemoveOrgAdmin('Rwaq'), { wrapper: createWrapper() });
 
-    const { result } = renderHook(() => useRemoveOrgAdmin('rwaq'), { wrapper: createWrapper() });
-
-    result.current.mutate('admin@rwaq.org');
+    result.current.mutate('a@x.com');
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(deleteMock).toHaveBeenCalledWith(
-      expect.stringContaining('members/admin%40rwaq.org/'),
-    );
+    expect(httpDelete).toHaveBeenCalledWith(`${BASE}/Rwaq/members/a%40x.com/`);
   });
 });

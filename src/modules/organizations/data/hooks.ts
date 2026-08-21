@@ -2,20 +2,21 @@
  * Organizations TanStack Query hooks.
  * Components import from this file only — never from api.ts directly.
  */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { appId } from '@src/constants';
-import type {
-  OrgDetail, OrgListParams, OrgMember, OrgProfilePatch,
-} from './types';
 import {
   addOrgAdmin,
+  createOrganization,
   getOrganization,
   getOrganizations,
   removeOrgAdmin,
   updateOrganization,
 } from './api';
+import type {
+  OrgCreatePayload, OrgDetail, OrgListParams, OrgProfilePatch,
+} from './types';
 
-// ── Query key factory ─────────────────────────────────────────────────────────
+// ── Query key factory ────────────────────────────────────────────────────────
 
 const orgQueryKeys = {
   all: [appId, 'organizations'] as const,
@@ -25,132 +26,78 @@ const orgQueryKeys = {
   detail: (shortName: string) => [...orgQueryKeys.details(), shortName] as const,
 };
 
-// ── Queries ───────────────────────────────────────────────────────────────────
+// ── Queries ──────────────────────────────────────────────────────────────────
 
-/** Paginated org list with search/ordering/page support. */
+/** Paginated org list with search/filter/sort support. */
 export const useOrganizations = (params: OrgListParams = {}) => useQuery({
   queryKey: orgQueryKeys.list(params),
   queryFn: () => getOrganizations(params),
 });
 
-/** Single org detail — profile + members. */
+/** One org's profile plus its Organization Admin roster. */
 export const useOrganization = (shortName: string) => useQuery({
   queryKey: orgQueryKeys.detail(shortName),
   queryFn: () => getOrganization(shortName),
   enabled: !!shortName,
 });
 
-// ── Mutations ─────────────────────────────────────────────────────────────────
+// ── Mutations ────────────────────────────────────────────────────────────────
 
-/**
- * PATCH org profile — optimistic update with rollback on failure.
- * Usage: const mutation = useUpdateOrganization(shortName);
- *        mutation.mutate({ arabic_name: 'جامعة' });
- */
+/** POST a new org, then refresh the list. */
+export const useCreateOrganization = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: OrgCreatePayload) => createOrganization(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orgQueryKeys.lists() });
+    },
+  });
+};
+
+/** PATCH an org's profile. Response is the full detail, so cache it directly. */
 export const useUpdateOrganization = (shortName: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (patch: OrgProfilePatch) => updateOrganization(shortName, patch),
-
-    onMutate: async (patch) => {
-      await queryClient.cancelQueries({ queryKey: orgQueryKeys.detail(shortName) });
-      const previous = queryClient.getQueryData<OrgDetail>(orgQueryKeys.detail(shortName));
-      if (previous) {
-        queryClient.setQueryData<OrgDetail>(orgQueryKeys.detail(shortName), {
-          ...previous,
-          ...patch,
-        });
-      }
-      return { previous };
+    onSuccess: (updated: OrgDetail) => {
+      queryClient.setQueryData(orgQueryKeys.detail(shortName), updated);
     },
-
-    onError: (_err, _patch, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(orgQueryKeys.detail(shortName), context.previous);
-      }
-    },
-
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: orgQueryKeys.detail(shortName) });
+      queryClient.invalidateQueries({ queryKey: orgQueryKeys.lists() });
     },
   });
 };
 
 /**
- * Add an org admin by email (POST).
- * Optimistic: inserts the member into the cached detail before the server responds.
+ * Grant Organization Admin by email.
+ *
+ * Invalidates the list too: adminCount is a column there, so leaving it stale
+ * would show a roster and a count that disagree.
  */
 export const useAddOrgAdmin = (shortName: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (email: string) => addOrgAdmin(shortName, email),
-
-    onMutate: async (email) => {
-      await queryClient.cancelQueries({ queryKey: orgQueryKeys.detail(shortName) });
-      const previous = queryClient.getQueryData<OrgDetail>(orgQueryKeys.detail(shortName));
-      if (previous) {
-        const optimisticMember: OrgMember = {
-          email,
-          username: '',
-          full_name: '',
-          date_added: new Date().toISOString(),
-          added_by: '',
-          other_organizations: [],
-        };
-        queryClient.setQueryData<OrgDetail>(orgQueryKeys.detail(shortName), {
-          ...previous,
-          members: [...previous.members, optimisticMember],
-          admin_count: previous.admin_count + 1,
-        });
-      }
-      return { previous };
-    },
-
-    onError: (_err, _email, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(orgQueryKeys.detail(shortName), context.previous);
-      }
-    },
-
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orgQueryKeys.detail(shortName) });
+      queryClient.invalidateQueries({ queryKey: orgQueryKeys.lists() });
     },
   });
 };
 
-/**
- * Remove an org admin by email (DELETE).
- * Optimistic: removes the member from the cached detail immediately.
- */
+/** Revoke Organization Admin for this org only. */
 export const useRemoveOrgAdmin = (shortName: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (email: string) => removeOrgAdmin(shortName, email),
-
-    onMutate: async (email) => {
-      await queryClient.cancelQueries({ queryKey: orgQueryKeys.detail(shortName) });
-      const previous = queryClient.getQueryData<OrgDetail>(orgQueryKeys.detail(shortName));
-      if (previous) {
-        queryClient.setQueryData<OrgDetail>(orgQueryKeys.detail(shortName), {
-          ...previous,
-          members: previous.members.filter((m) => m.email !== email),
-          admin_count: Math.max(0, previous.admin_count - 1),
-        });
-      }
-      return { previous };
-    },
-
-    onError: (_err, _email, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(orgQueryKeys.detail(shortName), context.previous);
-      }
-    },
-
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orgQueryKeys.detail(shortName) });
+      queryClient.invalidateQueries({ queryKey: orgQueryKeys.lists() });
     },
   });
 };

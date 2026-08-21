@@ -1,4 +1,20 @@
 @use "@openedx/paragon/styles/css/core/custom-media-breakpoints" as paragonCustomMediaBreakpoints;
 
+// Paragon's design tokens, bundled into the app stylesheet.
+//
+// Why this is here rather than loaded at runtime: PARAGON_THEME_URLS is `{}`,
+// so frontend-platform inserts no <link> for the theme and index.html carries
+// none — the built paragon-theme-*.css files are emitted and never loaded.
+// Every `--pgn-color-*` that Paragon's own component CSS references was
+// therefore undefined, which is what made modals transparent
+// (.pgn__modal paints from --pgn-color-modal-content-bg), stripped borders off
+// inputs and buttons, and left charts and tabs unstyled.
+//
+// Bundling the token files makes them present in every environment,
+// deterministically, with no runtime URL machinery to get wrong. These must
+// come before shell.scss so our own overrides still win.
+@import "~@openedx/paragon/styles/css/core/variables";
+@import "~@openedx/paragon/styles/css/themes/light/variables";
+
 @import "~@edx/frontend-component-header/dist/index";
 @import "./components/shell/shell";

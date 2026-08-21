@@ -2,10 +2,12 @@ import { StrictMode, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AppProvider, ErrorPage } from '@edx/frontend-platform/react';
 import {
+  mergeConfig,
   APP_INIT_ERROR, APP_READY, subscribe, initialize,
 } from '@edx/frontend-platform';
+import { AppProvider, ErrorPage } from '@edx/frontend-platform/react';
+import { ToastProvider } from './components/ToastContext';
 
 import messages from './i18n';
 import LoadingPage from './components/LoadingPage';
@@ -38,24 +40,30 @@ subscribe(APP_READY, () => {
         {/* AppProvider already supplies a BrowserRouter (basename from PUBLIC_PATH);
             do NOT add another Router here or React Router throws "Router inside Router". */}
         <AppProvider>
-          <Suspense fallback={<LoadingPage />}>
-            <Routes>
-              <Route element={<AdminShell />}>
-                {/* Live modules */}
-                <Route index element={<DashboardPage />} />
-                <Route path="organizations" element={<OrgListPage />} />
-                <Route path="organizations/:shortName" element={<OrgDetailPage />} />
+          <ToastProvider>
+            <Suspense fallback={<LoadingPage />}>
+              <Routes>
+                <Route element={<AdminShell />}>
+                  {/* Live modules */}
+                  <Route index element={<DashboardPage />} />
+                  <Route path="organizations" element={<OrgListPage />} />
+                  <Route path="organizations/:shortName" element={<OrgDetailPage />} />
 
-                {/* Users */}
-                <Route path="users" element={<UsersListPage />} />
-                <Route path="enrollment" element={<ComingSoon />} />
-                <Route path="analytics" element={<ComingSoon />} />
+                  {/* Users */}
+                  <Route path="users" element={<UsersListPage />} />
+                  {/* Placeholders — the nav marks these "Soon". */}
+                  <Route path="enrollment" element={<ComingSoon />} />
+                  <Route path="courses" element={<ComingSoon />} />
+                  <Route path="programs" element={<ComingSoon />} />
+                  <Route path="reports" element={<ComingSoon />} />
+                  <Route path="categories" element={<ComingSoon />} />
 
-                {/* Catch-all */}
-                <Route path="*" element={<ComingSoon />} />
-              </Route>
-            </Routes>
-          </Suspense>
+                  {/* Catch-all */}
+                  <Route path="*" element={<ComingSoon />} />
+                </Route>
+              </Routes>
+            </Suspense>
+          </ToastProvider>
         </AppProvider>
       </QueryClientProvider>
     </StrictMode>,
@@ -75,4 +83,18 @@ subscribe(APP_INIT_ERROR, (error) => {
 initialize({
   messages,
   requireAuthenticatedUser: true,
+  handlers: {
+    config: () => {
+      // Declared here so every consumer reads them through getConfig() and a
+      // missing value is an explicit null rather than undefined. The runtime
+      // MFE_CONFIG supplies these when the corresponding MFE is deployed;
+      // ACCOUNT_PROFILE_URL in particular is absent in deployments that don't
+      // run the profile MFE, which is why the Profile link pointed nowhere.
+      mergeConfig({
+        ACCOUNT_PROFILE_URL: process.env.ACCOUNT_PROFILE_URL || null,
+        ACCOUNT_SETTINGS_URL: process.env.ACCOUNT_SETTINGS_URL || null,
+        LEARNER_DASHBOARD_URL: process.env.LEARNER_DASHBOARD_URL || null,
+      }, 'RwaqAdminAppConfig');
+    },
+  },
 });

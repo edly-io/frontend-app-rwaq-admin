@@ -43,9 +43,16 @@ Read config only via `getConfig()`. Declare any new `ENABLE_*` / URL var once in
 - **DO** keep `PARAGON_THEME_URLS={}` in every `.env*` (the build injects a local fallback; deployed envs get real URLs from tutor-indigo).
 - **`@edx/brand`** is the brand-override layer — never `import` it in app code; the Paragon webpack plugin consumes it.
 
-> 🔧 **Known fix for this repo:** `src/components/shell/useThemeVariant.ts` currently sets
-> `data-paragon-theme-variant` + localStorage by hand. Refactor it to delegate to
-> `AppContext.paragonTheme.setThemeVariant()` (keep the same public API for TopBar).
+> ⚠️ **Exception, with a reason: this app owns `data-paragon-theme-variant` itself.**
+> Paragon ships **no dark theme** — `@openedx/paragon/styles/css/themes/` contains
+> `light` only, and the Rwaq brand's dark stylesheet lives in a private repo whose raw
+> URL 404s in a browser. With no dark variant registered, `setThemeVariant('dark')`
+> stores the preference and then **removes** the attribute rather than setting it
+> (verified in a browser: localStorage `"dark"`, attribute `null`). Since every dark
+> rule in `shell.scss` keys off that attribute, the whole dark theme silently fails.
+> So `useThemeVariant` lets Paragon own persistence and OS detection, and mirrors the
+> resolved variant onto the attribute itself. Covered by `e2e/theme.spec.ts`. If a
+> real dark stylesheet is ever wired up, this mirror can go.
 
 ## 5. Layout & responsiveness
 - **Content pages:** wrap page content in Paragon **`<Container size="xl" className="p-4 mt-3">`** (`size="md"` for a narrow single-purpose form). Loading/error states reuse the **same** wrapper so width never jumps.
@@ -69,6 +76,8 @@ Read config only via `getConfig()`. Declare any new `ENABLE_*` / URL var once in
 - **Spacing:** `Form.Group` → `mb-4` (standalone editable field); `mb-0` on the last field in a card; `mb-3` for read-only label/value stacks.
 - **Do NOT override `Form.Control` height/width** — Paragon's default sizing (`--pgn-size-form-input-*`) is the standard.
 - Hints: `<Form.Text muted>`. Textareas: `as="textarea" rows={n}` (no height CSS). Enums: `<Form.Control as="select">`.
+- **NEVER use TinyMCE (or any WYSIWYG/rich-text editor) in this MFE.** Not for biographies, notes, descriptions — anything. Admin free-text fields are plain `as="textarea"`. Reasons: it drags in a heavy third-party bundle for a field that holds two sentences; it emits HTML into columns that consumers render as **text**, so markup leaks into learner-facing pages; and it can't be styled to match the Paragon field system. If a field genuinely needs structured content, raise it as a decision — don't reach for an editor.
+- **Field hints that explain how to fill a field in belong on focus, not permanently.** Show them while the input has focus and hide them on blur (`onFocus`/`onBlur` + local state), so a long form isn't a wall of standing advice. Hints that state a permanent constraint ("accounts are never deleted") can stay visible.
 - **Booleans/toggles:** Paragon `Form.Switch` / `SwitchControl` inside a `Form.Group` — **never** a raw `<input type="checkbox">` + manual `<label>`.
 
 ## 7. Modals
@@ -101,7 +110,24 @@ Read config only via `getConfig()`. Declare any new `ENABLE_*` / URL var once in
 ## DO / DON'T — master list
 **DO:** Paragon components + utility classes + `--pgn-*` tokens · `Container size="xl"` pages · `Layout` with all five breakpoints · Formik+Yup forms with `mb-4` groups · Paragon-default field sizing · `Form.Switch` for booleans · `ModalDialog` + `isFullscreenOnMobile` · `data/api.ts`+`apiHooks.ts` seam (hooks-only from components) · camelCase at the API boundary · `getConfig()`/`mergeConfig` for config · `AppContext.paragonTheme.setThemeVariant()` for theming · Toasts for mutations · colocated messages/tests.
 
-**DON'T:** hand-roll a theme provider/hook · hardcode hex/px that has a `--pgn-*` token · override `Form.Control` height/width · use raw `<input type=checkbox>` for booleans · build page-level width/columns with custom/inline CSS · import `api.ts`/the raw client from components · read `process.env` in components · use a full `DataTable` for a few rows · swallow errors · skip the loading/empty/error states (incl. 403-distinct) · centralize all i18n in one file.
+**DON'T:** use TinyMCE or any rich-text editor · hand-roll a theme provider/hook · hardcode hex/px that has a `--pgn-*` token · override `Form.Control` height/width · use raw `<input type=checkbox>` for booleans · build page-level width/columns with custom/inline CSS · import `api.ts`/the raw client from components · read `process.env` in components · use a full `DataTable` for a few rows · swallow errors · skip the loading/empty/error states (incl. 403-distinct) · centralize all i18n in one file.
+
+## 12. Shared components — reuse before building
+These live in `src/components/` and every screen is expected to use them rather than re-solving the same problem:
+
+| Component | Use for |
+|---|---|
+| `SearchFilterBar` | The whole search + filter/sort + applied-chips action bar. Generic over scopes/groups/chips — pass config, don't fork it. |
+| `AdminDataTable` | Any list. **Pass `pagination.pageSize`** matching what the API returns, or the footer's range and page count disagree with the data. |
+| `FormModal` | Any modal containing a form. Fixes the ModalDialog-plus-`<form>` trap (see below) once, for everyone. |
+| `DetailGrid` | Read-only label/value views. Groups of aligned pairs, `isWide` for prose. |
+| `ChipOverflowList` | Chip lists in table cells — shows N then `+M`, keeping row heights uniform. |
+| `ProfileAvatar` | Any user image. Handles both fallback cases (platform default path, load failure). |
+| `ToastContext` (`useToast`) | Mutation success/error feedback. |
+
+Two traps these encode, worth knowing even if you never read their source:
+- **A `<form>` wrapping `ModalDialog.Header/Body/Footer`** breaks the dialog's flex column: the Body stops being the scroll container and its content scrolls *over* the header. `FormModal` fixes it with `display: contents` on the form. Don't assemble form modals by hand.
+- **A profile image URL being present doesn't mean an image exists** — the platform returns a default-avatar path that 404s in this deployment. `ProfileAvatar` drops known-default paths and handles `onError`.
 
 ## Reconciliation with the current codebase (fix-forward)
 - ✅ Keep: TanStack Query + `data/api.ts`/`hooks.ts` seam · `.rwaq-page`/`.rwaq-card` design system · custom sidebar/topbar shell (edly-panel design) · dark-mode tokens in `shell.scss`.
