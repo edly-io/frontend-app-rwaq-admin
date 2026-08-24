@@ -12,10 +12,11 @@
  * superuser-only: a 403 cannot distinguish "you may not use this" from "the
  * server is broken", and the shell needs to tell those apart.
  */
-import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
+import { getAuthenticatedHttpClient, getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { camelCaseObject } from '@edx/frontend-platform';
 import { useQuery } from '@tanstack/react-query';
 import { appId } from '@src/constants';
+import { getErrorStatus } from './httpError';
 import { getStudioApiUrl } from './utils';
 
 export interface AdminCapabilities {
@@ -26,9 +27,42 @@ export interface AdminCapabilities {
   canAccessAdminPanel: boolean;
 }
 
+/**
+ * A 404 means the backend predates this endpoint, not that access is refused.
+ *
+ * The two deploy as separate artifacts, so an MFE can be live against a backend
+ * without /me/. Treating that as a denial would lock every admin out of the
+ * whole panel — superusers included — for the length of the deploy gap.
+ *
+ * So a missing endpoint falls back to the claim the older backend actually
+ * gated on: `administrator`, which is is_staff. That is the correct answer for
+ * that backend, and the server stays the enforcer regardless — every endpoint
+ * checks permission itself, so a too-generous guess here shows the shell to
+ * someone whose requests are still refused, rather than granting anything.
+ */
+const capabilitiesFromJwtClaim = (): AdminCapabilities => {
+  const user = getAuthenticatedUser() as
+    { username?: string; administrator?: boolean } | null;
+  const isStaff = user?.administrator === true;
+  return {
+    username: user?.username ?? '',
+    // The claim cannot tell us this — frontend-platform never surfaces it.
+    isSuperuser: false,
+    isGlobalStaff: isStaff,
+    canAccessAdminPanel: isStaff,
+  };
+};
+
 export const getAdminCapabilities = async (): Promise<AdminCapabilities> => {
-  const { data } = await getAuthenticatedHttpClient().get(getStudioApiUrl('/api/v1/admin/me/'));
-  return camelCaseObject(data) as AdminCapabilities;
+  try {
+    const { data } = await getAuthenticatedHttpClient().get(getStudioApiUrl('/api/v1/admin/me/'));
+    return camelCaseObject(data) as AdminCapabilities;
+  } catch (error) {
+    if (getErrorStatus(error) === 404) {
+      return capabilitiesFromJwtClaim();
+    }
+    throw error;
+  }
 };
 
 /**

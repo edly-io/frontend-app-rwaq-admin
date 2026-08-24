@@ -31,6 +31,16 @@ const messages = defineMessages({
     id: 'rwaq.admin.shell.accessDeniedTitle',
     defaultMessage: 'Access denied',
   },
+  // Names the requirement and who can grant it. The generic 403 body ("you do
+  // not have permission to view this page") leaves a locked-out Global Staff
+  // admin — privileged on every other Open edX surface — with no idea what is
+  // missing or who to ask.
+  accessDeniedBody: {
+    id: 'rwaq.admin.shell.accessDeniedBody',
+    defaultMessage: 'The admin panel is available to superusers only. If you need access, '
+      + 'ask an existing superuser to grant it from this panel, or a platform administrator '
+      + 'to set it in Django admin.',
+  },
 });
 
 const BREAKPOINT_MD = 768;
@@ -160,6 +170,7 @@ const AdminShell = () => {
           <ErrorState
             statusCode={403}
             title={intl.formatMessage(messages.accessDeniedTitle)}
+            body={intl.formatMessage(messages.accessDeniedBody)}
           />
         </Container>
       </div>
