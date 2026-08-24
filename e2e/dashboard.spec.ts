@@ -139,17 +139,20 @@ test('users list paginates without losing rows', async ({ page }) => {
   await page.goto('/admin/users', { waitUntil: 'networkidle' });
 
   await expect(page.getByRole('heading', { name: 'User Management', level: 1 })).toBeVisible();
-  // networkidle only means the requests settled — React still has to paint.
-  await page.waitForTimeout(1500);
+  // Wait for a row, not a stopwatch. networkidle is unreliable here now that the
+  // shell asks /api/v1/admin/me/ before any page mounts: the network goes quiet
+  // in the gap between that request and the page's own, so "idle" can arrive
+  // before the table has even been requested.
+  await expect(page.locator('tbody tr').first()).toBeVisible();
   const firstPageRows = await page.locator('tbody tr').count();
   test.skip(firstPageRows === 0, 'No users in this environment to paginate.');
 
   const next = page.getByRole('button', { name: /next/i });
   if (await next.isVisible()) {
     await next.click();
-    // The row set is replaced, not appended, so wait for paint rather than
-    // counting the instant the request settles.
-    await page.waitForTimeout(1500);
+    // The row set is replaced, not appended, so poll the count rather than
+    // sleeping a guessed interval and hoping the paint landed.
+    await expect.poll(() => page.locator('tbody tr').count()).toBeGreaterThan(0);
     const secondPageRows = await page.locator('tbody tr').count();
     // eslint-disable-next-line no-console
     console.log('PAGINATION rows: page1=', firstPageRows, 'page2=', secondPageRows);

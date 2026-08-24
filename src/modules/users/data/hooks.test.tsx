@@ -168,7 +168,7 @@ describe('useCreateUser', () => {
       email: 'new@x.com',
       name: 'New',
       isGlobalStaff: true,
-      isCourseCreator: false,
+      isSuperuser: false,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -178,7 +178,7 @@ describe('useCreateUser', () => {
         email: 'new@x.com',
         name: 'New',
         is_global_staff: true,
-        is_course_creator: false,
+        is_superuser: false,
       },
     );
   });

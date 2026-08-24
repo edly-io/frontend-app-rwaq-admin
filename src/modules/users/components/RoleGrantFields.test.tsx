@@ -1,5 +1,7 @@
 /**
- * Role grant switches: the confirm gate on Global Staff and the self-revoke lock.
+ * Role grant switches: the confirm gates on the two assignable grants, the
+ * self-revoke locks, and that the grants this panel no longer assigns are
+ * reported without a switch.
  */
 import { screen, fireEvent } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
@@ -7,18 +9,47 @@ import RoleGrantFields, { RoleGrantValues } from './RoleGrantFields';
 
 const noGrants: RoleGrantValues = {
   isGlobalStaff: false,
-  isCourseCreator: false,
-  isSupportStaff: false,
+  isSuperuser: false,
 };
 
 describe('RoleGrantFields', () => {
-  it('grants Support Staff directly, with no confirmation', () => {
+  it('does not grant Superuser until the confirmation is accepted', () => {
     const onChange = jest.fn();
     renderWrapper(<RoleGrantFields values={noGrants} onChange={onChange} />);
 
-    fireEvent.click(screen.getByRole('switch', { name: /support staff/i }));
+    fireEvent.click(screen.getByRole('switch', { name: /superuser/i }));
 
-    expect(onChange).toHaveBeenCalledWith('isSupportStaff', true);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByText(/grant superuser\?/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /grant superuser/i }));
+    expect(onChange).toHaveBeenCalledWith('isSuperuser', true);
+  });
+
+  // The panel is superuser-gated, so this is the switch that could lock an
+  // admin out of the screen they are standing on.
+  it('locks the Superuser switch when the admin is editing themselves', () => {
+    renderWrapper(
+      <RoleGrantFields
+        values={{ ...noGrants, isSuperuser: true }}
+        onChange={jest.fn()}
+        canRevokeSuperuser={false}
+      />,
+    );
+
+    expect(screen.getByRole('switch', { name: /superuser/i })).toBeDisabled();
+    expect(screen.getByText(/cannot remove your own superuser/i)).toBeInTheDocument();
+  });
+
+  it('reports Course Creator and Support Staff without offering a switch', () => {
+    renderWrapper(
+      <RoleGrantFields values={noGrants} onChange={jest.fn()} isCourseCreator isSupportStaff />,
+    );
+
+    expect(screen.getByText('Course Creator')).toBeInTheDocument();
+    expect(screen.getByText('Support Staff')).toBeInTheDocument();
+    expect(screen.queryByRole('switch', { name: /course creator/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('switch', { name: /support staff/i })).not.toBeInTheDocument();
   });
 
   it('does not grant Global Staff until the confirmation is accepted', () => {
@@ -68,20 +99,12 @@ describe('RoleGrantFields', () => {
     expect(screen.getByText(/cannot revoke your own global staff/i)).toBeInTheDocument();
   });
 
-  it('shows read-only superuser and organization-admin context', () => {
+  it('shows read-only organization-admin context without a switch', () => {
     renderWrapper(
-      <RoleGrantFields
-        values={noGrants}
-        onChange={jest.fn()}
-        isSuperuser
-        orgAdminOf={['RWAQ']}
-      />,
+      <RoleGrantFields values={noGrants} onChange={jest.fn()} orgAdminOf={['RWAQ']} />,
     );
 
-    expect(screen.getByText('Superuser')).toBeInTheDocument();
     expect(screen.getByText('RWAQ')).toBeInTheDocument();
-    // ...and no switch for either of them.
-    expect(screen.queryByRole('switch', { name: /superuser/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('switch', { name: /organization admin/i })).not.toBeInTheDocument();
   });
 });
