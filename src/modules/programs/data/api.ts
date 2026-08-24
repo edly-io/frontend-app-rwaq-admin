@@ -56,7 +56,12 @@ export const updateProgram = async (uuid: string, patch: ProgramPatch): Promise<
 
 // ── Courses ────────────────────────────────────────────────────────────────────
 
-/** GET /api/v1/admin/programs/{uuid}/courses/ */
+/**
+ * GET /api/v1/admin/programs/{uuid}/courses/
+ * Assumes the backend returns a flat array (no NamespacedPageNumberPagination wrapper).
+ * If the endpoint is later paginated, change the return type to a response envelope
+ * and update useProgramCourses accordingly.
+ */
 export const getProgramCourses = async (uuid: string): Promise<ProgramCourse[]> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/courses/`);
   return camelCaseObject(data) as ProgramCourse[];
@@ -64,7 +69,10 @@ export const getProgramCourses = async (uuid: string): Promise<ProgramCourse[]> 
 
 // ── Learners ───────────────────────────────────────────────────────────────────
 
-/** GET /api/v1/admin/programs/{uuid}/learners/ */
+/**
+ * GET /api/v1/admin/programs/{uuid}/learners/
+ * Assumes a flat array response — same caveat as getProgramCourses above.
+ */
 export const getProgramLearners = async (uuid: string): Promise<ProgramLearner[]> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/learners/`);
   return camelCaseObject(data) as ProgramLearner[];

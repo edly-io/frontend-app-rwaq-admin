@@ -28,7 +28,7 @@ import {
   useProgramLearners,
   useUpdateProgram,
 } from './data/hooks';
-import type { ProgramStatus } from './data/types';
+import type { ProgramPatch, ProgramStatus } from './data/types';
 import messages from './messages';
 
 type Tab = 'courses' | 'learners';
@@ -50,7 +50,7 @@ const SettingsCard = ({
   const { showToast } = useToast();
   const { mutate, isPending } = useUpdateProgram(uuid);
 
-  const patch = (update: Record<string, unknown>) => {
+  const patch = (update: ProgramPatch) => {
     mutate(update, {
       onSuccess: () => showToast(intl.formatMessage(messages.settingSaved)),
       onError: () => showToast(intl.formatMessage(messages.settingError)),
@@ -132,7 +132,7 @@ const CoursesTab = ({ uuid }: { uuid: string }) => {
   const { data, isLoading, isError } = useProgramCourses(uuid);
 
   if (isLoading) {
-    return <div className="py-4 text-center"><Spinner animation="border" screenReaderText="Loading" /></div>;
+    return <div className="py-4 text-center"><Spinner animation="border" screenReaderText={intl.formatMessage(messages.detailLoading)} /></div>;
   }
 
   if (isError) {
@@ -177,7 +177,7 @@ const LearnersTab = ({ uuid }: { uuid: string }) => {
   const { data, isLoading, isError } = useProgramLearners(uuid);
 
   if (isLoading) {
-    return <div className="py-4 text-center"><Spinner animation="border" screenReaderText="Loading" /></div>;
+    return <div className="py-4 text-center"><Spinner animation="border" screenReaderText={intl.formatMessage(messages.detailLoading)} /></div>;
   }
 
   if (isError) {
@@ -233,9 +233,11 @@ const TabBar = ({ active, onChange, labels }: TabBarProps) => (
     {(Object.keys(labels) as Tab[]).map((tab) => (
       <button
         key={tab}
+        id={`tab-${tab}`}
         type="button"
         role="tab"
         aria-selected={active === tab}
+        aria-controls={`tabpanel-${tab}`}
         onClick={() => onChange(tab)}
         style={{
           background: 'none',
@@ -264,7 +266,9 @@ const TabBar = ({ active, onChange, labels }: TabBarProps) => (
 const ProgramDetailPage = () => {
   const intl = useIntl();
   const { uuid = '' } = useParams();
-  const { data: program, isLoading, isError } = useProgram(uuid);
+  const {
+    data: program, isLoading, isError, error,
+  } = useProgram(uuid);
   const [activeTab, setActiveTab] = useState<Tab>('courses');
 
   const dash = intl.formatMessage(messages.detailNone);
@@ -280,9 +284,12 @@ const ProgramDetailPage = () => {
   }
 
   if (isError || !program) {
+    const is404 = (error as { response?: { status?: number } } | null)?.response?.status === 404;
     return (
       <div className="rwaq-page">
-        <Alert variant="danger">{intl.formatMessage(messages.notFound)}</Alert>
+        <Alert variant="danger">
+          {intl.formatMessage(is404 ? messages.notFound : messages.detailLoadError)}
+        </Alert>
       </div>
     );
   }
@@ -341,7 +348,7 @@ const ProgramDetailPage = () => {
             {
               label: intl.formatMessage(messages.detailIntroVideo),
               value: program.introVideoUrl
-                ? <a href={program.introVideoUrl} target="_blank" rel="noreferrer">{program.introVideoId}</a>
+                ? <a href={program.introVideoUrl} target="_blank" rel="noreferrer">{program.introVideoId ?? program.introVideoUrl}</a>
                 : dash,
             },
             {
@@ -381,8 +388,14 @@ const ProgramDetailPage = () => {
           }}
         />
 
-        {activeTab === 'courses' && <CoursesTab uuid={program.uuid} />}
-        {activeTab === 'learners' && <LearnersTab uuid={program.uuid} />}
+        {/* Both panels stay mounted so aria-controls always resolves in the DOM.
+            Hidden via the HTML `hidden` attribute rather than unmounting. */}
+        <div id="tabpanel-courses" role="tabpanel" aria-labelledby="tab-courses" hidden={activeTab !== 'courses'}>
+          <CoursesTab uuid={program.uuid} />
+        </div>
+        <div id="tabpanel-learners" role="tabpanel" aria-labelledby="tab-learners" hidden={activeTab !== 'learners'}>
+          <LearnersTab uuid={program.uuid} />
+        </div>
       </div>
     </div>
   );

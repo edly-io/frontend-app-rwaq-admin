@@ -6,7 +6,7 @@
  *
  * Sized to match ProfileAvatar in other tables (size="sm" = 32×32).
  */
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Avatar } from '@openedx/paragon';
 
 export interface ProgramImageProps {
@@ -29,8 +29,8 @@ const ProgramImage = ({
 
   const [step, setStep] = useState(0);
 
-  // A new row resets to the first candidate.
-  useEffect(() => setStep(0), [cardImage, organizationLogo]);
+  // A new row resets to the first candidate before the browser paints (avoids one-frame flash).
+  useLayoutEffect(() => setStep(0), [cardImage, organizationLogo]);
 
   const currentSrc = step < sources.length ? sources[step] : undefined;
 

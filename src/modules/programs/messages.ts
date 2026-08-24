@@ -54,6 +54,7 @@ const messages = defineMessages({
   breadcrumb: { id: 'rwaq.admin.programs.detail.breadcrumb', defaultMessage: 'Programs' },
   detailLoading: { id: 'rwaq.admin.programs.detail.loading', defaultMessage: 'Loading program…' },
   notFound: { id: 'rwaq.admin.programs.detail.notFound', defaultMessage: 'Program not found or you do not have permission to view it.' },
+  detailLoadError: { id: 'rwaq.admin.programs.detail.loadError', defaultMessage: 'Failed to load program. Please try again.' },
 
   // ── Detail — overview ──────────────────────────────────────────────────────
   detailOverview: { id: 'rwaq.admin.programs.detail.overview', defaultMessage: 'Overview' },

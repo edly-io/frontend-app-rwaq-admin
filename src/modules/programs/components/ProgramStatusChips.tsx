@@ -37,7 +37,7 @@ const ProgramStatusChips = ({
     active: intl.formatMessage(messages.statusActive),
     draft: intl.formatMessage(messages.statusDraft),
     archived: intl.formatMessage(messages.statusArchived),
-  }[status];
+  }[status] ?? status; // fall back to raw value for unknown future statuses
 
   return (
     <div className={`d-flex align-items-center flex-wrap rwaq-chip-list${className ? ` ${className}` : ''}`}>

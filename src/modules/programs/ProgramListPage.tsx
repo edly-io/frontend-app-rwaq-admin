@@ -14,7 +14,7 @@ import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
 import ProgramImage from './components/ProgramImage';
 import { usePrograms } from './data/hooks';
-import type { ProgramFilter, ProgramOrdering, ProgramSummary } from './data/types';
+import type { ProgramFilter, ProgramOrdering, ProgramStatus, ProgramSummary } from './data/types';
 import messages from './messages';
 
 const PAGE_SIZE = 10;
@@ -43,10 +43,17 @@ const SORT_OPTIONS: { value: ProgramOrdering; label: MessageKey }[] = [
   { value: '-start_date', label: 'sortStartDate' },
 ];
 
-const STATUS_VARIANT: Record<string, string> = {
+const STATUS_VARIANT: Record<ProgramStatus, string> = {
   active: 'success',
   draft: 'warning',
   archived: 'light',
+};
+
+// Explicit status → message key map avoids runtime throw on unknown status values.
+const STATUS_MESSAGE: Record<ProgramStatus, MessageKey> = {
+  active: 'statusActive',
+  draft: 'statusDraft',
+  archived: 'statusArchived',
 };
 
 const ProgramListPage = () => {
@@ -54,7 +61,7 @@ const ProgramListPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const page = Number(searchParams.get('page') ?? 1);
+  const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const search = searchParams.get('search') ?? '';
   const filter = (searchParams.get('filter') as ProgramFilter | null) ?? 'all';
   const hasExplicitOrdering = searchParams.get('ordering') !== null;
@@ -97,15 +104,21 @@ const ProgramListPage = () => {
 
   const statusCode = isError ? getErrorStatus(error) : undefined;
 
-  const filterOptions = FILTER_OPTIONS.map((option) => ({
-    value: option.value,
-    label: intl.formatMessage(messages[option.label]),
-  }));
+  const filterOptions = useMemo(
+    () => FILTER_OPTIONS.map((option) => ({
+      value: option.value,
+      label: intl.formatMessage(messages[option.label]),
+    })),
+    [intl],
+  );
 
-  const sortOptions = SORT_OPTIONS.map((option) => ({
-    value: option.value,
-    label: intl.formatMessage(messages[option.label]),
-  }));
+  const sortOptions = useMemo(
+    () => SORT_OPTIONS.map((option) => ({
+      value: option.value,
+      label: intl.formatMessage(messages[option.label]),
+    })),
+    [intl],
+  );
 
   const appliedChips = useMemo(() => {
     const chips: AppliedChip[] = [];
@@ -139,23 +152,22 @@ const ProgramListPage = () => {
     }
 
     return chips;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, filter, ordering, hasExplicitOrdering, intl, updateParams]);
+  }, [search, filter, ordering, hasExplicitOrdering, intl, updateParams, filterOptions, sortOptions]);
 
-  const columns: ColumnDef<ProgramSummary>[] = [
+  const columns = useMemo<ColumnDef<ProgramSummary>[]>(() => [
     {
       label: intl.formatMessage(messages.colProgram),
       key: 'name',
       renderCell: (_value, row) => (
         <div className="d-flex align-items-center gap-3">
           <ProgramImage
-            cardImage={row.cardImage as string | null}
-            organizationLogo={row.organizationLogo as string | null}
-            programName={row.name as string}
+            cardImage={row.cardImage}
+            organizationLogo={row.organizationLogo}
+            programName={row.name}
           />
           <div>
-            <span className="rwaq-user-cell__name d-block">{row.name as string}</span>
-            <span className="text-muted small">{row.programKey as string}</span>
+            <span className="rwaq-user-cell__name d-block">{row.name}</span>
+            <span className="text-muted small">{row.programKey}</span>
           </div>
         </div>
       ),
@@ -163,8 +175,8 @@ const ProgramListPage = () => {
     {
       label: intl.formatMessage(messages.colOrganization),
       key: 'organization',
-      renderCell: (value) => (
-        <span>{value as string}</span>
+      renderCell: (_value, row) => (
+        <span>{row.organization}</span>
       ),
     },
     {
@@ -172,10 +184,10 @@ const ProgramListPage = () => {
       key: 'status',
       renderCell: (_value, row) => (
         <div className="d-flex flex-column gap-1">
-          <Chip className={`rwaq-chip rwaq-chip--${STATUS_VARIANT[row.status as string] ?? 'light'}`}>
-            {intl.formatMessage(messages[`status${(row.status as string).charAt(0).toUpperCase() + (row.status as string).slice(1)}` as MessageKey])}
+          <Chip className={`rwaq-chip rwaq-chip--${STATUS_VARIANT[row.status] ?? 'light'}`}>
+            {intl.formatMessage(messages[STATUS_MESSAGE[row.status] ?? 'statusDraft'])}
           </Chip>
-          {row.isHide && (
+          {row.isHide === true && (
             <Chip className="rwaq-chip rwaq-chip--danger">
               {intl.formatMessage(messages.tagHidden)}
             </Chip>
@@ -196,15 +208,15 @@ const ProgramListPage = () => {
           <Button
             variant="outline-primary"
             size="sm"
-            onClick={() => navigate(`/programs/${row.uuid as string}`)}
-            aria-label={`${intl.formatMessage(messages.view)} ${row.name as string}`}
+            onClick={() => navigate(`/programs/${row.uuid}`)}
+            aria-label={`${intl.formatMessage(messages.view)} ${row.name}`}
           >
             {intl.formatMessage(messages.view)}
           </Button>
         </div>
       ),
     },
-  ];
+  ], [intl, navigate]);
 
   return (
     <div className="rwaq-page rwaq-page--fit">

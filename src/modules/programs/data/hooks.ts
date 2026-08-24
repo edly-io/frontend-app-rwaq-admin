@@ -2,7 +2,7 @@
  * Programs TanStack Query hooks.
  * Components import from this file only — never from api.ts directly.
  */
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { appId } from '@src/constants';
 import {
   getProgram,
@@ -31,6 +31,9 @@ const programQueryKeys = {
 export const usePrograms = (params: ProgramListParams = {}) => useQuery({
   queryKey: programQueryKeys.list(params),
   queryFn: () => getPrograms(params),
+  // Keeps the previous page's data visible during a page/filter/sort change
+  // so AdminDataTable never flashes an empty loading skeleton mid-navigation.
+  placeholderData: keepPreviousData,
 });
 
 /** One program's full detail. */
@@ -40,14 +43,17 @@ export const useProgram = (uuid: string) => useQuery({
   enabled: !!uuid,
 });
 
-/** Courses linked to a program — lazy, only enabled when uuid is present. */
+/** Courses linked to a program. The actual lazy gate is the conditional render
+ *  in ProgramDetailPage — CoursesTab is only mounted when the tab is active,
+ *  so this hook only executes then. `enabled: !!uuid` guards the pathological
+ *  case where the hook is called with an empty string during initial render. */
 export const useProgramCourses = (uuid: string) => useQuery({
   queryKey: programQueryKeys.courses(uuid),
   queryFn: () => getProgramCourses(uuid),
   enabled: !!uuid,
 });
 
-/** Learners enrolled in a program — lazy, only enabled when uuid is present. */
+/** Learners enrolled in a program. Same lazy-render contract as useProgramCourses. */
 export const useProgramLearners = (uuid: string) => useQuery({
   queryKey: programQueryKeys.learners(uuid),
   queryFn: () => getProgramLearners(uuid),
