@@ -119,10 +119,17 @@ export interface UnenrollPayload {
 export type ProfileVisibility = 'private' | 'public';
 
 /** The assignable grants, as sent on create/patch. */
+/**
+ * The grants this panel assigns.
+ *
+ * Only these two. Course Creator and Support Staff are still *reported* by the
+ * read types, but the API rejects them on write with a 400 — Course Creator in
+ * particular follows from an Organization Admin grant, so a toggle here would
+ * fight the Organizations screen over the same rows.
+ */
 export interface UserGrantPayload {
   isGlobalStaff?: boolean;
-  isCourseCreator?: boolean;
-  isSupportStaff?: boolean;
+  isSuperuser?: boolean;
 }
 
 /** POST /api/v1/admin/users/ body */
@@ -153,7 +160,10 @@ export type SearchBy = 'email' | 'name' | 'user_id' | 'job';
 export type UserFilter =
   | 'all'
   | 'global_staff'
+  | 'superuser'
   | 'course_creator'
+  // Still accepted by the API — a bookmarked ?filter=support_staff keeps
+  // working — but no longer offered in the dropdown.
   | 'support_staff'
   | 'org_admin'
   | 'learner'

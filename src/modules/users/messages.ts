@@ -36,6 +36,7 @@ const messages = defineMessages({
   filterLabel: { id: 'rwaq.admin.users.filter.label', defaultMessage: 'Filter' },
   filterAll: { id: 'rwaq.admin.users.filter.all', defaultMessage: 'All users' },
   filterGlobalStaff: { id: 'rwaq.admin.users.filter.globalStaff', defaultMessage: 'Global Staff' },
+  filterSuperuser: { id: 'rwaq.admin.users.filter.superuser', defaultMessage: 'Superusers' },
   filterCourseCreator: { id: 'rwaq.admin.users.filter.courseCreator', defaultMessage: 'Course Creators' },
   filterSupportStaff: { id: 'rwaq.admin.users.filter.supportStaff', defaultMessage: 'Support Staff' },
   filterOrgAdmin: { id: 'rwaq.admin.users.filter.orgAdmin', defaultMessage: 'Organization Admins' },
@@ -94,7 +95,9 @@ const messages = defineMessages({
   },
   tooltipGlobalStaff: {
     id: 'rwaq.admin.users.tooltip.globalStaff',
-    defaultMessage: 'Full platform administrator — access to all courses and the Django admin. Highest routine privilege.',
+    defaultMessage: 'Full access to every course in Studio and the LMS, without needing to be '
+      + 'on a Course Team, and can create courses. Also allows signing in to Django admin. '
+      + 'Does not grant access to this admin panel — that is Superuser.',
   },
   tooltipCourseCreator: {
     id: 'rwaq.admin.users.tooltip.courseCreator',
@@ -106,7 +109,9 @@ const messages = defineMessages({
   },
   tooltipSuperuser: {
     id: 'rwaq.admin.users.tooltip.superuser',
-    defaultMessage: 'Unrestricted access. Assigned by devops only, never from this screen.',
+    defaultMessage: 'Grants access to this admin panel, and bypasses every permission check in '
+      + 'Django admin. On its own it grants no access to courses or Studio — that is Global Staff. '
+      + 'Grant it only to someone who should be able to do anything here.',
   },
   tooltipOrgAdmin: {
     id: 'rwaq.admin.users.tooltip.orgAdmin',
@@ -156,12 +161,35 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.form.orgAdminNote',
     defaultMessage: 'Organization Admin — granted on the Organizations screen.',
   },
+  courseCreatorNote: {
+    id: 'rwaq.admin.users.form.courseCreatorNote',
+    defaultMessage: 'Course Creator — follows automatically from an Organization Admin grant, '
+      + 'scoped to that organization.',
+  },
   courseRolesNote: {
     id: 'rwaq.admin.users.form.courseRolesNote',
     defaultMessage: 'Course Instructor, Course Staff and Forum Moderator — per-course roles, assigned in Studio on the course\'s Course Team page.',
   },
   save: { id: 'rwaq.admin.users.form.save', defaultMessage: 'Save' },
   create: { id: 'rwaq.admin.users.form.create', defaultMessage: 'Create user' },
+  selfRevokeSuperuserBlocked: {
+    id: 'rwaq.admin.users.roles.selfRevokeSuperuserBlocked',
+    defaultMessage: 'You cannot remove your own Superuser access — it is what grants you this panel.',
+  },
+  confirmSuperuserTitle: {
+    id: 'rwaq.admin.users.roles.confirmSuperuserTitle',
+    defaultMessage: 'Grant Superuser?',
+  },
+  confirmSuperuserBody: {
+    id: 'rwaq.admin.users.roles.confirmSuperuserBody',
+    defaultMessage: 'Superuser bypasses every permission check in Django, and grants access to '
+      + 'this admin panel. It does not by itself grant access to courses or Studio — that is '
+      + 'Global Staff. Only grant it to someone who should be able to do anything here.',
+  },
+  confirmSuperuserAction: {
+    id: 'rwaq.admin.users.roles.confirmSuperuserAction',
+    defaultMessage: 'Grant Superuser',
+  },
   cancel: { id: 'rwaq.admin.users.form.cancel', defaultMessage: 'Cancel' },
   requiredField: { id: 'rwaq.admin.users.form.required', defaultMessage: 'This field is required.' },
   invalidEmail: { id: 'rwaq.admin.users.form.invalidEmail', defaultMessage: 'Enter a valid email address.' },

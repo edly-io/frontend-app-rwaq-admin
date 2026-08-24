@@ -4,7 +4,7 @@
  *
  * Left:  Welcome label + user full name (desktop) / hamburger + logo (mobile)
  * Right: Theme toggle, Avatar/account dropdown (name/email/role, Dark Mode,
- *        Profile, Account, Studio, Learner Dashboard, Logout).
+ *        Profile, Account, Studio, LMS, Logout).
  *
  * No notification bell (the platform has no notifications surface here).
  */
@@ -35,7 +35,7 @@ const messages = defineMessages({
   profile: { id: 'rwaq.admin.topbar.profile', defaultMessage: 'Profile' },
   accountSettings: { id: 'rwaq.admin.topbar.accountSettings', defaultMessage: 'Account' },
   studio: { id: 'rwaq.admin.topbar.studio', defaultMessage: 'Studio' },
-  learnerDashboard: { id: 'rwaq.admin.topbar.learnerDashboard', defaultMessage: 'Learner Dashboard' },
+  learnerDashboard: { id: 'rwaq.admin.topbar.learnerDashboard', defaultMessage: 'LMS' },
   logout: { id: 'rwaq.admin.topbar.logout', defaultMessage: 'Log out' },
   openNav: { id: 'rwaq.admin.topbar.openNav', defaultMessage: 'Open navigation' },
 });

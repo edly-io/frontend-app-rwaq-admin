@@ -52,8 +52,7 @@ const emptyValues: FormValues = {
   profileVisibility: 'private',
   isActive: true,
   isGlobalStaff: false,
-  isCourseCreator: false,
-  isSupportStaff: false,
+  isSuperuser: false,
 };
 
 const toFormValues = (user: UserDetail | null): FormValues => (user
@@ -66,8 +65,7 @@ const toFormValues = (user: UserDetail | null): FormValues => (user
     profileVisibility: user.profileVisibility ?? 'private',
     isActive: user.isActive,
     isGlobalStaff: user.roles.isGlobalStaff,
-    isCourseCreator: user.roles.isCourseCreator,
-    isSupportStaff: user.roles.isSupportStaff,
+    isSuperuser: user.roles.isSuperuser,
   }
   : emptyValues);
 
@@ -142,8 +140,7 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
             profileVisibility: values.profileVisibility,
             isActive: values.isActive,
             isGlobalStaff: values.isGlobalStaff,
-            isCourseCreator: values.isCourseCreator,
-            isSupportStaff: values.isSupportStaff,
+            isSuperuser: values.isSuperuser,
           };
           await createMutation.mutateAsync(payload);
           showToast(intl.formatMessage(messages.toastCreated, { name: values.name }));
@@ -303,13 +300,14 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
         <RoleGrantFields
           values={{
             isGlobalStaff: formik.values.isGlobalStaff,
-            isCourseCreator: formik.values.isCourseCreator,
-            isSupportStaff: formik.values.isSupportStaff,
+            isSuperuser: formik.values.isSuperuser,
           }}
           onChange={(field, value) => formik.setFieldValue(field, value)}
-          isSuperuser={user?.roles.isSuperuser}
+          isCourseCreator={user?.roles.isCourseCreator}
+          isSupportStaff={user?.roles.isSupportStaff}
           orgAdminOf={user?.roles.orgAdminOf}
           canRevokeGlobalStaff={!isSelf}
+          canRevokeSuperuser={!isSelf}
         />
       </section>
 

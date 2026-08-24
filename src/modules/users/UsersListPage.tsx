@@ -59,8 +59,11 @@ const SEARCH_PLACEHOLDERS: Record<SearchBy, typeof messages[MessageKey]> = {
 const FILTER_OPTIONS: { value: UserFilter; label: MessageKey }[] = [
   { value: 'all', label: 'filterAll' },
   { value: 'global_staff', label: 'filterGlobalStaff' },
+  { value: 'superuser', label: 'filterSuperuser' },
+  // Course Creator stays: it is still shown as a badge and still arrives
+  // automatically with an Organization Admin grant, so users really hold it and
+  // need to be findable. Support Staff is no longer surfaced by this screen.
   { value: 'course_creator', label: 'filterCourseCreator' },
-  { value: 'support_staff', label: 'filterSupportStaff' },
   { value: 'org_admin', label: 'filterOrgAdmin' },
   { value: 'learner', label: 'filterLearner' },
   { value: 'active', label: 'filterActive' },

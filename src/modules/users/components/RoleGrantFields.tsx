@@ -2,13 +2,18 @@
  * The platform-role grant switches.
  *
  * Role is not a single field: each grant is independent and additive on top of
- * Learner, which every account has. Superuser and Organization Admin are shown
- * read-only — the first is reserved for devops, the second is granted on the
- * Organizations screen.
+ * Learner, which every account has.
  *
- * Global Staff is confirm-gated (it is the highest routine privilege), and
- * cannot be switched off for the signed-in admin — the backend rejects that
- * too, but disabling it here explains why before the click.
+ * Two are assignable — Global Staff and Superuser. Both are confirm-gated, and
+ * neither can be switched off for the signed-in admin: the backend rejects
+ * that, but disabling it here explains why before the click. Superuser matters
+ * doubly, because it is what grants access to this panel at all, so revoking
+ * your own would close the door behind you.
+ *
+ * Course Creator, Support Staff and Organization Admin are read-only. They are
+ * shown rather than hidden because they represent real access an admin needs to
+ * see — Course Creator in particular follows automatically from an Organization
+ * Admin grant, so omitting it would misreport what a user can do.
  */
 import { useState } from 'react';
 import {
@@ -46,21 +51,26 @@ interface RoleGrantFieldsProps {
   values: RoleGrantValues;
   onChange: (field: keyof RoleGrantValues, value: boolean) => void;
   /** Read-only context from the server; absent when creating a user. */
-  isSuperuser?: boolean;
+  isCourseCreator?: boolean;
+  isSupportStaff?: boolean;
   orgAdminOf?: string[];
   /** False when the admin is editing their own account. */
   canRevokeGlobalStaff?: boolean;
+  canRevokeSuperuser?: boolean;
 }
 
 const RoleGrantFields = ({
   values,
   onChange,
-  isSuperuser = false,
+  isCourseCreator = false,
+  isSupportStaff = false,
   orgAdminOf = [],
   canRevokeGlobalStaff = true,
+  canRevokeSuperuser = true,
 }: RoleGrantFieldsProps) => {
   const intl = useIntl();
   const [isConfirmingGlobalStaff, setIsConfirmingGlobalStaff] = useState(false);
+  const [isConfirmingSuperuser, setIsConfirmingSuperuser] = useState(false);
 
   const handleGlobalStaffChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -75,7 +85,21 @@ const RoleGrantFields = ({
     setIsConfirmingGlobalStaff(false);
   };
 
+  const handleSuperuserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      setIsConfirmingSuperuser(true);
+      return;
+    }
+    onChange('isSuperuser', false);
+  };
+
+  const confirmSuperuser = () => {
+    onChange('isSuperuser', true);
+    setIsConfirmingSuperuser(false);
+  };
+
   const globalStaffLocked = values.isGlobalStaff && !canRevokeGlobalStaff;
+  const superuserLocked = values.isSuperuser && !canRevokeSuperuser;
 
   return (
     <>
@@ -107,34 +131,32 @@ const RoleGrantFields = ({
       <Form.Group className="mb-4">
         <div className="d-flex align-items-center">
           <Form.Switch
-            checked={values.isCourseCreator}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => onChange('isCourseCreator', event.target.checked)}
-            name="isCourseCreator"
+            checked={values.isSuperuser}
+            onChange={handleSuperuserChange}
+            disabled={superuserLocked}
+            name="isSuperuser"
           >
-            {intl.formatMessage(messages.roleCourseCreator)}
+            {intl.formatMessage(messages.roleSuperuser)}
           </Form.Switch>
+          <GrantInfo id="grant-superuser-tip" tooltip={messages.tooltipSuperuser} />
+        </div>
+        {superuserLocked && (
+          <Form.Text muted>{intl.formatMessage(messages.selfRevokeSuperuserBlocked)}</Form.Text>
+        )}
+      </Form.Group>
+
+      {/* Read-only grants — real access this screen cannot assign. */}
+      {isCourseCreator && (
+        <div className="d-flex align-items-center mb-3">
+          <Badge variant="light">{intl.formatMessage(messages.roleCourseCreator)}</Badge>
           <GrantInfo id="grant-course-creator-tip" tooltip={messages.tooltipCourseCreator} />
         </div>
-      </Form.Group>
+      )}
 
-      <Form.Group className="mb-4">
-        <div className="d-flex align-items-center">
-          <Form.Switch
-            checked={values.isSupportStaff}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => onChange('isSupportStaff', event.target.checked)}
-            name="isSupportStaff"
-          >
-            {intl.formatMessage(messages.roleSupportStaff)}
-          </Form.Switch>
-          <GrantInfo id="grant-support-staff-tip" tooltip={messages.tooltipSupportStaff} />
-        </div>
-      </Form.Group>
-
-      {/* Read-only grants. */}
-      {isSuperuser && (
+      {isSupportStaff && (
         <div className="d-flex align-items-center mb-3">
-          <Badge variant="dark">{intl.formatMessage(messages.roleSuperuser)}</Badge>
-          <GrantInfo id="grant-superuser-tip" tooltip={messages.tooltipSuperuser} />
+          <Badge variant="light">{intl.formatMessage(messages.roleSupportStaff)}</Badge>
+          <GrantInfo id="grant-support-staff-tip" tooltip={messages.tooltipSupportStaff} />
         </div>
       )}
 
@@ -153,6 +175,7 @@ const RoleGrantFields = ({
         <span className="rwaq-role-notes__title">{intl.formatMessage(messages.notesTitle)}</span>
         <ul className="rwaq-role-notes__list">
           <li>{intl.formatMessage(messages.orgAdminNote)}</li>
+          <li>{intl.formatMessage(messages.courseCreatorNote)}</li>
           <li>{intl.formatMessage(messages.courseRolesNote)}</li>
         </ul>
       </div>
@@ -173,6 +196,24 @@ const RoleGrantFields = ({
         )}
       >
         <p>{intl.formatMessage(messages.confirmGlobalStaffBody)}</p>
+      </AlertModal>
+
+      <AlertModal
+        title={intl.formatMessage(messages.confirmSuperuserTitle)}
+        isOpen={isConfirmingSuperuser}
+        onClose={() => setIsConfirmingSuperuser(false)}
+        footerNode={(
+          <ActionRow>
+            <Button variant="tertiary" onClick={() => setIsConfirmingSuperuser(false)}>
+              {intl.formatMessage(messages.cancel)}
+            </Button>
+            <Button variant="danger" onClick={confirmSuperuser}>
+              {intl.formatMessage(messages.confirmSuperuserAction)}
+            </Button>
+          </ActionRow>
+        )}
+      >
+        <p>{intl.formatMessage(messages.confirmSuperuserBody)}</p>
       </AlertModal>
     </>
   );

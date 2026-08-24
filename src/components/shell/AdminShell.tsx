@@ -7,8 +7,12 @@
  *                                   [ footer                        ]
  *
  * Mobile (≤768px): sidebar hidden, opened by TopBar hamburger as an overlay.
- * Global-Staff guard: non-staff see an access-denied message.
- * Server enforces IsGlobalStaff; this guard is defense-in-depth only.
+ * Superuser guard: anyone else sees an access-denied message. The server
+ * enforces it too (IsSuperAdmin on every endpoint); this guard only avoids
+ * rendering a shell whose every panel would 403.
+ *
+ * The answer comes from the API rather than the JWT because frontend-platform
+ * does not surface the `superuser` claim — see data/whoami.
  */
 import {
   Suspense, useEffect, useRef, useState,
@@ -17,6 +21,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { Container, Spinner } from '@openedx/paragon';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+import { useAdminCapabilities } from '@src/data/whoami';
 import SideNav from './SideNav';
 import TopBar from './TopBar';
 import ErrorState from '../ErrorState';
@@ -36,23 +41,25 @@ type GuardState = 'pending' | 'allowed' | 'denied';
 
 const useStaffGuard = (): GuardState => {
   const navigate = useNavigate();
-  const [state, setState] = useState<GuardState>('pending');
+  const isSignedIn = getAuthenticatedUser() !== null;
+  // Only asked once signed in — an anonymous caller would just get a 401 and
+  // the redirect below is the right answer for them anyway.
+  const { data, isLoading, isError } = useAdminCapabilities();
 
   useEffect(() => {
-    const user = getAuthenticatedUser();
-    if (!user) {
+    if (!isSignedIn) {
       navigate('/login', { replace: true });
-      return;
     }
-    // frontend-platform maps JWT `is_staff` → user.administrator
-    if (user.administrator === true) {
-      setState('allowed');
-    } else {
-      setState('denied');
-    }
-  }, [navigate]);
+  }, [isSignedIn, navigate]);
 
-  return state;
+  if (!isSignedIn) { return 'pending'; }
+  if (isLoading) { return 'pending'; }
+  // A failed capability check is treated as denied rather than allowed. Getting
+  // this backwards would render the whole panel to someone the API will refuse,
+  // which reads as a broken app rather than a closed door.
+  if (isError || !data) { return 'denied'; }
+
+  return data.canAccessAdminPanel ? 'allowed' : 'denied';
 };
 
 // ── Responsive hook ───────────────────────────────────────────────────────────
