@@ -26,7 +26,8 @@ const messages = defineMessages({
   sortOldest: { id: 'rwaq.admin.programs.sort.oldest', defaultMessage: 'Oldest first' },
   sortMostEnrollments: { id: 'rwaq.admin.programs.sort.mostEnrollments', defaultMessage: 'Most enrollments' },
   sortMostCourses: { id: 'rwaq.admin.programs.sort.mostCourses', defaultMessage: 'Most courses' },
-  sortStartDate: { id: 'rwaq.admin.programs.sort.startDate', defaultMessage: 'Start date (newest)' },
+  sortStartDateAsc: { id: 'rwaq.admin.programs.sort.startDateAsc', defaultMessage: 'Start date (oldest first)' },
+  sortStartDateDesc: { id: 'rwaq.admin.programs.sort.startDateDesc', defaultMessage: 'Start date (newest first)' },
 
   chipSearch: { id: 'rwaq.admin.programs.chip.search', defaultMessage: 'Search: {term}' },
   chipFilter: { id: 'rwaq.admin.programs.chip.filter', defaultMessage: 'Filter: {label}' },
@@ -35,9 +36,12 @@ const messages = defineMessages({
   // ── Columns ────────────────────────────────────────────────────────────────
   colProgram: { id: 'rwaq.admin.programs.col.program', defaultMessage: 'Program' },
   colOrganization: { id: 'rwaq.admin.programs.col.organization', defaultMessage: 'Organization' },
+  colTypeBatch: { id: 'rwaq.admin.programs.col.typeBatch', defaultMessage: 'Type / Batch' },
   colStatus: { id: 'rwaq.admin.programs.col.status', defaultMessage: 'Status' },
-  colCourses: { id: 'rwaq.admin.programs.col.courses', defaultMessage: 'Courses' },
+  colEnrollments: { id: 'rwaq.admin.programs.col.enrollments', defaultMessage: 'Enrollments' },
+  colStartDate: { id: 'rwaq.admin.programs.col.startDate', defaultMessage: 'Start date' },
   colActions: { id: 'rwaq.admin.programs.col.actions', defaultMessage: 'Actions' },
+  batchLabel: { id: 'rwaq.admin.programs.col.batchLabel', defaultMessage: 'Batch {batch}' },
 
   // ── Status values ──────────────────────────────────────────────────────────
   statusDraft: { id: 'rwaq.admin.programs.status.draft', defaultMessage: 'Draft' },

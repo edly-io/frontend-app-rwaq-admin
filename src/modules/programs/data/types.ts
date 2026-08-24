@@ -25,9 +25,12 @@ export interface ProgramSummary {
   programKey: string;
   name: string;
   cardImage: string | null;
-  organization: string;
+  organization: string;             // short_name
+  organizationName: string | null;  // full English name
   organizationLogo: string | null;
   organizationArabicName: string | null;
+  programType: string | null;       // program_type slug
+  batch: string | null;
   status: ProgramStatus;
   isHide: boolean;
   isFeatured: boolean;
@@ -41,14 +44,12 @@ export interface ProgramSummary {
 
 /** Full program detail from GET /api/v1/admin/programs/{uuid}/ */
 export interface ProgramDetail extends ProgramSummary {
-  programNumber: number | null;
-  batch: number | null;
+  programNumber: string | null;
   slug: string | null;
   description: string;
   longDescription: string;
   introVideoId: string | null;
   introVideoUrl: string | null;
-  programType: string | null;
   modified: string;
 }
 
@@ -81,21 +82,21 @@ export type ProgramOrdering =
   | 'organization' | '-organization'
   | 'status' | '-status';
 
-/** Single-select filter values supported by the admin programs endpoint. */
-export type ProgramFilter =
-  | 'all'
-  | 'draft'
-  | 'active'
-  | 'archived'
-  | 'hidden'
-  | 'visible'
-  | 'featured'
-  | 'certificate_enabled';
-
-/** Query params for GET /api/v1/admin/programs/ */
+/**
+ * Query params for GET /api/v1/admin/programs/
+ * Separate params so they can be combined (e.g. status=active + is_hide=true).
+ * Per discovery plan §3.1 and §6.
+ */
 export interface ProgramListParams {
   search?: string;
-  filter?: ProgramFilter;
+  /** draft | active | archived */
+  status?: ProgramStatus;
+  /** Filter by organization short_name */
+  org?: string;
+  /** true = hidden only, false = visible only */
+  isHide?: boolean;
+  /** true = featured only */
+  isFeatured?: boolean;
   ordering?: ProgramOrdering;
   page?: number;
   pageSize?: number;

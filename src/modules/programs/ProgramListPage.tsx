@@ -1,6 +1,13 @@
 /**
  * ProgramListPage — Programs, following the same primitives as Organizations
  * and Users so the three admin surfaces read as one product.
+ *
+ * Filter params follow the discovery plan §3.1 + §6:
+ *   ?status=active|draft|archived  (backend param: status)
+ *   ?is_hide=true                  (backend param: is_hide)
+ *   ?is_featured=true              (backend param: is_featured)
+ * Each maps to a separate URL search param so they can be combined.
+ * A single-select UI dropdown maps each option to the correct param set.
  */
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -14,7 +21,7 @@ import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
 import ProgramImage from './components/ProgramImage';
 import { usePrograms } from './data/hooks';
-import type { ProgramFilter, ProgramOrdering, ProgramStatus, ProgramSummary } from './data/types';
+import type { ProgramOrdering, ProgramStatus, ProgramSummary } from './data/types';
 import messages from './messages';
 
 const PAGE_SIZE = 10;
@@ -22,15 +29,26 @@ const DEFAULT_ORDERING: ProgramOrdering = '-created';
 
 type MessageKey = keyof typeof messages;
 
-const FILTER_OPTIONS: { value: ProgramFilter; label: MessageKey }[] = [
-  { value: 'all', label: 'filterAll' },
-  { value: 'active', label: 'filterActive' },
-  { value: 'draft', label: 'filterDraft' },
-  { value: 'archived', label: 'filterArchived' },
-  { value: 'hidden', label: 'filterHidden' },
-  { value: 'visible', label: 'filterVisible' },
-  { value: 'featured', label: 'filterFeatured' },
-  { value: 'certificate_enabled', label: 'filterCertEnabled' },
+// ── Filter ────────────────────────────────────────────────────────────────────
+
+/**
+ * Each UI filter option maps to backend param key/value pairs.
+ * Multiple keys let us set or clear the right param on selection.
+ */
+type FilterOption = {
+  id: string;
+  label: MessageKey;
+  params: Record<string, string>;
+};
+
+const FILTER_OPTIONS: FilterOption[] = [
+  { id: 'all', label: 'filterAll', params: { status: '', is_hide: '', is_featured: '' } },
+  { id: 'active', label: 'filterActive', params: { status: 'active', is_hide: '', is_featured: '' } },
+  { id: 'draft', label: 'filterDraft', params: { status: 'draft', is_hide: '', is_featured: '' } },
+  { id: 'archived', label: 'filterArchived', params: { status: 'archived', is_hide: '', is_featured: '' } },
+  { id: 'hidden', label: 'filterHidden', params: { status: '', is_hide: 'true', is_featured: '' } },
+  { id: 'visible', label: 'filterVisible', params: { status: '', is_hide: 'false', is_featured: '' } },
+  { id: 'featured', label: 'filterFeatured', params: { status: '', is_hide: '', is_featured: 'true' } },
 ];
 
 const SORT_OPTIONS: { value: ProgramOrdering; label: MessageKey }[] = [
@@ -40,7 +58,8 @@ const SORT_OPTIONS: { value: ProgramOrdering; label: MessageKey }[] = [
   { value: '-name', label: 'sortNameDesc' },
   { value: '-total_enrollments', label: 'sortMostEnrollments' },
   { value: '-total_courses', label: 'sortMostCourses' },
-  { value: '-start_date', label: 'sortStartDate' },
+  { value: 'start_date', label: 'sortStartDateAsc' },
+  { value: '-start_date', label: 'sortStartDateDesc' },
 ];
 
 const STATUS_VARIANT: Record<ProgramStatus, string> = {
@@ -49,12 +68,29 @@ const STATUS_VARIANT: Record<ProgramStatus, string> = {
   archived: 'light',
 };
 
-// Explicit status → message key map avoids runtime throw on unknown status values.
 const STATUS_MESSAGE: Record<ProgramStatus, MessageKey> = {
   active: 'statusActive',
   draft: 'statusDraft',
   archived: 'statusArchived',
 };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** Derive the active filter option id from the current URL search params. */
+function activeFilterId(searchParams: URLSearchParams): string {
+  const status = searchParams.get('status');
+  const isHide = searchParams.get('is_hide');
+  const isFeatured = searchParams.get('is_featured');
+  if (status === 'active') { return 'active'; }
+  if (status === 'draft') { return 'draft'; }
+  if (status === 'archived') { return 'archived'; }
+  if (isHide === 'true') { return 'hidden'; }
+  if (isHide === 'false') { return 'visible'; }
+  if (isFeatured === 'true') { return 'featured'; }
+  return 'all';
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 const ProgramListPage = () => {
   const intl = useIntl();
@@ -63,9 +99,10 @@ const ProgramListPage = () => {
 
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const search = searchParams.get('search') ?? '';
-  const filter = (searchParams.get('filter') as ProgramFilter | null) ?? 'all';
   const hasExplicitOrdering = searchParams.get('ordering') !== null;
   const ordering = (searchParams.get('ordering') as ProgramOrdering | null) ?? DEFAULT_ORDERING;
+  const currentFilterId = activeFilterId(searchParams);
+  const hasActiveFilter = currentFilterId !== 'all';
 
   const updateParams = useCallback(
     (updates: Record<string, string>) => {
@@ -96,7 +133,9 @@ const ProgramListPage = () => {
     data, isLoading, isError, error, refetch,
   } = usePrograms({
     search: search || undefined,
-    filter: filter !== 'all' ? filter : undefined,
+    status: (searchParams.get('status') as ProgramStatus | null) || undefined,
+    isHide: searchParams.get('is_hide') === 'true' ? true : searchParams.get('is_hide') === 'false' ? false : undefined,
+    isFeatured: searchParams.get('is_featured') === 'true' ? true : undefined,
     ordering,
     page,
     pageSize: PAGE_SIZE,
@@ -106,7 +145,7 @@ const ProgramListPage = () => {
 
   const filterOptions = useMemo(
     () => FILTER_OPTIONS.map((option) => ({
-      value: option.value,
+      value: option.id,
       label: intl.formatMessage(messages[option.label]),
     })),
     [intl],
@@ -131,13 +170,14 @@ const ProgramListPage = () => {
       });
     }
 
-    if (filter !== 'all') {
+    if (hasActiveFilter) {
+      const activeOption = FILTER_OPTIONS.find((o) => o.id === currentFilterId);
       chips.push({
         key: 'filter',
         label: intl.formatMessage(messages.chipFilter, {
-          label: filterOptions.find((option) => option.value === filter)?.label ?? filter,
+          label: intl.formatMessage(messages[activeOption?.label ?? 'filterAll']),
         }),
-        onRemove: () => updateParams({ filter: '' }),
+        onRemove: () => updateParams({ status: '', is_hide: '', is_featured: '' }),
       });
     }
 
@@ -152,7 +192,7 @@ const ProgramListPage = () => {
     }
 
     return chips;
-  }, [search, filter, ordering, hasExplicitOrdering, intl, updateParams, filterOptions, sortOptions]);
+  }, [search, currentFilterId, hasActiveFilter, ordering, hasExplicitOrdering, intl, updateParams, sortOptions]);
 
   const columns = useMemo<ColumnDef<ProgramSummary>[]>(() => [
     {
@@ -165,8 +205,14 @@ const ProgramListPage = () => {
             organizationLogo={row.organizationLogo}
             programName={row.name}
           />
-          <div>
-            <span className="rwaq-user-cell__name d-block">{row.name}</span>
+          <div style={{ minWidth: 0 }}>
+            <span
+              className="rwaq-user-cell__name d-block"
+              style={{ maxWidth: '18rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              title={row.name}
+            >
+              {row.name}
+            </span>
             <span className="text-muted small">{row.programKey}</span>
           </div>
         </div>
@@ -176,7 +222,26 @@ const ProgramListPage = () => {
       label: intl.formatMessage(messages.colOrganization),
       key: 'organization',
       renderCell: (_value, row) => (
-        <span>{row.organization}</span>
+        <div>
+          <span className="d-block">{row.organization}</span>
+          {row.organizationName && (
+            <span className="text-muted small">{row.organizationName}</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      label: intl.formatMessage(messages.colTypeBatch),
+      key: 'programType',
+      renderCell: (_value, row) => (
+        <div className="d-flex flex-column gap-1">
+          {row.programType && (
+            <Chip className="rwaq-chip rwaq-chip--light">{row.programType}</Chip>
+          )}
+          {row.batch != null && (
+            <span className="text-muted small">{intl.formatMessage(messages.batchLabel, { batch: row.batch })}</span>
+          )}
+        </div>
       ),
     },
     {
@@ -196,8 +261,25 @@ const ProgramListPage = () => {
       ),
     },
     {
-      label: intl.formatMessage(messages.colCourses),
-      key: 'totalCourses',
+      label: intl.formatMessage(messages.colEnrollments),
+      key: 'totalEnrollments',
+      renderCell: (value) => (
+        <span style={{ fontVariantNumeric: 'tabular-nums' }}>{value as number}</span>
+      ),
+    },
+    {
+      label: intl.formatMessage(messages.colStartDate),
+      key: 'startDate',
+      renderCell: (value) => {
+        if (!value) { return <span className="text-muted">—</span>; }
+        const d = new Date(value as string);
+        const isPast = d < new Date();
+        return (
+          <span className={isPast ? 'text-muted' : undefined}>
+            {d.toLocaleDateString()}
+          </span>
+        );
+      },
     },
     {
       label: intl.formatMessage(messages.colActions),
@@ -233,9 +315,12 @@ const ProgramListPage = () => {
             {
               id: 'filter',
               label: intl.formatMessage(messages.filterGroupLabel),
-              value: filter,
+              value: currentFilterId,
               options: filterOptions,
-              onChange: (value) => updateParams({ filter: value === 'all' ? '' : value }),
+              onChange: (id) => {
+                const opt = FILTER_OPTIONS.find((o) => o.id === id);
+                if (opt) { updateParams(opt.params); }
+              },
             },
             {
               id: 'ordering',
@@ -246,7 +331,9 @@ const ProgramListPage = () => {
             },
           ]}
           appliedChips={appliedChips}
-          onClearAll={() => updateParams({ search: '', filter: '', ordering: '' })}
+          onClearAll={() => updateParams({
+            search: '', status: '', is_hide: '', is_featured: '', ordering: '',
+          })}
         />
 
         {isError ? (

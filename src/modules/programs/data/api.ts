@@ -29,7 +29,7 @@ const getProgramsBaseUrl = () => getStudioApiUrl('/api/v1/admin/programs');
 
 // ── List ───────────────────────────────────────────────────────────────────────
 
-/** GET /api/v1/admin/programs/?search=&filter=&ordering=&page=&page_size= */
+/** GET /api/v1/admin/programs/?search=&status=&org=&is_hide=&is_featured=&ordering=&page=&page_size= */
 export const getPrograms = async (params: ProgramListParams = {}): Promise<ProgramListResponse> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/`, {
     params: snakeCaseObject(params),
