@@ -126,14 +126,13 @@ const CoursesListPage = () => {
 
   const formatEnrollments = (row: CourseSummary) => {
     const active = row.enrollmentCount;
-    const unenrolled = row.unenrollmentCount;
+    const unenrolled = row.unenrolledCount;
     return `${active} (+${unenrolled})`;
   };
 
   const formatPassing = (row: CourseSummary) => {
     if (row.passingCount === null) { return intl.formatMessage(messages.notAvailable); }
-    const pct = row.passingPct !== null ? ` (${Math.round(row.passingPct)}%)` : '';
-    return `${row.passingCount}${pct}`;
+    return String(row.passingCount);
   };
 
   // ── Columns ───────────────────────────────────────────────────────────────────
@@ -177,7 +176,7 @@ const CoursesListPage = () => {
         return (
           <div className="d-flex flex-wrap gap-1">
             {cats.map((cat) => (
-              <Badge key={cat.id} variant="light">{cat.name}</Badge>
+              <Badge key={cat.slug} variant="light">{cat.name}</Badge>
             ))}
           </div>
         );

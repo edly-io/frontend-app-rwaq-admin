@@ -15,9 +15,10 @@ export interface PaginationMeta {
 // ── Course list / detail ──────────────────────────────────────────────────────
 
 export interface CourseCategory {
-  id: number;
+  /** URL-friendly identifier — use as React key and for filtering. */
+  slug: string;
   name: string;
-  nameAr: string;
+  arabicName: string;
 }
 
 /** One row of GET /api/v1/admin/courses/ */
@@ -31,13 +32,9 @@ export interface CourseSummary {
   end: string | null;
   categories: CourseCategory[];
   enrollmentCount: number;
-  unenrollmentCount: number;
-  /** Learners with any PersistentCourseGrade row. null when served from CMS. */
-  gradedCount: number | null;
+  unenrolledCount: number;
   /** Learners with a non-null passed_timestamp. null when served from CMS. */
   passingCount: number | null;
-  /** passing_count / enrollment_count * 100. null when 0 enrollments or CMS. */
-  passingPct: number | null;
 }
 
 /** GET /api/v1/admin/courses/ paginated response */
@@ -52,10 +49,12 @@ export interface CourseDetail extends CourseSummary {
   sectionsCount: number | null;
   selfPaced: boolean;
   language: string | null;
+  /** cert_html_view_enabled from CourseOverview. */
   certificateEnabled: boolean;
   enrollmentStart: string | null;
   enrollmentEnd: string | null;
   invitationOnly: boolean;
+  advertisedStart: string | null;
 }
 
 // ── Course list params ────────────────────────────────────────────────────────
@@ -105,7 +104,7 @@ export interface CourseEnrollmentParams {
   pageSize?: number;
 }
 
-/** POST /api/v1/admin/courses/{courseId}/enrollments/ */
+/** POST /api/v1/admin/courses/{courseId}/enrollments/ — body: { user_id, mode, reason } */
 export interface CourseEnrollPayload {
   userId: number;
   mode: string;

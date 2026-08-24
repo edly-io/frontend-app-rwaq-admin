@@ -269,7 +269,7 @@ const CourseDetailPage = () => {
             {course.categories.length > 0 && (
               <div className="d-flex flex-wrap gap-1 mt-2">
                 {course.categories.map((cat) => (
-                  <Badge key={cat.id} variant="light">{cat.name}</Badge>
+                  <Badge key={cat.slug} variant="light">{cat.name}</Badge>
                 ))}
               </div>
             )}
