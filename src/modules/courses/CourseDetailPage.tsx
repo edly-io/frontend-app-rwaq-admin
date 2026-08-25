@@ -238,7 +238,9 @@ const CourseDetailPage = () => {
   const enrollmentRows = enrollmentData?.results ?? [];
   const allStaffRows = staff ?? [];
   const staffPageCount = Math.max(1, Math.ceil(allStaffRows.length / STAFF_PAGE_SIZE));
-  const staffRows = allStaffRows.slice((staffPage - 1) * STAFF_PAGE_SIZE, staffPage * STAFF_PAGE_SIZE);
+  // Clamp page in case a removal shrinks the total below the current page boundary.
+  const safeStaffPage = Math.min(staffPage, staffPageCount);
+  const staffRows = allStaffRows.slice((safeStaffPage - 1) * STAFF_PAGE_SIZE, safeStaffPage * STAFF_PAGE_SIZE);
 
   const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString() : dash);
 
@@ -389,7 +391,7 @@ const CourseDetailPage = () => {
             isLoading={isLoadingStaff}
             caption={intl.formatMessage(messages.staffSectionTitle)}
             pagination={{
-              currentPage: staffPage,
+              currentPage: safeStaffPage,
               pageCount: staffPageCount,
               itemCount: allStaffRows.length,
               pageSize: STAFF_PAGE_SIZE,
