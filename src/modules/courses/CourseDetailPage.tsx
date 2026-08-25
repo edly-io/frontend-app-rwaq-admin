@@ -36,7 +36,7 @@ import EnrollUserModal from './modals/EnrollUserModal';
 import AddStaffModal from './modals/AddStaffModal';
 import messages from './messages';
 
-const ENROLLMENT_PAGE_SIZE = 20;
+const ENROLLMENT_PAGE_SIZE = 10;
 const STAFF_PAGE_SIZE = 10;
 
 // ── Role label ────────────────────────────────────────────────────────────────
