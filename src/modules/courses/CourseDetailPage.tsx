@@ -325,7 +325,7 @@ const CourseDetailPage = () => {
               variant="outline-secondary"
               size="sm"
               onClick={handleDownloadCsv}
-              disabled={csvMutation.isPending}
+              disabled={csvMutation.isPending || !enrollmentData?.pagination?.count}
             >
               {csvMutation.isPending
                 ? intl.formatMessage(messages.downloadingCsv)

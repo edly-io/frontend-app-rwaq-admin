@@ -124,11 +124,7 @@ const CoursesListPage = () => {
     iso ? new Date(iso).toLocaleDateString() : intl.formatMessage(messages.noDate)
   );
 
-  const formatEnrollments = (row: CourseSummary) => {
-    const active = row.enrollmentCount;
-    const unenrolled = row.unenrolledCount;
-    return `${active} (+${unenrolled})`;
-  };
+  const formatEnrollments = (row: CourseSummary) => String(row.enrollmentCount);
 
   const formatPassing = (row: CourseSummary) => {
     if (row.passingCount === null) { return intl.formatMessage(messages.notAvailable); }
