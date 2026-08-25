@@ -43,21 +43,20 @@ export const useProgram = (uuid: string) => useQuery({
   enabled: !!uuid,
 });
 
-/** Courses linked to a program. The actual lazy gate is the conditional render
- *  in ProgramDetailPage — CoursesTab is only mounted when the tab is active,
- *  so this hook only executes then. `enabled: !!uuid` guards the pathological
- *  case where the hook is called with an empty string during initial render. */
-export const useProgramCourses = (uuid: string) => useQuery({
-  queryKey: programQueryKeys.courses(uuid),
-  queryFn: () => getProgramCourses(uuid),
+/** Paginated courses linked to a program. */
+export const useProgramCourses = (uuid: string, page = 1) => useQuery({
+  queryKey: [...programQueryKeys.courses(uuid), page],
+  queryFn: () => getProgramCourses(uuid, page),
   enabled: !!uuid,
+  placeholderData: keepPreviousData,
 });
 
-/** Learners enrolled in a program. Same lazy-render contract as useProgramCourses. */
-export const useProgramLearners = (uuid: string) => useQuery({
-  queryKey: programQueryKeys.learners(uuid),
-  queryFn: () => getProgramLearners(uuid),
+/** Paginated learners enrolled in a program. */
+export const useProgramLearners = (uuid: string, page = 1, search = '') => useQuery({
+  queryKey: [...programQueryKeys.learners(uuid), page, search],
+  queryFn: () => getProgramLearners(uuid, page, search),
   enabled: !!uuid,
+  placeholderData: keepPreviousData,
 });
 
 // ── Mutations ────────────────────────────────────────────────────────────────

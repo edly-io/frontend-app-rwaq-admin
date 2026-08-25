@@ -23,6 +23,7 @@ import type {
   ProgramListParams,
   ProgramListResponse,
   ProgramPatch,
+  ProgramSubPage,
 } from './types';
 
 const getProgramsBaseUrl = () => getStudioApiUrl('/api/v1/admin/programs');
@@ -56,24 +57,20 @@ export const updateProgram = async (uuid: string, patch: ProgramPatch): Promise<
 
 // ── Courses ────────────────────────────────────────────────────────────────────
 
-/**
- * GET /api/v1/admin/programs/{uuid}/courses/
- * Assumes the backend returns a flat array (no NamespacedPageNumberPagination wrapper).
- * If the endpoint is later paginated, change the return type to a response envelope
- * and update useProgramCourses accordingly.
- */
-export const getProgramCourses = async (uuid: string): Promise<ProgramCourse[]> => {
-  const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/courses/`);
-  return camelCaseObject(data) as ProgramCourse[];
+/** GET /api/v1/admin/programs/{uuid}/courses/?page=<n> */
+export const getProgramCourses = async (uuid: string, page = 1): Promise<ProgramSubPage<ProgramCourse>> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/courses/`, {
+    params: { page, page_size: 10 },
+  });
+  return camelCaseObject(data) as ProgramSubPage<ProgramCourse>;
 };
 
 // ── Learners ───────────────────────────────────────────────────────────────────
 
-/**
- * GET /api/v1/admin/programs/{uuid}/learners/
- * Assumes a flat array response — same caveat as getProgramCourses above.
- */
-export const getProgramLearners = async (uuid: string): Promise<ProgramLearner[]> => {
-  const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/learners/`);
-  return camelCaseObject(data) as ProgramLearner[];
+/** GET /api/v1/admin/programs/{uuid}/learners/?page=<n>&search=<term> */
+export const getProgramLearners = async (uuid: string, page = 1, search = ''): Promise<ProgramSubPage<ProgramLearner>> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/learners/`, {
+    params: { page, page_size: 10, ...(search ? { search } : {}) },
+  });
+  return camelCaseObject(data) as ProgramSubPage<ProgramLearner>;
 };

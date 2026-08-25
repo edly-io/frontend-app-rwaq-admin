@@ -19,9 +19,12 @@ import {
   Spinner,
 } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import AdminDataTable from '@src/components/AdminDataTable';
+import type { ColumnDef } from '@src/components/AdminDataTable';
 import DetailGrid from '@src/components/DetailGrid';
 import { useToast } from '@src/components/ToastContext';
 import ProgramStatusChips from './components/ProgramStatusChips';
+import type { ProgramCourse, ProgramLearner } from './data/types';
 import {
   useProgram,
   useProgramCourses,
@@ -129,43 +132,56 @@ const SettingsCard = ({
 const CoursesTab = ({ uuid }: { uuid: string }) => {
   const intl = useIntl();
   const dash = intl.formatMessage(messages.detailNone);
-  const { data, isLoading, isError } = useProgramCourses(uuid);
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError } = useProgramCourses(uuid, page);
 
-  if (isLoading) {
-    return <div className="py-4 text-center"><Spinner animation="border" screenReaderText={intl.formatMessage(messages.detailLoading)} /></div>;
-  }
+  const columns: ColumnDef<ProgramCourse>[] = [
+    {
+      label: intl.formatMessage(messages.colCourseId),
+      key: 'courseId',
+      renderCell: (value) => <code className="small">{value as string}</code>,
+    },
+    {
+      label: intl.formatMessage(messages.colCourseName),
+      key: 'courseName',
+      renderCell: (value) => <span>{(value as string | null) ?? dash}</span>,
+    },
+    {
+      label: intl.formatMessage(messages.colCourseOrg),
+      key: 'courseOrg',
+      renderCell: (value) => <span>{(value as string | null) ?? dash}</span>,
+    },
+    {
+      label: intl.formatMessage(messages.colCourseAdded),
+      key: 'created',
+      renderCell: (value) => (
+        <span>{value ? new Date(value as string).toLocaleDateString() : dash}</span>
+      ),
+    },
+  ];
 
   if (isError) {
     return <Alert variant="danger">{intl.formatMessage(messages.coursesError)}</Alert>;
   }
 
-  if (!data || data.length === 0) {
-    return <p className="text-muted py-3">{intl.formatMessage(messages.coursesEmpty)}</p>;
-  }
+  const PAGE_SIZE = 10;
+  const count = data?.pagination?.count ?? 0;
+  const numPages = data?.pagination?.numPages ?? Math.ceil(count / PAGE_SIZE);
 
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table className="table table-sm table-hover">
-        <thead>
-          <tr>
-            <th>{intl.formatMessage(messages.colCourseId)}</th>
-            <th>{intl.formatMessage(messages.colCourseName)}</th>
-            <th>{intl.formatMessage(messages.colCourseOrg)}</th>
-            <th>{intl.formatMessage(messages.colCourseAdded)}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((course) => (
-            <tr key={course.courseId}>
-              <td><code className="small">{course.courseId}</code></td>
-              <td>{course.courseName ?? dash}</td>
-              <td>{course.courseOrg ?? dash}</td>
-              <td>{course.created ? new Date(course.created).toLocaleDateString() : dash}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <AdminDataTable
+      columns={columns}
+      data={data?.results ?? []}
+      isLoading={isLoading}
+      caption={intl.formatMessage(messages.tabCourses)}
+      pagination={count > 0 ? {
+        currentPage: page,
+        pageCount: numPages || 1,
+        itemCount: count,
+        pageSize: PAGE_SIZE,
+        onPageChange: setPage,
+      } : undefined}
+    />
   );
 };
 
@@ -174,45 +190,65 @@ const CoursesTab = ({ uuid }: { uuid: string }) => {
 const LearnersTab = ({ uuid }: { uuid: string }) => {
   const intl = useIntl();
   const dash = intl.formatMessage(messages.detailNone);
-  const { data, isLoading, isError } = useProgramLearners(uuid);
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError } = useProgramLearners(uuid, page);
 
-  if (isLoading) {
-    return <div className="py-4 text-center"><Spinner animation="border" screenReaderText={intl.formatMessage(messages.detailLoading)} /></div>;
-  }
+  const columns: ColumnDef<ProgramLearner>[] = [
+    {
+      label: intl.formatMessage(messages.colLearnerName),
+      key: 'name',
+      renderCell: (value) => <span>{value as string}</span>,
+    },
+    {
+      label: intl.formatMessage(messages.colLearnerEmail),
+      key: 'email',
+      renderCell: (value) => <span>{value as string}</span>,
+    },
+    {
+      label: intl.formatMessage(messages.colLearnerEnrolled),
+      key: 'enrollmentDate',
+      renderCell: (value) => (
+        <span>{value ? new Date(value as string).toLocaleDateString() : dash}</span>
+      ),
+    },
+    {
+      label: intl.formatMessage(messages.colLearnerCompleted),
+      key: 'completionDate',
+      renderCell: (value) => (
+        <span>{value ? new Date(value as string).toLocaleDateString() : dash}</span>
+      ),
+    },
+    {
+      label: intl.formatMessage(messages.colLearnerActive),
+      key: 'isActive',
+      renderCell: (value) => (
+        <span>{intl.formatMessage(value ? messages.yes : messages.no)}</span>
+      ),
+    },
+  ];
 
   if (isError) {
     return <Alert variant="danger">{intl.formatMessage(messages.learnersError)}</Alert>;
   }
 
-  if (!data || data.length === 0) {
-    return <p className="text-muted py-3">{intl.formatMessage(messages.learnersEmpty)}</p>;
-  }
+  const PAGE_SIZE = 10;
+  const count = data?.pagination?.count ?? 0;
+  const numPages = data?.pagination?.numPages ?? Math.ceil(count / PAGE_SIZE);
 
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table className="table table-sm table-hover">
-        <thead>
-          <tr>
-            <th>{intl.formatMessage(messages.colLearnerName)}</th>
-            <th>{intl.formatMessage(messages.colLearnerEmail)}</th>
-            <th>{intl.formatMessage(messages.colLearnerEnrolled)}</th>
-            <th>{intl.formatMessage(messages.colLearnerCompleted)}</th>
-            <th>{intl.formatMessage(messages.colLearnerActive)}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((learner) => (
-            <tr key={learner.id}>
-              <td>{learner.name}</td>
-              <td>{learner.email}</td>
-              <td>{learner.enrollmentDate ? new Date(learner.enrollmentDate).toLocaleDateString() : dash}</td>
-              <td>{learner.completionDate ? new Date(learner.completionDate).toLocaleDateString() : dash}</td>
-              <td>{intl.formatMessage(learner.isActive ? messages.yes : messages.no)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <AdminDataTable
+      columns={columns}
+      data={data?.results ?? []}
+      isLoading={isLoading}
+      caption={intl.formatMessage(messages.tabLearners)}
+      pagination={count > 0 ? {
+        currentPage: page,
+        pageCount: numPages || 1,
+        itemCount: count,
+        pageSize: PAGE_SIZE,
+        onPageChange: setPage,
+      } : undefined}
+    />
   );
 };
 

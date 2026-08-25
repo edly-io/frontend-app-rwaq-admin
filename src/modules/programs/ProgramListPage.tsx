@@ -15,6 +15,8 @@ import { Button, Chip } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
+import ChipOverflowList from '@src/components/ChipOverflowList';
+import type { ChipItem } from '@src/components/ChipOverflowList';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
 import SearchFilterBar from '@src/components/SearchFilterBar';
@@ -247,18 +249,25 @@ const ProgramListPage = () => {
     {
       label: intl.formatMessage(messages.colStatus),
       key: 'status',
-      renderCell: (_value, row) => (
-        <div className="d-flex flex-column gap-1">
-          <Chip className={`rwaq-chip rwaq-chip--${STATUS_VARIANT[row.status] ?? 'light'}`}>
-            {intl.formatMessage(messages[STATUS_MESSAGE[row.status] ?? 'statusDraft'])}
-          </Chip>
-          {row.isHide === true && (
-            <Chip className="rwaq-chip rwaq-chip--danger">
-              {intl.formatMessage(messages.tagHidden)}
-            </Chip>
-          )}
-        </div>
-      ),
+      renderCell: (_value, row) => {
+        const statusItems: ChipItem[] = [
+          {
+            key: 'status',
+            label: intl.formatMessage(messages[STATUS_MESSAGE[row.status] ?? 'statusDraft']),
+            variant: STATUS_VARIANT[row.status] ?? 'light',
+          },
+          ...(row.isHide ? [{ key: 'hidden', label: intl.formatMessage(messages.tagHidden), variant: 'danger' } as ChipItem] : []),
+          ...(row.isFeatured ? [{ key: 'featured', label: intl.formatMessage(messages.tagFeatured), variant: 'info' } as ChipItem] : []),
+          ...(row.certificateEnabled ? [{ key: 'cert', label: intl.formatMessage(messages.tagCertEnabled), variant: 'success-muted' } as ChipItem] : []),
+        ];
+        return (
+          <ChipOverflowList
+            items={statusItems}
+            maxVisible={1}
+            id={`program-status-${row.uuid}`}
+          />
+        );
+      },
     },
     {
       label: intl.formatMessage(messages.colEnrollments),

@@ -579,11 +579,20 @@ html[data-paragon-theme-variant='dark'] {
   .rwaq-user-cell__name { color: var(--rwaq-text); }
 
   // Toasts and alerts
+  // .toast-header has its own background-color/color from Paragon's
+  // bootstrap-toast.scss so it needs an explicit override — it does not
+  // inherit from the .toast container override below.
   .pgn__toast .toast,
   .pgn__toast {
     background: var(--rwaq-surface-raised);
     color: var(--rwaq-text);
     border-color: var(--rwaq-border);
+  }
+
+  .pgn__toast .toast-header {
+    background-color: var(--rwaq-surface-raised);
+    color: var(--rwaq-text);
+    border-bottom-color: var(--rwaq-border);
   }
 
   .alert-danger {

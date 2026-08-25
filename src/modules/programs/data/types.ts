@@ -13,6 +13,18 @@ export interface ProgramListPagination {
   numPages: number;
 }
 
+/** Generic paginated response envelope for sub-resources (courses, learners).
+ *  NamespacedPageNumberPagination nests metadata under a `pagination` key. */
+export interface ProgramSubPage<T> {
+  results: T[];
+  pagination: {
+    count: number;
+    numPages: number;
+    next: string | null;
+    previous: string | null;
+  };
+}
+
 /** Paginated list response from GET /api/v1/admin/programs/ */
 export interface ProgramListResponse {
   results: ProgramSummary[];
