@@ -44,7 +44,7 @@ const ROLE_MESSAGE_KEYS: Record<string, keyof typeof messages> = {
   instructor: 'roleInstructor',
   staff: 'roleStaff',
   limited_staff: 'roleLimitedStaff',
-  beta: 'roleBeta',
+  beta_testers: 'roleBeta',
   data_researcher: 'roleDataResearcher',
 };
 

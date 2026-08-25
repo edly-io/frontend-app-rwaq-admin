@@ -100,6 +100,8 @@ export type CourseEnrollmentSearchBy = 'name' | 'email' | 'user_id';
 export interface CourseEnrollmentParams {
   searchBy?: CourseEnrollmentSearchBy;
   searchTerm?: string;
+  /** Filter by active (true) or inactive (false) enrollment status. Omit for all. */
+  isActive?: boolean;
   page?: number;
   pageSize?: number;
 }
@@ -118,7 +120,7 @@ export type CourseRole =
   | 'instructor'
   | 'staff'
   | 'limited_staff'
-  | 'beta'
+  | 'beta_testers'
   | 'data_researcher';
 
 /** One row of GET /api/v1/admin/courses/{courseId}/staff/ */

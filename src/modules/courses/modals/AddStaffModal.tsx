@@ -7,8 +7,7 @@
 import { useEffect, useState } from 'react';
 import { Form } from '@openedx/paragon';
 import { logError } from '@edx/frontend-platform/logging';
-import { useIntl } from '@edx/frontend-platform/i18n';
-import { defineMessages } from '@edx/frontend-platform/i18n';
+import { useIntl, defineMessages } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorReason } from '@src/data/httpError';
@@ -31,7 +30,7 @@ const roleMessages = defineMessages({
     id: 'rwaq.admin.courses.role.limitedStaff.desc',
     defaultMessage: 'Limited Staff — restricted edit access',
   },
-  beta: {
+  beta_testers: {
     id: 'rwaq.admin.courses.role.beta.desc',
     defaultMessage: 'Beta Tester — early-release preview access only',
   },
@@ -41,7 +40,7 @@ const roleMessages = defineMessages({
   },
 });
 
-const ROLES: CourseRole[] = ['instructor', 'staff', 'limited_staff', 'beta', 'data_researcher'];
+const ROLES: CourseRole[] = ['instructor', 'staff', 'limited_staff', 'beta_testers', 'data_researcher'];
 
 interface AddStaffModalProps {
   isOpen: boolean;
@@ -70,7 +69,7 @@ const AddStaffModal = ({
   }, [isOpen]);
 
   const userError = hasTriedSubmit && !user
-    ? intl.formatMessage(messages.addStaffModalUserLabel) + ' is required'
+    ? `${intl.formatMessage(messages.addStaffModalUserLabel)} is required`
     : undefined;
 
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {

@@ -62,7 +62,7 @@ const EnrollUserModal = ({
   }, [availableModes.join(',')]);
 
   const userError = hasTriedSubmit && !user
-    ? intl.formatMessage(messages.enrollModalUserLabel) + ' is required'
+    ? `${intl.formatMessage(messages.enrollModalUserLabel)} is required`
     : undefined;
   const reasonError = hasTriedSubmit && !hasReason(reason)
     ? 'A reason is required'
