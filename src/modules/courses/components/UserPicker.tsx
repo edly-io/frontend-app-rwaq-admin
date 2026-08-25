@@ -39,10 +39,11 @@ const UserPicker = ({ selected, onSelect, error }: UserPickerProps) => {
   // Search by name first, fall back to email if the query looks like one
   const searchBy = debounced.includes('@') ? 'email' : 'name';
 
+  // enabled=false when no real search term yet — prevents loading all users
+  // on modal open, which would be a large request on production.
   const { data, isFetching, isError } = useUsers(
-    isSearchable && selected === null
-      ? { searchBy, searchTerm: debounced, pageSize: 10 }
-      : {},
+    { searchBy, searchTerm: debounced, pageSize: 10 },
+    isSearchable && selected === null,
   );
 
   if (selected) {

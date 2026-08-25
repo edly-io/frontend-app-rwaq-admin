@@ -53,10 +53,13 @@ const COURSE_SEARCH_STALE_MS = 60_000;
 
 // ── Queries ───────────────────────────────────────────────────────────────────
 
-/** Paginated user list with search/filter/sort/page support. */
-export const useUsers = (params: UserListParams = {}) => useQuery({
+/** Paginated user list with search/filter/sort/page support.
+ *  Pass enabled=false to skip the fetch (e.g. before a search term is entered).
+ */
+export const useUsers = (params: UserListParams = {}, enabled = true) => useQuery({
   queryKey: userQueryKeys.list(params),
   queryFn: () => getUsers(params),
+  enabled,
 });
 
 /** Single user detail for the View/Edit modals. */
