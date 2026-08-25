@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   Alert,
+  Chip,
   Form,
   Spinner,
 } from '@openedx/paragon';
@@ -341,7 +342,12 @@ const ProgramDetailPage = () => {
 
         <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mt-2">
           <div className="min-width-0">
-            <h1 className="rwaq-page-title mb-2">{program.name}</h1>
+            <div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
+              <h1 className="rwaq-page-title mb-0">{program.name}</h1>
+              <Chip className="rwaq-chip rwaq-chip--light flex-shrink-0">
+                {intl.formatMessage(messages.tagReadOnly)}
+              </Chip>
+            </div>
             <ProgramStatusChips
               status={program.status}
               isHide={program.isHide}
