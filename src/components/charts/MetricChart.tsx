@@ -24,6 +24,20 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
+import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+
+const messages = defineMessages({
+  fallbackTableCaption: {
+    id: 'rwaq.admin.metricChart.fallbackTable.caption',
+    defaultMessage: 'Chart data',
+    description: 'Caption for the screen-reader-only data table that mirrors a chart',
+  },
+  fallbackTableLabelColumn: {
+    id: 'rwaq.admin.metricChart.fallbackTable.labelColumn',
+    defaultMessage: 'Label',
+    description: 'Header for the row-label column in the screen-reader-only chart data table',
+  },
+});
 
 // ── Paragon token resolver ────────────────────────────────────────────────────
 
@@ -113,25 +127,28 @@ interface FallbackTableProps {
   series: string[];
 }
 
-const AccessibleFallbackTable = ({ data, series }: FallbackTableProps) => (
-  <table className="sr-only">
-    <caption>Chart data</caption>
-    <thead>
-      <tr>
-        <th scope="col">Label</th>
-        {series.map((s) => <th key={s} scope="col">{s}</th>)}
-      </tr>
-    </thead>
-    <tbody>
-      {data.map((row) => (
-        <tr key={row.name}>
-          <td>{row.name}</td>
-          {series.map((s) => <td key={s}>{row[s]}</td>)}
+const AccessibleFallbackTable = ({ data, series }: FallbackTableProps) => {
+  const intl = useIntl();
+  return (
+    <table className="sr-only">
+      <caption>{intl.formatMessage(messages.fallbackTableCaption)}</caption>
+      <thead>
+        <tr>
+          <th scope="col">{intl.formatMessage(messages.fallbackTableLabelColumn)}</th>
+          {series.map((s) => <th key={s} scope="col">{s}</th>)}
         </tr>
-      ))}
-    </tbody>
-  </table>
-);
+      </thead>
+      <tbody>
+        {data.map((row) => (
+          <tr key={row.name}>
+            <td>{row.name}</td>
+            {series.map((s) => <td key={s}>{row[s]}</td>)}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
 
 // ── Main component ────────────────────────────────────────────────────────────
 
