@@ -2,8 +2,7 @@
  * Status chips for a program.
  *
  * Renders the publication status (draft/active/archived) as the primary chip,
- * followed by secondary flag chips for is_hide, is_featured, and
- * certificate_enabled when those flags are set.
+ * followed by secondary flag chips for is_hide and is_featured when those flags are set.
  */
 import { Chip } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -14,7 +13,6 @@ interface ProgramStatusChipsProps {
   status: ProgramStatus;
   isHide?: boolean;
   isFeatured?: boolean;
-  certificateEnabled?: boolean;
   readOnly?: boolean;
   className?: string;
 }
@@ -29,7 +27,6 @@ const ProgramStatusChips = ({
   status,
   isHide = false,
   isFeatured = false,
-  certificateEnabled = false,
   readOnly = false,
   className,
 }: ProgramStatusChipsProps) => {
@@ -59,11 +56,6 @@ const ProgramStatusChips = ({
       {isFeatured && (
         <Chip className="rwaq-chip rwaq-chip--info">
           {intl.formatMessage(messages.tagFeatured)}
-        </Chip>
-      )}
-      {certificateEnabled && (
-        <Chip className="rwaq-chip rwaq-chip--success-muted">
-          {intl.formatMessage(messages.tagCertEnabled)}
         </Chip>
       )}
     </div>

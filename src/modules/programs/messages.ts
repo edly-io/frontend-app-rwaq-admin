@@ -49,7 +49,6 @@ const messages = defineMessages({
   statusArchived: { id: 'rwaq.admin.programs.status.archived', defaultMessage: 'Archived' },
   tagHidden: { id: 'rwaq.admin.programs.tag.hidden', defaultMessage: 'Hidden' },
   tagFeatured: { id: 'rwaq.admin.programs.tag.featured', defaultMessage: 'Featured' },
-  tagCertEnabled: { id: 'rwaq.admin.programs.tag.certEnabled', defaultMessage: 'Certificate' },
   tagReadOnly: { id: 'rwaq.admin.programs.tag.readOnly', defaultMessage: 'Read Only' },
 
   // ── List actions ───────────────────────────────────────────────────────────
@@ -89,11 +88,6 @@ const messages = defineMessages({
   settingIsFeaturedHelp: {
     id: 'rwaq.admin.programs.settings.isFeaturedHelp',
     defaultMessage: 'Promotes this program to the featured section of the public catalog.',
-  },
-  settingCertEnabled: { id: 'rwaq.admin.programs.settings.certEnabled', defaultMessage: 'Certificate enabled' },
-  settingCertEnabledHelp: {
-    id: 'rwaq.admin.programs.settings.certEnabledHelp',
-    defaultMessage: 'When on, a program certificate can be issued to qualifying learners.',
   },
   settingStatus: { id: 'rwaq.admin.programs.settings.status', defaultMessage: 'Publication status' },
   settingStatusHelp: {

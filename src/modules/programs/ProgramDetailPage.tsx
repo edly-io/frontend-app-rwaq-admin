@@ -4,7 +4,7 @@
  * - Header: breadcrumb, name, status chips
  * - Overview card: key program facts via DetailGrid
  * - Settings card: immediate-save toggles for is_hide / is_featured /
- *   certificate_enabled, and a status selector
+ *   and a status selector
  * - Courses tab: the courses linked to this program
  * - Learners tab: the learners enrolled in this program
  *
@@ -42,12 +42,11 @@ interface SettingsCardProps {
   uuid: string;
   isHide: boolean;
   isFeatured: boolean;
-  certificateEnabled: boolean;
   status: ProgramStatus;
 }
 
 const SettingsCard = ({
-  uuid, isHide, isFeatured, certificateEnabled, status,
+  uuid, isHide, isFeatured, status,
 }: SettingsCardProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
@@ -107,18 +106,6 @@ const SettingsCard = ({
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => patch({ isFeatured: e.target.checked })}
             />
             <Form.Text>{intl.formatMessage(messages.settingIsFeaturedHelp)}</Form.Text>
-          </Form.Group>
-
-          {/* certificate_enabled toggle */}
-          <Form.Group>
-            <Form.Switch
-              id={`program-${uuid}-cert`}
-              label={intl.formatMessage(messages.settingCertEnabled)}
-              checked={certificateEnabled}
-              disabled={isPending}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => patch({ certificateEnabled: e.target.checked })}
-            />
-            <Form.Text>{intl.formatMessage(messages.settingCertEnabledHelp)}</Form.Text>
           </Form.Group>
 
         </div>
@@ -346,7 +333,6 @@ const ProgramDetailPage = () => {
               status={program.status}
               isHide={program.isHide}
               isFeatured={program.isFeatured}
-              certificateEnabled={program.certificateEnabled}
               readOnly
             />
           </div>
@@ -410,7 +396,6 @@ const ProgramDetailPage = () => {
         uuid={program.uuid}
         isHide={program.isHide}
         isFeatured={program.isFeatured}
-        certificateEnabled={program.certificateEnabled}
         status={program.status}
       />
 
