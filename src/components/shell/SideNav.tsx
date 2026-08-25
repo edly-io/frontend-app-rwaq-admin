@@ -59,7 +59,7 @@ const NAV_ITEMS: NavItemDef[] = [
     to: '/organizations', labelId: 'organizations', iconSrc: Groups, isLive: true,
   },
   {
-    to: '/courses', labelId: 'courses', iconSrc: MenuBook, isLive: false,
+    to: '/courses', labelId: 'courses', iconSrc: MenuBook, isLive: true,
   },
   {
     to: '/programs', labelId: 'programs', iconSrc: School, isLive: true,
