@@ -37,6 +37,7 @@ import AddStaffModal from './modals/AddStaffModal';
 import messages from './messages';
 
 const ENROLLMENT_PAGE_SIZE = 20;
+const STAFF_PAGE_SIZE = 10;
 
 // ── Role label ────────────────────────────────────────────────────────────────
 
@@ -78,6 +79,7 @@ const CourseDetailPage = () => {
   );
 
   const [modal, setModal] = useState<ModalState>({ kind: 'none' });
+  const [staffPage, setStaffPage] = useState(1);
 
   // ── Data ───────────────────────────────────────────────────────────────────
 
@@ -234,7 +236,9 @@ const CourseDetailPage = () => {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   const enrollmentRows = enrollmentData?.results ?? [];
-  const staffRows = staff ?? [];
+  const allStaffRows = staff ?? [];
+  const staffPageCount = Math.max(1, Math.ceil(allStaffRows.length / STAFF_PAGE_SIZE));
+  const staffRows = allStaffRows.slice((staffPage - 1) * STAFF_PAGE_SIZE, staffPage * STAFF_PAGE_SIZE);
 
   const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString() : dash);
 
@@ -288,27 +292,10 @@ const CourseDetailPage = () => {
             { label: intl.formatMessage(messages.fieldStart), value: formatDate(course.start) },
             { label: intl.formatMessage(messages.fieldEnd), value: formatDate(course.end) },
             {
-              label: intl.formatMessage(messages.fieldSections),
-              value: course.sectionsCount !== null ? course.sectionsCount : intl.formatMessage(messages.notAvailable),
-            },
-            {
               label: intl.formatMessage(messages.fieldPace),
               value: course.selfPaced
                 ? intl.formatMessage(messages.selfPaced)
                 : intl.formatMessage(messages.instructorPaced),
-            },
-            { label: intl.formatMessage(messages.fieldLanguage), value: course.language || dash },
-            {
-              label: intl.formatMessage(messages.fieldCertificate),
-              value: course.certificateEnabled
-                ? intl.formatMessage(messages.yes)
-                : intl.formatMessage(messages.no),
-            },
-            {
-              label: intl.formatMessage(messages.fieldInvitationOnly),
-              value: course.invitationOnly
-                ? intl.formatMessage(messages.yes)
-                : intl.formatMessage(messages.no),
             },
           ]}
         />
@@ -384,18 +371,25 @@ const CourseDetailPage = () => {
           <Alert variant="danger">{intl.formatMessage(messages.staffErrorTitle)}</Alert>
         )}
 
-        {!isStaffError && !isLoadingStaff && staffRows.length === 0 && (
+        {!isStaffError && !isLoadingStaff && allStaffRows.length === 0 && (
           <p className="text-muted text-center py-5 mb-0">
             {intl.formatMessage(messages.staffEmpty)}
           </p>
         )}
 
-        {!isStaffError && (isLoadingStaff || staffRows.length > 0) && (
+        {!isStaffError && (isLoadingStaff || allStaffRows.length > 0) && (
           <AdminDataTable
             columns={staffColumns}
             data={staffRows}
             isLoading={isLoadingStaff}
             caption={intl.formatMessage(messages.staffSectionTitle)}
+            pagination={{
+              currentPage: staffPage,
+              pageCount: staffPageCount,
+              itemCount: allStaffRows.length,
+              pageSize: STAFF_PAGE_SIZE,
+              onPageChange: (page: number) => setStaffPage(page),
+            }}
           />
         )}
       </div>
