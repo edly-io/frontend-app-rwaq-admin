@@ -354,10 +354,15 @@ const CourseDetailPage = () => {
 
       {/* ── Course Team ────────────────────────────────────────────────────── */}
       <div className="rwaq-card mt-4">
-        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-          <h2 className="rwaq-section-title mb-0">
-            {intl.formatMessage(messages.staffSectionTitle)}
-          </h2>
+        <div className="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+          <div>
+            <h2 className="rwaq-section-title mb-1">
+              {intl.formatMessage(messages.staffSectionTitle)}
+            </h2>
+            <p className="text-muted small mb-0">
+              {intl.formatMessage(messages.staffSectionDescription)}
+            </p>
+          </div>
           <Button
             variant="primary"
             size="sm"

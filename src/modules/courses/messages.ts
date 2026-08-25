@@ -268,6 +268,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.courseDetail.staff.title',
     defaultMessage: 'Course Team',
   },
+  staffSectionDescription: {
+    id: 'rwaq.admin.courseDetail.staff.description',
+    defaultMessage: 'Team members have edit access to this course in Studio.',
+  },
   addStaff: {
     id: 'rwaq.admin.courseDetail.staff.add',
     defaultMessage: 'Add Team Member',
