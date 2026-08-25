@@ -15,6 +15,7 @@ interface ProgramStatusChipsProps {
   isHide?: boolean;
   isFeatured?: boolean;
   certificateEnabled?: boolean;
+  readOnly?: boolean;
   className?: string;
 }
 
@@ -29,6 +30,7 @@ const ProgramStatusChips = ({
   isHide = false,
   isFeatured = false,
   certificateEnabled = false,
+  readOnly = false,
   className,
 }: ProgramStatusChipsProps) => {
   const intl = useIntl();
@@ -41,6 +43,11 @@ const ProgramStatusChips = ({
 
   return (
     <div className={`d-flex align-items-center flex-wrap rwaq-chip-list${className ? ` ${className}` : ''}`}>
+      {readOnly && (
+        <Chip className="rwaq-chip rwaq-chip--light">
+          {intl.formatMessage(messages.tagReadOnly)}
+        </Chip>
+      )}
       <Chip className={`rwaq-chip rwaq-chip--${STATUS_VARIANT[status]}`}>
         {statusLabel}
       </Chip>
