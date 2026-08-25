@@ -198,25 +198,29 @@ const ProgramListPage = () => {
 
   const columns = useMemo<ColumnDef<ProgramSummary>[]>(() => [
     {
+      label: '',
+      key: 'cardImage',
+      renderCell: (_value, row) => (
+        <ProgramImage
+          cardImage={row.cardImage}
+          organizationLogo={row.organizationLogo}
+          programName={row.name}
+        />
+      ),
+    },
+    {
       label: intl.formatMessage(messages.colProgram),
       key: 'name',
       renderCell: (_value, row) => (
-        <div className="d-flex align-items-center gap-3">
-          <ProgramImage
-            cardImage={row.cardImage}
-            organizationLogo={row.organizationLogo}
-            programName={row.name}
-          />
-          <div style={{ minWidth: 0 }}>
-            <span
-              className="rwaq-user-cell__name d-block"
-              style={{ maxWidth: '18rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-              title={row.name}
-            >
-              {row.name}
-            </span>
-            <span className="text-muted small">{row.programKey}</span>
-          </div>
+        <div style={{ minWidth: 0 }}>
+          <span
+            className="rwaq-user-cell__name d-block"
+            style={{ maxWidth: '18rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+            title={row.name}
+          >
+            {row.name}
+          </span>
+          <span className="text-muted small">{row.programKey}</span>
         </div>
       ),
     },
