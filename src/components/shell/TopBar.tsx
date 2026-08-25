@@ -209,7 +209,13 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
             )}
             <Dropdown.Item href={links.account}>{intl.formatMessage(messages.accountSettings)}</Dropdown.Item>
             {links.studio && (
-              <Dropdown.Item href={links.studio}>{intl.formatMessage(messages.studio)}</Dropdown.Item>
+              <Dropdown.Item
+                href={links.studio}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {intl.formatMessage(messages.studio)}
+              </Dropdown.Item>
             )}
             <Dropdown.Item href={links.dashboard}>{intl.formatMessage(messages.learnerDashboard)}</Dropdown.Item>
             <Dropdown.Divider />

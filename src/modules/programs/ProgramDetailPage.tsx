@@ -344,7 +344,7 @@ const ProgramDetailPage = () => {
           <div className="min-width-0">
             <div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
               <h1 className="rwaq-page-title mb-0">{program.name}</h1>
-              <Chip className="rwaq-chip rwaq-chip--light flex-shrink-0">
+              <Chip className="rwaq-title-chip rwaq-chip--light flex-shrink-0">
                 {intl.formatMessage(messages.tagReadOnly)}
               </Chip>
             </div>

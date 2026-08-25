@@ -223,6 +223,18 @@ html[data-paragon-theme-variant='dark'] {
   font-weight: 700;
   color: var(--rwaq-heading);
   margin: 0;
+  line-height: 1.2;
+}
+
+// A small chip that sits inline next to .rwaq-page-title — using translate
+// to optically align to the cap-height rather than the full element box.
+.rwaq-title-chip.pgn__chip {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border-radius: 999px;
+  margin: 0;
+  white-space: nowrap;
+  transform: translateY(1px);
 }
 .rwaq-section-title {
   font-size: 1rem;
