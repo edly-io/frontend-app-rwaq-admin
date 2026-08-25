@@ -59,6 +59,11 @@ const ProgramStatusChips = ({
           {intl.formatMessage(messages.tagCertEnabled)}
         </Chip>
       )}
+      {status === 'archived' && (
+        <Chip className="rwaq-chip rwaq-chip--light">
+          {intl.formatMessage(messages.tagReadOnly)}
+        </Chip>
+      )}
     </div>
   );
 };

@@ -50,6 +50,7 @@ const messages = defineMessages({
   tagHidden: { id: 'rwaq.admin.programs.tag.hidden', defaultMessage: 'Hidden' },
   tagFeatured: { id: 'rwaq.admin.programs.tag.featured', defaultMessage: 'Featured' },
   tagCertEnabled: { id: 'rwaq.admin.programs.tag.certEnabled', defaultMessage: 'Certificate' },
+  tagReadOnly: { id: 'rwaq.admin.programs.tag.readOnly', defaultMessage: 'Read Only' },
 
   // ── List actions ───────────────────────────────────────────────────────────
   view: { id: 'rwaq.admin.programs.action.view', defaultMessage: 'View' },
