@@ -258,7 +258,6 @@ const ProgramListPage = () => {
           },
           ...(row.isHide ? [{ key: 'hidden', label: intl.formatMessage(messages.tagHidden), variant: 'danger' } as ChipItem] : []),
           ...(row.isFeatured ? [{ key: 'featured', label: intl.formatMessage(messages.tagFeatured), variant: 'info' } as ChipItem] : []),
-          ...(row.certificateEnabled ? [{ key: 'cert', label: intl.formatMessage(messages.tagCertEnabled), variant: 'success-muted' } as ChipItem] : []),
         ];
         return (
           <ChipOverflowList

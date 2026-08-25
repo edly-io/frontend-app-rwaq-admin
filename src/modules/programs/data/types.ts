@@ -46,7 +46,6 @@ export interface ProgramSummary {
   status: ProgramStatus;
   isHide: boolean;
   isFeatured: boolean;
-  certificateEnabled: boolean;
   totalCourses: number;
   totalEnrollments: number;
   startDate: string | null;
@@ -119,7 +118,6 @@ export interface ProgramPatch {
   status?: ProgramStatus;
   isHide?: boolean;
   isFeatured?: boolean;
-  certificateEnabled?: boolean;
   name?: string;
   description?: string;
   longDescription?: string;
