@@ -21,6 +21,8 @@ const OrgListPage = lazy(() => import('./modules/organizations/OrgListPage'));
 const OrgDetailPage = lazy(() => import('./modules/organizations/OrgDetailPage'));
 const UsersListPage = lazy(() => import('./modules/users/UsersListPage'));
 const UserDetailPage = lazy(() => import('./modules/users/UserDetailPage'));
+const ProgramListPage = lazy(() => import('./modules/programs/ProgramListPage'));
+const ProgramDetailPage = lazy(() => import('./modules/programs/ProgramDetailPage'));
 const ComingSoon = lazy(() => import('./components/ComingSoon'));
 
 const queryClient = new QueryClient({
@@ -54,12 +56,15 @@ subscribe(APP_READY, () => {
                   <Route path="users" element={<UsersListPage />} />
                   <Route path="users/:id" element={<UserDetailPage />} />
 
+                  {/* Programs */}
+                  <Route path="programs" element={<ProgramListPage />} />
+                  <Route path="programs/:uuid" element={<ProgramDetailPage />} />
+
                   {/* Placeholders — the nav marks these "Soon". Enrollment is
                       absent by design: it is managed per learner on the user
                       detail page, so a standalone screen would be a second
                       place to look for one feature. */}
                   <Route path="courses" element={<ComingSoon />} />
-                  <Route path="programs" element={<ComingSoon />} />
                   <Route path="reports" element={<ComingSoon />} />
                   <Route path="categories" element={<ComingSoon />} />
 

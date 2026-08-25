@@ -223,6 +223,18 @@ html[data-paragon-theme-variant='dark'] {
   font-weight: 700;
   color: var(--rwaq-heading);
   margin: 0;
+  line-height: 1.2;
+}
+
+// A small chip that sits inline next to .rwaq-page-title — using translate
+// to optically align to the cap-height rather than the full element box.
+.rwaq-title-chip.pgn__chip {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border-radius: 999px;
+  margin: 0;
+  white-space: nowrap;
+  transform: translateY(1px);
 }
 .rwaq-section-title {
   font-size: 1rem;
@@ -579,11 +591,20 @@ html[data-paragon-theme-variant='dark'] {
   .rwaq-user-cell__name { color: var(--rwaq-text); }
 
   // Toasts and alerts
+  // .toast-header has its own background-color/color from Paragon's
+  // bootstrap-toast.scss so it needs an explicit override — it does not
+  // inherit from the .toast container override below.
   .pgn__toast .toast,
   .pgn__toast {
     background: var(--rwaq-surface-raised);
     color: var(--rwaq-text);
     border-color: var(--rwaq-border);
+  }
+
+  .pgn__toast .toast-header {
+    background-color: var(--rwaq-surface-raised);
+    color: var(--rwaq-text);
+    border-bottom-color: var(--rwaq-border);
   }
 
   .alert-danger {
