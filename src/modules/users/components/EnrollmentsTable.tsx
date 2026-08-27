@@ -64,10 +64,10 @@ const EnrollmentsTable = ({
             <div className="rwaq-enrollments__audit">
               {intl.formatMessage(messages.enrollmentLastChangeBy, {
                 reason: row.lastChangeReason,
-                actor: row.lastChangeBy ?? dash,
+                actor: row.lastChangeBy ?? '-',
                 date: row.lastChangeAt
                   ? new Date(row.lastChangeAt).toLocaleDateString()
-                  : dash,
+                  : '-',
               })}
             </div>
           )}
@@ -118,7 +118,7 @@ const EnrollmentsTable = ({
             size="sm"
             disabled={!row.isActive}
             onClick={() => onChangeMode(row)}
-            aria-label={`${intl.formatMessage(messages.modeChangeAction)} — ${row.courseName}`}
+            aria-label={`${intl.formatMessage(messages.modeChangeAction)}, ${row.courseName}`}
           >
             {intl.formatMessage(messages.modeChangeAction)}
           </Button>
@@ -127,7 +127,7 @@ const EnrollmentsTable = ({
             size="sm"
             disabled={!row.isActive}
             onClick={() => onUnenroll(row)}
-            aria-label={`${intl.formatMessage(messages.unenrollAction)} — ${row.courseName}`}
+            aria-label={`${intl.formatMessage(messages.unenrollAction)}, ${row.courseName}`}
           >
             {intl.formatMessage(messages.unenrollAction)}
           </Button>

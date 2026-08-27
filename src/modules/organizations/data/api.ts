@@ -82,8 +82,7 @@ export const updateOrganization = async (
 ): Promise<OrgDetail> => {
   const { data } = await getAuthenticatedHttpClient().patch(
     `${getOrgsBaseUrl()}/${shortName}/`,
-    // `detail` is required on every write, even a partial one.
-    snakeCaseObject({ detail: '', ...patch }),
+    snakeCaseObject(patch),
   );
   return camelCaseObject(data) as OrgDetail;
 };

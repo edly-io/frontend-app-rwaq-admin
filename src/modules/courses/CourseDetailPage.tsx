@@ -8,7 +8,7 @@
  *   3. Course Team — staff table, Add Member, Remove per row
  */
 import { useCallback, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Alert, Badge, Button, Spinner,
 } from '@openedx/paragon';
@@ -18,6 +18,7 @@ import { getConfig } from '@edx/frontend-platform';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import DetailGrid from '@src/components/DetailGrid';
+import ProfileAvatar from '@src/components/ProfileAvatar';
 import ErrorState from '@src/components/ErrorState';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorStatus } from '@src/data/httpError';
@@ -60,6 +61,7 @@ type ModalState =
 
 const CourseDetailPage = () => {
   const intl = useIntl();
+  const navigate = useNavigate();
   const { courseId: rawCourseId = '' } = useParams();
   const courseId = decodeURIComponent(rawCourseId);
   const { showToast } = useToast();
@@ -254,31 +256,34 @@ const CourseDetailPage = () => {
         </div>
 
         <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mt-2">
-          <div className="min-width-0">
-            {course.courseImageUrl && (
-              <img
-                src={`${getConfig().LMS_BASE_URL}${course.courseImageUrl}`}
-                alt=""
-                aria-hidden
-                style={{
-                  width: 120,
-                  height: 72,
-                  objectFit: 'cover',
-                  borderRadius: 6,
-                  marginBottom: '0.75rem',
-                  display: 'block',
-                }}
-              />
-            )}
-            <h1 className="rwaq-page-title mb-1">{course.displayName}</h1>
-            <div className="rwaq-detail-header__email">{course.courseId}</div>
-            {course.categories.length > 0 && (
-              <div className="d-flex flex-wrap gap-1 mt-2">
-                {course.categories.map((cat) => (
-                  <Badge key={cat.slug} variant="light">{cat.name}</Badge>
-                ))}
-              </div>
-            )}
+          <div className="rwaq-detail-header min-width-0">
+            <ProfileAvatar
+              src={course.courseImageUrl ? `${getConfig().LMS_BASE_URL}${course.courseImageUrl}` : null}
+              name={course.displayName}
+              size="lg"
+            />
+            <div className="min-width-0">
+              <h1 className="rwaq-page-title mb-1">{course.displayName}</h1>
+              <div className="rwaq-detail-header__email">{course.courseId}</div>
+              {course.categories.length > 0 && (
+                <div className="d-flex flex-wrap gap-1 mt-2">
+                  {course.categories.map((cat) => (
+                    <Badge key={cat.slug} variant="light">{cat.name}</Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Reports shortcut — superuser-only; the page itself enforces auth */}
+          <div className="flex-shrink-0">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => navigate(`/courses/${encodeURIComponent(courseId)}/reports`)}
+            >
+              View Reports
+            </Button>
           </div>
         </div>
       </div>

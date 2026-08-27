@@ -14,7 +14,6 @@ import {
   Groups,
   MenuBook,
   School,
-  Assessment,
   Settings,
   ExpandMore,
   ExpandLess,
@@ -29,7 +28,6 @@ const messages = defineMessages({
   organizations: { id: 'rwaq.admin.sidenav.organizations', defaultMessage: 'Organizations' },
   courses: { id: 'rwaq.admin.sidenav.courses', defaultMessage: 'Courses' },
   programs: { id: 'rwaq.admin.sidenav.programs', defaultMessage: 'Programs' },
-  reports: { id: 'rwaq.admin.sidenav.reports', defaultMessage: 'Reports' },
   settings: { id: 'rwaq.admin.sidenav.settings', defaultMessage: 'Settings' },
   comingSoon: { id: 'rwaq.admin.sidenav.comingSoon', defaultMessage: 'Soon' },
   navAriaLabel: { id: 'rwaq.admin.sidenav.navAriaLabel', defaultMessage: 'Admin navigation' },
@@ -63,9 +61,6 @@ const NAV_ITEMS: NavItemDef[] = [
   },
   {
     to: '/programs', labelId: 'programs', iconSrc: School, isLive: true,
-  },
-  {
-    to: '/reports', labelId: 'reports', iconSrc: Assessment, isLive: false,
   },
 ];
 

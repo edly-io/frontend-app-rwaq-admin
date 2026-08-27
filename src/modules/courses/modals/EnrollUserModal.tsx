@@ -94,7 +94,7 @@ const EnrollUserModal = ({
 
   return (
     <FormModal
-      title={`${intl.formatMessage(messages.enrollModalTitle)} — ${courseName}`}
+      title={`${intl.formatMessage(messages.enrollModalTitle)}, ${courseName}`}
       isOpen={isOpen}
       onClose={onClose}
       onSubmit={handleSubmit}

@@ -20,23 +20,23 @@ import messages from '../messages';
 const roleMessages = defineMessages({
   instructor: {
     id: 'rwaq.admin.courses.role.instructor.desc',
-    defaultMessage: 'Instructor — can edit the course and manage the team roster',
+    defaultMessage: 'Instructor, can edit the course and manage the team roster',
   },
   staff: {
     id: 'rwaq.admin.courses.role.staff.desc',
-    defaultMessage: 'Staff — can edit the course',
+    defaultMessage: 'Staff, can edit the course',
   },
   limited_staff: {
     id: 'rwaq.admin.courses.role.limitedStaff.desc',
-    defaultMessage: 'Limited Staff — restricted edit access',
+    defaultMessage: 'Limited Staff, restricted edit access',
   },
   beta_testers: {
     id: 'rwaq.admin.courses.role.beta.desc',
-    defaultMessage: 'Beta Tester — early-release preview access only',
+    defaultMessage: 'Beta Tester, early-release preview access only',
   },
   data_researcher: {
     id: 'rwaq.admin.courses.role.dataResearcher.desc',
-    defaultMessage: 'Data Researcher — read-only access to learner data',
+    defaultMessage: 'Data Researcher, read-only access to learner data',
   },
 });
 
@@ -89,7 +89,7 @@ const AddStaffModal = ({
 
   return (
     <FormModal
-      title={`${intl.formatMessage(messages.addStaffModalTitle)} — ${courseName}`}
+      title={`${intl.formatMessage(messages.addStaffModalTitle)}, ${courseName}`}
       isOpen={isOpen}
       onClose={onClose}
       onSubmit={handleSubmit}

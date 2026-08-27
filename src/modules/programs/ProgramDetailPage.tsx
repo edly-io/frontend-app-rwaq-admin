@@ -12,9 +12,10 @@
  * ':' and '+' that would require URL encoding.
  */
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   Alert,
+  Button,
   Form,
   Spinner,
 } from '@openedx/paragon';
@@ -22,6 +23,7 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import DetailGrid from '@src/components/DetailGrid';
+import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
 import ProgramStatusChips from './components/ProgramStatusChips';
 import type { ProgramCourse, ProgramLearner } from './data/types';
@@ -288,6 +290,7 @@ const TabBar = ({ active, onChange, labels }: TabBarProps) => (
 
 const ProgramDetailPage = () => {
   const intl = useIntl();
+  const navigate = useNavigate();
   const { uuid = '' } = useParams();
   const {
     data: program, isLoading, isError, error,
@@ -327,14 +330,30 @@ const ProgramDetailPage = () => {
         </div>
 
         <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mt-2">
-          <div className="min-width-0">
-            <h1 className="rwaq-page-title mb-2">{program.name}</h1>
-            <ProgramStatusChips
-              status={program.status}
-              isHide={program.isHide}
-              isFeatured={program.isFeatured}
-              readOnly
+          <div className="rwaq-detail-header min-width-0">
+            <ProfileAvatar
+              src={program.cardImage}
+              name={program.name}
+              size="lg"
             />
+            <div className="min-width-0">
+              <h1 className="rwaq-page-title mb-2">{program.name}</h1>
+              <ProgramStatusChips
+                status={program.status}
+                isHide={program.isHide}
+                isFeatured={program.isFeatured}
+                readOnly
+              />
+            </div>
+          </div>
+          <div className="flex-shrink-0">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => navigate(`/programs/${uuid}/reports`)}
+            >
+              View Reports
+            </Button>
           </div>
         </div>
       </div>

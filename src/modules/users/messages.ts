@@ -97,7 +97,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.tooltip.globalStaff',
     defaultMessage: 'Full access to every course in Studio and the LMS, without needing to be '
       + 'on a Course Team, and can create courses. Also allows signing in to Django admin. '
-      + 'Does not grant access to this admin panel — that is Superuser.',
+      + 'Does not grant access to this admin panel, that is Superuser.',
   },
   tooltipCourseCreator: {
     id: 'rwaq.admin.users.tooltip.courseCreator',
@@ -105,12 +105,12 @@ const messages = defineMessages({
   },
   tooltipSupportStaff: {
     id: 'rwaq.admin.users.tooltip.supportStaff',
-    defaultMessage: 'Access to Support Tools — look up users, view/manage enrolments, reset passwords.',
+    defaultMessage: 'Access to Support Tools, look up users, view/manage enrolments, reset passwords.',
   },
   tooltipSuperuser: {
     id: 'rwaq.admin.users.tooltip.superuser',
     defaultMessage: 'Grants access to this admin panel, and bypasses every permission check in '
-      + 'Django admin. On its own it grants no access to courses or Studio — that is Global Staff. '
+      + 'Django admin. On its own it grants no access to courses or Studio, that is Global Staff. '
       + 'Grant it only to someone who should be able to do anything here.',
   },
   tooltipOrgAdmin: {
@@ -159,22 +159,22 @@ const messages = defineMessages({
   },
   orgAdminNote: {
     id: 'rwaq.admin.users.form.orgAdminNote',
-    defaultMessage: 'Organization Admin — granted on the Organizations screen.',
+    defaultMessage: 'Organization Admin, granted on the Organizations screen.',
   },
   courseCreatorNote: {
     id: 'rwaq.admin.users.form.courseCreatorNote',
-    defaultMessage: 'Course Creator — follows automatically from an Organization Admin grant, '
+    defaultMessage: 'Course Creator, follows automatically from an Organization Admin grant, '
       + 'scoped to that organization.',
   },
   courseRolesNote: {
     id: 'rwaq.admin.users.form.courseRolesNote',
-    defaultMessage: 'Course Instructor, Course Staff and Forum Moderator — per-course roles, assigned in Studio on the course\'s Course Team page.',
+    defaultMessage: 'Course Instructor, Course Staff and Forum Moderator, per-course roles, assigned in Studio on the course\'s Course Team page.',
   },
   save: { id: 'rwaq.admin.users.form.save', defaultMessage: 'Save' },
   create: { id: 'rwaq.admin.users.form.create', defaultMessage: 'Create user' },
   selfRevokeSuperuserBlocked: {
     id: 'rwaq.admin.users.roles.selfRevokeSuperuserBlocked',
-    defaultMessage: 'You cannot remove your own Superuser access — it is what grants you this panel.',
+    defaultMessage: 'You cannot remove your own Superuser access, it is what grants you this panel.',
   },
   confirmSuperuserTitle: {
     id: 'rwaq.admin.users.roles.confirmSuperuserTitle',
@@ -183,7 +183,7 @@ const messages = defineMessages({
   confirmSuperuserBody: {
     id: 'rwaq.admin.users.roles.confirmSuperuserBody',
     defaultMessage: 'Superuser bypasses every permission check in Django, and grants access to '
-      + 'this admin panel. It does not by itself grant access to courses or Studio — that is '
+      + 'this admin panel. It does not by itself grant access to courses or Studio, that is '
       + 'Global Staff. Only grant it to someone who should be able to do anything here.',
   },
   confirmSuperuserAction: {
@@ -237,7 +237,7 @@ const messages = defineMessages({
   detailCreated: { id: 'rwaq.admin.users.detail.created', defaultMessage: 'Created' },
   detailLastLogin: { id: 'rwaq.admin.users.detail.lastLogin', defaultMessage: 'Last login' },
   detailOrgAdminOf: { id: 'rwaq.admin.users.detail.orgAdminOf', defaultMessage: 'Organization Admin of' },
-  detailNone: { id: 'rwaq.admin.users.detail.none', defaultMessage: '—' },
+  detailNone: { id: 'rwaq.admin.users.detail.none', defaultMessage: '' },
   edit: { id: 'rwaq.admin.users.detail.edit', defaultMessage: 'Edit' },
   view: { id: 'rwaq.admin.users.detail.view', defaultMessage: 'View' },
 
@@ -275,7 +275,7 @@ const messages = defineMessages({
   enrollmentActions: { id: 'rwaq.admin.users.enrollments.actions', defaultMessage: 'Actions' },
   enrollmentLastChangeBy: {
     id: 'rwaq.admin.users.enrollments.lastChangeBy',
-    defaultMessage: '{reason} — {actor}, {date}',
+    defaultMessage: '{reason}, {actor}, {date}',
   },
 
   // ── Enrollment actions ─────────────────────────────────────────────────────

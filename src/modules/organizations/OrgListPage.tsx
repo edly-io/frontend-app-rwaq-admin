@@ -171,6 +171,7 @@ const OrgListPage = () => {
       ),
     },
     { label: intl.formatMessage(messages.colCourses), key: 'courseCount' },
+    { label: intl.formatMessage(messages.colPrograms), key: 'programCount' },
     { label: intl.formatMessage(messages.colAdmins), key: 'adminCount' },
     {
       label: intl.formatMessage(messages.colActions),
