@@ -1,3 +1,2 @@
-import arMessages from './messages/ar.json';
-
-export default [{ code: 'ar', messages: arMessages }];
+// Placeholder — overridden by `make pull_translations`
+export default [];
