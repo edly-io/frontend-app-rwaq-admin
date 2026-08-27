@@ -9,7 +9,7 @@
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  Alert, Badge, Button, Spinner, Table,
+  Alert, Badge, Button, Spinner,
 } from '@openedx/paragon';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
@@ -206,7 +206,7 @@ const GradingConfigSection = ({ courseId }: { courseId: string }) => {
     <>
       {grader.length > 0 && (
         <div className="mb-4" style={{ overflowX: 'auto' }}>
-          <Table size="sm" className="mb-0">
+          <table className="table table-sm mb-0">
             <caption className="sr-only">Grader breakdown</caption>
             <thead>
               <tr>
@@ -228,7 +228,7 @@ const GradingConfigSection = ({ courseId }: { courseId: string }) => {
                 </tr>
               ))}
             </tbody>
-          </Table>
+          </table>
         </div>
       )}
 
@@ -296,7 +296,7 @@ const OrgEnrollmentSummarySection = ({ courseId }: { courseId: string }) => {
 
       {modes.length > 0 && (
         <div style={{ overflowX: 'auto' }}>
-          <Table size="sm" className="mb-0">
+          <table className="table table-sm mb-0">
             <caption className="sr-only">Enrollment by mode</caption>
             <thead>
               <tr>
@@ -318,7 +318,7 @@ const OrgEnrollmentSummarySection = ({ courseId }: { courseId: string }) => {
                 </tr>
               ))}
             </tbody>
-          </Table>
+          </table>
         </div>
       )}
     </div>
