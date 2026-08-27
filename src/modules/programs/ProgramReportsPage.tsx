@@ -114,7 +114,7 @@ const ProgramReportsPage = () => {
             )}
 
             {report.totalLearners > 0 && (
-              <div style={{ maxWidth: '28rem' }}>
+              <div>
                 <div
                   style={{
                     height: '0.375rem',

@@ -2,9 +2,8 @@
  * CourseReportsPage — reports hub for a single course.
  *
  *   1. Generate Reports — async trigger cards (7 report types)
- *   2. Grading Configuration — sync inline grader/cutoff table
- *   3. Org Enrollment Summary — sync inline enrollment counts
- *   4. Reports Available for Download — unified polled table (10 s while in-progress)
+ *   2. Org Enrollment Summary — sync inline enrollment counts by mode
+ *   3. Reports Available for Download — unified polled table (10 s while in-progress)
  */
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -16,7 +15,6 @@ import type { ColumnDef } from '@src/components/AdminDataTable';
 import { useCourse } from './data/hooks';
 import type { CourseReportType, ReportDownloadRow, TaskState } from './data/reportsTypes';
 import {
-  useCourseGradingConfig,
   useCourseOrgEnrollmentSummary,
   useCourseReportDownloads,
   useTriggerCourseReport,
@@ -180,84 +178,19 @@ const ReportTriggerRow = ({
   );
 };
 
-// ── Grading configuration section ─────────────────────────────────────────────
-
-const GradingConfigSection = ({ courseId }: { courseId: string }) => {
-  const { data, isLoading, isError } = useCourseGradingConfig(courseId, !!courseId);
-
-  if (isLoading) {
-    return (
-      <div className="d-flex align-items-center gap-2 py-3 text-muted small">
-        <Spinner animation="border" size="sm" screenReaderText="Loading grading config" />
-        Loading grading configuration…
-      </div>
-    );
-  }
-
-  if (isError) {
-    return <Alert variant="warning" className="mb-0">Could not load grading configuration.</Alert>;
-  }
-
-  if (!data) { return null; }
-
-  const { grader, gradeCutoffs } = data;
-
-  return (
-    <>
-      {grader.length > 0 && (
-        <div className="mb-4" style={{ overflowX: 'auto' }}>
-          <table className="table table-sm mb-0">
-            <caption className="sr-only">Grader breakdown</caption>
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Label</th>
-                <th className="text-right" style={{ fontVariantNumeric: 'tabular-nums' }}>Weight</th>
-                <th className="text-right" style={{ fontVariantNumeric: 'tabular-nums' }}>Min Count</th>
-                <th className="text-right" style={{ fontVariantNumeric: 'tabular-nums' }}>Drop Count</th>
-              </tr>
-            </thead>
-            <tbody>
-              {grader.map((entry) => (
-                <tr key={entry.type}>
-                  <td>{entry.type}</td>
-                  <td className="text-muted">{entry.shortLabel || '—'}</td>
-                  <td className="text-right">{(entry.weight * 100).toFixed(0)}%</td>
-                  <td className="text-right">{entry.minCount}</td>
-                  <td className="text-right">{entry.dropCount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {Object.keys(gradeCutoffs).length > 0 && (
-        <div>
-          <p className="text-muted small mb-2 font-weight-semibold">Grade cutoffs</p>
-          <div className="d-flex flex-wrap gap-3">
-            {Object.entries(gradeCutoffs)
-              .sort(([, a], [, b]) => b - a)
-              .map(([grade, cutoff]) => (
-                <div key={grade} className="text-center">
-                  <div className="font-weight-semibold" style={{ fontSize: '1.125rem', fontVariantNumeric: 'tabular-nums' }}>
-                    {(cutoff * 100).toFixed(0)}%
-                  </div>
-                  <div className="text-muted small">{grade}</div>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
-
-      {grader.length === 0 && Object.keys(gradeCutoffs).length === 0 && (
-        <p className="text-muted small mb-0">No grading configuration found for this course.</p>
-      )}
-    </>
-  );
-};
-
 // ── Org enrollment summary section ────────────────────────────────────────────
+
+interface EnrollmentModeRow {
+  mode: string;
+  count: number;
+  share: string;
+}
+
+const ENROLLMENT_COLUMNS: ColumnDef<EnrollmentModeRow>[] = [
+  { key: 'mode', label: 'Mode' },
+  { key: 'count', label: 'Enrollments' },
+  { key: 'share', label: 'Share' },
+];
 
 const OrgEnrollmentSummarySection = ({ courseId }: { courseId: string }) => {
   const { data, isLoading, isError } = useCourseOrgEnrollmentSummary(courseId, {}, !!courseId);
@@ -277,51 +210,39 @@ const OrgEnrollmentSummarySection = ({ courseId }: { courseId: string }) => {
 
   if (!data) { return null; }
 
-  const modes = Object.entries(data.byMode).sort(([, a], [, b]) => b - a);
+  const rows: EnrollmentModeRow[] = Object.entries(data.byMode)
+    .sort(([, a], [, b]) => b - a)
+    .map(([mode, count]) => ({
+      mode,
+      count,
+      share: data.totalActiveEnrollments > 0
+        ? `${((count / data.totalActiveEnrollments) * 100).toFixed(1)}%`
+        : '—',
+    }));
 
   return (
-    <div className="d-flex flex-wrap gap-4 align-items-start">
-      <div className="text-center">
-        <div
+    <>
+      <div className="d-flex align-items-baseline gap-2 mb-4">
+        <span
           className="font-weight-semibold"
-          style={{ fontSize: '1.5rem', fontVariantNumeric: 'tabular-nums' }}
+          style={{ fontSize: '1.75rem', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}
         >
           {data.totalActiveEnrollments.toLocaleString()}
-        </div>
-        <div className="text-muted small">Active enrollments</div>
-        <div className="text-muted" style={{ fontSize: '0.75rem' }}>
-          across {data.totalCoursesInOrg} {data.org} courses
-        </div>
+        </span>
+        <span className="text-muted small">
+          active enrollments across {data.totalCoursesInOrg} {data.org} courses
+        </span>
       </div>
-
-      {modes.length > 0 && (
-        <div style={{ overflowX: 'auto' }}>
-          <table className="table table-sm mb-0">
-            <caption className="sr-only">Enrollment by mode</caption>
-            <thead>
-              <tr>
-                <th>Mode</th>
-                <th className="text-right" style={{ fontVariantNumeric: 'tabular-nums' }}>Count</th>
-                <th className="text-right" style={{ fontVariantNumeric: 'tabular-nums' }}>Share</th>
-              </tr>
-            </thead>
-            <tbody>
-              {modes.map(([mode, count]) => (
-                <tr key={mode}>
-                  <td>{mode}</td>
-                  <td className="text-right">{count.toLocaleString()}</td>
-                  <td className="text-right">
-                    {data.totalActiveEnrollments > 0
-                      ? `${((count / data.totalActiveEnrollments) * 100).toFixed(1)}%`
-                      : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {rows.length > 0 ? (
+        <AdminDataTable
+          columns={ENROLLMENT_COLUMNS}
+          data={rows}
+          caption="Enrollment by course mode"
+        />
+      ) : (
+        <p className="text-muted small mb-0">No enrollment data found for this organization.</p>
       )}
-    </div>
+    </>
   );
 };
 
@@ -464,18 +385,9 @@ const CourseReportsPage = () => {
         ))}
       </div>
 
-      {/* Grading Configuration */}
-      <div className="rwaq-card mt-4">
-        <h2 className="rwaq-section-title mb-3">Grading Configuration</h2>
-        <GradingConfigSection courseId={courseId} />
-      </div>
-
       {/* Org Enrollment Summary */}
       <div className="rwaq-card mt-4">
-        <h2 className="rwaq-section-title mb-3">Org Enrollment Summary</h2>
-        <p className="text-muted small mb-3">
-          Active enrollment counts across all courses in this organization.
-        </p>
+        <h2 className="rwaq-section-title mb-4">Org Enrollment Summary</h2>
         <OrgEnrollmentSummarySection courseId={courseId} />
       </div>
 
