@@ -7,7 +7,9 @@ export type CourseReportType =
   | 'problem_grade'
   | 'profile_info'
   | 'may_enroll'
-  | 'inactive_learner';
+  | 'inactive_learner'
+  | 'survey'
+  | 'proctored_exam';
 
 export type TaskState = 'QUEUING' | 'IN_PROGRESS' | 'SUCCESS' | 'FAILURE' | 'REVOKED';
 

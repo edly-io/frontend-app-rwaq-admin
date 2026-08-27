@@ -95,7 +95,7 @@ const ProgramReportsPage = () => {
               className="mb-4"
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(9rem, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(9rem, 1fr))',
                 borderTop: '1px solid #dee2e6',
                 borderLeft: '1px solid #dee2e6',
                 borderRadius: '0.25rem',
