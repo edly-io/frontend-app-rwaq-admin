@@ -35,8 +35,9 @@ const REPORT_DEFS: ReportDef[] = [
     type: 'grade_csv',
     label: 'Grade Report',
     description:
-      'Generates a CSV of current student grades for all course sections. '
-      + 'Each row contains the student identifier, grade total, and per-section scores.',
+      'Generates a CSV of current student grades. Each row contains student ID, email, username, '
+      + 'cumulative grade, per-assignment scores, enrollment track, verification status, '
+      + 'and certificate eligibility/delivery status.',
   },
   {
     type: 'problem_grade',
@@ -49,8 +50,9 @@ const REPORT_DEFS: ReportDef[] = [
     type: 'profile_info',
     label: 'Profile Information',
     description:
-      'Generates a CSV of enrolled student profile data (name, email, location, '
-      + 'year of birth, education level, and enrollment mode).',
+      'Generates a CSV of enrolled student profile data including username, name, email, '
+      + 'language, location, year of birth, gender, education level, mailing address, '
+      + 'goals, enrollment mode, account activation status, and enrollment date.',
   },
   {
     type: 'may_enroll',
@@ -70,15 +72,16 @@ const REPORT_DEFS: ReportDef[] = [
     type: 'survey',
     label: 'Survey Results',
     description:
-      'Generates a CSV of responses to any survey components in this course, '
-      + 'including per-question answers for every respondent.',
+      'Generates a CSV of responses from the course survey module. '
+      + 'Columns are User ID, User Name, Email, and one column per survey field answered.',
   },
   {
     type: 'proctored_exam',
     label: 'Proctored Exam Results',
     description:
-      'Generates a CSV of proctored exam attempt statuses for all students '
-      + '(pending review, verified, rejected, etc.).',
+      'Generates a CSV of all proctored exam attempts, including exam name, provider, '
+      + 'student info, attempt timing, attempt status, review status, '
+      + 'and any reviewer comments (suspicious activity or rules violations).',
   },
 ];
 
