@@ -2,8 +2,8 @@
  * CourseReportsPage — reports hub for a single course.
  *
  *   1. Generate Reports — async trigger cards (11 report types)
- *   2. Grading Configuration — grader breakdown + grade cutoffs
- *   3. Certificates Issued — inline table with CSV export
+ *   2. Grading Configuration — grader breakdown table + grade cutoff chips
+ *   3. Certificates Issued — inline table with CSV export (stacked below)
  *   4. Reports Available for Download — unified polled table (10 s while in-progress)
  */
 import React, { useState } from 'react';
@@ -547,23 +547,18 @@ const CourseReportsPage = () => {
         ))}
       </div>
 
-      {/* Grading Configuration + Certificates Issued — side by side */}
-      <div
-        className="mt-4"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(22rem, 1fr))',
-          gap: '1.5rem',
-        }}
-      >
-        <div className="rwaq-card">
-          <h2 className="rwaq-section-title mb-4">Grading Configuration</h2>
+      {/* Grading Configuration */}
+      <div className="rwaq-card mt-4">
+        <h2 className="rwaq-section-title mb-4">Grading Configuration</h2>
+        <div style={{ overflowX: 'auto' }}>
           <GradingConfigSection courseId={courseId} />
         </div>
-        <div className="rwaq-card">
-          <h2 className="rwaq-section-title mb-4">Certificates Issued</h2>
-          <CertificatesSection courseId={courseId} />
-        </div>
+      </div>
+
+      {/* Certificates Issued */}
+      <div className="rwaq-card mt-4">
+        <h2 className="rwaq-section-title mb-4">Certificates Issued</h2>
+        <CertificatesSection courseId={courseId} />
       </div>
 
       {/* Reports Available for Download */}
