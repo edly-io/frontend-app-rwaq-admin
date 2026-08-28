@@ -471,24 +471,6 @@ const messages = defineMessages({
     defaultMessage: 'View {courseName}',
   },
 
-  // ── AsyncReportCard — moved from inline defineMessages (FE-MIN4 prep) ──────
-  asyncStateQueuing: { id: 'rwaq.admin.asyncReportCard.state.queuing', defaultMessage: 'Queued' },
-  asyncStateInProgress: { id: 'rwaq.admin.asyncReportCard.state.inProgress', defaultMessage: 'In Progress' },
-  asyncStateDone: { id: 'rwaq.admin.asyncReportCard.state.done', defaultMessage: 'Done' },
-  asyncStateFailure: { id: 'rwaq.admin.asyncReportCard.state.failure', defaultMessage: 'Failed' },
-  asyncStateRevoked: { id: 'rwaq.admin.asyncReportCard.state.revoked', defaultMessage: 'Revoked' },
-  asyncGenerateReport: { id: 'rwaq.admin.asyncReportCard.button.generateReport', defaultMessage: 'Generate Report' },
-  asyncGenerating: { id: 'rwaq.admin.asyncReportCard.button.generating', defaultMessage: 'Generating…' },
-  asyncDownloadCsv: { id: 'rwaq.admin.asyncReportCard.button.downloadCsv', defaultMessage: 'Download CSV' },
-  asyncErrorTriggerFallback: { id: 'rwaq.admin.asyncReportCard.error.triggerFallback', defaultMessage: 'Failed to trigger report. Try again.' },
-  asyncErrorLoadHistory: { id: 'rwaq.admin.asyncReportCard.error.loadHistory', defaultMessage: 'Could not load report history. The table will refresh automatically.' },
-  asyncNoReportsYet: { id: 'rwaq.admin.asyncReportCard.noReports', defaultMessage: 'No reports generated yet. Click Generate Report to start.' },
-  asyncColGenerated: { id: 'rwaq.admin.asyncReportCard.col.generated', defaultMessage: 'Generated' },
-  asyncColStatus: { id: 'rwaq.admin.asyncReportCard.col.status', defaultMessage: 'Status' },
-  asyncColProcessed: { id: 'rwaq.admin.asyncReportCard.col.processed', defaultMessage: 'Processed' },
-  asyncColFile: { id: 'rwaq.admin.asyncReportCard.col.file', defaultMessage: 'File' },
-  asyncLoadingHistory: { id: 'rwaq.admin.asyncReportCard.loading.history', defaultMessage: 'Loading report history' },
-  asyncScreenReaderGenerating: { id: 'rwaq.admin.asyncReportCard.screenReader.generating', defaultMessage: 'Generating' },
 });
 
 export default messages;
