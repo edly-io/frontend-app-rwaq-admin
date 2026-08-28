@@ -101,12 +101,13 @@ export const enrollUserInCourse = async (
 
 // ── Staff ─────────────────────────────────────────────────────────────────────
 
-/** GET /api/v1/admin/courses/{courseId}/staff/ */
+/** GET /api/v1/admin/courses/{courseId}/staff/ — returns paginated; we unwrap results here. */
 export const getCourseStaff = async (courseId: string): Promise<CourseStaffMember[]> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getCoursesBaseUrl()}/${encodeURIComponent(courseId)}/staff/`,
   );
-  return camelCaseObject(data) as CourseStaffMember[];
+  const parsed = camelCaseObject(data) as { results: CourseStaffMember[] } | CourseStaffMember[];
+  return Array.isArray(parsed) ? parsed : parsed.results;
 };
 
 /** POST /api/v1/admin/courses/{courseId}/staff/ */
