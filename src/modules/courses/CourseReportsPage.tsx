@@ -194,15 +194,27 @@ const ReportTriggerRow = ({
           <div className="text-danger small mt-1">{errorMsg}</div>
         )}
       </div>
-      <div style={{ flexShrink: 0, width: '6rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+      <div style={{
+        flexShrink: 0,
+        width: '5.5rem',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+      >
         {isLoading ? (
-          <Spinner animation="border" size="sm" screenReaderText="Generating report" />
+          <Spinner
+            animation="border"
+            size="sm"
+            screenReaderText="Generating report"
+            style={{ color: 'var(--pgn-color-primary-500, #0a3055)' }}
+          />
         ) : (
           <Button
             variant="outline-primary"
             size="sm"
             onClick={handleClick}
-            style={{ whiteSpace: 'nowrap', minWidth: '5.5rem' }}
+            style={{ whiteSpace: 'nowrap', width: '100%' }}
           >
             Generate
           </Button>
