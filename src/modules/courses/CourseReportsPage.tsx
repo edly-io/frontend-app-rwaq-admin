@@ -2,9 +2,7 @@
  * CourseReportsPage — reports hub for a single course.
  *
  *   1. Generate Reports — async trigger cards (11 report types)
- *   2. Grading Configuration — grader breakdown table + grade cutoff chips
- *   3. Certificates Issued — inline table with CSV export (stacked below)
- *   4. Reports Available for Download — unified polled table (10 s while in-progress)
+ *   2. Reports Available for Download — unified polled table (10 s while in-progress)
  */
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -15,15 +13,12 @@ import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import { useCourse } from './data/hooks';
 import type {
-  CourseCertificate, CourseReportType, ReportDownloadRow, TaskState,
+  CourseReportType, ReportDownloadRow, TaskState,
 } from './data/reportsTypes';
 import {
-  useCourseCertificates,
-  useCourseGradingConfig,
   useCourseReportDownloads,
   useTriggerCourseReport,
 } from './data/reportsHooks';
-import type { GradingConfigEntry } from './data/reportsTypes';
 
 // ── Report definitions ────────────────────────────────────────────────────────
 
@@ -225,172 +220,6 @@ const ReportTriggerRow = ({
   );
 };
 
-// ── Grading configuration section ─────────────────────────────────────────────
-
-interface GraderRow {
-  type: string;
-  shortLabel: string;
-  weight: string;
-  minCount: number;
-  dropCount: number;
-}
-
-const GRADER_COLUMNS: ColumnDef<GraderRow>[] = [
-  { key: 'type', label: 'Type' },
-  { key: 'shortLabel', label: 'Label' },
-  { key: 'weight', label: 'Weight' },
-  { key: 'minCount', label: 'Min Count' },
-  { key: 'dropCount', label: 'Drop Count' },
-];
-
-const GradingConfigSection = ({ courseId }: { courseId: string }) => {
-  const { data, isLoading, isError } = useCourseGradingConfig(courseId, !!courseId);
-
-  if (isLoading) {
-    return (
-      <div className="d-flex align-items-center gap-2 py-3 text-muted small">
-        <Spinner animation="border" size="sm" screenReaderText="Loading grading config" />
-        Loading grading configuration…
-      </div>
-    );
-  }
-
-  if (isError) {
-    return <Alert variant="warning" className="mb-0">Could not load grading configuration.</Alert>;
-  }
-
-  if (!data) { return null; }
-
-  const { grader, gradeCutoffs } = data;
-
-  if (grader.length === 0 && Object.keys(gradeCutoffs).length === 0) {
-    return <p className="text-muted small mb-0">No grading configuration found for this course.</p>;
-  }
-
-  const graderRows: GraderRow[] = grader.map((entry: GradingConfigEntry) => ({
-    type: entry.type,
-    shortLabel: entry.shortLabel || '—',
-    weight: `${(entry.weight * 100).toFixed(0)}%`,
-    minCount: entry.minCount,
-    dropCount: entry.dropCount,
-  }));
-
-  return (
-    <>
-      {graderRows.length > 0 && (
-        <AdminDataTable
-          columns={GRADER_COLUMNS}
-          data={graderRows}
-          caption="Grader breakdown"
-        />
-      )}
-
-      {Object.keys(gradeCutoffs).length > 0 && (
-        <div className="mt-4">
-          <p className="text-muted small mb-2 font-weight-semibold">Grade cutoffs</p>
-          <div className="d-flex flex-wrap" style={{ gap: '1.5rem' }}>
-            {Object.entries(gradeCutoffs)
-              .sort(([, a], [, b]) => (b as number) - (a as number))
-              .map(([grade, cutoff]) => (
-                <div key={grade} className="text-center">
-                  <div
-                    className="font-weight-semibold"
-                    style={{ fontSize: '1.25rem', fontVariantNumeric: 'tabular-nums' }}
-                  >
-                    {((cutoff as number) * 100).toFixed(0)}%
-                  </div>
-                  <div className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    {grade}
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
-    </>
-  );
-};
-
-// ── Certificates section ──────────────────────────────────────────────────────
-
-const CERTIFICATE_COLUMNS: ColumnDef<CourseCertificate>[] = [
-  { key: 'username', label: 'Username' },
-  { key: 'name', label: 'Name' },
-  { key: 'email', label: 'Email' },
-  { key: 'mode', label: 'Mode' },
-  { key: 'status', label: 'Status' },
-  { key: 'grade', label: 'Grade' },
-  {
-    key: 'createdDate',
-    label: 'Issued',
-    renderCell: (v) => (v ? new Date(v as string).toLocaleDateString() : '—'),
-  },
-];
-
-const CertificatesSection = ({ courseId }: { courseId: string }) => {
-  const { data, isLoading, isError } = useCourseCertificates(courseId, !!courseId);
-
-  const handleDownloadCsv = () => {
-    if (!data?.results.length) { return; }
-    const headers = ['Username', 'Name', 'Email', 'Mode', 'Status', 'Grade', 'Issued Date', 'Download URL', 'Verify UUID'];
-    const rows = data.results.map((c) => [
-      c.username, c.name, c.email, c.mode, c.status, c.grade,
-      c.createdDate ?? '', c.downloadUrl ?? '', c.verifyUuid ?? '',
-    ]);
-    const csv = [headers, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `certificates-${courseId}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="d-flex align-items-center gap-2 py-3 text-muted small">
-        <Spinner animation="border" size="sm" screenReaderText="Loading certificates" />
-        Loading certificates…
-      </div>
-    );
-  }
-
-  if (isError) {
-    return <Alert variant="warning" className="mb-0">Could not load certificates.</Alert>;
-  }
-
-  return (
-    <>
-      <div className="d-flex justify-content-between align-items-start mb-4">
-        <div>
-          <div
-            className="font-weight-semibold"
-            style={{ fontSize: '2rem', fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}
-          >
-            {(data?.count ?? 0).toLocaleString()}
-          </div>
-          <div className="text-muted small mt-1">certificates issued</div>
-        </div>
-        {(data?.results.length ?? 0) > 0 && (
-          <Button variant="outline-primary" size="sm" onClick={handleDownloadCsv}>
-            Download CSV
-          </Button>
-        )}
-      </div>
-      {(data?.results.length ?? 0) > 0 ? (
-        <AdminDataTable
-          columns={CERTIFICATE_COLUMNS}
-          data={data?.results ?? []}
-          caption="Certificates issued for this course"
-        />
-      ) : (
-        <p className="text-muted small mb-0">No certificates have been issued for this course.</p>
-      )}
-    </>
-  );
-};
-
 // ── Downloads table ───────────────────────────────────────────────────────────
 
 const DOWNLOADS_PAGE_SIZE = 10;
@@ -545,20 +374,6 @@ const CourseReportsPage = () => {
         {REPORT_DEFS.map((def) => (
           <ReportTriggerRow key={def.type} def={def} courseId={courseId} />
         ))}
-      </div>
-
-      {/* Grading Configuration */}
-      <div className="rwaq-card mt-4">
-        <h2 className="rwaq-section-title mb-4">Grading Configuration</h2>
-        <div style={{ overflowX: 'auto' }}>
-          <GradingConfigSection courseId={courseId} />
-        </div>
-      </div>
-
-      {/* Certificates Issued */}
-      <div className="rwaq-card mt-4">
-        <h2 className="rwaq-section-title mb-4">Certificates Issued</h2>
-        <CertificatesSection courseId={courseId} />
       </div>
 
       {/* Reports Available for Download */}
