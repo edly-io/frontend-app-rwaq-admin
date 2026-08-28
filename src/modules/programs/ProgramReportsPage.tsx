@@ -103,7 +103,7 @@ const ProgramReportsPage = () => {
               }}
             >
               <StatCard label="Total Learners" value={report.totalLearners.toLocaleString()} />
-              <StatCard label="Completed" value={report.completed.toLocaleString()} highlight />
+              <StatCard label="Completed" value={report.completed.toLocaleString()} />
               <StatCard label="In Progress" value={report.inProgress.toLocaleString()} />
               <StatCard label="Not Started" value={report.notStarted.toLocaleString()} />
               <StatCard label="Completion Rate" value={`${report.completionRate}%`} />
