@@ -215,6 +215,7 @@ html[data-paragon-theme-variant='dark'] {
   display: flex;
   flex-direction: column;
   gap: var(--rwaq-space-2);
+  margin-bottom: var(--rwaq-space-2);
 }
 .rwaq-page-header__breadcrumb { font-size: 0.8125rem; color: var(--rwaq-muted); }
 .rwaq-page-header__breadcrumb a { color: var(--rwaq-muted); text-decoration: none; }
