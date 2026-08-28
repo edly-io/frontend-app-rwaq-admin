@@ -237,7 +237,7 @@ const messages = defineMessages({
   detailCreated: { id: 'rwaq.admin.users.detail.created', defaultMessage: 'Created' },
   detailLastLogin: { id: 'rwaq.admin.users.detail.lastLogin', defaultMessage: 'Last login' },
   detailOrgAdminOf: { id: 'rwaq.admin.users.detail.orgAdminOf', defaultMessage: 'Organization Admin of' },
-  detailNone: { id: 'rwaq.admin.users.detail.none', defaultMessage: '' },
+  detailNone: { id: 'rwaq.admin.users.detail.none', defaultMessage: '—' },
   edit: { id: 'rwaq.admin.users.detail.edit', defaultMessage: 'Edit' },
   view: { id: 'rwaq.admin.users.detail.view', defaultMessage: 'View' },
 
