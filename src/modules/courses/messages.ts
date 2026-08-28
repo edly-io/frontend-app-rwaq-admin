@@ -240,7 +240,7 @@ const messages = defineMessages({
   },
   enrollmentColStatus: {
     id: 'rwaq.admin.courseDetail.enrollments.col.status',
-    defaultMessage: 'Status',
+    defaultMessage: 'Enrollment',
   },
   enrollmentColEnrolledAt: {
     id: 'rwaq.admin.courseDetail.enrollments.col.enrolledAt',
@@ -248,7 +248,7 @@ const messages = defineMessages({
   },
   enrollmentActive: {
     id: 'rwaq.admin.courseDetail.enrollments.active',
-    defaultMessage: 'Active',
+    defaultMessage: 'Enrolled',
   },
   enrollmentInactive: {
     id: 'rwaq.admin.courseDetail.enrollments.inactive',
