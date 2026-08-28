@@ -38,6 +38,7 @@
   --rwaq-accent-hover: #3a86a7;
   --rwaq-accent-contrast: #ffffff;
   --rwaq-accent-soft: rgba(68, 156, 194, 0.12);
+  --rwaq-error: #d92d20;
 }
 
 // Dark palette, taken from the Rwaq brand package's own dark theme
@@ -74,6 +75,7 @@ html[data-paragon-theme-variant='dark'] {
   --rwaq-accent-hover: #63b4d6;
   --rwaq-accent-contrast: #08222c;
   --rwaq-accent-soft: rgba(74, 163, 201, 0.16);
+  --rwaq-error: #f97066;
 }
 
 // ── Rwaq brand palette applied to Paragon ────────────────────────────────────
@@ -249,7 +251,7 @@ html[data-paragon-theme-variant='dark'] {
 .rwaq-form { display: flex; flex-direction: column; gap: var(--rwaq-space-4); max-width: 720px; }
 .rwaq-field { display: flex; flex-direction: column; gap: var(--rwaq-space-2); }
 .rwaq-field__label { font-size: 0.875rem; font-weight: 600; color: var(--rwaq-text); }
-.rwaq-field__label .required { color: #d92d20; margin-inline-start: 2px; }
+.rwaq-field__label .required { color: var(--rwaq-error); margin-inline-start: 2px; }
 
 // A two- or three-option select doesn't need the full row width; a very wide
 // control also makes its native option popup span the whole field.
@@ -680,11 +682,9 @@ html[data-paragon-theme-variant='dark'] {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
   }
 
-  // Error / required red: #d92d20 has ~4.5:1 on dark surfaces — replace with
-  // a lighter red that passes WCAG AA at small sizes.
-  .rwaq-field__label .required { color: #f97066; }
-  .rwaq-actionbar__error { color: #f97066; }
-  .rwaq-searchgroup--invalid { border-color: #f97066; }
+  .rwaq-field__label .required { color: var(--rwaq-error); }
+  .rwaq-actionbar__error { color: var(--rwaq-error); }
+  .rwaq-searchgroup--invalid { border-color: var(--rwaq-error); }
   .rwaq-searchgroup--invalid:focus-within { box-shadow: 0 0 0 3px rgba(249, 112, 102, 0.3); }
 }
 
@@ -713,7 +713,7 @@ html[data-paragon-theme-variant='dark'] {
 .rwaq-actionbar__error {
   margin-top: var(--rwaq-space-2);
   font-size: 0.8125rem;
-  color: #d92d20;
+  color: var(--rwaq-error);
 }
 
 .rwaq-searchgroup {
@@ -733,7 +733,7 @@ html[data-paragon-theme-variant='dark'] {
 }
 
 .rwaq-searchgroup--invalid {
-  border-color: #d92d20;
+  border-color: var(--rwaq-error);
 
   &:focus-within { box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.18); }
 }
