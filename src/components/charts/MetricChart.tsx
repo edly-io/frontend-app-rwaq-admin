@@ -229,6 +229,37 @@ const MetricChart = ({
     cursor: { fill: resolveParagonToken('--rwaq-row-hover', 'rgba(0,0,0,0.04)') },
   };
 
+  const ChartLegend = ({ payload = [] }: { payload?: { value: string; color: string }[] }) => (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '0.25rem',
+      marginTop: '0.5rem',
+      fontSize: '0.8125rem',
+    }}
+    >
+      {payload.map((entry, index) => (
+        <span key={entry.value} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}>
+          {index > 0 && (
+            <span style={{ color: resolveParagonToken('--rwaq-muted', '#9ca3af'), padding: '0 0.125rem' }}>/</span>
+          )}
+          <span style={{
+            display: 'inline-block',
+            width: 10,
+            height: 10,
+            backgroundColor: entry.color,
+            borderRadius: 2,
+            flexShrink: 0,
+          }}
+          />
+          <span style={{ color: resolveParagonToken('--pgn-color-gray-700', '#3b3b3b') }}>{entry.value}</span>
+        </span>
+      ))}
+    </div>
+  );
+
   const renderContent = () => {
     if (type === 'line') {
       return (
@@ -237,7 +268,7 @@ const MetricChart = ({
           {!compact && axisProps.xAxis}
           {!compact && axisProps.yAxis}
           <Tooltip {...tooltipStyle} />
-          {!hideLegend && !compact && <Legend />}
+          {!hideLegend && !compact && <Legend content={<ChartLegend />} />}
           {series.map((key, i) => (
             <Line
               key={key}
@@ -263,7 +294,7 @@ const MetricChart = ({
           {!compact && axisProps.xAxis}
           {!compact && axisProps.yAxis}
           <Tooltip {...tooltipStyle} />
-          {!hideLegend && !compact && <Legend />}
+          {!hideLegend && !compact && <Legend content={<ChartLegend />} />}
           {series.map((key, i) => (
             <Bar
               key={key}
@@ -308,7 +339,7 @@ const MetricChart = ({
             ))}
           </Pie>
           <Tooltip {...tooltipStyle} />
-          {!hideLegend && <Legend />}
+          {!hideLegend && <Legend content={<ChartLegend />} />}
         </PieChart>
       );
     }

@@ -198,7 +198,7 @@ html[data-paragon-theme-variant='dark'] {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--rwaq-space-1);
 }
 
 .rwaq-card {
