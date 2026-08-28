@@ -9,7 +9,11 @@ export type CourseReportType =
   | 'may_enroll'
   | 'inactive_learner'
   | 'survey'
-  | 'proctored_exam';
+  | 'proctored_exam'
+  | 'ora_data'
+  | 'ora_summary'
+  | 'ora_submission_archive'
+  | 'anon_ids';
 
 export type TaskState = 'QUEUING' | 'IN_PROGRESS' | 'SUCCESS' | 'FAILURE' | 'REVOKED';
 
@@ -70,6 +74,23 @@ export interface OrgEnrollmentSummary {
   totalActiveEnrollments: number;
   byMode: Record<string, number>;
   totalCoursesInOrg: number;
+}
+
+export interface CourseCertificate {
+  username: string;
+  name: string;
+  email: string;
+  mode: string;
+  status: string;
+  grade: string;
+  createdDate: string | null;
+  downloadUrl: string | null;
+  verifyUuid: string | null;
+}
+
+export interface CourseCertificatesResponse {
+  count: number;
+  results: CourseCertificate[];
 }
 
 export interface ProgramCompletionReport {

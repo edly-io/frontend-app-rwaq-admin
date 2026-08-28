@@ -1,9 +1,10 @@
 /**
  * CourseReportsPage — reports hub for a single course.
  *
- *   1. Generate Reports — async trigger cards (7 report types)
+ *   1. Generate Reports — async trigger cards (11 report types)
  *   2. Org Enrollment Summary — sync inline enrollment counts by mode
- *   3. Reports Available for Download — unified polled table (10 s while in-progress)
+ *   3. Certificates Issued — inline paginated table with CSV export
+ *   4. Reports Available for Download — unified polled table (10 s while in-progress)
  */
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -13,8 +14,11 @@ import {
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import { useCourse } from './data/hooks';
-import type { CourseReportType, ReportDownloadRow, TaskState } from './data/reportsTypes';
+import type {
+  CourseCertificate, CourseReportType, ReportDownloadRow, TaskState,
+} from './data/reportsTypes';
 import {
+  useCourseCertificates,
   useCourseOrgEnrollmentSummary,
   useCourseReportDownloads,
   useTriggerCourseReport,
@@ -81,6 +85,31 @@ const REPORT_DEFS: ReportDef[] = [
       + 'student info, attempt timing, attempt status, review status, '
       + 'and any reviewer comments (suspicious activity or rules violations).',
   },
+  {
+    type: 'ora_data',
+    label: 'ORA Data Report',
+    description: 'Generates a CSV of all Open Response Assessment submissions. '
+      + 'Columns include Submission ID, block location, question prompt, username, '
+      + 'submission text, submission date, and attempt number.',
+  },
+  {
+    type: 'ora_summary',
+    label: 'ORA Summary Report',
+    description: 'Generates a CSV summary of ORA grading outcomes per learner per problem. '
+      + 'Includes final scores, grader counts, and overall pass/fail determination.',
+  },
+  {
+    type: 'ora_submission_archive',
+    label: 'ORA Submission Files Archive',
+    description: 'Generates a ZIP archive containing all ORA submission text files and '
+      + 'any uploaded file attachments submitted by learners for this course.',
+  },
+  {
+    type: 'anon_ids',
+    label: 'Student Anonymized IDs',
+    description: 'Generates a CSV mapping each enrolled learner\'s real user ID to their '
+      + 'anonymized user ID. Used for research and analytics that require de-identified data.',
+  },
 ];
 
 // ── State badge ───────────────────────────────────────────────────────────────
@@ -132,7 +161,9 @@ const ReportTriggerRow = ({
   def: ReportDef;
   courseId: string;
 }) => {
-  const { mutate, isPending: isLoading, isError, error } = useTriggerCourseReport(courseId);
+  const {
+    mutate, isPending: isLoading, isError, error,
+  } = useTriggerCourseReport(courseId);
   const [triggered, setTriggered] = useState(false);
 
   const handleClick = () => {
@@ -241,6 +272,86 @@ const OrgEnrollmentSummarySection = ({ courseId }: { courseId: string }) => {
         />
       ) : (
         <p className="text-muted small mb-0">No enrollment data found for this organization.</p>
+      )}
+    </>
+  );
+};
+
+// ── Certificates section ──────────────────────────────────────────────────────
+
+const CERTIFICATE_COLUMNS: ColumnDef<CourseCertificate>[] = [
+  { key: 'username', label: 'Username' },
+  { key: 'name', label: 'Name' },
+  { key: 'email', label: 'Email' },
+  { key: 'mode', label: 'Mode' },
+  { key: 'status', label: 'Status' },
+  { key: 'grade', label: 'Grade' },
+  {
+    key: 'createdDate',
+    label: 'Issued',
+    renderCell: (v) => (v ? new Date(v as string).toLocaleDateString() : '—'),
+  },
+];
+
+const CertificatesSection = ({ courseId }: { courseId: string }) => {
+  const { data, isLoading, isError } = useCourseCertificates(courseId, !!courseId);
+
+  const handleDownloadCsv = () => {
+    if (!data?.results.length) { return; }
+    const headers = ['Username', 'Name', 'Email', 'Mode', 'Status', 'Grade', 'Issued Date', 'Download URL', 'Verify UUID'];
+    const rows = data.results.map((c) => [
+      c.username, c.name, c.email, c.mode, c.status, c.grade,
+      c.createdDate ?? '', c.downloadUrl ?? '', c.verifyUuid ?? '',
+    ]);
+    const csv = [headers, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `certificates-${courseId}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="d-flex align-items-center gap-2 py-3 text-muted small">
+        <Spinner animation="border" size="sm" screenReaderText="Loading certificates" />
+        Loading certificates…
+      </div>
+    );
+  }
+
+  if (isError) {
+    return <Alert variant="warning" className="mb-0">Could not load certificates.</Alert>;
+  }
+
+  return (
+    <>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div className="d-flex align-items-baseline gap-2">
+          <span
+            className="font-weight-semibold"
+            style={{ fontSize: '1.75rem', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}
+          >
+            {(data?.count ?? 0).toLocaleString()}
+          </span>
+          <span className="text-muted small">certificates issued</span>
+        </div>
+        {(data?.results.length ?? 0) > 0 && (
+          <Button variant="outline-primary" size="sm" onClick={handleDownloadCsv}>
+            Download CSV
+          </Button>
+        )}
+      </div>
+      {(data?.results.length ?? 0) > 0 ? (
+        <AdminDataTable
+          columns={CERTIFICATE_COLUMNS}
+          data={data?.results ?? []}
+          caption="Certificates issued for this course"
+        />
+      ) : (
+        <p className="text-muted small mb-0">No certificates have been issued for this course.</p>
       )}
     </>
   );
@@ -389,6 +500,12 @@ const CourseReportsPage = () => {
       <div className="rwaq-card mt-4">
         <h2 className="rwaq-section-title mb-4">Org Enrollment Summary</h2>
         <OrgEnrollmentSummarySection courseId={courseId} />
+      </div>
+
+      {/* Certificates Issued */}
+      <div className="rwaq-card mt-4">
+        <h2 className="rwaq-section-title mb-4">Certificates Issued</h2>
+        <CertificatesSection courseId={courseId} />
       </div>
 
       {/* Reports Available for Download */}

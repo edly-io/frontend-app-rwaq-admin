@@ -8,6 +8,7 @@ import { camelCaseObject, snakeCaseObject } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { getApiUrl } from '@src/data/utils';
 import type {
+  CourseCertificatesResponse,
   CourseReportType,
   GradingConfig,
   OrgEnrollmentSummary,
@@ -79,6 +80,17 @@ export const fetchOrgEnrollmentSummary = async (
     { params: snakeCaseObject(params) },
   );
   return camelCaseObject(data) as OrgEnrollmentSummary;
+};
+
+// ── Certificates ──────────────────────────────────────────────────────────────
+
+export const fetchCourseCertificates = async (
+  courseId: string,
+): Promise<CourseCertificatesResponse> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getReportsBaseUrl(courseId)}/certificates/`,
+  );
+  return camelCaseObject(data) as CourseCertificatesResponse;
 };
 
 // ── Program completion ────────────────────────────────────────────────────────

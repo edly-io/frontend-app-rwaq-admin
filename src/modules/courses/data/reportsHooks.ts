@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { appId } from '@src/constants';
 import type { CourseReportType, ReportDownloadRow } from './reportsTypes';
 import {
+  fetchCourseCertificates,
   fetchCourseReportDownloads,
   fetchCourseReportTasks,
   fetchGradingConfig,
@@ -79,6 +80,15 @@ export const useCourseOrgEnrollmentSummary = (
 ) => useQuery({
   queryKey: reportQueryKeys.courseOrgSummary(courseId, params.org, params.dateFrom),
   queryFn: () => fetchOrgEnrollmentSummary(courseId, params),
+  enabled: enabled && !!courseId,
+  staleTime: 5 * 60_000,
+});
+
+// ── Certificates ──────────────────────────────────────────────────────────────
+
+export const useCourseCertificates = (courseId: string, enabled = true) => useQuery({
+  queryKey: [...reportQueryKeys.all, 'certificates', courseId] as const,
+  queryFn: () => fetchCourseCertificates(courseId),
   enabled: enabled && !!courseId,
   staleTime: 5 * 60_000,
 });
