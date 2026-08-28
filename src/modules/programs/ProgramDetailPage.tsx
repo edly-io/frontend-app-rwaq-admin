@@ -90,24 +90,22 @@ const SettingsCard = ({
           <Form.Group>
             <Form.Switch
               id={`program-${uuid}-is-hide`}
-              label={intl.formatMessage(messages.settingIsHide)}
+              label={intl.formatMessage(messages.settingIsHideHelp)}
               checked={isHide}
               disabled={isPending}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => patch({ isHide: e.target.checked })}
             />
-            <Form.Text>{intl.formatMessage(messages.settingIsHideHelp)}</Form.Text>
           </Form.Group>
 
           {/* is_featured toggle */}
           <Form.Group>
             <Form.Switch
               id={`program-${uuid}-is-featured`}
-              label={intl.formatMessage(messages.settingIsFeatured)}
+              label={intl.formatMessage(messages.settingIsFeaturedHelp)}
               checked={isFeatured}
               disabled={isPending}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => patch({ isFeatured: e.target.checked })}
             />
-            <Form.Text>{intl.formatMessage(messages.settingIsFeaturedHelp)}</Form.Text>
           </Form.Group>
 
         </div>
