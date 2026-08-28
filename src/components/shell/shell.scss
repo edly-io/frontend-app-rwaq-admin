@@ -639,6 +639,27 @@ html[data-paragon-theme-variant='dark'] {
     border-radius: 50%;
     filter: invert(1) hue-rotate(180deg);
   }
+
+  // DataTable wrapper: Paragon's bundled light CSS sets background: white on
+  // .pgn__data-table; the table element and footer are overridden above but
+  // the wrapper div itself was not, causing the white box in empty-state.
+  .pgn__data-table {
+    background: var(--rwaq-card-bg);
+    color: var(--rwaq-text);
+  }
+
+  // User menu shadow: rgba(16,24,40) is near-black on black — invisible.
+  .rwaq-admin-usermenu.dropdown-menu,
+  .rwaq-admin-usermenu {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  // Error / required red: #d92d20 has ~4.5:1 on dark surfaces — replace with
+  // a lighter red that passes WCAG AA at small sizes.
+  .rwaq-field__label .required { color: #f97066; }
+  .rwaq-actionbar__error { color: #f97066; }
+  .rwaq-searchgroup--invalid { border-color: #f97066; }
+  .rwaq-searchgroup--invalid:focus-within { box-shadow: 0 0 0 3px rgba(249, 112, 102, 0.3); }
 }
 
 // ── Action bar: search + filter/sort + applied chips ─────────────────────────
