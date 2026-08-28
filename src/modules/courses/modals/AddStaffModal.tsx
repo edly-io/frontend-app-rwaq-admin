@@ -36,17 +36,19 @@ const AddStaffModal = ({
   const [user, setUser] = useState<UserSummary | null>(null);
   const [role, setRole] = useState<CourseRole>('staff');
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
+  const [mutationError, setMutationError] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       setUser(null);
       setRole('staff');
       setHasTriedSubmit(false);
+      setMutationError('');
     }
   }, [isOpen]);
 
   const userError = hasTriedSubmit && !user
-    ? `${intl.formatMessage(messages.addStaffModalUserLabel)} is required`
+    ? intl.formatMessage(messages.addStaffModalUserRequired)
     : undefined;
 
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
@@ -60,7 +62,7 @@ const AddStaffModal = ({
       onClose();
     } catch (error) {
       logError(error);
-      showToast(getErrorReason(error) ?? intl.formatMessage(messages.addStaffModalError));
+      setMutationError(getErrorReason(error) ?? intl.formatMessage(messages.addStaffModalError));
     }
   };
 
@@ -74,6 +76,10 @@ const AddStaffModal = ({
       cancelLabel={intl.formatMessage(messages.addStaffModalCancel)}
       isSubmitting={mutation.isPending}
     >
+      {mutationError && (
+        <p className="text-danger small">{mutationError}</p>
+      )}
+
       <UserPicker selected={user} onSelect={setUser} error={userError} />
 
       <Form.Group>

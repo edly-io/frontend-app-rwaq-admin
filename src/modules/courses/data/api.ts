@@ -121,13 +121,12 @@ export const addCourseStaff = async (
   return camelCaseObject(data) as CourseStaffMember;
 };
 
-/** DELETE /api/v1/admin/courses/{courseId}/staff/{userId}/?role={role} */
+/** DELETE /api/v1/admin/courses/{courseId}/staff/{userId}/{role}/ */
 export const removeCourseStaff = async (
   courseId: string,
   params: CourseStaffRemoveParams,
 ): Promise<void> => {
   await getAuthenticatedHttpClient().delete(
-    `${getCoursesBaseUrl()}/${encodeURIComponent(courseId)}/staff/${params.userId}/`,
-    { params: { role: params.role } },
+    `${getCoursesBaseUrl()}/${encodeURIComponent(courseId)}/staff/${params.userId}/${encodeURIComponent(params.role)}/`,
   );
 };

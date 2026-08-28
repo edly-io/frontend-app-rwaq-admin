@@ -360,6 +360,14 @@ const messages = defineMessages({
     id: 'rwaq.admin.courses.modal.enroll.error',
     defaultMessage: 'Could not enroll user. Please try again.',
   },
+  enrollModalUserRequired: {
+    id: 'rwaq.admin.courses.modal.enroll.userRequired',
+    defaultMessage: 'Please select a user.',
+  },
+  enrollModalReasonRequired: {
+    id: 'rwaq.admin.courses.modal.enroll.reasonRequired',
+    defaultMessage: 'A reason is required.',
+  },
 
   // ── AddStaffModal ─────────────────────────────────────────────────────────────
   addStaffModalTitle: {
@@ -393,6 +401,10 @@ const messages = defineMessages({
   addStaffModalError: {
     id: 'rwaq.admin.courses.modal.addStaff.error',
     defaultMessage: 'Could not add team member. Please try again.',
+  },
+  addStaffModalUserRequired: {
+    id: 'rwaq.admin.courses.modal.addStaff.userRequired',
+    defaultMessage: 'Please select a user.',
   },
 
   // ── UserPicker ────────────────────────────────────────────────────────────────
