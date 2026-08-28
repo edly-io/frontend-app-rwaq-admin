@@ -86,8 +86,8 @@ const SettingsCard = ({
             <Form.Text>{intl.formatMessage(messages.settingStatusHelp)}</Form.Text>
           </Form.Group>
 
-          {/* is_hide toggle */}
-          <Form.Group>
+          {/* is_hide / is_featured toggles */}
+          <div className="d-flex flex-column rwaq-gap-sm">
             <Form.Switch
               id={`program-${uuid}-is-hide`}
               checked={isHide}
@@ -96,10 +96,6 @@ const SettingsCard = ({
             >
               {intl.formatMessage(messages.settingIsHideHelp)}
             </Form.Switch>
-          </Form.Group>
-
-          {/* is_featured toggle */}
-          <Form.Group>
             <Form.Switch
               id={`program-${uuid}-is-featured`}
               checked={isFeatured}
@@ -108,7 +104,7 @@ const SettingsCard = ({
             >
               {intl.formatMessage(messages.settingIsFeaturedHelp)}
             </Form.Switch>
-          </Form.Group>
+          </div>
 
         </div>
       </Form>
