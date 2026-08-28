@@ -81,7 +81,12 @@ const CourseDetailPage = () => {
   );
 
   const [modal, setModal] = useState<ModalState>({ kind: 'none' });
-  const [staffPage, setStaffPage] = useState(1);
+
+  const staffPage = parseInt(searchParams.get('sp') || '1', 10);
+  const setStaffPage = (p: number) => setSearchParams(
+    (prev) => { const next = new URLSearchParams(prev); next.set('sp', String(p)); return next; },
+    { replace: true },
+  );
 
   // ── Data ───────────────────────────────────────────────────────────────────
 
@@ -117,7 +122,7 @@ const CourseDetailPage = () => {
       URL.revokeObjectURL(url);
     } catch (err) {
       logError(err);
-      showToast('Failed to download CSV');
+      showToast(intl.formatMessage(messages.downloadCsvFailed));
     }
   };
 
@@ -126,10 +131,10 @@ const CourseDetailPage = () => {
   const handleRemoveStaff = async (member: CourseStaffMember) => {
     try {
       await removeStaffMutation.mutateAsync({ userId: member.userId, role: member.role });
-      showToast(`${member.name || member.username} removed from team.`);
+      showToast(intl.formatMessage(messages.staffRemovedSuccess, { name: member.name || member.username }));
     } catch (err) {
       logError(err);
-      showToast('Could not remove team member.');
+      showToast(intl.formatMessage(messages.staffRemoveFailed));
     }
   };
 
@@ -141,7 +146,7 @@ const CourseDetailPage = () => {
     return (
       <div className="rwaq-page">
         <div className="d-flex justify-content-center py-5">
-          <Spinner animation="border" screenReaderText="Loading course" />
+          <Spinner animation="border" screenReaderText={intl.formatMessage(messages.loadingCourse)} />
         </div>
       </div>
     );
@@ -228,6 +233,7 @@ const CourseDetailPage = () => {
           size="sm"
           onClick={() => handleRemoveStaff(row as unknown as CourseStaffMember)}
           disabled={removeStaffMutation.isPending}
+          aria-label={intl.formatMessage(messages.removeStaffAriaLabel, { username: (row as unknown as CourseStaffMember).username })}
         >
           {intl.formatMessage(messages.removeStaff)}
         </Button>
@@ -282,7 +288,7 @@ const CourseDetailPage = () => {
               size="sm"
               onClick={() => navigate(`/courses/${encodeURIComponent(courseId)}/reports`)}
             >
-              View Reports
+              {intl.formatMessage(messages.viewReports)}
             </Button>
           </div>
         </div>

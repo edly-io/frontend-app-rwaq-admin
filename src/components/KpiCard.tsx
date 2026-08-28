@@ -6,25 +6,8 @@
  */
 import { ReactNode } from 'react';
 import { Card } from '@openedx/paragon';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-
-const messages = defineMessages({
-  deltaIncrease: {
-    id: 'rwaq.admin.kpiCard.deltaIncrease',
-    defaultMessage: 'Increased by {delta}%',
-    description: 'Screen reader text for an upward delta on a KPI card',
-  },
-  deltaDecrease: {
-    id: 'rwaq.admin.kpiCard.deltaDecrease',
-    defaultMessage: 'Decreased by {delta}%',
-    description: 'Screen reader text for a downward delta on a KPI card',
-  },
-  deltaNoChange: {
-    id: 'rwaq.admin.kpiCard.deltaNoChange',
-    defaultMessage: 'No change',
-    description: 'Screen reader text when a KPI has not changed',
-  },
-});
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { kpiMessages as messages } from './messages';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

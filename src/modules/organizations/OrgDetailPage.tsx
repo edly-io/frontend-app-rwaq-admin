@@ -6,7 +6,7 @@
  * roster. That split is why the form that used to sit here is gone.
  */
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Alert, Button, Chip, Spinner,
 } from '@openedx/paragon';
@@ -29,15 +29,21 @@ import messages from './messages';
 const PAGE_SIZE = 10;
 
 const OrgCoursesTable = ({ org }: { org: string }) => {
+  const intl = useIntl();
   const navigate = useNavigate();
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parseInt(searchParams.get('cp') || '1', 10);
+  const setPage = (p: number) => setSearchParams(
+    (prev) => { const next = new URLSearchParams(prev); next.set('cp', String(p)); return next; },
+    { replace: true },
+  );
   const { data, isLoading, isError } = useCourses({ org, page, pageSize: PAGE_SIZE });
 
-  const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString() : '—');
+  const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString() : intl.formatMessage(messages.detailNone));
 
   const columns: ColumnDef<CourseSummary>[] = [
     {
-      label: 'Course',
+      label: intl.formatMessage(messages.orgCoursesColCourse),
       key: 'displayName',
       renderCell: (value, row) => (
         <div className="rwaq-user-cell">
@@ -54,17 +60,17 @@ const OrgCoursesTable = ({ org }: { org: string }) => {
       ),
     },
     {
-      label: 'Start',
+      label: intl.formatMessage(messages.orgCoursesColStart),
       key: 'start',
       renderCell: (value) => formatDate(value as string | null),
     },
     {
-      label: 'End',
+      label: intl.formatMessage(messages.orgCoursesColEnd),
       key: 'end',
       renderCell: (value) => formatDate(value as string | null),
     },
     {
-      label: 'Enrollments',
+      label: intl.formatMessage(messages.orgCoursesColEnrollments),
       key: 'enrollmentCount',
       renderCell: (value) => String(value as number),
     },
@@ -77,16 +83,16 @@ const OrgCoursesTable = ({ org }: { org: string }) => {
           variant="outline-primary"
           size="sm"
           onClick={() => navigate(`/courses/${encodeURIComponent(row.courseId as string)}`)}
-          aria-label={`View ${row.displayName as string}`}
+          aria-label={intl.formatMessage(messages.orgCoursesViewAriaLabel, { name: row.displayName as string })}
         >
-          View
+          {intl.formatMessage(messages.orgCoursesView)}
         </Button>
       ),
     },
   ];
 
   if (isError) {
-    return <Alert variant="warning">Could not load courses for this organization.</Alert>;
+    return <Alert variant="warning">{intl.formatMessage(messages.orgCoursesError)}</Alert>;
   }
 
   const count = data?.pagination?.count ?? 0;
@@ -97,7 +103,7 @@ const OrgCoursesTable = ({ org }: { org: string }) => {
       columns={columns}
       data={data?.results ?? []}
       isLoading={isLoading}
-      caption="Courses"
+      caption={intl.formatMessage(messages.detailCourses)}
       pagination={count > PAGE_SIZE ? {
         currentPage: page,
         pageCount: numPages || 1,
@@ -203,7 +209,7 @@ const OrgDetailPage = () => {
       </div>
 
       <div className="rwaq-card">
-        <h2 className="rwaq-section-title mb-4">Courses</h2>
+        <h2 className="rwaq-section-title mb-4">{intl.formatMessage(messages.detailCourses)}</h2>
         <OrgCoursesTable org={organization.shortName} />
       </div>
 

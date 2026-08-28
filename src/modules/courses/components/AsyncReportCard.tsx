@@ -6,29 +6,10 @@
  * completed runs.  Polls at 10 s while any task is QUEUING or IN_PROGRESS.
  */
 import { Alert, Badge, Button, Spinner } from '@openedx/paragon';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import type { CourseReportType, ReportTask, TaskState } from '../data/reportsTypes';
 import { useCourseReportTasks, useTriggerCourseReport } from '../data/reportsHooks';
-
-const messages = defineMessages({
-  stateQueuing: { id: 'rwaq.admin.asyncReportCard.state.queuing', defaultMessage: 'Queued' },
-  stateInProgress: { id: 'rwaq.admin.asyncReportCard.state.inProgress', defaultMessage: 'In Progress' },
-  stateDone: { id: 'rwaq.admin.asyncReportCard.state.done', defaultMessage: 'Done' },
-  stateFailure: { id: 'rwaq.admin.asyncReportCard.state.failure', defaultMessage: 'Failed' },
-  stateRevoked: { id: 'rwaq.admin.asyncReportCard.state.revoked', defaultMessage: 'Revoked' },
-  generateReport: { id: 'rwaq.admin.asyncReportCard.button.generateReport', defaultMessage: 'Generate Report' },
-  generating: { id: 'rwaq.admin.asyncReportCard.button.generating', defaultMessage: 'Generating…' },
-  downloadCsv: { id: 'rwaq.admin.asyncReportCard.button.downloadCsv', defaultMessage: 'Download CSV' },
-  errorTriggerFallback: { id: 'rwaq.admin.asyncReportCard.error.triggerFallback', defaultMessage: 'Failed to trigger report. Try again.' },
-  errorLoadHistory: { id: 'rwaq.admin.asyncReportCard.error.loadHistory', defaultMessage: 'Could not load report history. The table will refresh automatically.' },
-  noReportsYet: { id: 'rwaq.admin.asyncReportCard.noReports', defaultMessage: 'No reports generated yet. Click Generate Report to start.' },
-  colGenerated: { id: 'rwaq.admin.asyncReportCard.col.generated', defaultMessage: 'Generated' },
-  colStatus: { id: 'rwaq.admin.asyncReportCard.col.status', defaultMessage: 'Status' },
-  colProcessed: { id: 'rwaq.admin.asyncReportCard.col.processed', defaultMessage: 'Processed' },
-  colFile: { id: 'rwaq.admin.asyncReportCard.col.file', defaultMessage: 'File' },
-  loadingHistory: { id: 'rwaq.admin.asyncReportCard.loading.history', defaultMessage: 'Loading report history' },
-  screenReaderGenerating: { id: 'rwaq.admin.asyncReportCard.screenReader.generating', defaultMessage: 'Generating' },
-});
+import { asyncReportMessages as messages } from '../messages';
 
 // ── State badge ───────────────────────────────────────────────────────────────
 

@@ -20,28 +20,12 @@ import {
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Container, Spinner } from '@openedx/paragon';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import { useAdminCapabilities } from '@src/data/whoami';
 import SideNav from './SideNav';
 import TopBar from './TopBar';
 import ErrorState from '../ErrorState';
-
-const messages = defineMessages({
-  accessDeniedTitle: {
-    id: 'rwaq.admin.shell.accessDeniedTitle',
-    defaultMessage: 'Access denied',
-  },
-  // Names the requirement and who can grant it. The generic 403 body ("you do
-  // not have permission to view this page") leaves a locked-out Global Staff
-  // admin — privileged on every other Open edX surface — with no idea what is
-  // missing or who to ask.
-  accessDeniedBody: {
-    id: 'rwaq.admin.shell.accessDeniedBody',
-    defaultMessage: 'The admin panel is available to superusers only. If you need access, '
-      + 'ask an existing superuser to grant it from this panel, or a platform administrator '
-      + 'to set it in Django admin.',
-  },
-});
+import { adminShellMessages as messages } from './messages';
 
 const BREAKPOINT_MD = 768;
 

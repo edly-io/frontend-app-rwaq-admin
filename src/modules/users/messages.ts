@@ -386,3 +386,28 @@ const messages = defineMessages({
 });
 
 export default messages;
+
+// ── ReasonField — enrollment-change preset reasons ────────────────────────────
+
+export const enrollmentPresetMessages = defineMessages({
+  financialAssistance: {
+    id: 'rwaq.admin.users.reason.preset.financialAssistance',
+    defaultMessage: 'Financial assistance',
+  },
+  supportRequest: {
+    id: 'rwaq.admin.users.reason.preset.supportRequest',
+    defaultMessage: 'Learner support request',
+  },
+  correction: {
+    id: 'rwaq.admin.users.reason.preset.correction',
+    defaultMessage: 'Enrollment correction',
+  },
+  partnerAgreement: {
+    id: 'rwaq.admin.users.reason.preset.partnerAgreement',
+    defaultMessage: 'Partner agreement',
+  },
+  testing: {
+    id: 'rwaq.admin.users.reason.preset.testing',
+    defaultMessage: 'Testing / QA',
+  },
+});
