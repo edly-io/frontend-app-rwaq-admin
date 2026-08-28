@@ -238,7 +238,7 @@ const UsersListPage = () => {
       renderCell: (value, row) => (
         <div className="rwaq-user-cell">
           <div className="min-width-0">
-            <div className="rwaq-user-cell__name">{(value as string) || '—'}</div>
+            <div className="rwaq-user-cell__name">{(value as string) || intl.formatMessage(messages.detailNone)}</div>
             <div className="rwaq-user-cell__meta">{row.email as string}</div>
           </div>
         </div>
