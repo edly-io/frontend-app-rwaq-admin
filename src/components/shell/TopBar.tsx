@@ -120,7 +120,7 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
       }}
     >
       {/* ── Left ── */}
-      <div className="d-flex align-items-center gap-2" style={{ minWidth: 0, flex: '0 1 auto' }}>
+      <div className="d-flex align-items-center rwaq-gap-sm" style={{ minWidth: 0, flex: '0 1 auto' }}>
         {isMobile && (
           <>
             <button

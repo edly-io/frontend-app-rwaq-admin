@@ -18,3 +18,9 @@
 
 @import "~@edx/frontend-component-header/dist/index";
 @import "./components/shell/shell";
+
+// Flexbox gap utilities — Bootstrap 4 does not include these.
+.rwaq-gap-xs { gap: 0.25rem; }  // ~4px
+.rwaq-gap-sm { gap: 0.5rem; }   // ~8px
+.rwaq-gap-md { gap: 1rem; }     // ~16px
+.rwaq-gap-lg { gap: 1.5rem; }   // ~24px

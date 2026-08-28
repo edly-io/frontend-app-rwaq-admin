@@ -68,7 +68,7 @@ const SettingsCard = ({
       </h2>
 
       <Form>
-        <div className="d-flex flex-column gap-4">
+        <div className="d-flex flex-column rwaq-gap-lg">
 
           {/* Status select */}
           <Form.Group>
@@ -251,7 +251,7 @@ interface TabBarProps {
 
 const TabBar = ({ active, onChange, labels }: TabBarProps) => (
   <div
-    className="d-flex gap-2 mb-4"
+    className="d-flex rwaq-gap-sm mb-4"
     role="tablist"
     style={{ borderBottom: '2px solid var(--pgn-color-gray-200, #dee2e6)' }}
   >
@@ -329,7 +329,7 @@ const ProgramDetailPage = () => {
           {` / ${program.name}`}
         </div>
 
-        <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mt-2">
+        <div className="d-flex justify-content-between align-items-start flex-wrap rwaq-gap-md mt-2">
           <div className="rwaq-detail-header min-width-0">
             <ProfileAvatar
               src={program.cardImage}

@@ -261,7 +261,7 @@ const CourseDetailPage = () => {
           {` / ${course.displayName}`}
         </div>
 
-        <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mt-2">
+        <div className="d-flex justify-content-between align-items-start flex-wrap rwaq-gap-md mt-2">
           <div className="rwaq-detail-header min-width-0">
             <ProfileAvatar
               src={course.courseImageUrl ? `${getConfig().LMS_BASE_URL}${course.courseImageUrl}` : null}
@@ -272,7 +272,7 @@ const CourseDetailPage = () => {
               <h1 className="rwaq-page-title mb-1">{course.displayName}</h1>
               <div className="rwaq-detail-header__email">{course.courseId}</div>
               {course.categories.length > 0 && (
-                <div className="d-flex flex-wrap gap-1 mt-2">
+                <div className="d-flex flex-wrap rwaq-gap-xs mt-2">
                   {course.categories.map((cat) => (
                     <Badge key={cat.slug} variant="light">{cat.name}</Badge>
                   ))}
@@ -316,7 +316,7 @@ const CourseDetailPage = () => {
 
       {/* ── Student Management ─────────────────────────────────────────────── */}
       <div className="rwaq-card">
-        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div className="d-flex justify-content-between align-items-center flex-wrap rwaq-gap-sm mb-4">
           <h2 className="rwaq-section-title mb-0">
             {intl.formatMessage(messages.enrollmentsSectionTitle)}
           </h2>
@@ -367,7 +367,7 @@ const CourseDetailPage = () => {
 
       {/* ── Course Team ────────────────────────────────────────────────────── */}
       <div className="rwaq-card">
-        <div className="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+        <div className="d-flex justify-content-between align-items-start flex-wrap rwaq-gap-sm mb-4">
           <div>
             <h2 className="rwaq-section-title mb-1">
               {intl.formatMessage(messages.staffSectionTitle)}

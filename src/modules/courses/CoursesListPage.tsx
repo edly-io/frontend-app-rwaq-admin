@@ -166,7 +166,7 @@ const CoursesListPage = () => {
           return <span className="text-muted">{intl.formatMessage(messages.noCategory)}</span>;
         }
         return (
-          <div className="d-flex flex-wrap gap-1">
+          <div className="d-flex flex-wrap rwaq-gap-xs">
             {cats.map((cat) => (
               <Badge key={cat.slug} variant="light">{cat.name}</Badge>
             ))}

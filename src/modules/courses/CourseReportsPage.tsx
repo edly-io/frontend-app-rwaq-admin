@@ -5,7 +5,7 @@
  *   2. Reports Available for Download — unified polled table (10 s while in-progress)
  */
 import React, { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
   Alert, Badge, Button, Spinner,
 } from '@openedx/paragon';
@@ -115,17 +115,17 @@ const DownloadIcon = () => (
 const ReportTriggerRow = ({
   def,
   courseId,
+  downloads,
 }: {
   def: ReportDef;
   courseId: string;
+  downloads: ReportDownloadRow[] | undefined;
 }) => {
   const intl = useIntl();
   const { mutate, isPending } = useTriggerCourseReport(courseId);
   const [trackedTaskId, setTrackedTaskId] = useState<string | null>(null);
   const [triggerError, setTriggerError] = useState<string | null>(null);
 
-  // Shared with DownloadsTable — TanStack Query deduplicates the network call
-  const { data: downloads } = useCourseReportDownloads(courseId, !!courseId);
   const trackedTask = trackedTaskId
     ? (downloads ?? []).find((r) => r.taskId === trackedTaskId) ?? null
     : null;
@@ -314,11 +314,23 @@ const useDownloadsColumns = (): ColumnDef<ReportDownloadRow>[] => {
   ];
 };
 
-const DownloadsTable = ({ courseId }: { courseId: string }) => {
+const DownloadsTable = ({
+  rows,
+  isLoading,
+  isError,
+}: {
+  rows: ReportDownloadRow[] | undefined;
+  isLoading: boolean;
+  isError: boolean;
+}) => {
   const intl = useIntl();
   const columns = useDownloadsColumns();
-  const { data: rows, isLoading, isError } = useCourseReportDownloads(courseId);
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parseInt(searchParams.get('dp') || '1', 10);
+  const setPage = (p: number) => setSearchParams(
+    (prev) => { const next = new URLSearchParams(prev); next.set('dp', String(p)); return next; },
+    { replace: true },
+  );
 
   if (isError) {
     return <Alert variant="warning" className="mb-0">{intl.formatMessage(messages.errorLoadReports)}</Alert>;
@@ -356,6 +368,11 @@ const CourseReportsPage = () => {
   const reportDefs = useReportDefs();
   const { courseId = '' } = useParams<{ courseId: string }>();
   const { data: course, isLoading: courseLoading } = useCourse(courseId);
+  const {
+    data: downloads,
+    isLoading: downloadsLoading,
+    isError: downloadsError,
+  } = useCourseReportDownloads(courseId, !!courseId);
 
   if (courseLoading) {
     return (
@@ -391,7 +408,7 @@ const CourseReportsPage = () => {
         </p>
         <hr className="mt-3 mb-0" />
         {reportDefs.map((def) => (
-          <ReportTriggerRow key={def.type} def={def} courseId={courseId} />
+          <ReportTriggerRow key={def.type} def={def} courseId={courseId} downloads={downloads} />
         ))}
       </div>
 
@@ -401,7 +418,7 @@ const CourseReportsPage = () => {
         <p className="text-muted small mb-3">
           {intl.formatMessage(messages.downloadsSectionBody)}
         </p>
-        <DownloadsTable courseId={courseId} />
+        <DownloadsTable rows={downloads} isLoading={downloadsLoading} isError={downloadsError} />
       </div>
     </div>
   );

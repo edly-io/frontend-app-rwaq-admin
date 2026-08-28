@@ -61,7 +61,7 @@ const FilterBar = ({
 
   return (
     <div
-      className="d-flex align-items-center flex-wrap gap-2"
+      className="d-flex align-items-center flex-wrap rwaq-gap-sm"
       style={{ padding: '0.75rem 0', marginBottom: '1rem' }}
     >
       <SearchField

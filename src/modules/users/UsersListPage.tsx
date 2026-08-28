@@ -300,7 +300,7 @@ const UsersListPage = () => {
   return (
     <div className="rwaq-page rwaq-page--fit">
       <div className="rwaq-page-header">
-        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div className="d-flex justify-content-between align-items-center flex-wrap rwaq-gap-sm">
           <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
           <Button variant="primary" onClick={() => setModal({ kind: 'add' })}>
             {intl.formatMessage(messages.addUser)}

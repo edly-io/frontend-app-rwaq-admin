@@ -16,8 +16,8 @@ import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import DetailGrid from '@src/components/DetailGrid';
 import ProfileAvatar from '@src/components/ProfileAvatar';
-import { useCourses } from '../courses/data/hooks';
-import type { CourseSummary } from '../courses/data/types';
+import { useCourses } from '@src/data/hooks';
+import type { CourseSummary } from '@src/data/hooks';
 import OrgAdminTable from './components/OrgAdminTable';
 import AddOrgAdminModal from './modals/AddOrgAdminModal';
 import OrgFormModal from './modals/OrgFormModal';
@@ -152,7 +152,7 @@ const OrgDetailPage = () => {
           {` / ${organization.name}`}
         </div>
 
-        <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mt-2">
+        <div className="d-flex justify-content-between align-items-start flex-wrap rwaq-gap-md mt-2">
           <div className="min-width-0">
             <h1 className="rwaq-page-title mb-2">{organization.name}</h1>
             <div className="d-flex align-items-center flex-wrap rwaq-chip-list">

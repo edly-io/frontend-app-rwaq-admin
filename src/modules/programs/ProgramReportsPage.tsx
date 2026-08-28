@@ -138,7 +138,7 @@ const ProgramReportsPage = () => {
                     style={{
                       width: `${report.completionRate}%`,
                       height: '100%',
-                      backgroundColor: '#0a3055',
+                      backgroundColor: 'var(--pgn-color-primary-500, #0a3055)',
                       borderRadius: '0.25rem',
                     }}
                   />

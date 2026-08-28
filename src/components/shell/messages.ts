@@ -13,6 +13,15 @@ export const adminShellMessages = defineMessages({
       + 'ask an existing superuser to grant it from this panel, or a platform administrator '
       + 'to set it in Django admin.',
   },
+  networkErrorTitle: {
+    id: 'rwaq.admin.shell.networkErrorTitle',
+    defaultMessage: 'Could not connect',
+  },
+  networkErrorBody: {
+    id: 'rwaq.admin.shell.networkErrorBody',
+    defaultMessage: 'The admin panel could not load your account information. '
+      + 'Check your connection and refresh the page.',
+  },
 });
 
 // ── SideNav ───────────────────────────────────────────────────────────────────
