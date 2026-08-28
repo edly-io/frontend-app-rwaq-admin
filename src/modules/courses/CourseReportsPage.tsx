@@ -244,8 +244,6 @@ const ReportTriggerRow = ({
       <div className="d-flex flex-column align-items-center" style={{ gap: '0.3rem' }}>
         <a
           href={trackedTask.downloadUrl}
-          target="_blank"
-          rel="noopener noreferrer"
           className="btn btn-sm btn-primary d-inline-flex align-items-center"
           style={{ gap: '0.3rem', whiteSpace: 'nowrap' }}
         >
