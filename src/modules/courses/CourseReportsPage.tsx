@@ -2,8 +2,8 @@
  * CourseReportsPage — reports hub for a single course.
  *
  *   1. Generate Reports — async trigger cards (11 report types)
- *   2. Org Enrollment Summary — sync inline enrollment counts by mode
- *   3. Certificates Issued — inline paginated table with CSV export
+ *   2. Grading Configuration — grader breakdown + grade cutoffs
+ *   3. Certificates Issued — inline table with CSV export
  *   4. Reports Available for Download — unified polled table (10 s while in-progress)
  */
 import React, { useState } from 'react';
@@ -19,10 +19,11 @@ import type {
 } from './data/reportsTypes';
 import {
   useCourseCertificates,
-  useCourseOrgEnrollmentSummary,
+  useCourseGradingConfig,
   useCourseReportDownloads,
   useTriggerCourseReport,
 } from './data/reportsHooks';
+import type { GradingConfigEntry } from './data/reportsTypes';
 
 // ── Report definitions ────────────────────────────────────────────────────────
 
@@ -224,69 +225,87 @@ const ReportTriggerRow = ({
   );
 };
 
-// ── Org enrollment summary section ────────────────────────────────────────────
+// ── Grading configuration section ─────────────────────────────────────────────
 
-interface EnrollmentModeRow {
-  mode: string;
-  count: number;
-  share: string;
+interface GraderRow {
+  type: string;
+  shortLabel: string;
+  weight: string;
+  minCount: number;
+  dropCount: number;
 }
 
-const ENROLLMENT_COLUMNS: ColumnDef<EnrollmentModeRow>[] = [
-  { key: 'mode', label: 'Mode' },
-  { key: 'count', label: 'Enrollments' },
-  { key: 'share', label: 'Share' },
+const GRADER_COLUMNS: ColumnDef<GraderRow>[] = [
+  { key: 'type', label: 'Type' },
+  { key: 'shortLabel', label: 'Label' },
+  { key: 'weight', label: 'Weight' },
+  { key: 'minCount', label: 'Min Count' },
+  { key: 'dropCount', label: 'Drop Count' },
 ];
 
-const OrgEnrollmentSummarySection = ({ courseId }: { courseId: string }) => {
-  const { data, isLoading, isError } = useCourseOrgEnrollmentSummary(courseId, {}, !!courseId);
+const GradingConfigSection = ({ courseId }: { courseId: string }) => {
+  const { data, isLoading, isError } = useCourseGradingConfig(courseId, !!courseId);
 
   if (isLoading) {
     return (
       <div className="d-flex align-items-center gap-2 py-3 text-muted small">
-        <Spinner animation="border" size="sm" screenReaderText="Loading enrollment summary" />
-        Loading enrollment summary…
+        <Spinner animation="border" size="sm" screenReaderText="Loading grading config" />
+        Loading grading configuration…
       </div>
     );
   }
 
   if (isError) {
-    return <Alert variant="warning" className="mb-0">Could not load enrollment summary.</Alert>;
+    return <Alert variant="warning" className="mb-0">Could not load grading configuration.</Alert>;
   }
 
   if (!data) { return null; }
 
-  const rows: EnrollmentModeRow[] = Object.entries(data.byMode)
-    .sort(([, a], [, b]) => b - a)
-    .map(([mode, count]) => ({
-      mode,
-      count,
-      share: data.totalActiveEnrollments > 0
-        ? `${((count / data.totalActiveEnrollments) * 100).toFixed(1)}%`
-        : '—',
-    }));
+  const { grader, gradeCutoffs } = data;
+
+  if (grader.length === 0 && Object.keys(gradeCutoffs).length === 0) {
+    return <p className="text-muted small mb-0">No grading configuration found for this course.</p>;
+  }
+
+  const graderRows: GraderRow[] = grader.map((entry: GradingConfigEntry) => ({
+    type: entry.type,
+    shortLabel: entry.shortLabel || '—',
+    weight: `${(entry.weight * 100).toFixed(0)}%`,
+    minCount: entry.minCount,
+    dropCount: entry.dropCount,
+  }));
 
   return (
     <>
-      <div className="d-flex align-items-baseline gap-2 mb-4">
-        <span
-          className="font-weight-semibold"
-          style={{ fontSize: '1.75rem', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}
-        >
-          {data.totalActiveEnrollments.toLocaleString()}
-        </span>
-        <span className="text-muted small">
-          active enrollments across {data.totalCoursesInOrg} {data.org} courses
-        </span>
-      </div>
-      {rows.length > 0 ? (
+      {graderRows.length > 0 && (
         <AdminDataTable
-          columns={ENROLLMENT_COLUMNS}
-          data={rows}
-          caption="Enrollment by course mode"
+          columns={GRADER_COLUMNS}
+          data={graderRows}
+          caption="Grader breakdown"
         />
-      ) : (
-        <p className="text-muted small mb-0">No enrollment data found for this organization.</p>
+      )}
+
+      {Object.keys(gradeCutoffs).length > 0 && (
+        <div className="mt-4">
+          <p className="text-muted small mb-2 font-weight-semibold">Grade cutoffs</p>
+          <div className="d-flex flex-wrap" style={{ gap: '1.5rem' }}>
+            {Object.entries(gradeCutoffs)
+              .sort(([, a], [, b]) => (b as number) - (a as number))
+              .map(([grade, cutoff]) => (
+                <div key={grade} className="text-center">
+                  <div
+                    className="font-weight-semibold"
+                    style={{ fontSize: '1.25rem', fontVariantNumeric: 'tabular-nums' }}
+                  >
+                    {((cutoff as number) * 100).toFixed(0)}%
+                  </div>
+                  <div className="text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    {grade}
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
       )}
     </>
   );
@@ -343,15 +362,15 @@ const CertificatesSection = ({ courseId }: { courseId: string }) => {
 
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div className="d-flex align-items-baseline gap-2">
-          <span
+      <div className="d-flex justify-content-between align-items-start mb-4">
+        <div>
+          <div
             className="font-weight-semibold"
-            style={{ fontSize: '1.75rem', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}
+            style={{ fontSize: '2rem', fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}
           >
             {(data?.count ?? 0).toLocaleString()}
-          </span>
-          <span className="text-muted small">certificates issued</span>
+          </div>
+          <div className="text-muted small mt-1">certificates issued</div>
         </div>
         {(data?.results.length ?? 0) > 0 && (
           <Button variant="outline-primary" size="sm" onClick={handleDownloadCsv}>
@@ -528,7 +547,7 @@ const CourseReportsPage = () => {
         ))}
       </div>
 
-      {/* Org Enrollment Summary + Certificates Issued — side by side */}
+      {/* Grading Configuration + Certificates Issued — side by side */}
       <div
         className="mt-4"
         style={{
@@ -538,8 +557,8 @@ const CourseReportsPage = () => {
         }}
       >
         <div className="rwaq-card">
-          <h2 className="rwaq-section-title mb-4">Org Enrollment Summary</h2>
-          <OrgEnrollmentSummarySection courseId={courseId} />
+          <h2 className="rwaq-section-title mb-4">Grading Configuration</h2>
+          <GradingConfigSection courseId={courseId} />
         </div>
         <div className="rwaq-card">
           <h2 className="rwaq-section-title mb-4">Certificates Issued</h2>
