@@ -68,7 +68,7 @@ const SettingsCard = ({
       </h2>
 
       <Form>
-        <div className="d-flex flex-column rwaq-gap-lg">
+        <div className="d-flex flex-column rwaq-gap-sm">
 
           {/* Status select */}
           <Form.Group>
