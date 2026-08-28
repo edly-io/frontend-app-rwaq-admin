@@ -1,0 +1,1714 @@
+// ============================================================================
+// Rwaq Admin Panel — Design System
+// Tokens (light + dark) + shared layout/card/form/table primitives.
+// Dark mode is self-contained (does NOT rely on the brand's dark Paragon CSS,
+// which is not reliably available), keyed on `data-paragon-theme-variant`.
+// ============================================================================
+
+:root {
+  // Spacing scale
+  --rwaq-space-1: 0.25rem;
+  --rwaq-space-2: 0.5rem;
+  --rwaq-space-3: 0.75rem;
+  --rwaq-space-4: 1rem;
+  --rwaq-space-5: 1.5rem;
+  --rwaq-space-6: 2rem;
+
+  // Layout
+  --rwaq-content-max: 1200px;
+  --rwaq-radius: 0.75rem;
+  --rwaq-radius-sm: 0.5rem;
+
+  // Surfaces / text (light)
+  --rwaq-card-bg: #ffffff;
+  --rwaq-card-border: #e6e8ec;
+  --rwaq-card-shadow: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --rwaq-text: #1f2937;
+  --rwaq-heading: #111827;
+  --rwaq-muted: #6b7280;
+  --rwaq-border: #e6e8ec;
+  --rwaq-input-bg: #ffffff;
+  --rwaq-input-border: #d0d5dd;
+  --rwaq-table-head-bg: #f7f8fa;
+  --rwaq-row-hover: #f9fafb;
+  --rwaq-row-stripe: transparent;
+  --rwaq-page-bg: transparent;
+  --rwaq-surface-raised: #ffffff;
+  --rwaq-accent: #449cc2; // Rwaq primary (brand light theme --pgn-color-primary-base)
+  --rwaq-accent-hover: #3a86a7;
+  --rwaq-accent-contrast: #ffffff;
+  --rwaq-accent-soft: rgba(68, 156, 194, 0.12);
+  --rwaq-error: #d92d20;
+}
+
+// Dark palette, taken from the Rwaq brand package's own dark theme
+// (@edx/brand dist/dark.min.css) rather than invented here, so the admin panel
+// reads as the same product as the learner-facing MFEs:
+//   body #0D0D0E · surface #36383B · hover #383938 · text #F8F8F8
+//   secondary text #DDDFE2 · accent #AEC7F6 (light-on-dark, not the light
+//   theme's #449CC2, which fails contrast on a dark surface).
+html[data-paragon-theme-variant='dark'] {
+  // One stepped surface scale — page darkest, then card, then raised — so
+  // depth reads as a sequence instead of unrelated greys. Anchored on the
+  // brand's own dark body (#0D0D0E) and text (#F8F8F8).
+  --rwaq-page-bg: #0d0d0e;
+  --rwaq-card-bg: #16181b;
+  --rwaq-surface-raised: #1e2126;
+  --rwaq-card-border: #292d33;
+  --rwaq-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  --rwaq-text: #dee1e6;
+  --rwaq-heading: #f8f8f8;
+  --rwaq-muted: #98a0aa;
+  --rwaq-border: #292d33;
+  --rwaq-input-bg: #1b1e22;
+  --rwaq-input-border: #343941;
+  --rwaq-table-head-bg: #1b1e22;
+  --rwaq-row-hover: #21252b;
+  // No striping in dark: rows share the card surface and are separated by
+  // borders. Alternating tones on a near-black table is noise, and it was the
+  // black/white banding in the screenshots.
+  --rwaq-row-stripe: transparent;
+  // The accent stays in the Rwaq teal family in both themes rather than
+  // switching to the brand's pale periwinkle, which read as a washed-out
+  // lavender button against near-black.
+  --rwaq-accent: #4aa3c9;
+  --rwaq-accent-hover: #63b4d6;
+  --rwaq-accent-contrast: #08222c;
+  --rwaq-accent-soft: rgba(74, 163, 201, 0.16);
+  --rwaq-error: #f97066;
+}
+
+// ── Rwaq brand palette applied to Paragon ────────────────────────────────────
+// Why this is here rather than coming from @edx/brand: the Rwaq brand package
+// is installed into the image *outside* package.json (tutor-mfe's convention),
+// so nothing emits `brand.theme.variants.*.css` — verified by the build output,
+// which contains only paragon-theme-core and paragon-theme-variants-light. With
+// no brand override and no dark variant CSS, Paragon's stock navy palette wins
+// and dark mode has nothing to load.
+//
+// Mapping Paragon's primary scale onto the Rwaq palette here makes the brand
+// identity hold in every environment, whether or not the brand CSS resolves.
+// Values are the brand package's own (dist/light.min.css, dist/dark.min.css) —
+// not invented.
+:root {
+  --pgn-color-primary-base: #449cc2;
+  --pgn-color-primary-100: #eaf4f8;
+  --pgn-color-primary-200: #c5e1eb;
+  --pgn-color-primary-300: #9bcbdd;
+  --pgn-color-primary-400: #6fb4cf;
+  --pgn-color-primary-500: #449cc2;
+  --pgn-color-primary-600: #3a86a7;
+  --pgn-color-primary-700: #2f6d89;
+  --pgn-color-primary-800: #24546b;
+  --pgn-color-primary-900: #1a3d4e;
+
+  --pgn-color-btn-bg-primary: #449cc2;
+  --pgn-color-btn-border-primary: #449cc2;
+  --pgn-color-btn-hover-bg-primary: #3a86a7;
+  --pgn-color-btn-active-bg-primary: #2f6d89;
+  --pgn-color-link-base: #2f6d89;
+}
+
+// Dark uses the brand's own dark accent (#AEC7F6): the light theme's #449CC2
+// does not carry enough contrast on a #0D0D0E surface.
+// Dark keeps the same teal family, one step brighter so it holds up against
+// a near-black surface. The brand's pale periwinkle (#AEC7F6) is reserved for
+// links and soft tints — as a button fill it read as washed-out lavender.
+html[data-paragon-theme-variant='dark'] {
+  --pgn-color-primary-base: #4aa3c9;
+  --pgn-color-primary-100: #12222a;
+  --pgn-color-primary-200: #1a3540;
+  --pgn-color-primary-300: #276578;
+  --pgn-color-primary-400: #38879f;
+  --pgn-color-primary-500: #4aa3c9;
+  --pgn-color-primary-600: #63b4d6;
+  --pgn-color-primary-700: #85c7e3;
+  --pgn-color-btn-bg-primary: #4aa3c9;
+  --pgn-color-btn-border-primary: #4aa3c9;
+  --pgn-color-btn-hover-bg-primary: #63b4d6;
+  --pgn-color-btn-active-bg-primary: #38879f;
+  --pgn-color-btn-text-primary: #08222c;
+  --pgn-color-btn-hover-text-primary: #08222c;
+  --pgn-color-link-base: #85c7e3;
+}
+
+// ── Dark mode: Paragon's own tokens ──────────────────────────────────────────
+// Paragon ships a light token set only (styles/css/themes/light), so with the
+// light variables bundled, dark mode would otherwise inherit light values for
+// every component Paragon styles itself. These are the tokens that actually
+// decide whether a surface is readable.
+html[data-paragon-theme-variant='dark'] {
+  --pgn-color-bg-base: #0d0d0e;
+  --pgn-color-text-base: #f8f8f8;
+  --pgn-color-text-default: #dee1e6;
+  --pgn-color-text-muted: #98a0aa;
+
+  --pgn-color-modal-content-bg: #16181b;
+  --pgn-color-modal-backdrop-bg: rgba(0, 0, 0, 0.72);
+
+  --pgn-color-card-bg-base: #16181b;
+  --pgn-color-card-border-base: #292d33;
+  --pgn-color-card-divider-bg: #292d33;
+
+  --pgn-color-form-control-bg: #1b1e22;
+  --pgn-color-form-control-border-base: #343941;
+  --pgn-color-form-control-base: #dee1e6;
+  --pgn-color-form-control-label-base: #dee1e6;
+  --pgn-color-form-control-select-base: #dee1e6;
+  --pgn-color-form-control-indicator-bg-base: #1b1e22;
+  --pgn-color-form-control-indicator-border: #343941;
+
+  --pgn-color-light-100: #1b1e22;
+  --pgn-color-light-200: #1e2126;
+  --pgn-color-light-300: #23272d;
+  --pgn-color-light-400: #292d33;
+  --pgn-color-light-500: #343941;
+  --pgn-color-light-base: #1e2126;
+
+  --pgn-color-gray-100: #1b1e22;
+  --pgn-color-gray-200: #23272d;
+  --pgn-color-gray-300: #343941;
+  --pgn-color-gray-500: #98a0aa;
+  --pgn-color-gray-700: #dee1e6;
+  --pgn-color-gray-900: #f8f8f8;
+}
+
+// ── Shell chrome ─────────────────────────────────────────────────────────────
+.rwaq-admin-shell {
+  background: linear-gradient(157deg, #eef2fc 0%, #f8f7f4 48%, #fdf6ed 100%);
+}
+.rwaq-admin-content { background: transparent; }
+.rwaq-admin-sidebar {
+  background: linear-gradient(180deg, #ebeffb 0%, #f5f4f1 55%, #fbf5ec 100%) !important;
+}
+.rwaq-admin-topbar {
+  background: transparent;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.rwaq-admin-topbar__welcome { color: var(--rwaq-muted); }
+.rwaq-admin-topbar__name { color: var(--rwaq-heading); }
+.rwaq-admin-footer {
+  background: transparent;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  color: var(--rwaq-muted);
+}
+
+// ── Content layout primitives ────────────────────────────────────────────────
+.rwaq-page {
+  max-width: var(--rwaq-content-max);
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rwaq-space-1);
+}
+
+.rwaq-card {
+  background: var(--rwaq-card-bg);
+  border: 1px solid var(--rwaq-card-border);
+  border-radius: var(--rwaq-radius);
+  box-shadow: var(--rwaq-card-shadow);
+  padding: var(--rwaq-space-5);
+  color: var(--rwaq-text);
+  margin-top: 0.5rem;
+}
+
+.rwaq-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rwaq-space-2);
+  margin-bottom: var(--rwaq-space-2);
+}
+.rwaq-page-header__breadcrumb { font-size: 0.8125rem; color: var(--rwaq-muted); }
+.rwaq-page-header__breadcrumb a { color: var(--rwaq-muted); text-decoration: none; }
+.rwaq-page-header__breadcrumb a:hover { color: var(--rwaq-accent); }
+.rwaq-page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--rwaq-heading);
+  margin: 0;
+  line-height: 1.2;
+}
+
+// A small chip that sits inline next to .rwaq-page-title — using translate
+// to optically align to the cap-height rather than the full element box.
+.rwaq-title-chip.pgn__chip {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border-radius: 999px;
+  margin: 0;
+  white-space: nowrap;
+  transform: translateY(1px);
+}
+.rwaq-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--rwaq-heading);
+  margin: 0 0 var(--rwaq-space-4);
+}
+
+// ── Forms ────────────────────────────────────────────────────────────────────
+.rwaq-form { display: flex; flex-direction: column; gap: var(--rwaq-space-4); max-width: 720px; }
+.rwaq-field { display: flex; flex-direction: column; gap: var(--rwaq-space-2); }
+.rwaq-field__label { font-size: 0.875rem; font-weight: 600; color: var(--rwaq-text); }
+.rwaq-field__label .required { color: var(--rwaq-error); margin-inline-start: 2px; }
+
+// A two- or three-option select doesn't need the full row width; a very wide
+// control also makes its native option popup span the whole field.
+.rwaq-field--compact select,
+select.rwaq-select--compact { max-width: 18rem; }
+
+// Normalize Paragon inputs to the design system (covers .rwaq-card and Paragon Card)
+.rwaq-admin-content {
+  // :not(.rwaq-searchgroup *) — the merged search unit draws one border on its
+  // wrapper, and this rule's !important was re-adding a border to the scope
+  // select and the input inside it, so they read as three separate fields.
+  .pgn__form-control:not(.rwaq-searchgroup *),
+  .form-control:not(.rwaq-searchgroup *),
+  input[type='text']:not(.rwaq-searchgroup *),
+  input[type='email']:not(.rwaq-searchgroup *),
+  input[type='url']:not(.rwaq-searchgroup *),
+  textarea:not(.rwaq-searchgroup *),
+  select:not(.rwaq-searchgroup *) {
+    background: var(--rwaq-input-bg) !important;
+    border: 1px solid var(--rwaq-input-border) !important;
+    color: var(--rwaq-text) !important;
+    border-radius: var(--rwaq-radius-sm) !important;
+    min-height: 44px;
+  }
+  textarea { min-height: 120px; }
+  .pgn__form-label,
+  label { color: var(--rwaq-text); font-weight: 600; font-size: 0.875rem; }
+
+  // Switch description should read as helper text, not a bold field label
+  .pgn__form-checkbox.pgn__form-switch label {
+    font-weight: 400;
+    font-size: 0.875rem;
+    color: var(--rwaq-muted);
+  }
+
+  // Paragon Card as a design-system surface
+  .pgn__card {
+    background: var(--rwaq-card-bg);
+    border: 1px solid var(--rwaq-card-border);
+    border-radius: var(--rwaq-radius);
+    box-shadow: var(--rwaq-card-shadow);
+  }
+
+  input[name='searchfield-input'] {
+    border: none !important;
+  }
+}
+
+// ── Data tables ──────────────────────────────────────────────────────────────
+// Every surface here is palette-driven, including row backgrounds. The earlier
+// version styled only thead, so in dark mode the cells kept Paragon's own light
+// table background while the text tokens flipped to light — an unreadable
+// white-on-white table. Anything with a colour needs a token, or dark mode
+// only half-applies.
+.rwaq-admin-content {
+  table {
+    color: var(--rwaq-text);
+    background: var(--rwaq-card-bg);
+  }
+
+  thead th {
+    background: var(--rwaq-table-head-bg) !important;
+    color: var(--rwaq-heading) !important;
+    border-bottom: 1px solid var(--rwaq-border) !important;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  // Uniform rows separated by borders. The previous version striped only
+  // even rows, which left Paragon's own light odd-row stripe in place — in
+  // dark mode that produced alternating white bands with light text on them.
+  // !important is needed because Paragon's .table-striped rules are more
+  // specific than a class-scoped descendant selector.
+  tbody tr,
+  tbody tr:nth-of-type(odd),
+  tbody tr:nth-of-type(even) {
+    background: var(--rwaq-card-bg) !important;
+  }
+
+  tbody td {
+    background: transparent !important;
+    border-bottom: 1px solid var(--rwaq-border) !important;
+    color: var(--rwaq-text);
+  }
+
+  tbody tr:hover,
+  tbody tr:hover:nth-of-type(odd),
+  tbody tr:hover:nth-of-type(even) {
+    background: var(--rwaq-row-hover) !important;
+  }
+
+  // DataTable's own chrome (footer, row status, pagination) is outside the
+  // <table>, so it needs the same treatment.
+  .pgn__data-table-footer,
+  .pgn__data-table-status {
+    background: var(--rwaq-card-bg);
+    color: var(--rwaq-muted);
+    border-top: 1px solid var(--rwaq-border);
+  }
+
+  .pgn__data-table-footer .pagination .page-link,
+  .pgn__data-table-footer .btn {
+    background: transparent;
+    color: var(--rwaq-text);
+    border-color: var(--rwaq-border);
+  }
+
+  .pgn__data-table-footer .pagination .page-item.active .page-link {
+    background: var(--rwaq-accent);
+    border-color: var(--rwaq-accent);
+    color: var(--rwaq-accent-contrast);
+  }
+}
+
+// Horizontal scroll rather than squeezing columns: below ~1200px the eight
+// columns can't all fit, and letting the browser shrink them wraps every cell
+// to one character per line (which is what happened at 1024px).
+.rwaq-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rwaq-table-scroll > * { min-width: 60rem; }
+
+// ── Account dropdown (fix transparency + caret) ──────────────────────────────
+.rwaq-admin-topbar .pgn__dropdown-toggle::after,
+.rwaq-admin-topbar .dropdown-toggle::after { display: none !important; } // kill stray caret
+
+.rwaq-admin-usermenu.dropdown-menu,
+.rwaq-admin-usermenu {
+  background: var(--rwaq-card-bg) !important;
+  border: 1px solid var(--rwaq-card-border) !important;
+  border-radius: var(--rwaq-radius-sm) !important;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.18) !important;
+  color: var(--rwaq-text);
+  padding: var(--rwaq-space-2) 0;
+  overflow: hidden;
+
+  .dropdown-item { color: var(--rwaq-text); padding: 0.5rem 1rem; }
+  .dropdown-item:hover { background: var(--rwaq-row-hover); color: var(--rwaq-text); }
+  .dropdown-divider { border-color: var(--rwaq-border); }
+  .text-muted { color: var(--rwaq-muted) !important; }
+}
+
+// ── Dark-mode overrides for Paragon components used in the app ───────────────
+html[data-paragon-theme-variant='dark'] {
+  .rwaq-admin-shell { background: #0f1011; }
+  .rwaq-admin-sidebar {
+    background: #17181a !important;
+    border-inline-end-color: #2a2c2f !important;
+  }
+  .rwaq-admin-topbar { border-bottom-color: rgba(255, 255, 255, 0.08); }
+  .rwaq-admin-footer { border-top-color: rgba(255, 255, 255, 0.08); }
+
+  // Cards / surfaces (Paragon + ours) go dark
+  .pgn__card,
+  .card {
+    background: var(--rwaq-card-bg) !important;
+    border-color: var(--rwaq-card-border) !important;
+    color: var(--rwaq-text) !important;
+  }
+  .pgn__card *,
+  .rwaq-card { color: var(--rwaq-text); }
+
+  h1, h2, h3, h4, h5, h6, .rwaq-page-title, .rwaq-section-title { color: var(--rwaq-heading) !important; }
+  .text-muted { color: var(--rwaq-muted) !important; }
+
+  // Circular header buttons
+  .rwaq-admin-topbar button { background: var(--rwaq-card-bg) !important; border-color: var(--rwaq-border) !important; color: var(--rwaq-text) !important; }
+}
+
+// ── Dark mode: the rest of the Paragon surface ───────────────────────────────
+// Dark mode here is self-contained by design (see the file header): the brand's
+// dark Paragon CSS is not reliably present in every environment, so anything
+// this app renders must carry its own dark treatment. Each block below is a
+// component that was still light-on-light before.
+html[data-paragon-theme-variant='dark'] {
+  body,
+  .rwaq-admin-content { background: var(--rwaq-page-bg); }
+
+  // Modals — the single biggest gap: a white sheet with light text on it.
+  .pgn__modal,
+  .pgn__modal-layer .modal-content {
+    background: var(--rwaq-card-bg) !important;
+    color: var(--rwaq-text) !important;
+    border-color: var(--rwaq-card-border) !important;
+  }
+
+  .pgn__modal-header,
+  .pgn__modal-footer,
+  .rwaq-form-modal__header,
+  .rwaq-form-modal__footer {
+    background: var(--rwaq-card-bg) !important;
+    border-color: var(--rwaq-border) !important;
+  }
+
+  .pgn__modal-title,
+  .pgn__modal-header .pgn__modal-title { color: var(--rwaq-heading) !important; }
+  .pgn__modal-backdrop { background: rgba(0, 0, 0, 0.7); }
+
+  // Tabs
+  .nav-tabs {
+    border-bottom-color: var(--rwaq-border);
+
+    .nav-link {
+      color: var(--rwaq-muted);
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .nav-link:hover { color: var(--rwaq-text); border-bottom-color: var(--rwaq-border); }
+
+    .nav-link.active {
+      color: var(--rwaq-heading);
+      background: transparent;
+      border-bottom-color: var(--rwaq-accent);
+    }
+  }
+
+  // Native select popups render with the OS palette unless the control itself
+  // declares a scheme, which is why the options were unreadable grey-on-grey.
+  select,
+  select option,
+  .pgn__form-control,
+  .form-control,
+  textarea,
+  input { color-scheme: dark; }
+
+  select option { background: var(--rwaq-input-bg); color: var(--rwaq-text); }
+
+  // Chips: the variant tints are tuned for a light surface, so they need
+  // dark-surface equivalents rather than opacity over white.
+  .rwaq-chip--light.pgn__chip {
+    background: var(--rwaq-surface-raised);
+    border-color: var(--rwaq-border);
+    color: var(--rwaq-text);
+  }
+
+  .rwaq-chip--applied.pgn__chip {
+    background: var(--rwaq-surface-raised);
+    border-color: var(--rwaq-border);
+    color: var(--rwaq-text);
+  }
+
+  .rwaq-chip--overflow.pgn__chip {
+    background: transparent;
+    border-color: var(--rwaq-input-border);
+    color: var(--rwaq-text);
+  }
+
+  .rwaq-chip--dark.pgn__chip {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.28);
+    color: var(--rwaq-heading);
+  }
+
+  .rwaq-chip--success.pgn__chip {
+    background: rgba(108, 223, 165, 0.16);
+    border-color: rgba(108, 223, 165, 0.4);
+    color: #6cdfa5;
+  }
+
+  .rwaq-chip--danger.pgn__chip {
+    background: rgba(255, 138, 128, 0.16);
+    border-color: rgba(255, 138, 128, 0.4);
+    color: #ff8a80;
+  }
+
+  .rwaq-chip--info.pgn__chip {
+    background: rgba(174, 199, 246, 0.16);
+    border-color: rgba(174, 199, 246, 0.42);
+    color: var(--rwaq-accent);
+  }
+
+  .rwaq-chip--warning.pgn__chip {
+    background: rgba(247, 179, 84, 0.16);
+    border-color: rgba(247, 179, 84, 0.42);
+    color: #f7b354;
+  }
+
+  // Outline buttons (the View/Edit row actions) — invisible against dark.
+  .btn-outline-primary {
+    color: var(--rwaq-accent);
+    border-color: var(--rwaq-accent);
+    background: transparent;
+  }
+
+  .btn-outline-primary:hover {
+    background: var(--rwaq-accent);
+    color: var(--rwaq-accent-contrast);
+  }
+
+  .btn-outline-secondary {
+    color: var(--rwaq-text);
+    border-color: var(--rwaq-input-border);
+    background: transparent;
+  }
+
+  .btn-outline-secondary:hover { background: var(--rwaq-row-hover); color: var(--rwaq-heading); }
+
+  // Row actions stay uniform, as they already are in light. The two rules
+  // above outrank `.rwaq-row-actions .btn` in dark only (the html[data-…]
+  // prefix adds specificity light has no counterpart for), so an
+  // outline-primary/outline-secondary pair in one cell rendered as one accent
+  // button beside one neutral one — Change mode blue, Unenroll white, for two
+  // actions of equal weight. This restores the shared treatment for every
+  // table's row actions, this one and the user list's View/Edit alike.
+  .rwaq-row-actions .btn {
+    color: var(--rwaq-text);
+    border-color: var(--rwaq-input-border);
+    background: transparent;
+  }
+
+  .rwaq-row-actions .btn:hover,
+  .rwaq-row-actions .btn:focus-visible {
+    background: var(--rwaq-accent-soft);
+    border-color: var(--rwaq-accent);
+    color: var(--rwaq-accent);
+  }
+
+  // A disabled row action must read as unavailable rather than merely faint.
+  .rwaq-row-actions .btn:disabled {
+    color: var(--rwaq-muted);
+    border-color: var(--rwaq-border);
+  }
+  .btn-tertiary,
+  .btn-link { color: var(--rwaq-accent); }
+
+  // The action bar
+  .rwaq-searchgroup {
+    background: var(--rwaq-input-bg);
+    border-color: var(--rwaq-input-border);
+  }
+
+  .rwaq-searchgroup__scope,
+  .rwaq-searchgroup__input {
+    background: transparent;
+    color: var(--rwaq-text);
+  }
+
+  .rwaq-searchgroup:focus-within { box-shadow: 0 0 0 3px rgba(174, 199, 246, 0.22); }
+  .rwaq-role-notes { background: var(--rwaq-surface-raised); border-color: var(--rwaq-border); }
+  .rwaq-applied__title,
+  .rwaq-detail-grid__title,
+  .rwaq-form-section__title { color: var(--rwaq-muted); }
+  .rwaq-detail-grid__value,
+  .rwaq-user-cell__name { color: var(--rwaq-text); }
+
+  // Toasts and alerts
+  // .toast-header has its own background-color/color from Paragon's
+  // bootstrap-toast.scss so it needs an explicit override — it does not
+  // inherit from the .toast container override below.
+  .pgn__toast .toast,
+  .pgn__toast {
+    background: var(--rwaq-surface-raised);
+    color: var(--rwaq-text);
+    border-color: var(--rwaq-border);
+  }
+
+  .pgn__toast .toast-header {
+    background-color: var(--rwaq-surface-raised);
+    color: var(--rwaq-text);
+    border-bottom-color: var(--rwaq-border);
+  }
+
+  .alert-danger {
+    background: rgba(255, 138, 128, 0.14);
+    border-color: rgba(255, 138, 128, 0.4);
+    color: #ff8a80;
+  }
+
+  .alert-info {
+    background: rgba(174, 199, 246, 0.14);
+    border-color: rgba(174, 199, 246, 0.4);
+    color: var(--rwaq-accent);
+  }
+
+  .alert-success {
+    background: rgba(108, 223, 165, 0.14);
+    border-color: rgba(108, 223, 165, 0.4);
+    color: #6cdfa5;
+  }
+
+  .alert-warning {
+    background: rgba(247, 179, 84, 0.14);
+    border-color: rgba(247, 179, 84, 0.4);
+    color: #f7b354;
+  }
+
+  .alert-secondary,
+  .alert-primary {
+    background: var(--rwaq-surface-raised);
+    border-color: var(--rwaq-border);
+    color: var(--rwaq-text);
+  }
+
+  // Tooltips and dropdown menus
+  .tooltip-inner {
+    background: var(--rwaq-surface-raised);
+    color: var(--rwaq-text);
+  }
+
+  .dropdown-menu {
+    background: var(--rwaq-card-bg);
+    border-color: var(--rwaq-border);
+    color: var(--rwaq-text);
+  }
+
+  // Paragon's default avatar is a dark glyph on transparent, so it disappears.
+  .pgn__avatar {
+    background: var(--rwaq-surface-raised);
+    border-radius: 50%;
+    filter: invert(1) hue-rotate(180deg);
+  }
+
+  // DataTable wrapper: Paragon's bundled light CSS sets background: white on
+  // .pgn__data-table; the table element and footer are overridden above but
+  // the wrapper div itself was not, causing the white box in empty-state.
+  .pgn__data-table {
+    background: var(--rwaq-card-bg);
+    color: var(--rwaq-text);
+  }
+
+  // User menu shadow: rgba(16,24,40) is near-black on black — invisible.
+  .rwaq-admin-usermenu.dropdown-menu,
+  .rwaq-admin-usermenu {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .rwaq-field__label .required { color: var(--rwaq-error); }
+  .rwaq-actionbar__error { color: var(--rwaq-error); }
+  .rwaq-searchgroup--invalid { border-color: var(--rwaq-error); }
+  .rwaq-searchgroup--invalid:focus-within { box-shadow: 0 0 0 3px rgba(249, 112, 102, 0.3); }
+}
+
+// ── Action bar: search + filter/sort + applied chips ─────────────────────────
+// The scope select, text input and icon buttons read as one control, so the
+// border lives on the wrapper and the inner fields are transparent.
+.rwaq-actionbar { margin-bottom: var(--rwaq-space-5); }
+
+.rwaq-actionbar__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rwaq-space-3);
+  flex-wrap: wrap;
+}
+
+.rwaq-actionbar__form { flex: 1 1 22rem; min-width: 0; }
+
+.rwaq-actionbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-2);
+  flex-wrap: wrap;
+}
+
+.rwaq-actionbar__error {
+  margin-top: var(--rwaq-space-2);
+  font-size: 0.8125rem;
+  color: var(--rwaq-error);
+}
+
+.rwaq-searchgroup {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-1);
+  padding: 0.125rem 0.25rem 0.125rem 0;
+  background: var(--rwaq-input-bg);
+  border: 1px solid var(--rwaq-input-border);
+  border-radius: var(--rwaq-radius-sm);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+
+  &:focus-within {
+    border-color: var(--rwaq-accent);
+    box-shadow: 0 0 0 3px rgba(68, 156, 194, 0.18);
+  }
+}
+
+.rwaq-searchgroup--invalid {
+  border-color: var(--rwaq-error);
+
+  &:focus-within { box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.18); }
+}
+
+.rwaq-searchgroup__scope {
+  flex: 0 0 auto;
+  max-width: 9.5rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--rwaq-text);
+  font-size: 0.9375rem;
+
+  &:focus { outline: none; }
+}
+
+.rwaq-searchgroup__divider {
+  flex: 0 0 auto;
+  width: 1px;
+  align-self: stretch;
+  margin: 0.375rem 0;
+  background: var(--rwaq-input-border);
+}
+
+.rwaq-searchgroup__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--rwaq-text);
+  font-size: 0.9375rem;
+
+  &:focus { outline: none; }
+  &::placeholder { color: var(--rwaq-muted); }
+}
+
+.rwaq-searchgroup__clear.btn,
+.rwaq-searchgroup__submit.btn { flex: 0 0 auto; }
+
+// ── Collapsible filter/sort panel ────────────────────────────────────────────
+// Animating max-height (not height/display) keeps the reveal on a cheap
+// property and lets the panel size itself to its content.
+.rwaq-filterpanel {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 220ms ease, opacity 180ms ease;
+}
+
+.rwaq-filterpanel--open {
+  max-height: 30rem;
+  opacity: 1;
+}
+
+.rwaq-filterpanel__inner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--rwaq-space-4);
+  padding: var(--rwaq-space-4) 0 var(--rwaq-space-1);
+}
+
+.rwaq-filterpanel__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--rwaq-text);
+  margin-bottom: var(--rwaq-space-1);
+}
+
+// ── Applied filter chips ─────────────────────────────────────────────────────
+.rwaq-applied { padding-top: var(--rwaq-space-3); }
+
+.rwaq-applied__title {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--rwaq-heading);
+  margin-bottom: var(--rwaq-space-2);
+}
+
+.rwaq-applied__chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--rwaq-space-2);
+}
+
+.rwaq-applied__clear.btn {
+  padding: 0 var(--rwaq-space-1);
+  font-size: 0.8125rem;
+}
+
+// ── Chips ────────────────────────────────────────────────────────────────────
+// Gap on the list rather than margins on the chip, so a wrapped second line
+// stays evenly spaced.
+.rwaq-chip-list {
+  gap: var(--rwaq-space-2);
+  row-gap: var(--rwaq-space-1);
+}
+
+.rwaq-chip.pgn__chip {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.rwaq-chip--light.pgn__chip {
+  background: var(--rwaq-table-head-bg);
+  border-color: var(--rwaq-border);
+  color: var(--rwaq-text);
+}
+
+.rwaq-chip--danger.pgn__chip {
+  background: rgba(217, 45, 32, 0.1);
+  border-color: rgba(217, 45, 32, 0.35);
+  color: #b42318;
+}
+
+.rwaq-chip--dark.pgn__chip {
+  background: rgba(17, 24, 39, 0.08);
+  border-color: rgba(17, 24, 39, 0.3);
+  color: var(--rwaq-heading);
+}
+
+.rwaq-chip--success.pgn__chip {
+  background: rgba(3, 152, 85, 0.1);
+  border-color: rgba(3, 152, 85, 0.35);
+  color: #027a48;
+}
+
+.rwaq-chip--info.pgn__chip {
+  background: rgba(68, 156, 194, 0.12);
+  border-color: rgba(68, 156, 194, 0.4);
+  color: #10648a;
+}
+
+.rwaq-chip--warning.pgn__chip {
+  background: rgba(247, 144, 9, 0.12);
+  border-color: rgba(247, 144, 9, 0.4);
+  color: #b54708;
+}
+
+.rwaq-chip--overflow.pgn__chip {
+  background: transparent;
+  border-color: var(--rwaq-input-border);
+  color: var(--rwaq-muted);
+  cursor: default;
+}
+
+.rwaq-chip--applied.pgn__chip {
+  background: var(--rwaq-table-head-bg);
+  border-color: var(--rwaq-border);
+  color: var(--rwaq-text);
+  font-weight: 500;
+}
+
+// ── Detail grid (read-only views) ────────────────────────────────────────────
+.rwaq-detail-grid {
+  // A fixed three-column track, not `auto-fit`. With auto-fit each section
+  // computed its own column count from its own item widths, so Identity's
+  // three fields and Access's two landed on different x positions and the card
+  // read as several unaligned grids stacked up. A shared track means every
+  // field in the card lines up with the one above it.
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--rwaq-space-5) var(--rwaq-space-6);
+  margin: 0;
+}
+
+@media (max-width: 75rem) {
+  .rwaq-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 48rem) {
+  .rwaq-detail-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+// The section heading has to outrank the field labels beneath it. It used to be
+// 0.75rem/700/muted against labels at 0.75rem/600/muted — all but identical, so
+// there was no hierarchy to read and the card looked like one undifferentiated
+// list of twelve things. It now carries the heading colour and a rule beneath
+// it; the labels stepped back to compensate.
+.rwaq-detail-grid__title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rwaq-heading);
+  margin: 0 0 var(--rwaq-space-4);
+  padding-bottom: var(--rwaq-space-2);
+  border-bottom: 1px solid var(--rwaq-border);
+}
+
+.rwaq-detail-grid__row { min-width: 0; }
+.rwaq-detail-grid__row--wide { grid-column: 1 / -1; }
+
+.rwaq-detail-grid__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--rwaq-muted);
+  // 2px read as one blob of two type sizes; a label needs to be visibly a
+  // label of the thing under it.
+  margin-bottom: 0.3rem;
+}
+
+.rwaq-detail-grid__value {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--rwaq-text);
+  overflow-wrap: anywhere;
+}
+
+// ── Form modal ───────────────────────────────────────────────────────────────
+// `display: contents` hoists Header/Body/Footer back into the dialog's flex
+// column: without it the <form> becomes the single flex child, the Body stops
+// being the scroll container, and its content scrolls over the header.
+.rwaq-form-modal__form { display: contents; }
+
+.rwaq-form-modal__header {
+  border-bottom: 1px solid var(--rwaq-border);
+  background: var(--rwaq-card-bg);
+}
+
+.rwaq-form-modal__footer {
+  border-top: 1px solid var(--rwaq-border);
+  background: var(--rwaq-card-bg);
+  gap: var(--rwaq-space-3);
+}
+
+.rwaq-form-modal__body { padding-top: var(--rwaq-space-4); }
+
+.rwaq-form-section + .rwaq-form-section {
+  margin-top: var(--rwaq-space-5);
+  padding-top: var(--rwaq-space-5);
+  border-top: 1px solid var(--rwaq-border);
+}
+
+.rwaq-form-section__title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rwaq-muted);
+  margin-bottom: var(--rwaq-space-4);
+}
+
+// ── Table cells ──────────────────────────────────────────────────────────────
+.rwaq-user-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-3);
+  min-width: 0;
+}
+
+.rwaq-user-cell__name {
+  font-weight: 600;
+  color: var(--rwaq-heading);
+  overflow-wrap: anywhere;
+}
+
+.rwaq-user-cell__meta {
+  font-size: 0.8125rem;
+  color: var(--rwaq-muted);
+  overflow-wrap: anywhere;
+}
+
+// Row action buttons line up under their column heading rather than hugging the
+// right edge, and carry a visible border plus a hover state so they read as
+// buttons. `start` alignment matches the "Actions" header, which is start-aligned
+// like every other th.
+.rwaq-row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-2);
+  justify-content: flex-start;
+}
+
+.rwaq-row-actions .btn {
+  border: 1px solid var(--rwaq-input-border);
+  color: var(--rwaq-text);
+  background: transparent;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.rwaq-row-actions .btn:hover,
+.rwaq-row-actions .btn:focus-visible {
+  background: var(--rwaq-accent-soft);
+  border-color: var(--rwaq-accent);
+  color: var(--rwaq-accent);
+}
+
+// Header cells for action columns align with the buttons beneath them.
+.rwaq-admin-content thead th.rwaq-th--actions { text-align: start; }
+
+// Avatar columns carry no heading text, so the cell still needs a width and an
+// accessible name (provided sr-only in the component).
+.rwaq-admin-content thead th.rwaq-th--avatar { width: 3.5rem; }
+
+.rwaq-enrollments__audit {
+  margin-top: 0.2rem;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--rwaq-muted);
+  overflow-wrap: anywhere;
+}
+
+// Mode is an enum value, so it is set as one rather than as prose.
+.rwaq-enrollments__mode {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  background: var(--rwaq-surface-raised);
+  border: 1px solid var(--rwaq-border);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--rwaq-text);
+  text-transform: lowercase;
+}
+
+.rwaq-enrollments__cert {
+  font-size: 0.75rem;
+  color: var(--rwaq-text);
+}
+
+// "None" is the absence of a value, so it recedes rather than competing with
+// the real statuses in the same column.
+.rwaq-enrollments__cert--none {
+  font-size: 0.75rem;
+  color: var(--rwaq-muted);
+}
+
+// ── "Roles assigned elsewhere" note block ────────────────────────────────────
+.rwaq-role-notes {
+  margin-top: var(--rwaq-space-4);
+  padding: var(--rwaq-space-3) var(--rwaq-space-4);
+  background: var(--rwaq-table-head-bg);
+  border: 1px solid var(--rwaq-border);
+  border-radius: var(--rwaq-radius-sm);
+}
+
+.rwaq-role-notes__title {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rwaq-muted);
+  margin-bottom: var(--rwaq-space-2);
+}
+
+.rwaq-role-notes__list {
+  margin: 0;
+  padding-inline-start: 1.125rem;
+  font-size: 0.8125rem;
+  color: var(--rwaq-text);
+
+  li + li { margin-top: var(--rwaq-space-1); }
+}
+
+// ── Detail view header + sections ────────────────────────────────────────────
+// The avatar-and-name block. It used to open a modal body, where a bottom
+// border separated it from the fields beneath; it now sits in a page header
+// beside the action buttons, so that border rendered as a rule stopping
+// mid-page. The header's own divider does that job.
+.rwaq-detail-header {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-4);
+}
+
+.rwaq-detail-header__email {
+  font-size: 0.875rem;
+  color: var(--rwaq-muted);
+  overflow-wrap: anywhere;
+}
+
+// Space between sections instead of a rule between them: the section headings
+// carry their own underline now, and two horizontal lines per boundary was one
+// of the things making the card look busy.
+.rwaq-detail-block + .rwaq-detail-block { margin-top: var(--rwaq-space-6); }
+
+// ── Filters toggle ───────────────────────────────────────────────────────────
+// Pressed state is an accent-tinted surface from the palette, so it belongs to
+// the theme in both variants.
+.rwaq-filter-toggle.btn {
+  border-color: var(--rwaq-input-border);
+  color: var(--rwaq-text);
+  background: transparent;
+}
+
+.rwaq-filter-toggle.btn:hover {
+  background: var(--rwaq-accent-soft);
+  border-color: var(--rwaq-accent);
+  color: var(--rwaq-accent);
+}
+
+.rwaq-filter-toggle--open.btn,
+.rwaq-filter-toggle--open.btn:hover {
+  background: var(--rwaq-accent);
+  border-color: var(--rwaq-accent);
+  color: var(--rwaq-accent-contrast);
+}
+
+// ── Table footer (our own — see AdminDataTable) ───────────────────────────────
+.rwaq-table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rwaq-space-3);
+  flex-wrap: wrap;
+  padding: var(--rwaq-space-3) var(--rwaq-space-1) 0;
+  border-top: 1px solid var(--rwaq-border);
+  margin-top: -1px;
+}
+
+.rwaq-table-footer__status {
+  font-size: 0.8125rem;
+  color: var(--rwaq-muted);
+}
+
+.rwaq-table-footer .pagination { margin-bottom: 0; }
+
+.rwaq-table-footer .page-link {
+  background: transparent;
+  border-color: var(--rwaq-border);
+  color: var(--rwaq-text);
+}
+
+.rwaq-table-footer .page-item.active .page-link {
+  background: var(--rwaq-accent);
+  border-color: var(--rwaq-accent);
+  color: var(--rwaq-accent-contrast);
+}
+
+.rwaq-table-footer .page-item.disabled .page-link {
+  color: var(--rwaq-muted);
+  opacity: 0.6;
+}
+
+// ── Sidebar nav items ────────────────────────────────────────────────────────
+// Token-driven so the active pill belongs to whichever theme is on. It used to
+// be a hardcoded white background set inline, which in dark mode was a glaring
+// white block in a near-black sidebar.
+.rwaq-navitem {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-3);
+  padding: 0.625rem var(--rwaq-space-4);
+  border-radius: var(--rwaq-radius-sm);
+  text-decoration: none;
+  margin-bottom: 0.125rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--rwaq-text);
+  background: transparent;
+  transition: background 150ms ease, color 150ms ease;
+
+  &:hover {
+    background: var(--rwaq-row-hover);
+    color: var(--rwaq-heading);
+    text-decoration: none;
+  }
+}
+
+.rwaq-navitem__icon { color: var(--rwaq-muted); flex-shrink: 0; }
+.rwaq-navitem__label { flex: 1; }
+
+.rwaq-navitem__soon {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.75rem;
+  background: var(--rwaq-surface-raised);
+  color: var(--rwaq-muted);
+  white-space: nowrap;
+}
+
+.rwaq-navitem--active {
+  font-weight: 700;
+  color: var(--rwaq-accent);
+  background: var(--rwaq-accent-soft);
+  box-shadow: inset 3px 0 0 0 var(--rwaq-accent);
+
+  .rwaq-navitem__icon { color: var(--rwaq-accent); }
+}
+
+// Light mode keeps the raised-card look the design started from, but tinted
+// rather than plain white so the accent still reads.
+html:not([data-paragon-theme-variant='dark']) .rwaq-navitem--active {
+  background: #ffffff;
+  color: #2f6d89;
+  box-shadow: inset 3px 0 0 0 var(--rwaq-accent), 0 1px 4px rgba(16, 24, 40, 0.08);
+}
+
+// ── Dark mode: chip tints on the reworked surface scale ──────────────────────
+html[data-paragon-theme-variant='dark'] {
+  .rwaq-chip--light.pgn__chip,
+  .rwaq-chip--applied.pgn__chip {
+    background: var(--rwaq-surface-raised);
+    border-color: var(--rwaq-card-border);
+    color: var(--rwaq-text);
+  }
+
+  .rwaq-chip--info.pgn__chip {
+    background: var(--rwaq-accent-soft);
+    border-color: var(--rwaq-accent);
+    color: var(--rwaq-accent);
+  }
+
+  .rwaq-navitem__soon { background: #23272d; }
+}
+
+// Bidi text inside an otherwise LTR cell: keep it aligned with the line above
+// it and let the browser resolve direction per string.
+.rwaq-user-cell__meta[dir='auto'],
+.rwaq-detail-grid__value [dir='auto'] { text-align: start; unicode-bidi: plaintext; }
+
+// ── Page-header action groups ────────────────────────────────────────────────
+// An explicit gap rather than a `gap-*` utility: this Bootstrap build doesn't
+// ship the flex-gap utilities, so the buttons rendered flush against each other.
+.rwaq-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--rwaq-space-3);
+}
+
+// ── Bidi text ────────────────────────────────────────────────────────────────
+// Let the browser resolve direction per string while the box stays in the
+// column's own flow, so an Arabic value lines up with its Latin neighbours.
+.rwaq-bidi {
+  unicode-bidi: plaintext;
+  text-align: start;
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+// Breathing room between the tab strip and its panel, and between the tabs
+// themselves — they were butted together and the panel started immediately
+// under the underline.
+.nav-tabs {
+  gap: var(--rwaq-space-4);
+  margin-bottom: var(--rwaq-space-4);
+}
+
+.nav-tabs .nav-link { padding-inline: 0; }
+.tab-content { padding-top: var(--rwaq-space-2); }
+
+// ── Charts ───────────────────────────────────────────────────────────────────
+// Recharts' ResponsiveContainer fills its parent but the SVG inside is laid out
+// from its own margins, so the plot sat left of centre in a wide card.
+.rwaq-chart {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.rwaq-chart > * { margin-inline: auto; }
+.rwaq-chart .recharts-wrapper { margin-inline: auto; }
+
+.rwaq-chart .recharts-legend-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100% !important;
+  left: 0 !important;
+}
+
+// ── Viewport-fitted list pages ───────────────────────────────────────────────
+// The document itself must never scroll: the shell is already 100vh with
+// overflow hidden, but html/body kept their default margin and intrinsic
+// height, which was enough to push a scrollbar onto the page and let the whole
+// chrome — logo, topbar — scroll out of view.
+// The document never scrolls; the content area inside the shell does.
+// #root and the wrapper React mounts into need an explicit height, or any
+// percentage height inside them resolves against auto and collapses to
+// content height.
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+#root,
+#root > div {
+  height: 100%;
+}
+
+// A list page fills the content area and hands its own overflow to the table,
+// so the page header and the search bar stay put while rows scroll. Detail
+// pages deliberately opt out and scroll in <main> as before, since they are a
+// stack of cards rather than one long list.
+.rwaq-page--fit {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+// Reserve the card's box from the first paint. Without this the card is sized
+// by its content while loading, so the page reflows the moment rows arrive.
+.rwaq-card--fit > .rwaq-table-shell { flex: 0 1 auto; min-height: 0; }
+
+.rwaq-page--fit > .rwaq-page-header { flex: 0 0 auto; }
+
+.rwaq-card--fit {
+  display: flex;
+  flex-direction: column;
+  // flex-grow: 0 — the card is as tall as its rows and no taller. Growing to
+  // fill the viewport stretched a two-row table down the whole page and left
+  // the footer stranded at the bottom, far below the last row.
+  // flex-shrink: 1 still caps it at the available height, at which point the
+  // table body scrolls inside it.
+  flex: 0 1 auto;
+  // Without min-height: 0 a flex child refuses to shrink below its content, so
+  // the card would grow and push the scrollbar back onto the document.
+  min-height: 0;
+  overflow: hidden;
+}
+
+.rwaq-card--fit > .rwaq-actionbar { flex: 0 0 auto; }
+
+// ── Table shell: scrolling body, pinned footer ───────────────────────────────
+.rwaq-table-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+// Same reasoning one level down: the scroll area hugs its rows, and only
+// starts scrolling once the card has been squeezed to the viewport.
+.rwaq-card--fit .rwaq-table-scroll {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.rwaq-card--fit .rwaq-table-footer { flex: 0 0 auto; }
+
+// The header has to stay readable while the body scrolls under it, so it needs
+// its own background — a transparent sticky header shows rows through itself.
+.rwaq-card--fit .rwaq-table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--rwaq-table-head-bg) !important;
+}
+
+// ── Table loading / empty state ──────────────────────────────────────────────
+// Centred on both axes. The utility-class version only centred one, because
+// .rwaq-table-shell is a flex column and justify-content therefore controls
+// the vertical axis — the spinner sat left of centre as a result.
+// Fills the same box the loaded table will occupy, so switching from spinner
+// to rows changes nothing about the layout. A short fixed height here made the
+// card collapse while loading and then jump when data arrived.
+.rwaq-table-state {
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 12rem;
+  padding: var(--rwaq-space-6) var(--rwaq-space-4);
+}
+
+// ── Dashboard ────────────────────────────────────────────────────────────────
+// A denser scale than the list pages. A dashboard is scanned, not read, so the
+// figures need to sit close enough together to be compared at a glance —
+// earlier this ran at list-page proportions and each card was mostly air.
+
+.rwaq-dash-grid {
+  display: grid;
+  // Tighter vertically than horizontally: rows of cards should read as one
+  // block, while columns still need breathing room to separate.
+  column-gap: 0.75rem;
+  row-gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  // Cards in a row share a height. Letting them size to their own content
+  // produced a ragged edge along every band — a short donut card beside a tall
+  // chart — which read as broken rather than compact.
+  align-items: stretch;
+}
+
+.rwaq-dash-grid--kpi { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
+.rwaq-dash-grid--thirds { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.rwaq-dash-grid--halves { grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr)); }
+.rwaq-dash-grid--split { grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); }
+
+@media (max-width: 62rem) {
+  .rwaq-dash-grid--split { grid-template-columns: 1fr; }
+}
+
+// Cards in a row share a height, so a sparse card next to a dense one doesn't
+// leave a ragged edge along the band.
+.rwaq-dash-grid > .rwaq-card,
+.rwaq-dash-grid > .rwaq-dash-card {
+  padding: 1.125rem 1.25rem;
+  margin: 0;
+  // Fill the row's shared height, so every card in a band lines up top and
+  // bottom regardless of how much content it holds.
+  height: 100%;
+}
+
+.rwaq-dash-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+// Content stays top-aligned inside a stretched card, so two cards of equal
+// height still line their headings and first rows up with each other.
+.rwaq-dash-card > *:last-child { margin-bottom: auto; }
+
+.rwaq-dash-card__head { display: flex; flex-direction: column; gap: 0.15rem; }
+
+.rwaq-dash-card .rwaq-section-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.rwaq-dash-card__sub {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--rwaq-muted);
+}
+
+// Charts sit lower than they did; a 12-point series does not need 240px to
+// read, and the extra height was pushing the lower bands off screen.
+.rwaq-dash-card__loading,
+.rwaq-dash-card__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 11rem;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--rwaq-muted);
+}
+
+.rwaq-dash-list {
+  margin: 0;
+  padding-inline-start: 1.05rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--rwaq-text);
+
+  li + li { margin-top: 0.3rem; }
+}
+
+.rwaq-kpi-context {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--rwaq-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+// ── Stat tile ────────────────────────────────────────────────────────────────
+.rwaq-stat-tile { display: flex; flex-direction: column; gap: 0.25rem; }
+
+.rwaq-stat-tile__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rwaq-muted);
+}
+
+// 1.5rem, not 1.75: at the larger size a two-digit percentage dominated a card
+// that also has to carry a caption.
+.rwaq-stat-tile__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--rwaq-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.rwaq-stat-tile__value--muted {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--rwaq-muted);
+  letter-spacing: 0;
+}
+
+.rwaq-stat-tile__hint {
+  font-size: 0.75rem;
+  color: var(--rwaq-muted);
+  line-height: 1.45;
+}
+
+// ── Mini tables ──────────────────────────────────────────────────────────────
+// Headers were colliding: three right-aligned numeric columns with no
+// horizontal padding read as one run-on word ("COURSES ENROLLMENTS ADMINS").
+.rwaq-minitable-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rwaq-mini-table {
+  // Explicit, because Bootstrap's .table width can be overridden by the
+  // scroll container and the table was collapsing to its content width,
+  // leaving a gap between the last column and the card edge.
+  width: 100%;
+  font-size: 0.8125rem;
+  color: var(--rwaq-text);
+
+  th,
+  td {
+    padding: 0.4rem 0.5rem;
+    border-top: none;
+    border-bottom: 1px solid var(--rwaq-border);
+    vertical-align: middle;
+  }
+
+  th:first-child,
+  td:first-child { padding-inline-start: 0; }
+
+  th:last-child,
+  td:last-child { padding-inline-end: 0; }
+
+  thead th {
+    padding-block: 0 0.4rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--rwaq-muted);
+    background: transparent !important;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  // The course-key line under a title is reference detail, not content.
+  .rwaq-user-cell__name { font-size: 0.8125rem; font-weight: 600; }
+  .rwaq-user-cell__meta { font-size: 0.6875rem; }
+}
+
+.rwaq-mini-table__num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  // Keeps a right-aligned numeric column clear of the one before it.
+  padding-inline-start: 1.25rem !important;
+}
+
+// Recharts paints from the SVG up, so axis text has to be token-driven or it
+// stays dark in dark mode.
+.rwaq-chart .recharts-cartesian-axis-tick text { fill: var(--rwaq-muted); }
+.rwaq-chart .recharts-cartesian-grid line { stroke: var(--rwaq-border); }
+
+// Route-chunk fallback: fills the content area so the chrome stays put and
+// nothing resizes when the page swaps in.
+.rwaq-content-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+// ── Course picker (enroll form) ──────────────────────────────────────────────
+// A search box with its results directly beneath, rather than a dropdown: the
+// list sits inside a modal whose body scrolls, and an absolutely-positioned
+// menu would be clipped by it. Flowing in the document also means the modal
+// grows to fit the results instead of overlaying its own footer.
+.rwaq-course-picker__results {
+  list-style: none;
+  margin: var(--rwaq-space-2) 0 0;
+  padding: 0;
+  // Capped against the viewport as well as in rem: on a short window a 15rem
+  // list pushed the Reason field below the fold, so the form looked like it
+  // ended at the course picker.
+  max-height: min(15rem, 30vh);
+  overflow-y: auto;
+  border: 1px solid var(--rwaq-border);
+  border-radius: var(--rwaq-radius-sm, 4px);
+  background: var(--rwaq-card-bg);
+}
+
+.rwaq-course-picker__option {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-bottom: 1px solid var(--rwaq-border);
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+
+  &:last-child { border-bottom: 0; }
+
+  &:hover:not(:disabled),
+  &:focus-visible { background: var(--rwaq-surface-raised); }
+
+  // An already-enrolled course stays listed so the admin can see why it isn't
+  // selectable, so it needs to read as unavailable rather than merely faint.
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+  }
+
+  .rwaq-user-cell__name,
+  .rwaq-user-cell__meta { display: block; }
+
+  .rwaq-user-cell__meta {
+    font-family: var(--pgn-typography-font-family-monospace, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    overflow-wrap: anywhere;
+  }
+}
+
+.rwaq-course-picker__option-note {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--rwaq-muted);
+}
+
+// The chosen course, once picked: the same two lines as a table row, with the
+// escape hatch beside it so changing course never means cancelling the form.
+.rwaq-course-picker__chosen {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rwaq-space-3);
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--rwaq-border);
+  border-radius: var(--rwaq-radius-sm, 4px);
+  background: var(--rwaq-surface-raised);
+}
+
+.rwaq-course-picker__chosen-text {
+  min-width: 0;
+
+  .rwaq-user-cell__meta {
+    font-family: var(--pgn-typography-font-family-monospace, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    overflow-wrap: anywhere;
+  }
+}
+
+// The course a mode change or unenrollment is about, at the top of those
+// dialogs. Named separately from the picker's chosen state because it is not
+// changeable there — there is no "change course" affordance to leave room for.
+.rwaq-enrollments__subject {
+  margin-bottom: var(--rwaq-space-4);
+  padding: 0.6rem 0.75rem;
+  border-left: 3px solid var(--rwaq-accent, var(--rwaq-border));
+  background: var(--rwaq-surface-raised);
+
+  .rwaq-user-cell__meta {
+    font-family: var(--pgn-typography-font-family-monospace, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    overflow-wrap: anywhere;
+  }
+}
+
+// ── Change-mode dialog: the current mode ─────────────────────────────────────
+// Was a Form.Label followed by the chip, which are both inline — so it read as
+// "Current mode honor" with no separation. A label/value pair with a real gap.
+.rwaq-mode-current {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-3);
+  margin-bottom: var(--rwaq-space-4);
+}

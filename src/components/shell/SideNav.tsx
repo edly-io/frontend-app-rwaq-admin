@@ -3,7 +3,7 @@
  * - Brand logo at top
  * - Icon + label NavLink items; active item = white rounded "pill" with brand-accent icon
  * - Collapsible "Settings" section (caret)
- * - "Coming soon" badge on Users/Enrollment/Analytics
+ * - "Coming soon" badge on the not-yet-built modules
  */
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
@@ -12,27 +12,15 @@ import {
   Dashboard,
   Person,
   Groups,
-  List,
-  BarChart,
+  MenuBook,
+  School,
   Settings,
   ExpandMore,
   ExpandLess,
 } from '@openedx/paragon/icons';
-import { getConfig } from '@edx/frontend-platform';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-
-const messages = defineMessages({
-  logoAlt: { id: 'rwaq.admin.sidenav.logoAlt', defaultMessage: 'Rwaq' },
-  dashboard: { id: 'rwaq.admin.sidenav.dashboard', defaultMessage: 'Dashboard' },
-  users: { id: 'rwaq.admin.sidenav.users', defaultMessage: 'Users' },
-  organizations: { id: 'rwaq.admin.sidenav.organizations', defaultMessage: 'Organizations' },
-  enrollment: { id: 'rwaq.admin.sidenav.enrollment', defaultMessage: 'Enrollment' },
-  analytics: { id: 'rwaq.admin.sidenav.analytics', defaultMessage: 'Analytics' },
-  settings: { id: 'rwaq.admin.sidenav.settings', defaultMessage: 'Settings' },
-  comingSoon: { id: 'rwaq.admin.sidenav.comingSoon', defaultMessage: 'Soon' },
-  navAriaLabel: { id: 'rwaq.admin.sidenav.navAriaLabel', defaultMessage: 'Admin navigation' },
-  settingsToggle: { id: 'rwaq.admin.sidenav.settingsToggle', defaultMessage: 'Toggle settings menu' },
-});
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { RWAQ_LOGO } from '@src/assets/rwaqLogo';
+import { sideNavMessages as messages } from './messages';
 
 // ── Nav item config ───────────────────────────────────────────────────────────
 
@@ -51,16 +39,16 @@ const NAV_ITEMS: NavItemDef[] = [
     to: '/', labelId: 'dashboard', iconSrc: Dashboard, isLive: true, exact: true,
   },
   {
-    to: '/users', labelId: 'users', iconSrc: Person, isLive: false,
+    to: '/users', labelId: 'users', iconSrc: Person, isLive: true,
   },
   {
     to: '/organizations', labelId: 'organizations', iconSrc: Groups, isLive: true,
   },
   {
-    to: '/enrollment', labelId: 'enrollment', iconSrc: List, isLive: false,
+    to: '/courses', labelId: 'courses', iconSrc: MenuBook, isLive: true,
   },
   {
-    to: '/analytics', labelId: 'analytics', iconSrc: BarChart, isLive: false,
+    to: '/programs', labelId: 'programs', iconSrc: School, isLive: true,
   },
 ];
 
@@ -69,7 +57,6 @@ const NAV_ITEMS: NavItemDef[] = [
 const sidebarStyle: React.CSSProperties = {
   width: '260px',
   minWidth: '260px',
-  background: 'var(--pgn-color-light-100, #F6F6F5)',
   display: 'flex',
   flexDirection: 'column',
   height: '100vh',
@@ -101,58 +88,18 @@ const NavItem = ({ def, onNavigate }: NavItemProps) => {
       to={def.to}
       end={def.exact ?? false}
       onClick={onNavigate}
-      style={({ isActive }) => ({
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.75rem',
-        padding: '0.625rem 1rem',
-        borderRadius: '0.5rem',
-        textDecoration: 'none',
-        marginBottom: '0.125rem',
-        fontWeight: isActive ? 700 : 500,
-        fontSize: '0.9375rem',
-        color: isActive
-          ? 'var(--pgn-color-primary-700, #003F70)'
-          : 'var(--pgn-color-gray-700, #273F58)',
-        background: isActive
-          ? 'var(--pgn-color-white, #fff)'
-          : 'transparent',
-        boxShadow: isActive
-          ? '0 1px 4px rgba(0,0,0,.08)'
-          : 'none',
-        transition: 'background 150ms ease, box-shadow 150ms ease',
-      })}
+      // Styling moved to shell.scss so the active state can follow the theme
+      // tokens: the pill's background was a hardcoded white, which in dark mode
+      // was a glaring white block in an otherwise near-black sidebar.
+      className={({ isActive }) => `rwaq-navitem${isActive ? ' rwaq-navitem--active' : ''}`}
       aria-label={def.isLive ? label : `${label} — ${intl.formatMessage(messages.comingSoon)}`}
     >
-      {({ isActive }) => (
-        <>
-          <Icon
-            src={def.iconSrc}
-            style={{
-              color: isActive
-                ? 'var(--pgn-color-primary-500, #0070D2)'
-                : 'var(--pgn-color-gray-500, #6B757F)',
-              flexShrink: 0,
-            }}
-          />
-          <span style={{ flex: 1 }}>{label}</span>
-          {!def.isLive && (
-            <span
-              style={{
-                fontSize: '0.625rem',
-                fontWeight: 700,
-                letterSpacing: '0.04em',
-                padding: '0.15rem 0.4rem',
-                borderRadius: '0.75rem',
-                background: 'var(--pgn-color-gray-300, #d2d2d2)',
-                color: 'var(--pgn-color-gray-600, #454545)',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {intl.formatMessage(messages.comingSoon)}
-            </span>
-          )}
-        </>
+      <Icon src={def.iconSrc} className="rwaq-navitem__icon" />
+      <span className="rwaq-navitem__label">{label}</span>
+      {!def.isLive && (
+        <span className="rwaq-navitem__soon">
+          {intl.formatMessage(messages.comingSoon)}
+        </span>
       )}
     </NavLink>
   );
@@ -222,11 +169,13 @@ export interface SideNavProps {
 
 const SideNav = ({ onNavigate }: SideNavProps) => {
   const intl = useIntl();
-  const config = getConfig();
-  const logoUrl = config?.LOGO_WHITE_URL ?? config?.LOGO_URL ?? '';
+  // Not config.LOGO_WHITE_URL / LOGO_URL: those resolve through the LMS's
+  // host-sensitive theming redirect, which serves the stock grey Open edX mark
+  // on any host without the indigo theme bound. See assets/rwaqLogo.
+  const logoUrl = RWAQ_LOGO;
 
   return (
-    <div style={sidebarStyle}>
+    <div className="rwaq-admin-sidebar" style={sidebarStyle}>
       {/* Logo band */}
       <div style={logoBandStyle}>
         {logoUrl ? (

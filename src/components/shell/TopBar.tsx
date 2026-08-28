@@ -1,60 +1,35 @@
 /**
- * TopBar — the in-content top bar, inside the main content column (NOT full-width
- * over the sidebar, matching edly-panel layout).
+ * TopBar — the in-content top bar, inside the main content column (matching the
+ * edly-panel layout).
  *
- * Left: Welcome label + user full name
- * Right: Bell (notifications), Theme toggle, Avatar/account dropdown → Logout
- * Mobile: Hamburger (sidebar toggle) + Logo + Bell + Avatar
+ * Left:  Welcome label + user full name (desktop) / hamburger + logo (mobile)
+ * Right: Theme toggle, Avatar/account dropdown (name/email/role, Dark Mode,
+ *        Profile, Account, Studio, LMS, Logout).
+ *
+ * No notification bell (the platform has no notifications surface here).
  */
+import { forwardRef } from 'react';
 import {
   Dropdown,
+  Form,
   Icon,
 } from '@openedx/paragon';
 import {
   MenuIcon,
-  Notifications,
-  AccountCircle,
   LightMode,
+  DarkMode,
 } from '@openedx/paragon/icons';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { getConfig } from '@edx/frontend-platform';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-
-const messages = defineMessages({
-  welcome: {
-    id: 'rwaq.admin.topbar.welcome',
-    defaultMessage: 'Welcome',
-  },
-  notifications: {
-    id: 'rwaq.admin.topbar.notifications',
-    defaultMessage: 'Notifications',
-  },
-  themeToggle: {
-    id: 'rwaq.admin.topbar.themeToggle',
-    defaultMessage: 'Toggle theme',
-  },
-  account: {
-    id: 'rwaq.admin.topbar.account',
-    defaultMessage: 'Account menu',
-  },
-  logout: {
-    id: 'rwaq.admin.topbar.logout',
-    defaultMessage: 'Log out',
-  },
-  openNav: {
-    id: 'rwaq.admin.topbar.openNav',
-    defaultMessage: 'Open navigation',
-  },
-});
-
-// ── Types ─────────────────────────────────────────────────────────────────────
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { RWAQ_LOGO } from '@src/assets/rwaqLogo';
+import { useThemeVariant } from './useThemeVariant';
+import { topBarMessages as messages } from './messages';
 
 export interface TopBarProps {
   onMenuToggle?: () => void;
   isMobile?: boolean;
 }
-
-// ── Circular icon button style ────────────────────────────────────────────────
 
 const circleBtn: React.CSSProperties = {
   width: '38px',
@@ -70,33 +45,82 @@ const circleBtn: React.CSSProperties = {
   flexShrink: 0,
 };
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// Custom dropdown toggle: the avatar circle only, with no default caret.
+interface AccountToggleProps {
+  onClick?: (e: React.MouseEvent) => void;
+  label: string;
+  initial: string;
+}
+const AccountToggle = forwardRef<HTMLButtonElement, AccountToggleProps>(
+  ({ onClick, label, initial }, ref) => (
+    <button
+      ref={ref}
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      style={{
+        ...circleBtn,
+        background: 'var(--pgn-color-primary-500, #449cc2)',
+        color: '#fff',
+        border: 'none',
+        fontSize: '0.875rem',
+        fontWeight: 700,
+      }}
+    >
+      {initial}
+    </button>
+  ),
+);
 
 const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
   const intl = useIntl();
   const user = getAuthenticatedUser();
   const config = getConfig();
+  const { isDark, toggle } = useThemeVariant();
 
   const displayName = user?.name || user?.username || '';
-  const logoutUrl = config?.LOGOUT_URL ?? '/logout';
-  const logoUrl = config?.LOGO_WHITE_URL ?? config?.LOGO_URL ?? '';
+  const email = user?.email || '';
+  const username = user?.username || '';
+  const role = user?.administrator
+    ? intl.formatMessage(messages.roleAdmin)
+    : intl.formatMessage(messages.roleStaff);
+
+  const lms = (config?.LMS_BASE_URL as string) || '';
+  const logoutUrl = (config?.LOGOUT_URL as string) ?? `${lms}/logout`;
+  // Same reason as SideNav: the configured URL is a theming redirect that can
+  // resolve to the stock Open edX logo depending on the request host.
+  const logoUrl = RWAQ_LOGO;
+
+  // Cross-platform destinations (fall back to LMS-relative paths that redirect
+  // to the corresponding MFE when the explicit config URL is absent).
+  // Profile needs both a configured MFE *and* a username to address. The LMS
+  // /u/<username> fallback only redirects to PROFILE_MICROFRONTEND_URL, which
+  // in deployments without the profile MFE points at an address nothing serves
+  // — so a link was rendered that could never resolve. Absent either, the menu
+  // item is omitted rather than shown broken.
+  const profileBase = (config?.ACCOUNT_PROFILE_URL as string) || '';
+  const links = {
+    profile: profileBase && username ? `${profileBase}/u/${username}` : '',
+    account: (config?.ACCOUNT_SETTINGS_URL as string) || `${lms}/account`,
+    studio: (config?.STUDIO_BASE_URL as string) || '',
+    dashboard: (config?.LEARNER_DASHBOARD_URL as string) || `${lms}/dashboard`,
+  };
 
   return (
     <header
+      className="rwaq-admin-topbar"
       style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0.75rem 1.5rem',
-        background: 'var(--pgn-color-white, #fff)',
-        borderBottom: '1px solid var(--pgn-color-gray-200, #dee2e6)',
         gap: '1rem',
         minHeight: '60px',
         flexShrink: 0,
       }}
     >
-      {/* ── Left: hamburger (mobile) OR welcome text (desktop) ── */}
-      <div className="d-flex align-items-center gap-2" style={{ minWidth: 0, flex: '0 1 auto' }}>
+      {/* ── Left ── */}
+      <div className="d-flex align-items-center rwaq-gap-sm" style={{ minWidth: 0, flex: '0 1 auto' }}>
         {isMobile && (
           <>
             <button
@@ -105,40 +129,20 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
               onClick={onMenuToggle}
               style={{ ...circleBtn, border: 'none', marginInlineEnd: '0.25rem' }}
             >
-              <Icon src={MenuIcon} style={{ color: 'var(--pgn-color-gray-600, #454545)' }} />
+              <Icon src={MenuIcon} />
             </button>
-            {logoUrl && (
-              <img
-                src={logoUrl}
-                alt="Rwaq"
-                style={{ height: '28px', objectFit: 'contain' }}
-              />
-            )}
+            {logoUrl && <img src={logoUrl} alt="Rwaq" style={{ height: '28px', objectFit: 'contain' }} />}
           </>
         )}
-
         {!isMobile && (
           <div style={{ minWidth: 0 }}>
-            <p
-              className="mb-0"
-              style={{
-                fontSize: '0.75rem',
-                color: 'var(--pgn-color-gray-500, #6B757F)',
-                fontWeight: 500,
-                lineHeight: 1.2,
-              }}
-            >
+            <p className="mb-0 rwaq-admin-topbar__welcome" style={{ fontSize: '0.75rem', fontWeight: 500, lineHeight: 1.2 }}>
               {intl.formatMessage(messages.welcome)}
             </p>
             <p
-              className="mb-0"
+              className="mb-0 rwaq-admin-topbar__name"
               style={{
-                fontSize: '1.0625rem',
-                fontWeight: 700,
-                color: 'var(--pgn-color-gray-700, #273F58)',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                fontSize: '1.0625rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               }}
             >
               {displayName}
@@ -147,54 +151,61 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
         )}
       </div>
 
-      {/* ── Right: icon buttons ── */}
-      <div className="d-flex align-items-center gap-2" style={{ flexShrink: 0 }}>
-        {/* Notification bell */}
-        <button
-          type="button"
-          aria-label={intl.formatMessage(messages.notifications)}
-          style={circleBtn}
-        >
-          <Icon src={Notifications} style={{ color: 'var(--pgn-color-gray-600, #454545)' }} />
-        </button>
-
-        {/* Theme / light toggle */}
+      {/* ── Right ── (extra gap between the theme toggle and the avatar) */}
+      <div className="d-flex align-items-center" style={{ flexShrink: 0, gap: '0.875rem' }}>
+        {/* Theme toggle (functional) */}
         <button
           type="button"
           aria-label={intl.formatMessage(messages.themeToggle)}
+          aria-pressed={isDark}
+          onClick={toggle}
           style={circleBtn}
         >
-          <Icon src={LightMode} style={{ color: 'var(--pgn-color-gray-600, #454545)' }} />
+          <Icon src={isDark ? DarkMode : LightMode} />
         </button>
 
-        {/* Avatar / account menu */}
+        {/* Account menu */}
         <Dropdown>
           <Dropdown.Toggle
+            as={AccountToggle}
             id="topbar-account-menu"
-            as="div"
-            style={{ cursor: 'pointer' }}
-          >
-            <button
-              type="button"
-              aria-label={intl.formatMessage(messages.account)}
-              style={{
-                ...circleBtn,
-                background: 'var(--pgn-color-primary-500, #0070D2)',
-                color: '#fff',
-                border: 'none',
-                fontSize: '0.875rem',
-                fontWeight: 700,
-              }}
-            >
-              {displayName?.charAt(0)?.toUpperCase() ?? <Icon src={AccountCircle} />}
-            </button>
-          </Dropdown.Toggle>
-          <Dropdown.Menu>
-            <Dropdown.Item
-              href={logoutUrl}
-            >
-              {intl.formatMessage(messages.logout)}
-            </Dropdown.Item>
+            label={intl.formatMessage(messages.account)}
+            initial={displayName ? displayName.charAt(0).toUpperCase() : 'A'}
+          />
+          <Dropdown.Menu className="rwaq-admin-usermenu" style={{ minWidth: '15rem' }}>
+            {/* Identity block */}
+            <div className="px-3 py-2">
+              <div style={{ fontWeight: 600 }}>{displayName}</div>
+              {email && <div className="small text-muted" style={{ wordBreak: 'break-all' }}>{email}</div>}
+              <div className="small mt-1" style={{ fontWeight: 500 }}>{role}</div>
+            </div>
+            <Dropdown.Divider />
+
+            {/* Dark mode toggle */}
+            <div className="px-3 py-2 d-flex align-items-center">
+              <Form.Switch checked={isDark} onChange={toggle}>
+                {intl.formatMessage(messages.darkMode)}
+              </Form.Switch>
+            </div>
+            <Dropdown.Divider />
+
+            {/* Cross-platform navigation */}
+            {!!links.profile && (
+              <Dropdown.Item href={links.profile}>{intl.formatMessage(messages.profile)}</Dropdown.Item>
+            )}
+            <Dropdown.Item href={links.account}>{intl.formatMessage(messages.accountSettings)}</Dropdown.Item>
+            {links.studio && (
+              <Dropdown.Item
+                href={links.studio}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {intl.formatMessage(messages.studio)}
+              </Dropdown.Item>
+            )}
+            <Dropdown.Item href={links.dashboard}>{intl.formatMessage(messages.learnerDashboard)}</Dropdown.Item>
+            <Dropdown.Divider />
+            <Dropdown.Item href={logoutUrl}>{intl.formatMessage(messages.logout)}</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       </div>

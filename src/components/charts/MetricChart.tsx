@@ -24,6 +24,8 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
+import { useIntl } from '@edx/frontend-platform/i18n';
+import messages from './messages';
 
 // ── Paragon token resolver ────────────────────────────────────────────────────
 
@@ -38,6 +40,21 @@ export const resolveParagonToken = (token: string, fallback: string): string => 
   const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
   return value || fallback;
 };
+
+/**
+ * A tonal ramp of the brand accent, for slices of one whole.
+ *
+ * The categorical palette below jumps teal → blue → yellow → red, which on a
+ * course-lifecycle donut implies the states are unrelated and that one of them
+ * is an error. They are four parts of the same total, so they read better as
+ * one hue stepping down in weight.
+ */
+export const getSequentialChartColors = (): string[] => [
+  resolveParagonToken('--rwaq-accent', '#449cc2'),
+  'rgba(68, 156, 194, 0.72)',
+  'rgba(68, 156, 194, 0.48)',
+  'rgba(68, 156, 194, 0.26)',
+];
 
 /** Brand-aligned chart palette sourced from Paragon tokens. */
 export const getChartColors = (): string[] => [
@@ -98,25 +115,28 @@ interface FallbackTableProps {
   series: string[];
 }
 
-const AccessibleFallbackTable = ({ data, series }: FallbackTableProps) => (
-  <table className="sr-only">
-    <caption>Chart data</caption>
-    <thead>
-      <tr>
-        <th scope="col">Label</th>
-        {series.map((s) => <th key={s} scope="col">{s}</th>)}
-      </tr>
-    </thead>
-    <tbody>
-      {data.map((row) => (
-        <tr key={row.name}>
-          <td>{row.name}</td>
-          {series.map((s) => <td key={s}>{row[s]}</td>)}
+const AccessibleFallbackTable = ({ data, series }: FallbackTableProps) => {
+  const intl = useIntl();
+  return (
+    <table className="sr-only">
+      <caption>{intl.formatMessage(messages.fallbackTableCaption)}</caption>
+      <thead>
+        <tr>
+          <th scope="col">{intl.formatMessage(messages.fallbackTableLabelColumn)}</th>
+          {series.map((s) => <th key={s} scope="col">{s}</th>)}
         </tr>
-      ))}
-    </tbody>
-  </table>
-);
+      </thead>
+      <tbody>
+        {data.map((row) => (
+          <tr key={row.name}>
+            <td>{row.name}</td>
+            {series.map((s) => <td key={s}>{row[s]}</td>)}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -131,18 +151,102 @@ const MetricChart = ({
 }: MetricChartProps) => {
   const reducedMotion = usePrefersReducedMotion();
   const colors = getChartColors();
+  // Slices of one total read as one hue; independent series need distinct ones.
+  const sliceColors = getSequentialChartColors();
 
   const chartProps = {
     isAnimationActive: !reducedMotion,
   };
 
+  // Chart chrome is deliberately quiet: the data is the subject, and a dashed
+  // grid plus boxed axes competes with it. Horizontal rules only, no axis
+  // lines, no tick marks, muted labels — the reading aids stay, the scaffolding
+  // goes.
+  const mutedTick = {
+    fontSize: 11,
+    fill: resolveParagonToken('--rwaq-muted', '#6b7280'),
+  };
+  const ruleColor = resolveParagonToken('--rwaq-border', '#e6e8ec');
+
   const axisProps = compact
     ? {}
     : {
-      xAxis: <XAxis dataKey="name" tick={{ fontSize: 12 }} />,
-      yAxis: <YAxis tick={{ fontSize: 12 }} />,
-      grid: <CartesianGrid strokeDasharray="3 3" stroke={resolveParagonToken('--pgn-color-gray-300', '#dee2e6')} />,
+      xAxis: (
+        <XAxis
+          dataKey="name"
+          tick={mutedTick}
+          axisLine={false}
+          tickLine={false}
+          dy={6}
+        />
+      ),
+      yAxis: (
+        <YAxis
+          tick={mutedTick}
+          axisLine={false}
+          tickLine={false}
+          // These series are counts. Without this Recharts invents fractional
+          // ticks (0, 0.75, 1.5…) for small integer data, which reads as a
+          // measurement error rather than a tally.
+          allowDecimals={false}
+          width={36}
+        />
+      ),
+      grid: (
+        <CartesianGrid
+          horizontal
+          vertical={false}
+          stroke={ruleColor}
+        />
+      ),
     };
+
+  /** Tooltip styled from the design tokens rather than Recharts' defaults. */
+  const tooltipStyle = {
+    contentStyle: {
+      background: resolveParagonToken('--rwaq-card-bg', '#ffffff'),
+      border: `1px solid ${ruleColor}`,
+      borderRadius: '0.5rem',
+      boxShadow: '0 4px 12px rgba(16, 24, 40, 0.1)',
+      fontSize: '0.8125rem',
+    },
+    labelStyle: {
+      color: resolveParagonToken('--rwaq-muted', '#6b7280'),
+      marginBottom: '0.25rem',
+    },
+    cursor: { fill: resolveParagonToken('--rwaq-row-hover', 'rgba(0,0,0,0.04)') },
+  };
+
+  const ChartLegend = ({ payload = [] }: { payload?: { value: string; color: string }[] }) => (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '0.25rem',
+      marginTop: '0.5rem',
+      fontSize: '0.8125rem',
+    }}
+    >
+      {payload.map((entry, index) => (
+        <span key={entry.value} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}>
+          {index > 0 && (
+            <span style={{ color: resolveParagonToken('--rwaq-muted', '#9ca3af'), padding: '0 0.125rem' }}>/</span>
+          )}
+          <span style={{
+            display: 'inline-block',
+            width: 10,
+            height: 10,
+            backgroundColor: entry.color,
+            borderRadius: 2,
+            flexShrink: 0,
+          }}
+          />
+          <span style={{ color: resolveParagonToken('--pgn-color-gray-700', '#3b3b3b') }}>{entry.value}</span>
+        </span>
+      ))}
+    </div>
+  );
 
   const renderContent = () => {
     if (type === 'line') {
@@ -151,8 +255,8 @@ const MetricChart = ({
           {!compact && axisProps.grid}
           {!compact && axisProps.xAxis}
           {!compact && axisProps.yAxis}
-          <Tooltip />
-          {!hideLegend && !compact && <Legend />}
+          <Tooltip {...tooltipStyle} />
+          {!hideLegend && !compact && <Legend content={<ChartLegend />} />}
           {series.map((key, i) => (
             <Line
               key={key}
@@ -160,7 +264,10 @@ const MetricChart = ({
               dataKey={key}
               stroke={colors[i % colors.length]}
               strokeWidth={2}
-              dot={!compact}
+              // A dot per month clutters a 12-point series; the endpoint is
+              // the one that carries meaning.
+              dot={false}
+              activeDot={{ r: 4 }}
               {...chartProps}
             />
           ))}
@@ -174,15 +281,27 @@ const MetricChart = ({
           {!compact && axisProps.grid}
           {!compact && axisProps.xAxis}
           {!compact && axisProps.yAxis}
-          <Tooltip />
-          {!hideLegend && !compact && <Legend />}
+          <Tooltip {...tooltipStyle} />
+          {!hideLegend && !compact && <Legend content={<ChartLegend />} />}
           {series.map((key, i) => (
             <Bar
               key={key}
               dataKey={key}
               fill={colors[i % colors.length]}
+              radius={[3, 3, 0, 0]}
+              maxBarSize={44}
               {...chartProps}
-            />
+            >
+              {/* The latest period is what a reader looks for first, so it
+                  carries full weight and the history sits back. */}
+              {data.map((entry, index) => (
+                <Cell
+                  key={`${key}-${entry.name}`}
+                  fill={colors[i % colors.length]}
+                  fillOpacity={index === data.length - 1 ? 1 : 0.55}
+                />
+              ))}
+            </Bar>
           ))}
         </BarChart>
       );
@@ -197,17 +316,18 @@ const MetricChart = ({
             nameKey="name"
             cx="50%"
             cy="50%"
-            innerRadius="55%"
-            outerRadius="80%"
+            innerRadius="58%"
+            outerRadius="82%"
+            paddingAngle={2}
+            stroke="none"
             {...chartProps}
           >
-            {data.map((_entry, index) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+            {data.map((entry, index) => (
+              <Cell key={entry.name} fill={sliceColors[index % sliceColors.length]} />
             ))}
           </Pie>
-          <Tooltip />
-          {!hideLegend && <Legend />}
+          <Tooltip {...tooltipStyle} />
+          {!hideLegend && <Legend content={<ChartLegend />} />}
         </PieChart>
       );
     }
@@ -219,7 +339,10 @@ const MetricChart = ({
     <div
       role="img"
       aria-label={ariaLabel}
-      style={{ width: '100%' }}
+      // rwaq-chart centres the plot and its legend: Recharts lays the SVG out
+      // from its own margins, so in a wide card it sat left of centre with the
+      // legend anchored to the plot rather than the card.
+      className="rwaq-chart"
     >
       <ResponsiveContainer width="100%" height={height}>
         {/* @ts-ignore — ResponsiveContainer accepts a single child element */}

@@ -1,42 +1,79 @@
 /**
  * Organizations API — the ONLY file that should change when the backend evolves.
- * All components call only the hooks in hooks.ts, never this file directly.
+ * All components call the hooks in hooks.ts, never this file directly.
  *
- * Base URL: GET|PATCH /rwaq/api/organizations/
- *           GET|POST|DELETE /rwaq/api/organizations/<short_name>/members/<email>/
+ *   GET|POST         /rwaq/api/organizations/
+ *   GET|PATCH        /rwaq/api/organizations/<short_name>/
+ *   GET|POST|DELETE  /rwaq/api/organizations/<short_name>/members/<email>/
+ *
+ * Host: **Studio (CMS)**, matching the users module. Not cosmetic — granting
+ * Organization Admin provisions course creation through
+ * `cms.djangoapps.course_creators`, which is in CMS's INSTALLED_APPS only, so
+ * the same call served from the LMS cannot complete.
  *
  * Authentication: Global Staff (IsGlobalStaff on every endpoint).
- * Client: getAuthenticatedHttpClient() injects JWT + CSRF automatically.
+ * Case: snake_case on the wire, camelCase in the app — normalized here.
  */
+import { camelCaseObject, snakeCaseObject } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
-import { getApiUrl } from '@src/data/utils';
+import { getStudioApiUrl } from '@src/data/utils';
 import type {
+  OrgCreatePayload,
   OrgDetail,
+  OrgFilter,
   OrgListParams,
   OrgListResponse,
-  OrgMember,
   OrgProfilePatch,
 } from './types';
 
-const getOrgsBaseUrl = () => getApiUrl('/rwaq/api/organizations');
+const getOrgsBaseUrl = () => getStudioApiUrl('/rwaq/api/organizations');
 
-// ── List ───────────────────────────────────────────────────────────────────────
+/**
+ * Translate the single-select UI filter into the backend's own query params.
+ *
+ * The org list exposes two independent booleans (?active=, ?has_admins=)
+ * rather than one ?filter=, so the mapping lives here instead of leaking the
+ * backend's parameter shape into the page.
+ */
+const filterParams = (filter?: OrgFilter): Record<string, string> => {
+  switch (filter) {
+    case 'active': return { active: 'true' };
+    case 'inactive': return { active: 'false' };
+    case 'has_admins': return { has_admins: 'true' };
+    case 'no_admins': return { has_admins: 'false' };
+    default: return {};
+  }
+};
+
+// ── List ─────────────────────────────────────────────────────────────────────
 
 /** GET /rwaq/api/organizations/?search=&ordering=&page=&page_size= */
 export const getOrganizations = async (params: OrgListParams = {}): Promise<OrgListResponse> => {
-  const { data } = await getAuthenticatedHttpClient().get(`${getOrgsBaseUrl()}/`, { params });
-  return data as OrgListResponse;
+  const { filter, ...rest } = params;
+  const { data } = await getAuthenticatedHttpClient().get(`${getOrgsBaseUrl()}/`, {
+    params: { ...snakeCaseObject(rest), ...filterParams(filter) },
+  });
+  return camelCaseObject(data) as OrgListResponse;
 };
 
-// ── Detail ─────────────────────────────────────────────────────────────────────
+// ── Create ───────────────────────────────────────────────────────────────────
+
+/** POST /rwaq/api/organizations/ — the new org is immediately course-creatable. */
+export const createOrganization = async (payload: OrgCreatePayload) => {
+  const { data } = await getAuthenticatedHttpClient().post(
+    `${getOrgsBaseUrl()}/`,
+    snakeCaseObject(payload),
+  );
+  return camelCaseObject(data) as OrgDetail;
+};
+
+// ── Detail ───────────────────────────────────────────────────────────────────
 
 /** GET /rwaq/api/organizations/<short_name>/ */
 export const getOrganization = async (shortName: string): Promise<OrgDetail> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getOrgsBaseUrl()}/${shortName}/`);
-  return data as OrgDetail;
+  return camelCaseObject(data) as OrgDetail;
 };
-
-// ── Profile update ─────────────────────────────────────────────────────────────
 
 /** PATCH /rwaq/api/organizations/<short_name>/ */
 export const updateOrganization = async (
@@ -45,37 +82,23 @@ export const updateOrganization = async (
 ): Promise<OrgDetail> => {
   const { data } = await getAuthenticatedHttpClient().patch(
     `${getOrgsBaseUrl()}/${shortName}/`,
-    patch,
+    snakeCaseObject(patch),
   );
-  return data as OrgDetail;
+  return camelCaseObject(data) as OrgDetail;
 };
 
-// ── Members ────────────────────────────────────────────────────────────────────
+// ── Members ──────────────────────────────────────────────────────────────────
 
-/** GET /rwaq/api/organizations/<short_name>/members/<email>/ */
-export const getOrgMember = async (shortName: string, email: string): Promise<OrgMember> => {
-  const encodedEmail = encodeURIComponent(email);
-  const { data } = await getAuthenticatedHttpClient().get(
-    `${getOrgsBaseUrl()}/${shortName}/members/${encodedEmail}/`,
+/** POST members/<email>/ — grants Organization Admin. 404 if no such user. */
+export const addOrgAdmin = async (shortName: string, email: string): Promise<void> => {
+  await getAuthenticatedHttpClient().post(
+    `${getOrgsBaseUrl()}/${shortName}/members/${encodeURIComponent(email)}/`,
   );
-  return data as OrgMember;
 };
 
-/** POST /rwaq/api/organizations/<short_name>/members/<email>/
- *  Grants OrgInstructorRole to the user identified by <email>. */
-export const addOrgAdmin = async (shortName: string, email: string): Promise<OrgMember> => {
-  const encodedEmail = encodeURIComponent(email);
-  const { data } = await getAuthenticatedHttpClient().post(
-    `${getOrgsBaseUrl()}/${shortName}/members/${encodedEmail}/`,
-  );
-  return data as OrgMember;
-};
-
-/** DELETE /rwaq/api/organizations/<short_name>/members/<email>/
- *  Revokes OrgInstructorRole from the user identified by <email>. */
+/** DELETE members/<email>/ — revokes Organization Admin for this org only. */
 export const removeOrgAdmin = async (shortName: string, email: string): Promise<void> => {
-  const encodedEmail = encodeURIComponent(email);
   await getAuthenticatedHttpClient().delete(
-    `${getOrgsBaseUrl()}/${shortName}/members/${encodedEmail}/`,
+    `${getOrgsBaseUrl()}/${shortName}/members/${encodeURIComponent(email)}/`,
   );
 };

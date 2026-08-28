@@ -1,31 +1,42 @@
 /**
- * Dashboard TanStack Query hooks.
+ * Dashboard analytics hooks.
  * Components import from this file only — never from api.ts directly.
+ *
+ * Three independent queries rather than one combined fetch, so a slow
+ * aggregate cannot hold up the KPI row. The backend caches for a few minutes
+ * and stamps every payload with generatedAt, so a longer staleTime here would
+ * only add a second layer of staleness on top of one we already surface.
  */
 import { useQuery } from '@tanstack/react-query';
 import { appId } from '@src/constants';
-import { getDashboardCharts, getDashboardKpis } from './api';
+import {
+  getAnalyticsBreakdowns,
+  getAnalyticsSummary,
+  getAnalyticsTrends,
+} from './api';
+import type { AnalyticsParams } from './types';
 
-// ── Query key factory ─────────────────────────────────────────────────────────
-
-const dashboardQueryKeys = {
-  all: [appId, 'dashboard'] as const,
-  kpis: () => [...dashboardQueryKeys.all, 'kpis'] as const,
-  charts: () => [...dashboardQueryKeys.all, 'charts'] as const,
+const analyticsQueryKeys = {
+  all: [appId, 'analytics'] as const,
+  summary: (params: AnalyticsParams) => [...analyticsQueryKeys.all, 'summary', params] as const,
+  trends: (params: AnalyticsParams) => [...analyticsQueryKeys.all, 'trends', params] as const,
+  breakdowns: (params: AnalyticsParams) => [...analyticsQueryKeys.all, 'breakdowns', params] as const,
 };
 
-// ── Queries ───────────────────────────────────────────────────────────────────
-
-/** KPI summary cards (placeholder until backend lands). */
-export const useDashboardKpis = () => useQuery({
-  queryKey: dashboardQueryKeys.kpis(),
-  queryFn: getDashboardKpis,
-  staleTime: 5 * 60 * 1000, // 5 minutes
+/** Headline counts for the KPI row. */
+export const useAnalyticsSummary = (params: AnalyticsParams = {}) => useQuery({
+  queryKey: analyticsQueryKeys.summary(params),
+  queryFn: () => getAnalyticsSummary(params),
 });
 
-/** Chart datasets (placeholder until backend lands). */
-export const useDashboardCharts = () => useQuery({
-  queryKey: dashboardQueryKeys.charts(),
-  queryFn: getDashboardCharts,
-  staleTime: 5 * 60 * 1000,
+/** Bounded monthly series for the trend charts. */
+export const useAnalyticsTrends = (params: AnalyticsParams = {}) => useQuery({
+  queryKey: analyticsQueryKeys.trends(params),
+  queryFn: () => getAnalyticsTrends(params),
+});
+
+/** Grouped aggregates for the breakdown cards and tables. */
+export const useAnalyticsBreakdowns = (params: AnalyticsParams = {}) => useQuery({
+  queryKey: analyticsQueryKeys.breakdowns(params),
+  queryFn: () => getAnalyticsBreakdowns(params),
 });

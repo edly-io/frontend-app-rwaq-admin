@@ -7,50 +7,54 @@
  *                                   [ footer                        ]
  *
  * Mobile (≤768px): sidebar hidden, opened by TopBar hamburger as an overlay.
- * Global-Staff guard: non-staff see an access-denied message.
- * Server enforces IsGlobalStaff; this guard is defense-in-depth only.
+ * Superuser guard: anyone else sees an access-denied message. The server
+ * enforces it too (IsSuperAdmin on every endpoint); this guard only avoids
+ * rendering a shell whose every panel would 403.
+ *
+ * The answer comes from the API rather than the JWT because frontend-platform
+ * does not surface the `superuser` claim — see data/whoami.
  */
-import { useState, useEffect, useRef } from 'react';
+import {
+  Suspense, useEffect, useRef, useState,
+} from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { Container } from '@openedx/paragon';
+import { Container, Spinner } from '@openedx/paragon';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { useAdminCapabilities } from '@src/data/whoami';
 import SideNav from './SideNav';
 import TopBar from './TopBar';
 import ErrorState from '../ErrorState';
-
-const messages = defineMessages({
-  accessDeniedTitle: {
-    id: 'rwaq.admin.shell.accessDeniedTitle',
-    defaultMessage: 'Access denied',
-  },
-});
+import { adminShellMessages as messages } from './messages';
 
 const BREAKPOINT_MD = 768;
 
 // ── Guard ─────────────────────────────────────────────────────────────────────
 
-type GuardState = 'pending' | 'allowed' | 'denied';
+type GuardState = 'pending' | 'allowed' | 'denied' | 'error';
 
 const useStaffGuard = (): GuardState => {
   const navigate = useNavigate();
-  const [state, setState] = useState<GuardState>('pending');
+  const isSignedIn = getAuthenticatedUser() !== null;
+  // Only asked once signed in — an anonymous caller would just get a 401 and
+  // the redirect below is the right answer for them anyway.
+  const { data, isLoading, isError } = useAdminCapabilities();
 
   useEffect(() => {
-    const user = getAuthenticatedUser();
-    if (!user) {
+    if (!isSignedIn) {
       navigate('/login', { replace: true });
-      return;
     }
-    // frontend-platform maps JWT `is_staff` → user.administrator
-    if (user.administrator === true) {
-      setState('allowed');
-    } else {
-      setState('denied');
-    }
-  }, [navigate]);
+  }, [isSignedIn, navigate]);
 
-  return state;
+  if (!isSignedIn) { return 'pending'; }
+  if (isLoading) { return 'pending'; }
+  // A network failure (5xx, timeout, offline) is distinct from a permission
+  // denial: the user may have access but the /me/ call just failed transiently.
+  // Show a retryable error rather than "Access Denied" so they know to refresh.
+  if (isError) { return 'error'; }
+  if (!data) { return 'denied'; }
+
+  return data.canAccessAdminPanel ? 'allowed' : 'denied';
 };
 
 // ── Responsive hook ───────────────────────────────────────────────────────────
@@ -127,6 +131,13 @@ const OverlaySidebar = ({ open, onClose }: OverlaySidebarProps) => {
 
 // ── Main AdminShell ───────────────────────────────────────────────────────────
 
+/** Fills the content area while a route's chunk loads, so nothing resizes. */
+const ContentLoading = () => (
+  <div className="rwaq-content-loading">
+    <Spinner animation="border" variant="primary" screenReaderText="Loading" />
+  </div>
+);
+
 const AdminShell = () => {
   const intl = useIntl();
   const guardState = useStaffGuard();
@@ -137,6 +148,20 @@ const AdminShell = () => {
     return null;
   }
 
+  if (guardState === 'error') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Container>
+          <ErrorState
+            statusCode={503}
+            title={intl.formatMessage(messages.networkErrorTitle)}
+            body={intl.formatMessage(messages.networkErrorBody)}
+          />
+        </Container>
+      </div>
+    );
+  }
+
   if (guardState === 'denied') {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -144,6 +169,7 @@ const AdminShell = () => {
           <ErrorState
             statusCode={403}
             title={intl.formatMessage(messages.accessDeniedTitle)}
+            body={intl.formatMessage(messages.accessDeniedBody)}
           />
         </Container>
       </div>
@@ -152,17 +178,23 @@ const AdminShell = () => {
 
   return (
     <div
+      className="rwaq-admin-shell"
       style={{
         display: 'flex',
-        height: '100vh',
+        // 100dvh, not 100%: React mounts the app inside wrapper divs that
+        // have no height of their own, so a percentage resolves against an
+        // auto-height parent and collapses to content height — the shell then
+        // grows to 2500px and nothing inside it can ever scroll. The dynamic
+        // viewport unit also tracks mobile browser chrome, which plain 100vh
+        // does not.
+        height: '100dvh',
         overflow: 'hidden',
-        background: 'var(--pgn-color-gray-100, #F6F6F5)',
       }}
     >
       {/* ── Desktop: persistent sidebar ──────────────────────────────────── */}
       {isDesktop && (
         <div style={{
-          flexShrink: 0, height: '100vh', position: 'sticky', top: 0,
+          flexShrink: 0, height: '100dvh', position: 'sticky', top: 0,
         }}
         >
           <SideNav />
@@ -182,6 +214,11 @@ const AdminShell = () => {
           flexDirection: 'column',
           overflow: 'hidden',
           minWidth: 0,
+          // minHeight: 0 is load-bearing. A flex item defaults to
+          // min-height: auto, which refuses to shrink below its content — so
+          // this column grew to content height and the scroll never reached
+          // <main> below.
+          minHeight: 0,
         }}
       >
         <TopBar
@@ -190,28 +227,43 @@ const AdminShell = () => {
         />
 
         {/* ── Scrollable content area ───────────────────────────────────── */}
+        {/* The scroll container for every page that isn't viewport-fitted.
+            Without minHeight: 0 it expanded to its content instead of
+            scrolling: a long page simply had its bottom clipped by the
+            shell's overflow: hidden, and each time a table swapped a spinner
+            for rows the whole column resized, which is the blink on load. */}
         <main
           id="main-content"
+          className="rwaq-admin-content"
           style={{
             flex: 1,
+            minHeight: 0,
             overflowY: 'auto',
             overflowX: 'hidden',
             padding: '1.5rem',
           }}
         >
-          <Outlet />
+          {/* The Suspense boundary lives here, around the outlet only.
+              Previously the single boundary sat above <AdminShell/> in
+              index.tsx, so the first visit to any lazily-loaded route
+              suspended the entire tree: the fallback replaced the sidebar and
+              topbar too, and the shell remounted once the chunk arrived. That
+              is the full-screen reload on the first click of each menu item.
+              Scoped here, the chrome stays mounted and only the content area
+              swaps. */}
+          <Suspense fallback={<ContentLoading />}>
+            <Outlet />
+          </Suspense>
         </main>
 
         {/* ── Footer ───────────────────────────────────────────────────── */}
         <footer
           role="contentinfo"
+          className="rwaq-admin-footer"
           style={{
-            borderTop: '1px solid var(--pgn-color-gray-200, #dee2e6)',
-            background: 'var(--pgn-color-white, #fff)',
             padding: '0.75rem 1.5rem',
             textAlign: 'center',
             fontSize: '0.8125rem',
-            color: 'var(--pgn-color-gray-500, #6B757F)',
             flexShrink: 0,
           }}
         >
