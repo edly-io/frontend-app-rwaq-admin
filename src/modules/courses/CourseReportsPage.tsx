@@ -178,33 +178,36 @@ const ReportTriggerRow = ({
     : null;
 
   return (
-    <div className="py-3 border-bottom d-flex align-items-start justify-content-between gap-3">
-      <div>
+    <div
+      className="py-4 border-bottom d-flex align-items-start justify-content-between"
+      style={{ gap: '2rem' }}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div className="font-weight-semibold" style={{ fontSize: '0.9375rem' }}>{def.label}</div>
-        <div className="text-muted small mt-1">{def.description}</div>
+        <div className="text-muted small mt-2" style={{ lineHeight: '1.5' }}>{def.description}</div>
         {triggered && !isLoading && (
-          <div className="text-success small mt-1">
-            Report queued, it will appear in the downloads table below.
+          <div className="text-success small mt-2">
+            Report queued — it will appear in the downloads table below.
           </div>
         )}
         {errorMsg && (
-          <div className="text-danger small mt-1">{errorMsg}</div>
+          <div className="text-danger small mt-2">{errorMsg}</div>
         )}
       </div>
-      <Button
-        variant="outline-primary"
-        size="sm"
-        onClick={handleClick}
-        disabled={isLoading}
-        style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
-      >
+      <div style={{ flexShrink: 0, width: '6rem', display: 'flex', justifyContent: 'flex-end', paddingTop: '0.125rem' }}>
         {isLoading ? (
-          <>
-            <Spinner animation="border" size="sm" screenReaderText="Generating" />
-            {' '}Generating…
-          </>
-        ) : 'Generate'}
-      </Button>
+          <Spinner animation="border" size="sm" screenReaderText="Generating report" />
+        ) : (
+          <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={handleClick}
+            style={{ whiteSpace: 'nowrap', minWidth: '5.5rem' }}
+          >
+            Generate
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
@@ -404,17 +407,33 @@ const DOWNLOADS_COLUMNS: ColumnDef<ReportDownloadRow>[] = [
     label: 'Download',
     renderCell: (value) => (
       value ? (
-        <Button
-          variant="outline-primary"
-          size="sm"
+        <a
           href={value as string}
           target="_blank"
           rel="noopener noreferrer"
+          className="btn btn-sm btn-outline-primary d-inline-flex align-items-center"
+          style={{ gap: '0.375rem', whiteSpace: 'nowrap' }}
         >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
           Download
-        </Button>
+        </a>
       ) : (
-        <span className="text-muted">—</span>
+        <span className="text-muted small">—</span>
       )
     ),
   },
@@ -487,33 +506,41 @@ const CourseReportsPage = () => {
       {/* Generate Reports */}
       <div className="rwaq-card mt-4">
         <h2 className="rwaq-section-title mb-1">Generate Reports</h2>
-        <p className="text-muted small mb-3">
-          Click <strong>Generate</strong> next to a report type to start an async task.
-          Completed reports appear in the downloads section below.
+        <p className="text-muted small mb-0">
+          Click <strong>Generate</strong> next to a report type to queue an async task.
+          Completed files appear in the <em>Reports Available for Download</em> section below.
         </p>
+        <hr className="mt-3 mb-0" />
         {REPORT_DEFS.map((def) => (
           <ReportTriggerRow key={def.type} def={def} courseId={courseId} />
         ))}
       </div>
 
-      {/* Org Enrollment Summary */}
-      <div className="rwaq-card mt-4">
-        <h2 className="rwaq-section-title mb-4">Org Enrollment Summary</h2>
-        <OrgEnrollmentSummarySection courseId={courseId} />
-      </div>
-
-      {/* Certificates Issued */}
-      <div className="rwaq-card mt-4">
-        <h2 className="rwaq-section-title mb-4">Certificates Issued</h2>
-        <CertificatesSection courseId={courseId} />
+      {/* Org Enrollment Summary + Certificates Issued — side by side */}
+      <div
+        className="mt-4"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(22rem, 1fr))',
+          gap: '1.5rem',
+        }}
+      >
+        <div className="rwaq-card">
+          <h2 className="rwaq-section-title mb-4">Org Enrollment Summary</h2>
+          <OrgEnrollmentSummarySection courseId={courseId} />
+        </div>
+        <div className="rwaq-card">
+          <h2 className="rwaq-section-title mb-4">Certificates Issued</h2>
+          <CertificatesSection courseId={courseId} />
+        </div>
       </div>
 
       {/* Reports Available for Download */}
       <div className="rwaq-card mt-4">
         <h2 className="rwaq-section-title mb-1">Reports Available for Download</h2>
         <p className="text-muted small mb-3">
-          The table below auto-refreshes every 10 seconds while a report is processing.
-          Download links expire after 5 minutes, regenerate if the link stops working.
+          Auto-refreshes every 10 s while a report is processing.
+          Download links expire after 5 minutes — regenerate if a link stops working.
         </p>
         <DownloadsTable courseId={courseId} />
       </div>
