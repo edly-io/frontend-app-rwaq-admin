@@ -357,8 +357,6 @@ const DOWNLOADS_COLUMNS: ColumnDef<ReportDownloadRow>[] = [
       value ? (
         <a
           href={value as string}
-          target="_blank"
-          rel="noopener noreferrer"
           className="btn btn-sm btn-outline-primary d-inline-flex align-items-center"
           style={{ gap: '0.375rem', whiteSpace: 'nowrap' }}
         >
