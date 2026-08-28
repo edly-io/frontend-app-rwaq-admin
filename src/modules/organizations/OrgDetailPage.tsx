@@ -194,7 +194,7 @@ const OrgDetailPage = () => {
         />
       </div>
 
-      <div className="rwaq-card mt-4">
+      <div className="rwaq-card">
         <h2 className="rwaq-section-title mb-4">
           {intl.formatMessage(messages.detailAdmins)}
         </h2>
@@ -202,7 +202,7 @@ const OrgDetailPage = () => {
         <OrgAdminTable shortName={organization.shortName} members={organization.members ?? []} />
       </div>
 
-      <div className="rwaq-card mt-4">
+      <div className="rwaq-card">
         <h2 className="rwaq-section-title mb-4">Courses</h2>
         <OrgCoursesTable org={organization.shortName} />
       </div>

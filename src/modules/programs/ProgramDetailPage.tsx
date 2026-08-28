@@ -62,7 +62,7 @@ const SettingsCard = ({
   };
 
   return (
-    <div className="rwaq-card mt-4">
+    <div className="rwaq-card">
       <h2 className="rwaq-section-title mb-4">
         {intl.formatMessage(messages.settingsTitle)}
       </h2>
@@ -419,7 +419,7 @@ const ProgramDetailPage = () => {
       />
 
       {/* Courses + Learners tabs */}
-      <div className="rwaq-card mt-4">
+      <div className="rwaq-card">
         <TabBar
           active={activeTab}
           onChange={setActiveTab}

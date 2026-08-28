@@ -435,7 +435,7 @@ const CourseReportsPage = () => {
       </div>
 
       {/* Generate Reports */}
-      <div className="rwaq-card mt-4">
+      <div className="rwaq-card">
         <h2 className="rwaq-section-title mb-1">Generate Reports</h2>
         <p className="text-muted small mb-0">
           Click <strong>Generate</strong> next to a report type to queue an async task.
@@ -448,7 +448,7 @@ const CourseReportsPage = () => {
       </div>
 
       {/* Reports Available for Download */}
-      <div className="rwaq-card mt-4">
+      <div className="rwaq-card">
         <h2 className="rwaq-section-title mb-1">Reports Available for Download</h2>
         <p className="text-muted small mb-3">
           Auto-refreshes every 10 s while a report is processing.

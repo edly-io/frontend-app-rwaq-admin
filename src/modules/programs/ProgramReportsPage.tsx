@@ -74,7 +74,7 @@ const ProgramReportsPage = () => {
         <h1 className="rwaq-page-title mt-2">Reports</h1>
       </div>
 
-      <div className="rwaq-card mt-4">
+      <div className="rwaq-card">
         <h2 className="rwaq-section-title mb-1">Program Completion</h2>
         {report && (
           <p className="text-muted small mb-4">

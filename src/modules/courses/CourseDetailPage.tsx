@@ -309,7 +309,7 @@ const CourseDetailPage = () => {
       </div>
 
       {/* ── Student Management ─────────────────────────────────────────────── */}
-      <div className="rwaq-card mt-4">
+      <div className="rwaq-card">
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
           <h2 className="rwaq-section-title mb-0">
             {intl.formatMessage(messages.enrollmentsSectionTitle)}
@@ -360,7 +360,7 @@ const CourseDetailPage = () => {
       </div>
 
       {/* ── Course Team ────────────────────────────────────────────────────── */}
-      <div className="rwaq-card mt-4">
+      <div className="rwaq-card">
         <div className="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
           <div>
             <h2 className="rwaq-section-title mb-1">

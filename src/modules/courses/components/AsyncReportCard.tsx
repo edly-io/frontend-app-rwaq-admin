@@ -94,7 +94,7 @@ const AsyncReportCard = ({
   const hasRunning = tasks?.some((t) => t.state === 'QUEUING' || t.state === 'IN_PROGRESS') ?? false;
 
   return (
-    <div className="rwaq-card mt-4">
+    <div className="rwaq-card">
       <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
         <div>
           <h3 className="h5 mb-1">{title}</h3>
