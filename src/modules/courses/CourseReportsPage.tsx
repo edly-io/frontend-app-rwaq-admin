@@ -148,6 +148,27 @@ const elapsedLabel = (created: string, modified: string | null, state: TaskState
   return remMins > 0 ? `${hrs}h ${remMins}m` : `${hrs}h`;
 };
 
+// ── Download icon (reused in trigger row and downloads table) ─────────────────
+
+const DownloadIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+);
+
 // ── Single report trigger row ─────────────────────────────────────────────────
 
 const ReportTriggerRow = ({
@@ -157,21 +178,113 @@ const ReportTriggerRow = ({
   def: ReportDef;
   courseId: string;
 }) => {
-  const {
-    mutate, isPending: isLoading, isError, error,
-  } = useTriggerCourseReport(courseId);
-  const [triggered, setTriggered] = useState(false);
+  const { mutate, isPending } = useTriggerCourseReport(courseId);
+  const [trackedTaskId, setTrackedTaskId] = useState<string | null>(null);
+  const [triggerError, setTriggerError] = useState<string | null>(null);
 
-  const handleClick = () => {
-    setTriggered(false);
+  // Shared with DownloadsTable — TanStack Query deduplicates the network call
+  const { data: downloads } = useCourseReportDownloads(courseId, !!courseId);
+  const trackedTask = trackedTaskId
+    ? (downloads ?? []).find((r) => r.taskId === trackedTaskId) ?? null
+    : null;
+
+  // True while mutation has resolved but the downloads list hasn't caught up yet
+  const isWaitingForPoll = !isPending && trackedTaskId !== null && trackedTask === null;
+  const isRunning = trackedTask?.state === 'QUEUING' || trackedTask?.state === 'IN_PROGRESS';
+  const isSuccess = trackedTask?.state === 'SUCCESS';
+  const isFailed = trackedTask?.state === 'FAILURE' || trackedTask?.state === 'REVOKED';
+
+  const handleGenerate = () => {
+    setTrackedTaskId(null);
+    setTriggerError(null);
     mutate(def.type, {
-      onSuccess: () => setTriggered(true),
+      onSuccess: (data) => setTrackedTaskId(data.taskId),
+      onError: (err) => setTriggerError(
+        (err as { message?: string })?.message || 'Failed to trigger report.',
+      ),
     });
   };
 
-  const errorMsg = isError
-    ? (error as { message?: string })?.message || 'Failed to trigger report.'
-    : null;
+  const handleReset = () => {
+    setTrackedTaskId(null);
+    setTriggerError(null);
+  };
+
+  // Status text shown beneath the description
+  let statusText: React.ReactNode = null;
+  if (triggerError) {
+    statusText = <div className="text-danger small mt-1">{triggerError}</div>;
+  } else if (isRunning) {
+    const progress = (trackedTask?.total != null && trackedTask?.succeeded != null)
+      ? ` (${trackedTask.succeeded} / ${trackedTask.total})`
+      : '';
+    const label = trackedTask?.state === 'QUEUING'
+      ? 'Queued — waiting to start…'
+      : `Generating…${progress}`;
+    statusText = <div className="text-muted small mt-1">{label}</div>;
+  } else if (isFailed) {
+    statusText = <div className="text-danger small mt-1">Report generation failed. Click Retry to try again.</div>;
+  }
+
+  // Action widget (right column)
+  let actionWidget: React.ReactNode;
+
+  if (isPending || isWaitingForPoll || isRunning || (isSuccess && !trackedTask?.downloadUrl)) {
+    // Spinner covers: mutation in flight, waiting for first poll, task running, URL not yet ready
+    actionWidget = (
+      <Spinner
+        animation="border"
+        size="sm"
+        screenReaderText="Generating report"
+        style={{ color: 'var(--pgn-color-primary-500, #0a3055)' }}
+      />
+    );
+  } else if (isSuccess && trackedTask?.downloadUrl) {
+    actionWidget = (
+      <div className="d-flex flex-column align-items-center" style={{ gap: '0.3rem' }}>
+        <a
+          href={trackedTask.downloadUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-sm btn-primary d-inline-flex align-items-center"
+          style={{ gap: '0.3rem', whiteSpace: 'nowrap' }}
+        >
+          <DownloadIcon />
+          Download
+        </a>
+        <button
+          type="button"
+          onClick={handleReset}
+          className="btn btn-link p-0"
+          style={{ fontSize: '0.7rem', color: 'var(--pgn-color-text-muted, #6c757d)', lineHeight: 1.4 }}
+        >
+          Re-generate
+        </button>
+      </div>
+    );
+  } else if (isFailed) {
+    actionWidget = (
+      <Button
+        variant="outline-danger"
+        size="sm"
+        onClick={handleGenerate}
+        style={{ whiteSpace: 'nowrap', width: '100%' }}
+      >
+        Retry
+      </Button>
+    );
+  } else {
+    actionWidget = (
+      <Button
+        variant="outline-primary"
+        size="sm"
+        onClick={handleGenerate}
+        style={{ whiteSpace: 'nowrap', width: '100%' }}
+      >
+        Generate
+      </Button>
+    );
+  }
 
   return (
     <div
@@ -181,40 +294,17 @@ const ReportTriggerRow = ({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="font-weight-semibold" style={{ fontSize: '0.9375rem' }}>{def.label}</div>
         <div className="text-muted small mt-1" style={{ lineHeight: '1.5' }}>{def.description}</div>
-        {triggered && !isLoading && (
-          <div className="text-success small mt-1">
-            Report queued — it will appear in the downloads table below.
-          </div>
-        )}
-        {errorMsg && (
-          <div className="text-danger small mt-1">{errorMsg}</div>
-        )}
+        {statusText}
       </div>
       <div style={{
         flexShrink: 0,
-        width: '5.5rem',
+        width: '7rem',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
       }}
       >
-        {isLoading ? (
-          <Spinner
-            animation="border"
-            size="sm"
-            screenReaderText="Generating report"
-            style={{ color: 'var(--pgn-color-primary-500, #0a3055)' }}
-          />
-        ) : (
-          <Button
-            variant="outline-primary"
-            size="sm"
-            onClick={handleClick}
-            style={{ whiteSpace: 'nowrap', width: '100%' }}
-          >
-            Generate
-          </Button>
-        )}
+        {actionWidget}
       </div>
     </div>
   );
@@ -274,22 +364,7 @@ const DOWNLOADS_COLUMNS: ColumnDef<ReportDownloadRow>[] = [
           className="btn btn-sm btn-outline-primary d-inline-flex align-items-center"
           style={{ gap: '0.375rem', whiteSpace: 'nowrap' }}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
+          <DownloadIcon />
           Download
         </a>
       ) : (
