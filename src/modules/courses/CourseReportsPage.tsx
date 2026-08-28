@@ -179,22 +179,22 @@ const ReportTriggerRow = ({
 
   return (
     <div
-      className="py-4 border-bottom d-flex align-items-start justify-content-between"
+      className="py-4 border-bottom d-flex align-items-center justify-content-between"
       style={{ gap: '2rem' }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="font-weight-semibold" style={{ fontSize: '0.9375rem' }}>{def.label}</div>
-        <div className="text-muted small mt-2" style={{ lineHeight: '1.5' }}>{def.description}</div>
+        <div className="text-muted small mt-1" style={{ lineHeight: '1.5' }}>{def.description}</div>
         {triggered && !isLoading && (
-          <div className="text-success small mt-2">
+          <div className="text-success small mt-1">
             Report queued — it will appear in the downloads table below.
           </div>
         )}
         {errorMsg && (
-          <div className="text-danger small mt-2">{errorMsg}</div>
+          <div className="text-danger small mt-1">{errorMsg}</div>
         )}
       </div>
-      <div style={{ flexShrink: 0, width: '6rem', display: 'flex', justifyContent: 'flex-end', paddingTop: '0.125rem' }}>
+      <div style={{ flexShrink: 0, width: '6rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         {isLoading ? (
           <Spinner animation="border" size="sm" screenReaderText="Generating report" />
         ) : (
