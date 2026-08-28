@@ -20,9 +20,9 @@ const StatCard = ({ label, value, highlight = false }: StatCardProps) => (
   <div
     className="px-4 py-3 text-center"
     style={{
-      borderRight: '1px solid #dee2e6',
-      borderBottom: '1px solid #dee2e6',
-      backgroundColor: highlight ? 'rgba(10,48,85,0.04)' : undefined,
+      borderRight: '1px solid var(--rwaq-border)',
+      borderBottom: '1px solid var(--rwaq-border)',
+      backgroundColor: highlight ? 'var(--rwaq-accent-soft)' : undefined,
     }}
   >
     <div className="text-muted small">{label}</div>
@@ -31,7 +31,7 @@ const StatCard = ({ label, value, highlight = false }: StatCardProps) => (
       style={{
         fontSize: '1.125rem',
         fontVariantNumeric: 'tabular-nums',
-        color: highlight ? 'var(--pgn-color-primary-500, #0A3055)' : undefined,
+        color: highlight ? 'var(--rwaq-accent)' : undefined,
       }}
     >
       {value}
@@ -102,8 +102,8 @@ const ProgramReportsPage = () => {
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(9rem, 1fr))',
-                borderTop: '1px solid #dee2e6',
-                borderLeft: '1px solid #dee2e6',
+                borderTop: '1px solid var(--rwaq-border)',
+                borderLeft: '1px solid var(--rwaq-border)',
                 borderRadius: '0.25rem',
                 overflow: 'hidden',
               }}
@@ -126,7 +126,7 @@ const ProgramReportsPage = () => {
                     height: '0.375rem',
                     borderRadius: '0.25rem',
                     overflow: 'hidden',
-                    backgroundColor: '#e9ecef',
+                    backgroundColor: 'var(--rwaq-border)',
                   }}
                   role="progressbar"
                   aria-valuenow={report.completionRate}
@@ -138,7 +138,7 @@ const ProgramReportsPage = () => {
                     style={{
                       width: `${report.completionRate}%`,
                       height: '100%',
-                      backgroundColor: 'var(--pgn-color-primary-500, #0a3055)',
+                      backgroundColor: 'var(--rwaq-accent)',
                       borderRadius: '0.25rem',
                     }}
                   />

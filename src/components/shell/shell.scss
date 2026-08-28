@@ -621,6 +621,31 @@ html[data-paragon-theme-variant='dark'] {
     color: #ff8a80;
   }
 
+  .alert-info {
+    background: rgba(174, 199, 246, 0.14);
+    border-color: rgba(174, 199, 246, 0.4);
+    color: var(--rwaq-accent);
+  }
+
+  .alert-success {
+    background: rgba(108, 223, 165, 0.14);
+    border-color: rgba(108, 223, 165, 0.4);
+    color: #6cdfa5;
+  }
+
+  .alert-warning {
+    background: rgba(247, 179, 84, 0.14);
+    border-color: rgba(247, 179, 84, 0.4);
+    color: #f7b354;
+  }
+
+  .alert-secondary,
+  .alert-primary {
+    background: var(--rwaq-surface-raised);
+    border-color: var(--rwaq-border);
+    color: var(--rwaq-text);
+  }
+
   // Tooltips and dropdown menus
   .tooltip-inner {
     background: var(--rwaq-surface-raised);
