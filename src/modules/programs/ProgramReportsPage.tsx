@@ -3,6 +3,28 @@
  */
 import { Link, useParams } from 'react-router-dom';
 import { Alert, Spinner } from '@openedx/paragon';
+import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+
+const messages = defineMessages({
+  breadcrumbPrograms: { id: 'rwaq.admin.programReports.breadcrumb.programs', defaultMessage: 'Programs' },
+  breadcrumbReports: { id: 'rwaq.admin.programReports.breadcrumb.reports', defaultMessage: '/ Reports' },
+  pageTitle: { id: 'rwaq.admin.programReports.pageTitle', defaultMessage: 'Reports' },
+  sectionTitle: { id: 'rwaq.admin.programReports.section.title', defaultMessage: 'Program Completion' },
+  sectionBody: {
+    id: 'rwaq.admin.programReports.section.body',
+    defaultMessage: 'Based on {numCourses} {courseWord} linked to this program. Learners enrolled in all courses are counted as completed.',
+  },
+  courseWord: { id: 'rwaq.admin.programReports.courseWord', defaultMessage: '{count, plural, one {course} other {courses}}' },
+  errorLoad: { id: 'rwaq.admin.programReports.error.load', defaultMessage: 'Could not load program completion report. Please refresh the page.' },
+  statTotalLearners: { id: 'rwaq.admin.programReports.stat.totalLearners', defaultMessage: 'Total Learners' },
+  statCompleted: { id: 'rwaq.admin.programReports.stat.completed', defaultMessage: 'Completed' },
+  statInProgress: { id: 'rwaq.admin.programReports.stat.inProgress', defaultMessage: 'In Progress' },
+  statNotStarted: { id: 'rwaq.admin.programReports.stat.notStarted', defaultMessage: 'Not Started' },
+  statCompletionRate: { id: 'rwaq.admin.programReports.stat.completionRate', defaultMessage: 'Completion Rate' },
+  completionRateAriaLabel: { id: 'rwaq.admin.programReports.completionRate.ariaLabel', defaultMessage: '{rate}% completion rate' },
+  completionRateCaption: { id: 'rwaq.admin.programReports.completionRate.caption', defaultMessage: '{rate}% completion rate' },
+  loadingReport: { id: 'rwaq.admin.programReports.loading', defaultMessage: 'Loading report' },
+});
 import { useProgram } from './data/hooks';
 import { useProgramCompletionReport } from './data/reportsHooks';
 
@@ -40,6 +62,7 @@ const StatCard = ({ label, value, highlight = false }: StatCardProps) => (
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 const ProgramReportsPage = () => {
+  const intl = useIntl();
   const { uuid = '' } = useParams<{ uuid: string }>();
   const { data: program, isLoading: programLoading } = useProgram(uuid);
   const {
@@ -56,7 +79,7 @@ const ProgramReportsPage = () => {
     return (
       <div className="rwaq-page">
         <div className="d-flex justify-content-center py-5">
-          <Spinner animation="border" screenReaderText="Loading report" />
+          <Spinner animation="border" screenReaderText={intl.formatMessage(messages.loadingReport)} />
         </div>
       </div>
     );
@@ -66,26 +89,29 @@ const ProgramReportsPage = () => {
     <div className="rwaq-page">
       <div className="rwaq-page-header">
         <div className="rwaq-page-header__breadcrumb">
-          <Link to="/programs">Programs</Link>
+          <Link to="/programs">{intl.formatMessage(messages.breadcrumbPrograms)}</Link>
           {' / '}
           <Link to={programHref}>{programName}</Link>
-          {' / Reports'}
+          {' '}
+          {intl.formatMessage(messages.breadcrumbReports)}
         </div>
-        <h1 className="rwaq-page-title mt-2">Reports</h1>
+        <h1 className="rwaq-page-title mt-2">{intl.formatMessage(messages.pageTitle)}</h1>
       </div>
 
       <div className="rwaq-card">
-        <h2 className="rwaq-section-title mb-1">Program Completion</h2>
+        <h2 className="rwaq-section-title mb-1">{intl.formatMessage(messages.sectionTitle)}</h2>
         {report && (
           <p className="text-muted small mb-4">
-            Based on {report.numCourses} course{report.numCourses !== 1 ? 's' : ''} linked to this program.
-            Learners enrolled in all courses are counted as completed.
+            {intl.formatMessage(messages.sectionBody, {
+              numCourses: report.numCourses,
+              courseWord: intl.formatMessage(messages.courseWord, { count: report.numCourses }),
+            })}
           </p>
         )}
 
         {reportError && (
           <Alert variant="danger" className="mb-0">
-            Could not load program completion report. Please refresh the page.
+            {intl.formatMessage(messages.errorLoad)}
           </Alert>
         )}
 
@@ -102,11 +128,11 @@ const ProgramReportsPage = () => {
                 overflow: 'hidden',
               }}
             >
-              <StatCard label="Total Learners" value={report.totalLearners.toLocaleString()} />
-              <StatCard label="Completed" value={report.completed.toLocaleString()} />
-              <StatCard label="In Progress" value={report.inProgress.toLocaleString()} />
-              <StatCard label="Not Started" value={report.notStarted.toLocaleString()} />
-              <StatCard label="Completion Rate" value={`${report.completionRate}%`} />
+              <StatCard label={intl.formatMessage(messages.statTotalLearners)} value={report.totalLearners.toLocaleString()} />
+              <StatCard label={intl.formatMessage(messages.statCompleted)} value={report.completed.toLocaleString()} />
+              <StatCard label={intl.formatMessage(messages.statInProgress)} value={report.inProgress.toLocaleString()} />
+              <StatCard label={intl.formatMessage(messages.statNotStarted)} value={report.notStarted.toLocaleString()} />
+              <StatCard label={intl.formatMessage(messages.statCompletionRate)} value={`${report.completionRate}%`} highlight />
             </div>
 
             {report.note && (
@@ -126,7 +152,7 @@ const ProgramReportsPage = () => {
                   aria-valuenow={report.completionRate}
                   aria-valuemin={0}
                   aria-valuemax={100}
-                  aria-label={`${report.completionRate}% completion rate`}
+                  aria-label={intl.formatMessage(messages.completionRateAriaLabel, { rate: report.completionRate })}
                 >
                   <div
                     style={{
@@ -137,7 +163,9 @@ const ProgramReportsPage = () => {
                     }}
                   />
                 </div>
-                <p className="text-muted small mt-1 mb-0">{report.completionRate}% completion rate</p>
+                <p className="text-muted small mt-1 mb-0">
+                  {intl.formatMessage(messages.completionRateCaption, { rate: report.completionRate })}
+                </p>
               </div>
             )}
           </>
