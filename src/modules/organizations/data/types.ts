@@ -26,6 +26,7 @@ export interface OrgSummary {
   active: boolean;
   courseCount: number;
   adminCount: number;
+  programCount: number;
 }
 
 /** One Organization Admin in an org's roster */
@@ -44,9 +45,7 @@ export interface OrgMember {
 
 /** Full org detail — from GET /rwaq/api/organizations/<short_name>/ */
 export interface OrgDetail extends OrgSummary {
-  detail: string;
   featuredVideo: string;
-  isFeatured: boolean;
   logo: string | null;
   organizationLogo: string | null;
   members: OrgMember[];
@@ -57,19 +56,14 @@ export interface OrgCreatePayload {
   name: string;
   /** Becomes the org prefix of every course key here; immutable afterwards. */
   shortName: string;
-  description?: string;
   arabicName?: string;
-  detail?: string;
   featuredVideo?: string;
-  isFeatured?: boolean;
 }
 
 /** Fields PATCH /rwaq/api/organizations/<short_name>/ accepts */
 export interface OrgProfilePatch {
   arabicName?: string;
-  detail?: string;
   featuredVideo?: string;
-  isFeatured?: boolean;
 }
 
 /** Sortable columns supported by the backend's OrderingFilter. */
@@ -77,6 +71,7 @@ export type OrgOrdering =
   | 'name' | '-name'
   | 'course_count' | '-course_count'
   | 'admin_count' | '-admin_count'
+  | 'program_count' | '-program_count'
   | 'created' | '-created';
 
 /** Single-select filter values, mapped to backend query params in api.ts. */

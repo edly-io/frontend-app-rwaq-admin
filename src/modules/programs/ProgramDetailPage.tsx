@@ -12,9 +12,10 @@
  * ':' and '+' that would require URL encoding.
  */
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   Alert,
+  Button,
   Form,
   Spinner,
 } from '@openedx/paragon';
@@ -22,6 +23,7 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import DetailGrid from '@src/components/DetailGrid';
+import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
 import ProgramStatusChips from './components/ProgramStatusChips';
 import type { ProgramCourse, ProgramLearner } from './data/types';
@@ -60,7 +62,7 @@ const SettingsCard = ({
   };
 
   return (
-    <div className="rwaq-card mt-4">
+    <div className="rwaq-card">
       <h2 className="rwaq-section-title mb-4">
         {intl.formatMessage(messages.settingsTitle)}
       </h2>
@@ -88,24 +90,24 @@ const SettingsCard = ({
           <Form.Group>
             <Form.Switch
               id={`program-${uuid}-is-hide`}
-              label={intl.formatMessage(messages.settingIsHide)}
               checked={isHide}
               disabled={isPending}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => patch({ isHide: e.target.checked })}
-            />
-            <Form.Text>{intl.formatMessage(messages.settingIsHideHelp)}</Form.Text>
+            >
+              {intl.formatMessage(messages.settingIsHideHelp)}
+            </Form.Switch>
           </Form.Group>
 
           {/* is_featured toggle */}
           <Form.Group>
             <Form.Switch
               id={`program-${uuid}-is-featured`}
-              label={intl.formatMessage(messages.settingIsFeatured)}
               checked={isFeatured}
               disabled={isPending}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => patch({ isFeatured: e.target.checked })}
-            />
-            <Form.Text>{intl.formatMessage(messages.settingIsFeaturedHelp)}</Form.Text>
+            >
+              {intl.formatMessage(messages.settingIsFeaturedHelp)}
+            </Form.Switch>
           </Form.Group>
 
         </div>
@@ -288,6 +290,7 @@ const TabBar = ({ active, onChange, labels }: TabBarProps) => (
 
 const ProgramDetailPage = () => {
   const intl = useIntl();
+  const navigate = useNavigate();
   const { uuid = '' } = useParams();
   const {
     data: program, isLoading, isError, error,
@@ -327,14 +330,30 @@ const ProgramDetailPage = () => {
         </div>
 
         <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mt-2">
-          <div className="min-width-0">
-            <h1 className="rwaq-page-title mb-2">{program.name}</h1>
-            <ProgramStatusChips
-              status={program.status}
-              isHide={program.isHide}
-              isFeatured={program.isFeatured}
-              readOnly
+          <div className="rwaq-detail-header min-width-0">
+            <ProfileAvatar
+              src={program.cardImage}
+              name={program.name}
+              size="lg"
             />
+            <div className="min-width-0">
+              <h1 className="rwaq-page-title mb-2">{program.name}</h1>
+              <ProgramStatusChips
+                status={program.status}
+                isHide={program.isHide}
+                isFeatured={program.isFeatured}
+                readOnly
+              />
+            </div>
+          </div>
+          <div className="flex-shrink-0">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => navigate(`/programs/${uuid}/reports`)}
+            >
+              View Reports
+            </Button>
           </div>
         </div>
       </div>
@@ -400,7 +419,7 @@ const ProgramDetailPage = () => {
       />
 
       {/* Courses + Learners tabs */}
-      <div className="rwaq-card mt-4">
+      <div className="rwaq-card">
         <TabBar
           active={activeTab}
           onChange={setActiveTab}

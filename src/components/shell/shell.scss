@@ -198,7 +198,7 @@ html[data-paragon-theme-variant='dark'] {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--rwaq-space-3);
+  gap: var(--rwaq-space-1);
 }
 
 .rwaq-card {
@@ -275,6 +275,13 @@ select.rwaq-select--compact { max-width: 18rem; }
   textarea { min-height: 120px; }
   .pgn__form-label,
   label { color: var(--rwaq-text); font-weight: 600; font-size: 0.875rem; }
+
+  // Switch description should read as helper text, not a bold field label
+  .pgn__form-checkbox.pgn__form-switch label {
+    font-weight: 400;
+    font-size: 0.875rem;
+    color: var(--rwaq-muted);
+  }
 
   // Paragon Card as a design-system surface
   .pgn__card {

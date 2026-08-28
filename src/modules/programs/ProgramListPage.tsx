@@ -240,7 +240,7 @@ const ProgramListPage = () => {
       label: intl.formatMessage(messages.colTypeBatch),
       key: 'programType',
       renderCell: (_value, row) => (
-        <div className="d-flex flex-column gap-1">
+        <div className="d-flex flex-column gap-1" style={{ alignItems: 'flex-start' }}>
           {row.programType && (
             <Chip className="rwaq-chip rwaq-chip--light">{row.programType}</Chip>
           )}

@@ -18,7 +18,7 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import ChipOverflowList from '@src/components/ChipOverflowList';
-import ProfileAvatar from '@src/components/ProfileAvatar';
+
 import { useToast } from '@src/components/ToastContext';
 import { useRemoveOrgAdmin } from '../data/hooks';
 import type { OrgMember } from '../data/types';
@@ -52,20 +52,6 @@ const OrgAdminTable = ({ shortName, members }: OrgAdminTableProps) => {
   };
 
   const columns: ColumnDef<OrgMember>[] = [
-    {
-      label: intl.formatMessage(messages.adminColAvatar),
-      // Heading is for screen readers only — an avatar needs no visible title.
-      isLabelHidden: true,
-      headerClassName: 'rwaq-th--avatar',
-      key: 'image',
-      renderCell: (value, row) => (
-        <ProfileAvatar
-          src={value as string | null}
-          name={(row.name as string) || (row.username as string)}
-          size="sm"
-        />
-      ),
-    },
     {
       label: intl.formatMessage(messages.adminColName),
       key: 'name',

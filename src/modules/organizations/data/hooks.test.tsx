@@ -59,9 +59,7 @@ const mockOrgList = {
 
 const mockOrgDetail = {
   ...mockOrgList.results[0],
-  detail: 'About Rwaq',
   featured_video: '',
-  is_featured: false,
   logo: null,
   organization_logo: null,
   members: [
@@ -130,7 +128,7 @@ describe('useOrganization', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(get).toHaveBeenCalledWith(`${BASE}/Rwaq/`);
-    expect(result.current.data?.isFeatured).toBe(false);
+    expect(result.current.data?.featuredVideo).toBe('');
     expect(result.current.data?.members[0].otherOrganizations).toEqual(['OTHER']);
     expect(result.current.data?.members[0].name).toBe('Admin One');
   });
@@ -152,13 +150,12 @@ describe('useCreateOrganization', () => {
 
     const { result } = renderHook(() => useCreateOrganization(), { wrapper: createWrapper() });
 
-    result.current.mutate({ name: 'New Org', shortName: 'NEWORG', isFeatured: true });
+    result.current.mutate({ name: 'New Org', shortName: 'NEWORG' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(post).toHaveBeenCalledWith(`${BASE}/`, {
       name: 'New Org',
       short_name: 'NEWORG',
-      is_featured: true,
     });
   });
 
@@ -175,7 +172,7 @@ describe('useCreateOrganization', () => {
 });
 
 describe('useUpdateOrganization', () => {
-  it('always sends detail, which the backend requires on every write', async () => {
+  it('sends snake_cased patch fields to Studio', async () => {
     const patch = jest.fn().mockResolvedValue({ data: mockOrgDetail });
     (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ patch });
 
@@ -185,7 +182,6 @@ describe('useUpdateOrganization', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(patch).toHaveBeenCalledWith(`${BASE}/Rwaq/`, {
-      detail: '',
       arabic_name: 'رواق',
     });
   });

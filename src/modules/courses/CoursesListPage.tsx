@@ -16,6 +16,7 @@ import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip, SelectOption } from '@src/components/SearchFilterBar';
+import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useCourses } from './data/hooks';
 import type { CourseSummary, CourseOrdering } from './data/types';
 import messages from './messages';
@@ -139,16 +140,11 @@ const CoursesListPage = () => {
       key: 'displayName',
       renderCell: (value, row) => (
         <div className="rwaq-user-cell">
-          {row.courseImageUrl && (
-            <img
-              src={`${getConfig().LMS_BASE_URL}${row.courseImageUrl as string}`}
-              alt=""
-              aria-hidden
-              style={{
-                width: 48, height: 32, objectFit: 'cover', borderRadius: 4, flexShrink: 0,
-              }}
-            />
-          )}
+          <ProfileAvatar
+            src={row.courseImageUrl ? `${getConfig().LMS_BASE_URL}${row.courseImageUrl as string}` : null}
+            name={value as string}
+            size="sm"
+          />
           <div className="min-width-0">
             <div className="rwaq-user-cell__name">{value as string}</div>
             <div className="rwaq-user-cell__meta">{row.courseId as string}</div>

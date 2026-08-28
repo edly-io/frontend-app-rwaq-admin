@@ -1,2 +1,2 @@
-// Placeholder be overridden by `make pull_translations`
+// Placeholder — overridden by `make pull_translations`
 export default [];

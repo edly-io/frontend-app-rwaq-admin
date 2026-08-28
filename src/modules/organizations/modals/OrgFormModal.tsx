@@ -23,38 +23,27 @@ import messages from '../messages';
 
 const SHORT_NAME_RE = /^[A-Za-z0-9_-]+$/;
 const MAX_NAME = 255;
-const MAX_DESCRIPTION = 2000;
-const DETAIL_ROWS = 4;
 
 interface FormValues {
   name: string;
   shortName: string;
-  description: string;
   arabicName: string;
-  detail: string;
   featuredVideo: string;
-  isFeatured: boolean;
 }
 
 const emptyValues: FormValues = {
   name: '',
   shortName: '',
-  description: '',
   arabicName: '',
-  detail: '',
   featuredVideo: '',
-  isFeatured: false,
 };
 
 const toFormValues = (organization: OrgDetail | null): FormValues => (organization
   ? {
     name: organization.name,
     shortName: organization.shortName,
-    description: '',
     arabicName: organization.arabicName ?? '',
-    detail: organization.detail ?? '',
     featuredVideo: organization.featuredVideo ?? '',
-    isFeatured: organization.isFeatured ?? false,
   }
   : emptyValues);
 
@@ -86,7 +75,6 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
       .max(MAX_NAME, intl.formatMessage(messages.tooLong))
       .required(intl.formatMessage(messages.requiredField)),
     arabicName: Yup.string().max(MAX_NAME, intl.formatMessage(messages.tooLong)),
-    description: Yup.string().max(MAX_DESCRIPTION, intl.formatMessage(messages.tooLong)),
   });
 
   const formik = useFormik<FormValues>({
@@ -98,9 +86,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
         if (isEdit) {
           const patch: OrgProfilePatch = {
             arabicName: values.arabicName,
-            detail: values.detail,
             featuredVideo: values.featuredVideo,
-            isFeatured: values.isFeatured,
           };
           await updateMutation.mutateAsync(patch);
           showToast(intl.formatMessage(messages.toastUpdated, { name: values.name }));
@@ -108,11 +94,8 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
           const payload: OrgCreatePayload = {
             name: values.name,
             shortName: values.shortName,
-            description: values.description,
             arabicName: values.arabicName,
-            detail: values.detail,
             featuredVideo: values.featuredVideo,
-            isFeatured: values.isFeatured,
           };
           await createMutation.mutateAsync(payload);
           showToast(intl.formatMessage(messages.toastCreated, { name: values.name }));
@@ -198,38 +181,12 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
           )}
         </Form.Group>
 
-        {!isEdit && (
-          <Form.Group className="mb-0" isInvalid={!!fieldError('description')} controlId="org-form-description">
-            <Form.Label>{intl.formatMessage(messages.fieldDescription)}</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={2}
-              name="description"
-              value={formik.values.description}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
-          </Form.Group>
-        )}
       </section>
 
       <section className="rwaq-form-section">
         <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionPublic)}</h3>
 
-        {/* Plain textarea — no rich-text editor anywhere in this MFE. */}
-        <Form.Group className="mb-4" controlId="org-form-detail">
-          <Form.Label>{intl.formatMessage(messages.fieldDetail)}</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={DETAIL_ROWS}
-            name="detail"
-            value={formik.values.detail}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-          />
-        </Form.Group>
-
-        <Form.Group className="mb-4" controlId="org-form-featured-video">
+        <Form.Group className="mb-0" controlId="org-form-featured-video">
           <Form.Label>{intl.formatMessage(messages.fieldFeaturedVideo)}</Form.Label>
           <Form.Control
             name="featuredVideo"
@@ -238,16 +195,6 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
           />
-        </Form.Group>
-
-        <Form.Group className="mb-0">
-          <Form.Switch
-            name="isFeatured"
-            checked={formik.values.isFeatured}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => formik.setFieldValue('isFeatured', event.target.checked)}
-          >
-            {intl.formatMessage(messages.fieldIsFeatured)}
-          </Form.Switch>
         </Form.Group>
       </section>
 

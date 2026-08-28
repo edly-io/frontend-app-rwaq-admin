@@ -190,7 +190,7 @@ const UserDetailPage = () => {
         />
       </div>
 
-      <div className="rwaq-card mt-4">
+      <div className="rwaq-card">
         <h2 className="rwaq-section-title mb-4">
           {intl.formatMessage(messages.enrollmentCount, { count: rows.length })}
         </h2>
