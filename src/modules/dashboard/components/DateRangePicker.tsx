@@ -1,14 +1,15 @@
 /**
- * DateRangePicker — preset chips plus optional custom date inputs, all inline.
+ * DateRangePicker — a single toggle button that opens a dropdown panel.
  *
- * Active preset is derived from URL dates via exact string match, so the URL
- * is the single source of truth. A local `customMode` flag bridges the gap
- * between clicking "Custom" (no URL change yet) and typing a date.
+ * The button label shows the active preset. The panel lists all presets;
+ * selecting one closes the panel and fires onChange. Selecting "Custom"
+ * keeps the panel open and reveals inline date inputs below the list.
  *
- * RTL note: flex row with gap, no directional margins; <input type="date">
- * renders in the browser's locale automatically.
+ * Active preset is derived from URL dates via exact string match, so the
+ * URL is the single source of truth. A local `customMode` flag bridges the
+ * gap between clicking "Custom" (no URL change yet) and typing a date.
  */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Button } from '@openedx/paragon';
 import messages from '../messages';
@@ -42,65 +43,27 @@ type Preset = {
 };
 
 const PRESETS: Preset[] = [
-  {
-    key: 'last30',
-    labelKey: 'presetLast30Days',
-    getRange: () => [daysAgo(30), todayIso()],
-  },
-  {
-    key: 'last3m',
-    labelKey: 'presetLast3Months',
-    getRange: () => [monthsAgo(3), todayIso()],
-  },
-  {
-    key: 'last6m',
-    labelKey: 'presetLast6Months',
-    getRange: () => [monthsAgo(6), todayIso()],
-  },
-  {
-    key: 'last12m',
-    labelKey: 'presetLast12Months',
-    getRange: () => [monthsAgo(12), todayIso()],
-  },
-  {
-    key: 'ytd',
-    labelKey: 'presetYearToDate',
-    getRange: () => [yearStart(), todayIso()],
-  },
-  {
-    key: 'alltime',
-    labelKey: 'presetAllTime',
-    getRange: () => [undefined, undefined],
-  },
-  {
-    key: 'custom',
-    labelKey: 'presetCustom',
-    getRange: () => [undefined, undefined],
-  },
+  { key: 'last30', labelKey: 'presetLast30Days', getRange: () => [daysAgo(30), todayIso()] },
+  { key: 'last3m', labelKey: 'presetLast3Months', getRange: () => [monthsAgo(3), todayIso()] },
+  { key: 'last6m', labelKey: 'presetLast6Months', getRange: () => [monthsAgo(6), todayIso()] },
+  { key: 'last12m', labelKey: 'presetLast12Months', getRange: () => [monthsAgo(12), todayIso()] },
+  { key: 'ytd', labelKey: 'presetYearToDate', getRange: () => [yearStart(), todayIso()] },
+  { key: 'alltime', labelKey: 'presetAllTime', getRange: () => [undefined, undefined] },
+  { key: 'custom', labelKey: 'presetCustom', getRange: () => [undefined, undefined] },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/**
- * Derive which preset key is active given a startDate/endDate pair.
- * Comparison is exact string equality. Named presets are recomputed on each
- * render relative to today(), so a session left open across midnight will
- * de-select the active chip until the user re-clicks it — acceptable UX.
- */
 const deriveActivePreset = (
   startDate: string | undefined,
   endDate: string | undefined,
 ): string => {
   if (!startDate && !endDate) { return 'alltime'; }
-
-  const namedPresets = PRESETS.filter(
-    (preset) => preset.key !== 'alltime' && preset.key !== 'custom',
-  );
-  for (const preset of namedPresets) {
+  const named = PRESETS.filter((p) => p.key !== 'alltime' && p.key !== 'custom');
+  for (const preset of named) {
     const [ps, pe] = preset.getRange();
     if (ps === startDate && pe === endDate) { return preset.key; }
   }
-
   return 'custom';
 };
 
@@ -116,23 +79,40 @@ export interface DateRangePickerProps {
 
 const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps) => {
   const intl = useIntl();
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Local flag so clicking "Custom" immediately shows the inputs without
-  // requiring the user to first change a date. Cleared whenever a named preset
-  // or "All time" is picked.
+  const [isOpen, setIsOpen] = useState(false);
   const [customMode, setCustomMode] = useState(false);
 
   const activePreset = deriveActivePreset(startDate, endDate);
   const isCustom = activePreset === 'custom' || customMode;
 
+  // Active label shown on the toggle button
+  const activeLabelKey = isCustom
+    ? 'presetCustom'
+    : (PRESETS.find((p) => p.key === activePreset)?.labelKey ?? 'presetAllTime');
+
+  // Close the panel on outside click
+  useEffect(() => {
+    if (!isOpen) { return undefined; }
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [isOpen]);
+
   const handlePresetClick = (preset: Preset) => {
     if (preset.key === 'custom') {
       setCustomMode(true);
-      return;
+      return; // keep panel open so user can enter dates
     }
     setCustomMode(false);
     const [s, e] = preset.getRange();
     onChange(s, e);
+    setIsOpen(false);
   };
 
   const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,51 +126,140 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
   };
 
   return (
-    <div className="d-flex flex-wrap align-items-center gap-2">
-      {PRESETS.map((preset) => {
-        const isActive = preset.key === 'custom'
-          ? isCustom
-          : activePreset === preset.key && !customMode;
-        return (
-          <Button
-            key={preset.key}
-            size="sm"
-            variant={isActive ? 'primary' : 'outline-primary'}
-            onClick={() => handlePresetClick(preset)}
-            aria-pressed={isActive}
-            style={{ whiteSpace: 'nowrap' }}
-          >
-            {intl.formatMessage(messages[preset.labelKey])}
-          </Button>
-        );
-      })}
+    <div ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
+      {/* Toggle button */}
+      <Button
+        variant="outline-primary"
+        size="sm"
+        onClick={() => setIsOpen((o) => !o)}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        style={{ whiteSpace: 'nowrap' }}
+      >
+        {intl.formatMessage(messages[activeLabelKey])}
+        <span aria-hidden="true" style={{ marginInlineStart: '0.375rem', opacity: 0.6 }}>▾</span>
+      </Button>
 
-      {/* Custom date inputs — inline with the chips when "Custom" is active */}
-      {isCustom && (
-        <>
-          <span className="text-muted small mx-1" aria-hidden="true">|</span>
-          <input
-            id="date-range-start"
-            type="date"
-            className="form-control form-control-sm"
-            style={{ width: '8.5rem' }}
-            value={startDate ?? ''}
-            onChange={handleStartChange}
-            max={endDate}
-            aria-label={intl.formatMessage(messages.dateRangeStart)}
-          />
-          <span className="text-muted small" aria-hidden="true">→</span>
-          <input
-            id="date-range-end"
-            type="date"
-            className="form-control form-control-sm"
-            style={{ width: '8.5rem' }}
-            value={endDate ?? ''}
-            onChange={handleEndChange}
-            min={startDate}
-            aria-label={intl.formatMessage(messages.dateRangeEnd)}
-          />
-        </>
+      {/* Dropdown panel */}
+      {isOpen && (
+        <div
+          role="listbox"
+          aria-label={intl.formatMessage(messages.presetAllTime)}
+          style={{
+            position: 'absolute',
+            insetInlineEnd: 0,
+            top: 'calc(100% + 0.375rem)',
+            zIndex: 1050,
+            background: 'var(--rwaq-card-bg, #fff)',
+            border: '1px solid var(--rwaq-card-border, #e6e8ec)',
+            borderRadius: '0.5rem',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
+            padding: '0.375rem',
+            minWidth: '14rem',
+          }}
+        >
+          {PRESETS.map((preset) => {
+            const isActive = preset.key === 'custom'
+              ? isCustom
+              : activePreset === preset.key && !customMode;
+            return (
+              <button
+                key={preset.key}
+                type="button"
+                role="option"
+                aria-selected={isActive}
+                onClick={() => handlePresetClick(preset)}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  textAlign: 'start',
+                  padding: '0.4375rem 0.75rem',
+                  border: 'none',
+                  background: isActive ? 'var(--pgn-color-primary-100, #dbeafe)' : 'transparent',
+                  color: isActive ? 'var(--pgn-color-primary-700, #1d4ed8)' : 'var(--rwaq-text, inherit)',
+                  borderRadius: '0.375rem',
+                  cursor: 'pointer',
+                  fontWeight: isActive ? 600 : 400,
+                  fontSize: '0.875rem',
+                  lineHeight: 1.4,
+                  transition: 'background 120ms',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) { (e.currentTarget as HTMLButtonElement).style.background = 'var(--pgn-color-gray-100, #f3f4f6)'; }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }
+                }}
+              >
+                {intl.formatMessage(messages[preset.labelKey])}
+              </button>
+            );
+          })}
+
+          {/* Custom date inputs — shown inside the panel when Custom is selected */}
+          {isCustom && (
+            <div
+              style={{
+                borderTop: '1px solid var(--rwaq-card-border, #e6e8ec)',
+                marginTop: '0.25rem',
+                paddingTop: '0.625rem',
+                padding: '0.625rem 0.75rem 0.25rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+              }}
+            >
+              <div>
+                <label
+                  htmlFor="date-range-start"
+                  style={{
+                    display: 'block',
+                    fontSize: '0.6875rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    color: 'var(--rwaq-muted, #6B757F)',
+                    marginBottom: '0.25rem',
+                  }}
+                >
+                  {intl.formatMessage(messages.dateRangeStart)}
+                </label>
+                <input
+                  id="date-range-start"
+                  type="date"
+                  className="form-control form-control-sm"
+                  value={startDate ?? ''}
+                  onChange={handleStartChange}
+                  max={endDate}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="date-range-end"
+                  style={{
+                    display: 'block',
+                    fontSize: '0.6875rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    color: 'var(--rwaq-muted, #6B757F)',
+                    marginBottom: '0.25rem',
+                  }}
+                >
+                  {intl.formatMessage(messages.dateRangeEnd)}
+                </label>
+                <input
+                  id="date-range-end"
+                  type="date"
+                  className="form-control form-control-sm"
+                  value={endDate ?? ''}
+                  onChange={handleEndChange}
+                  min={startDate}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

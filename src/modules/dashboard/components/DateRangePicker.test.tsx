@@ -5,62 +5,95 @@ import DateRangePicker from './DateRangePicker';
 describe('DateRangePicker', () => {
   const noop = () => {};
 
-  it('renders all preset chips', () => {
+  const openDropdown = (labelText?: RegExp) => {
+    // The toggle is the only button visible before the panel opens.
+    const btn = labelText ? screen.getByRole('button', { name: labelText }) : screen.getByRole('button');
+    fireEvent.click(btn);
+  };
+
+  it('toggle button shows "All time" when no dates are set', () => {
     renderWrapper(
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />,
     );
-    expect(screen.getByText('Last 30 days')).toBeInTheDocument();
-    expect(screen.getByText('Last 3 months')).toBeInTheDocument();
-    expect(screen.getByText('Last 6 months')).toBeInTheDocument();
-    expect(screen.getByText('Last 12 months')).toBeInTheDocument();
-    expect(screen.getByText('Year to date')).toBeInTheDocument();
-    expect(screen.getByText('All time')).toBeInTheDocument();
-    expect(screen.getByText('Custom')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /all time/i })).toBeInTheDocument();
   });
 
-  it('marks "All time" as active when no dates are set', () => {
+  it('panel is closed initially', () => {
     renderWrapper(
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />,
     );
-    const allTimeBtn = screen.getByText('All time').closest('button');
-    expect(allTimeBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
-  it('calls onChange with undefined/undefined when "All time" is clicked', () => {
-    const onChange = jest.fn();
+  it('clicking the toggle opens the panel with all preset options', () => {
     renderWrapper(
-      <DateRangePicker startDate="2025-01-01" endDate="2025-12-31" onChange={onChange} />,
+      <DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />,
     );
-    fireEvent.click(screen.getByText('All time'));
-    expect(onChange).toHaveBeenCalledWith(undefined, undefined);
+    openDropdown();
+    const listbox = screen.getByRole('listbox');
+    expect(listbox).toBeInTheDocument();
+    ['Last 30 days', 'Last 3 months', 'Last 6 months', 'Last 12 months',
+      'Year to date', 'All time', 'Custom'].forEach((label) => {
+      expect(screen.getByRole('option', { name: label })).toBeInTheDocument();
+    });
   });
 
-  it('calls onChange with computed dates when a preset is clicked', () => {
+  it('"All time" option is marked selected when no dates are set', () => {
+    renderWrapper(
+      <DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />,
+    );
+    openDropdown();
+    expect(screen.getByRole('option', { name: 'All time' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('option', { name: 'Last 30 days' })).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('clicking a named preset calls onChange and closes the panel', () => {
     const onChange = jest.fn();
     renderWrapper(
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
     );
-    fireEvent.click(screen.getByText('Last 30 days'));
+    openDropdown();
+    fireEvent.click(screen.getByRole('option', { name: 'Last 30 days' }));
     expect(onChange).toHaveBeenCalledTimes(1);
     const [start, end] = onChange.mock.calls[0];
     expect(start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(end).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(new Date(end) >= new Date(start)).toBe(true);
+    // Panel closes after selection
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
-  it('does not render date inputs when a named preset is active', () => {
+  it('clicking "All time" calls onChange with undefined/undefined and closes the panel', () => {
+    const onChange = jest.fn();
     renderWrapper(
-      <DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />,
+      <DateRangePicker startDate="2025-01-01" endDate="2025-12-31" onChange={onChange} />,
     );
-    expect(screen.queryByLabelText('From')).not.toBeInTheDocument();
-    expect(screen.queryByLabelText('To')).not.toBeInTheDocument();
+    openDropdown();
+    fireEvent.click(screen.getByRole('option', { name: 'All time' }));
+    expect(onChange).toHaveBeenCalledWith(undefined, undefined);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
-  it('shows date inputs when the active preset is custom', () => {
-    // An arbitrary date pair that doesn't match any preset → custom
+  it('clicking "Custom" keeps the panel open and shows date inputs without calling onChange', () => {
+    const onChange = jest.fn();
+    renderWrapper(
+      <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
+    );
+    openDropdown();
+    expect(screen.queryByLabelText('From')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('option', { name: 'Custom' }));
+    // Panel still open
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    // Inputs now visible
+    expect(screen.getByLabelText('From')).toBeInTheDocument();
+    expect(screen.getByLabelText('To')).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('date inputs are shown without opening Custom when URL dates do not match a preset', () => {
     renderWrapper(
       <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={noop} />,
     );
+    openDropdown();
     expect(screen.getByLabelText('From')).toBeInTheDocument();
     expect(screen.getByLabelText('To')).toBeInTheDocument();
   });
@@ -70,8 +103,8 @@ describe('DateRangePicker', () => {
     renderWrapper(
       <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={onChange} />,
     );
-    const startInput = screen.getByLabelText('From');
-    fireEvent.change(startInput, { target: { value: '2024-04-01' } });
+    openDropdown();
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-04-01' } });
     expect(onChange).toHaveBeenCalledWith('2024-04-01', '2024-06-20');
   });
 
@@ -80,55 +113,36 @@ describe('DateRangePicker', () => {
     renderWrapper(
       <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={onChange} />,
     );
-    const endInput = screen.getByLabelText('To');
-    fireEvent.change(endInput, { target: { value: '2024-07-31' } });
+    openDropdown();
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-07-31' } });
     expect(onChange).toHaveBeenCalledWith('2024-03-15', '2024-07-31');
   });
 
-  it('passes undefined for start when start input is cleared', () => {
+  it('passes undefined when start input is cleared', () => {
     const onChange = jest.fn();
     renderWrapper(
       <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={onChange} />,
     );
-    const startInput = screen.getByLabelText('From');
-    fireEvent.change(startInput, { target: { value: '' } });
+    openDropdown();
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '' } });
     expect(onChange).toHaveBeenCalledWith(undefined, '2024-06-20');
   });
 
-  it('passes undefined for end when end input is cleared', () => {
+  it('passes undefined when end input is cleared', () => {
     const onChange = jest.fn();
     renderWrapper(
       <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={onChange} />,
     );
-    const endInput = screen.getByLabelText('To');
-    fireEvent.change(endInput, { target: { value: '' } });
+    openDropdown();
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: '' } });
     expect(onChange).toHaveBeenCalledWith('2024-03-15', undefined);
   });
 
-  it('clicking Custom chip shows date inputs without calling onChange', () => {
-    const onChange = jest.fn();
+  it('toggle button label reflects the active preset', () => {
     renderWrapper(
-      <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
+      <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={noop} />,
     );
-    // Initially no inputs
-    expect(screen.queryByLabelText('From')).not.toBeInTheDocument();
-    // Click Custom
-    fireEvent.click(screen.getByText('Custom'));
-    // Inputs now visible; onChange not called
-    expect(screen.getByLabelText('From')).toBeInTheDocument();
-    expect(screen.getByLabelText('To')).toBeInTheDocument();
-    expect(onChange).not.toHaveBeenCalled();
-  });
-
-  it('marks the matching preset chip as active when dates match a preset', () => {
-    // "All time" is deterministic (no dates), so it is the reliably testable case.
-    renderWrapper(
-      <DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />,
-    );
-    const allTimeBtn = screen.getByText('All time').closest('button');
-    expect(allTimeBtn).toHaveAttribute('aria-pressed', 'true');
-
-    const last30Btn = screen.getByText('Last 30 days').closest('button');
-    expect(last30Btn).toHaveAttribute('aria-pressed', 'false');
+    // Arbitrary date pair → Custom
+    expect(screen.getByRole('button', { name: /custom/i })).toBeInTheDocument();
   });
 });

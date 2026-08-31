@@ -487,60 +487,35 @@ const DashboardPage = () => {
         {/* Snapshot KPIs: totalLearners, totalEnrollments, runningCourses, activePrograms
             are all-time figures and do not change with the date range. When a range is
             active, a muted badge communicates this so users aren't confused. */}
-        <div>
-          <KpiCard
-            label={intl.formatMessage(messages.kpiLearners)}
-            value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
-            isLoading={summaryQuery.isLoading}
-          />
-          {hasDateRange && (
-            <span className="x-small text-muted d-block text-center mt-1">
-              {intl.formatMessage(messages.allTimeBadge)}
+        <KpiCard
+          label={intl.formatMessage(messages.kpiLearners)}
+          value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
+          isLoading={summaryQuery.isLoading}
+          badge={allTimeBadge}
+        />
+        <KpiCard
+          label={intl.formatMessage(messages.kpiEnrollments)}
+          value={formatCount(summaryQuery.isError ? null : summary?.totalEnrollments)}
+          isLoading={summaryQuery.isLoading}
+          badge={allTimeBadge}
+        />
+        <KpiCard
+          label={intl.formatMessage(messages.kpiCoursesRunning)}
+          value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
+          isLoading={summaryQuery.isLoading}
+          badge={allTimeBadge}
+          sparkline={summary ? (
+            <span className="rwaq-kpi-context">
+              {intl.formatMessage(messages.kpiOfTotal, { total: formatCount(summary.totalCourses) })}
             </span>
-          )}
-        </div>
-        <div>
-          <KpiCard
-            label={intl.formatMessage(messages.kpiEnrollments)}
-            value={formatCount(summaryQuery.isError ? null : summary?.totalEnrollments)}
-            isLoading={summaryQuery.isLoading}
-          />
-          {hasDateRange && (
-            <span className="x-small text-muted d-block text-center mt-1">
-              {intl.formatMessage(messages.allTimeBadge)}
-            </span>
-          )}
-        </div>
-        <div>
-          <KpiCard
-            label={intl.formatMessage(messages.kpiCoursesRunning)}
-            value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
-            isLoading={summaryQuery.isLoading}
-            // A running count means little without the catalog it is drawn from.
-            sparkline={summary ? (
-              <span className="rwaq-kpi-context">
-                {intl.formatMessage(messages.kpiOfTotal, { total: formatCount(summary.totalCourses) })}
-              </span>
-            ) : undefined}
-          />
-          {hasDateRange && (
-            <span className="x-small text-muted d-block text-center mt-1">
-              {intl.formatMessage(messages.allTimeBadge)}
-            </span>
-          )}
-        </div>
-        <div>
-          <KpiCard
-            label={intl.formatMessage(messages.kpiProgramsActive)}
-            value={formatCount(summaryQuery.isError ? null : summary?.activePrograms)}
-            isLoading={summaryQuery.isLoading}
-          />
-          {hasDateRange && (
-            <span className="x-small text-muted d-block text-center mt-1">
-              {intl.formatMessage(messages.allTimeBadge)}
-            </span>
-          )}
-        </div>
+          ) : undefined}
+        />
+        <KpiCard
+          label={intl.formatMessage(messages.kpiProgramsActive)}
+          value={formatCount(summaryQuery.isError ? null : summary?.activePrograms)}
+          isLoading={summaryQuery.isLoading}
+          badge={allTimeBadge}
+        />
         {/* Registrations: label and delta adapt to whether a date range is active. */}
         <KpiCard
           label={hasDateRange

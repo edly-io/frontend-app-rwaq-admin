@@ -19,6 +19,8 @@ export interface KpiCardProps {
   /** Optional Recharts sparkline or any React node rendered below the value. */
   sparkline?: ReactNode;
   isLoading?: boolean;
+  /** Small muted label shown in the top-right corner of the card (e.g. "All time"). */
+  badge?: string;
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -81,11 +83,28 @@ const KpiCard = ({
   delta,
   sparkline,
   isLoading = false,
+  badge,
 }: KpiCardProps) => (
   <Card
     className="h-100"
-    style={{ borderRadius: 'var(--pgn-size-border-radius-lg, 0.5rem)' }}
+    style={{ borderRadius: 'var(--pgn-size-border-radius-lg, 0.5rem)', position: 'relative' }}
   >
+    {badge && (
+      <span
+        style={{
+          position: 'absolute',
+          top: '0.625rem',
+          right: '0.75rem',
+          fontSize: '0.65rem',
+          fontWeight: 600,
+          color: 'var(--rwaq-muted, #6B757F)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+        }}
+      >
+        {badge}
+      </span>
+    )}
     <Card.Body className="d-flex flex-column justify-content-between p-3">
       <div>
         <p
@@ -94,6 +113,7 @@ const KpiCard = ({
             color: 'var(--rwaq-muted, #6B757F)',
             letterSpacing: '0.04em',
             fontWeight: 600,
+            paddingRight: badge ? '3.5rem' : undefined,
           }}
         >
           {label}
