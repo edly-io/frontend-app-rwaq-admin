@@ -141,9 +141,11 @@ const DashboardPage = () => {
   if (summaryQuery.isError && trendsQuery.isError && breakdownsQuery.isError) {
     return (
       <div className="rwaq-page">
-        <div className="rwaq-page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
-          <h1 className="rwaq-page-title mb-0">{intl.formatMessage(messages.title)}</h1>
-          <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
+        <div className="rwaq-page-header">
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h1 className="rwaq-page-title mb-0">{intl.formatMessage(messages.title)}</h1>
+            <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
+          </div>
         </div>
         <div className="rwaq-card">
           <ErrorState
@@ -467,9 +469,11 @@ const DashboardPage = () => {
 
   return (
     <div className="rwaq-page">
-      <div className="rwaq-page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <h1 className="rwaq-page-title mb-0">{intl.formatMessage(messages.title)}</h1>
-        <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
+      <div className="rwaq-page-header">
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <h1 className="rwaq-page-title mb-0">{intl.formatMessage(messages.title)}</h1>
+          <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
+        </div>
       </div>
 
       {/* Above the row, not below it: under five em dashes the reason has to

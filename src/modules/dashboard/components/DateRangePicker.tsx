@@ -1,17 +1,16 @@
 /**
- * DateRangePicker — preset chips plus optional custom date inputs.
+ * DateRangePicker — preset chips plus optional custom date inputs, all inline.
  *
- * The active preset is derived from the current startDate/endDate values by
- * comparing against computed preset ranges, so the component is stateless with
- * respect to which chip is highlighted and re-derives on every render. This
- * keeps the URL as the single source of truth.
+ * Active preset is derived from URL dates via exact string match, so the URL
+ * is the single source of truth. A local `customMode` flag bridges the gap
+ * between clicking "Custom" (no URL change yet) and typing a date.
  *
- * RTL note: no hardcoded LTR assumptions — flex row with gap, no left/right
- * margin, and <Form.Control type="date"> renders in the browser's locale.
+ * RTL note: flex row with gap, no directional margins; <input type="date">
+ * renders in the browser's locale automatically.
  */
 import { useState } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
-import { Button, Form } from '@openedx/paragon';
+import { Button } from '@openedx/paragon';
 import messages from '../messages';
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
@@ -147,56 +146,51 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
   };
 
   return (
-    <div className="d-flex flex-column gap-2">
-      {/* Preset chips */}
-      <div className="d-flex flex-wrap gap-2">
-        {PRESETS.map((preset) => {
-          const isActive = preset.key === 'custom'
-            ? isCustom
-            : activePreset === preset.key && !customMode;
-          return (
-            <Button
-              key={preset.key}
-              size="sm"
-              variant={isActive ? 'primary' : 'outline-primary'}
-              onClick={() => handlePresetClick(preset)}
-              aria-pressed={isActive}
-            >
-              {intl.formatMessage(messages[preset.labelKey])}
-            </Button>
-          );
-        })}
-      </div>
+    <div className="d-flex flex-wrap align-items-center gap-2">
+      {PRESETS.map((preset) => {
+        const isActive = preset.key === 'custom'
+          ? isCustom
+          : activePreset === preset.key && !customMode;
+        return (
+          <Button
+            key={preset.key}
+            size="sm"
+            variant={isActive ? 'primary' : 'outline-primary'}
+            onClick={() => handlePresetClick(preset)}
+            aria-pressed={isActive}
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            {intl.formatMessage(messages[preset.labelKey])}
+          </Button>
+        );
+      })}
 
-      {/* Custom date inputs — only shown when "Custom" is active */}
+      {/* Custom date inputs — inline with the chips when "Custom" is active */}
       {isCustom && (
-        <div className="d-flex flex-wrap gap-3 align-items-center">
-          <Form.Group controlId="date-range-start" className="mb-0">
-            <Form.Label className="small mb-1">
-              {intl.formatMessage(messages.dateRangeStart)}
-            </Form.Label>
-            <Form.Control
-              type="date"
-              size="sm"
-              value={startDate ?? ''}
-              onChange={handleStartChange}
-              max={endDate}
-            />
-          </Form.Group>
-
-          <Form.Group controlId="date-range-end" className="mb-0">
-            <Form.Label className="small mb-1">
-              {intl.formatMessage(messages.dateRangeEnd)}
-            </Form.Label>
-            <Form.Control
-              type="date"
-              size="sm"
-              value={endDate ?? ''}
-              onChange={handleEndChange}
-              min={startDate}
-            />
-          </Form.Group>
-        </div>
+        <>
+          <span className="text-muted small mx-1" aria-hidden="true">|</span>
+          <input
+            id="date-range-start"
+            type="date"
+            className="form-control form-control-sm"
+            style={{ width: '8.5rem' }}
+            value={startDate ?? ''}
+            onChange={handleStartChange}
+            max={endDate}
+            aria-label={intl.formatMessage(messages.dateRangeStart)}
+          />
+          <span className="text-muted small" aria-hidden="true">→</span>
+          <input
+            id="date-range-end"
+            type="date"
+            className="form-control form-control-sm"
+            style={{ width: '8.5rem' }}
+            value={endDate ?? ''}
+            onChange={handleEndChange}
+            min={startDate}
+            aria-label={intl.formatMessage(messages.dateRangeEnd)}
+          />
+        </>
       )}
     </div>
   );
