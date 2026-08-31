@@ -157,7 +157,7 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
         size="sm"
         onClick={() => setIsOpen((o) => !o)}
         aria-expanded={isOpen}
-        aria-haspopup="listbox"
+        aria-haspopup="menu"
         style={{ whiteSpace: 'nowrap' }}
       >
         {intl.formatMessage(messages[activeLabelKey])}
@@ -167,8 +167,8 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
       {/* Dropdown panel */}
       {isOpen && (
         <div
-          role="listbox"
-          aria-label={intl.formatMessage(messages.presetAllTime)}
+          role="menu"
+          aria-label={intl.formatMessage(messages.dateRangePickerLabel)}
           style={{
             position: 'absolute',
             insetInlineEnd: 0,
@@ -190,8 +190,8 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
               <button
                 key={preset.key}
                 type="button"
-                role="option"
-                aria-selected={isActive}
+                role="menuitem"
+                aria-current={isActive ? 'true' : undefined}
                 onClick={() => handlePresetClick(preset)}
                 style={{
                   display: 'block',

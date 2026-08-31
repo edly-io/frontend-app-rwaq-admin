@@ -7,7 +7,7 @@
  * panel can bleed outside the card without being clipped.
  */
 import {
-  useEffect, useLayoutEffect, useRef, useState,
+  useEffect, useId, useLayoutEffect, useRef, useState,
 } from 'react';
 
 export interface InfoTooltipProps {
@@ -26,6 +26,8 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
   const [placement, setPlacement] = useState<Placement>('center');
   const wrapRef = useRef<HTMLSpanElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const rawId = useId();
+  const tooltipId = `info-tooltip-${rawId.replace(/:/g, '')}`;
 
   // Reset placement when tooltip closes so next open starts centered.
   useEffect(() => {
@@ -44,16 +46,23 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
     }
   }, [visible, placement]);
 
-  // Close on outside click (touch-friendly dismiss).
+  // Close on outside click or Escape key (WCAG 1.4.13).
   useEffect(() => {
     if (!visible) { return undefined; }
-    const handler = (e: MouseEvent) => {
+    const handleMouse = (e: MouseEvent) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
         setVisible(false);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setVisible(false); }
+    };
+    document.addEventListener('mousedown', handleMouse);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleMouse);
+      document.removeEventListener('keydown', handleKey);
+    };
   }, [visible]);
 
   const tooltipPos: React.CSSProperties = placement === 'right'
@@ -82,8 +91,7 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
       <button
         type="button"
         aria-label={ariaLabel}
-        aria-expanded={visible}
-        aria-haspopup="true"
+        aria-describedby={visible ? tooltipId : undefined}
         onMouseEnter={() => setVisible(true)}
         onMouseLeave={() => setVisible(false)}
         onFocus={() => setVisible(true)}
@@ -111,6 +119,7 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
       {visible && (
         <div
           ref={tooltipRef}
+          id={tooltipId}
           role="tooltip"
           style={{
             position: 'absolute',

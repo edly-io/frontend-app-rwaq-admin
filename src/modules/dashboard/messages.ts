@@ -212,6 +212,7 @@ const messages = defineMessages({
   today: { id: 'rwaq.admin.dashboard.today', defaultMessage: 'today' },
   allTimeBadge: { id: 'rwaq.admin.dashboard.allTimeBadge', defaultMessage: 'All time' },
 
+  dateRangePickerLabel: { id: 'rwaq.admin.dashboard.dateRange.pickerLabel', defaultMessage: 'Select time period' },
   presetLast30Days: { id: 'rwaq.admin.dashboard.preset.last30Days', defaultMessage: 'Last 30 days' },
   presetLast3Months: { id: 'rwaq.admin.dashboard.preset.last3Months', defaultMessage: 'Last 3 months' },
   presetLast6Months: { id: 'rwaq.admin.dashboard.preset.last6Months', defaultMessage: 'Last 6 months' },
