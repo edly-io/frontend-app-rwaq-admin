@@ -9,6 +9,7 @@
  * RTL note: no hardcoded LTR assumptions — flex row with gap, no left/right
  * margin, and <Form.Control type="date"> renders in the browser's locale.
  */
+import { useState } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Button, Form } from '@openedx/paragon';
 import messages from '../messages';
@@ -117,23 +118,31 @@ export interface DateRangePickerProps {
 const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps) => {
   const intl = useIntl();
 
+  // Local flag so clicking "Custom" immediately shows the inputs without
+  // requiring the user to first change a date. Cleared whenever a named preset
+  // or "All time" is picked.
+  const [customMode, setCustomMode] = useState(false);
+
   const activePreset = deriveActivePreset(startDate, endDate);
-  const isCustom = activePreset === 'custom';
+  const isCustom = activePreset === 'custom' || customMode;
 
   const handlePresetClick = (preset: Preset) => {
     if (preset.key === 'custom') {
-      // Activating custom: keep current dates so inputs are pre-filled.
+      setCustomMode(true);
       return;
     }
+    setCustomMode(false);
     const [s, e] = preset.getRange();
     onChange(s, e);
   };
 
   const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomMode(false);  // URL will now carry non-preset dates; state not needed
     onChange(e.target.value || undefined, endDate);
   };
 
   const handleEndChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomMode(false);
     onChange(startDate, e.target.value || undefined);
   };
 
@@ -142,7 +151,9 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
       {/* Preset chips */}
       <div className="d-flex flex-wrap gap-2">
         {PRESETS.map((preset) => {
-          const isActive = activePreset === preset.key;
+          const isActive = preset.key === 'custom'
+            ? isCustom
+            : activePreset === preset.key && !customMode;
           return (
             <Button
               key={preset.key}

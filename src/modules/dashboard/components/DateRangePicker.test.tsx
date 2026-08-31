@@ -95,6 +95,21 @@ describe('DateRangePicker', () => {
     expect(onChange).toHaveBeenCalledWith(undefined, '2024-06-20');
   });
 
+  it('clicking Custom chip shows date inputs without calling onChange', () => {
+    const onChange = jest.fn();
+    renderWrapper(
+      <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
+    );
+    // Initially no inputs
+    expect(screen.queryByLabelText('From')).not.toBeInTheDocument();
+    // Click Custom
+    fireEvent.click(screen.getByText('Custom'));
+    // Inputs now visible; onChange not called
+    expect(screen.getByLabelText('From')).toBeInTheDocument();
+    expect(screen.getByLabelText('To')).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('marks the matching preset chip as active when dates match a preset', () => {
     // We cannot know the exact dates at test time (they are relative to "today"),
     // so we test the "All time" case which is deterministic.
