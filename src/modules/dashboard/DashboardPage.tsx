@@ -369,8 +369,31 @@ const DashboardPage = () => {
         </div>
 
         {/* Enrollment windows: a health check, so it reads as prose rather
-            than a figure — the useful state is "nothing wrong". */}
+            than a figure — the useful state is "nothing wrong".
+            Always all-time: it reflects the current state of running courses,
+            not a count of events, so a date range has no meaningful effect. */}
         <div className="rwaq-card rwaq-dash-card">
+          {allTimeBadge && (
+            <span
+              style={{
+                position: 'absolute',
+                top: '0.5rem',
+                right: '0.625rem',
+                padding: '0.15rem 0.5rem',
+                fontSize: '0.6rem',
+                fontWeight: 600,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                color: 'var(--rwaq-muted, #6B757F)',
+                background: 'var(--pgn-color-gray-100, #f0f0ef)',
+                border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
+                borderRadius: '999px',
+                lineHeight: 1.5,
+              }}
+            >
+              {allTimeBadge}
+            </span>
+          )}
           <div className="rwaq-dash-card__head">
             <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.windowsTitle)}</h3>
           </div>
@@ -482,9 +505,8 @@ const DashboardPage = () => {
 
       {/* KPI row — first to paint, since it is the cheapest query. */}
       <div className="rwaq-dash-grid rwaq-dash-grid--kpi">
-        {/* Snapshot KPIs: totalLearners, totalEnrollments, runningCourses, activePrograms
-            are all-time figures and do not change with the date range. When a range is
-            active, a muted badge communicates this so users aren't confused. */}
+        {/* KPI row: learners, enrollments, runningCourses respond to the date range.
+            activePrograms has no date dimension and remains all-time; its badge says so. */}
         <KpiCard
           label={intl.formatMessage(hasDateRange ? messages.kpiLearnersRange : messages.kpiLearners)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
