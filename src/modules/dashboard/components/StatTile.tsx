@@ -8,6 +8,7 @@
  */
 import { ReactNode } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import InfoTooltip from '@src/components/InfoTooltip';
 import messages from '../messages';
 
 export interface StatTileProps {
@@ -19,10 +20,12 @@ export interface StatTileProps {
   unavailableHint?: ReactNode;
   /** Optional muted chip rendered below the value — use for "All time" on snapshot metrics. */
   badge?: string;
+  /** Tooltip explanation shown on hover/click of the ⓘ icon next to the label. */
+  info?: string;
 }
 
 const StatTile = ({
-  label, value, hint, unavailableHint, badge,
+  label, value, hint, unavailableHint, badge, info,
 }: StatTileProps) => {
   const intl = useIntl();
   const isUnavailable = value === null || value === undefined;
@@ -52,9 +55,14 @@ const StatTile = ({
       )}
       <span
         className="rwaq-stat-tile__label"
-        style={{ paddingRight: badge ? '3.5rem' : undefined }}
+        style={{
+          paddingRight: badge ? '3.5rem' : undefined,
+          display: 'flex',
+          alignItems: 'center',
+        }}
       >
         {label}
+        {info && <InfoTooltip text={info} />}
       </span>
       <span className={`rwaq-stat-tile__value${isUnavailable ? ' rwaq-stat-tile__value--muted' : ''}`}>
         {isUnavailable ? intl.formatMessage(messages.unavailable) : value}

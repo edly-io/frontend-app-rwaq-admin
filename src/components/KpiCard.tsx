@@ -8,6 +8,7 @@ import { ReactNode } from 'react';
 import { Card } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { kpiMessages as messages } from './messages';
+import InfoTooltip from './InfoTooltip';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -21,6 +22,8 @@ export interface KpiCardProps {
   isLoading?: boolean;
   /** Small muted label shown in the top-right corner of the card (e.g. "All time"). */
   badge?: string;
+  /** Tooltip explanation shown on hover/click of the ⓘ icon next to the label. */
+  info?: string;
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -84,6 +87,7 @@ const KpiCard = ({
   sparkline,
   isLoading = false,
   badge,
+  info,
 }: KpiCardProps) => (
   <Card
     className="h-100"
@@ -119,9 +123,12 @@ const KpiCard = ({
             letterSpacing: '0.04em',
             fontWeight: 600,
             paddingRight: badge ? '3.5rem' : undefined,
+            display: 'flex',
+            alignItems: 'center',
           }}
         >
           {label}
+          {info && <InfoTooltip text={info} />}
         </p>
 
         {isLoading ? (

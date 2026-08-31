@@ -134,6 +134,72 @@ const messages = defineMessages({
   sectionPlatform: { id: 'rwaq.admin.dashboard.section.platform', defaultMessage: 'Platform health' },
   sectionCatalog: { id: 'rwaq.admin.dashboard.section.catalog', defaultMessage: 'Catalog' },
 
+  // ── Info tooltips ──────────────────────────────────────────────────────────
+  infoLearners: {
+    id: 'rwaq.admin.dashboard.info.learners',
+    defaultMessage: 'Registered learner accounts (excludes staff and service accounts). Counts registrations within the selected date range when one is active.',
+  },
+  infoEnrollments: {
+    id: 'rwaq.admin.dashboard.info.enrollments',
+    defaultMessage: 'Course enrollments created within the selected date range (or all active enrollments for all time). Includes enrollments that were later cancelled.',
+  },
+  infoCoursesRunning: {
+    id: 'rwaq.admin.dashboard.info.coursesRunning',
+    defaultMessage: 'Courses whose run dates overlap the selected period. For all-time, shows courses currently running.',
+  },
+  infoProgramsActive: {
+    id: 'rwaq.admin.dashboard.info.programsActive',
+    defaultMessage: 'Programs currently in Active status. Always all-time — a program\'s status is a current state, not a dated event.',
+  },
+  infoRegistrations: {
+    id: 'rwaq.admin.dashboard.info.registrations',
+    defaultMessage: 'New learner accounts registered this calendar month, with a month-on-month delta. When a date range is active, shows registrations within that range.',
+  },
+  infoCertCoverage: {
+    id: 'rwaq.admin.dashboard.info.certCoverage',
+    defaultMessage: 'Share of published courses that have at least one active web certificate enabled. A platform configuration metric — always all-time.',
+  },
+  infoCertIssuance: {
+    id: 'rwaq.admin.dashboard.info.certIssuance',
+    defaultMessage: 'Among certificate-bearing courses, the percentage of enrollments that earned a certificate. Responds to the date range filter.',
+  },
+  infoProgramCompletion: {
+    id: 'rwaq.admin.dashboard.info.programCompletion',
+    defaultMessage: 'Share of program enrollments that reached a completion date. Responds to the date range filter.',
+  },
+  infoLegacyMigration: {
+    id: 'rwaq.admin.dashboard.info.legacyMigration',
+    defaultMessage: 'Accounts imported from the pre-Open-edX platform that have signed in at least once — confirming the password-set flow was completed. Always all-time.',
+  },
+  infoEnrollmentTrend: {
+    id: 'rwaq.admin.dashboard.info.enrollmentTrend',
+    defaultMessage: 'Monthly course enrollment counts over the selected period or last 12 months.',
+  },
+  infoCertTrend: {
+    id: 'rwaq.admin.dashboard.info.certTrend',
+    defaultMessage: 'Monthly certificate issuance counts over the selected period or last 12 months. Blank if the certificate table is not readable from this service.',
+  },
+  infoCourseLifecycle: {
+    id: 'rwaq.admin.dashboard.info.courseLifecycle',
+    defaultMessage: 'Distribution of all published course runs by current state: Running, Upcoming, Ended, or No dates set. Always all-time.',
+  },
+  infoEnrollmentModes: {
+    id: 'rwaq.admin.dashboard.info.enrollmentModes',
+    defaultMessage: 'Share of enrollments by course mode (honor, audit, etc.). Rwaq\'s subscription model uses honor mode, so drift toward audit is a configuration flag. Responds to the date range filter.',
+  },
+  infoEnrollmentWindows: {
+    id: 'rwaq.admin.dashboard.info.enrollmentWindows',
+    defaultMessage: 'Running courses with a closed or missing enrollment window — learners cannot enroll even though the course is live. A configuration health check. Always all-time.',
+  },
+  infoOrgsLeaderboard: {
+    id: 'rwaq.admin.dashboard.info.orgsLeaderboard',
+    defaultMessage: 'Organizations ranked by enrollment count. Enrollment counts respond to the date range filter; course and admin counts are always all-time.',
+  },
+  infoBusiestCourses: {
+    id: 'rwaq.admin.dashboard.info.busiestCourses',
+    defaultMessage: 'Top 5 courses by enrollment count and their combined share of all enrollments. Responds to the date range filter.',
+  },
+
   // ── Date range picker ──────────────────────────────────────────────────────
   kpiRegistrationsRange: {
     id: 'rwaq.admin.dashboard.kpi.registrationsRange',

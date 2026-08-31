@@ -21,6 +21,7 @@ import { Alert, Spinner } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
+import InfoTooltip from '@src/components/InfoTooltip';
 import KpiCard from '@src/components/KpiCard';
 import MetricChart from '@src/components/charts/MetricChart';
 import type { ChartDataPoint, ChartType } from '@src/components/charts/MetricChart';
@@ -211,10 +212,14 @@ const DashboardPage = () => {
     seriesKey: string,
     seriesLabel: string,
     type: ChartType,
+    infoText?: string,
   ) => (
     <div className="rwaq-card rwaq-dash-card">
       <div className="rwaq-dash-card__head">
-        <h3 className="rwaq-section-title mb-0">{title}</h3>
+        <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
+          {title}
+          {infoText && <InfoTooltip text={infoText} />}
+        </h3>
         <span className="rwaq-dash-card__sub">{subtitle}</span>
       </div>
       {renderChartBody(data, seriesKey, seriesLabel, type, title)}
@@ -231,8 +236,9 @@ const DashboardPage = () => {
       return (
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">
+            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
               {intl.formatMessage(messages.certificateTrend)}
+              <InfoTooltip text={intl.formatMessage(messages.infoCertTrend)} />
             </h3>
           </div>
           <p className="text-muted mb-0">{intl.formatMessage(messages.certificatesUnreadable)}</p>
@@ -246,6 +252,7 @@ const DashboardPage = () => {
       'certificates',
       intl.formatMessage(messages.seriesCertificates),
       'line',
+      intl.formatMessage(messages.infoCertTrend),
     );
   };
 
@@ -294,6 +301,7 @@ const DashboardPage = () => {
             })}
             unavailableHint={intl.formatMessage(messages.noCoursesYet)}
             badge={allTimeBadge}
+            info={intl.formatMessage(messages.infoCertCoverage)}
           />
         </div>
         <div className="rwaq-card">
@@ -302,6 +310,7 @@ const DashboardPage = () => {
             value={formatPercent(data.certificates.issuancePct)}
             hint={intl.formatMessage(messages.certIssuanceHint)}
             unavailableHint={intl.formatMessage(messages.certificatesUnreadable)}
+            info={intl.formatMessage(messages.infoCertIssuance)}
           />
         </div>
         <div className="rwaq-card">
@@ -313,6 +322,7 @@ const DashboardPage = () => {
               enrollments: data.programs.enrollments,
             })}
             unavailableHint={intl.formatMessage(messages.noProgramEnrollments)}
+            info={intl.formatMessage(messages.infoProgramCompletion)}
           />
         </div>
       </div>
@@ -328,12 +338,16 @@ const DashboardPage = () => {
             })}
             unavailableHint={intl.formatMessage(messages.legacyNone)}
             badge={allTimeBadge}
+            info={intl.formatMessage(messages.infoLegacyMigration)}
           />
         </div>
 
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.modesTitle)}</h3>
+            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
+              {intl.formatMessage(messages.modesTitle)}
+              <InfoTooltip text={intl.formatMessage(messages.infoEnrollmentModes)} />
+            </h3>
             <span className="rwaq-dash-card__sub">{intl.formatMessage(messages.modesHint)}</span>
           </div>
           {data.enrollmentModes.length > 0 ? (
@@ -389,7 +403,10 @@ const DashboardPage = () => {
             </span>
           )}
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.windowsTitle)}</h3>
+            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
+              {intl.formatMessage(messages.windowsTitle)}
+              <InfoTooltip text={intl.formatMessage(messages.infoEnrollmentWindows)} />
+            </h3>
           </div>
           {data.enrollmentWindows.closedButRunning === 0
             && data.enrollmentWindows.runningWithoutWindow === 0 ? (
@@ -418,7 +435,10 @@ const DashboardPage = () => {
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.orgsTitle)}</h3>
+            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
+              {intl.formatMessage(messages.orgsTitle)}
+              <InfoTooltip text={intl.formatMessage(messages.infoOrgsLeaderboard)} />
+            </h3>
           </div>
           <MiniTable<OrganizationRow>
             caption={intl.formatMessage(messages.orgsTitle)}
@@ -447,7 +467,10 @@ const DashboardPage = () => {
 
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.topCoursesTitle)}</h3>
+            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
+              {intl.formatMessage(messages.topCoursesTitle)}
+              <InfoTooltip text={intl.formatMessage(messages.infoBusiestCourses)} />
+            </h3>
             {data.catalogConcentration.topSharePct !== null && (
               <span className="rwaq-dash-card__sub">
                 {intl.formatMessage(messages.topCoursesHint, {
@@ -505,16 +528,19 @@ const DashboardPage = () => {
           label={intl.formatMessage(hasDateRange ? messages.kpiLearnersRange : messages.kpiLearners)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoLearners)}
         />
         <KpiCard
           label={intl.formatMessage(hasDateRange ? messages.kpiEnrollmentsRange : messages.kpiEnrollments)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalEnrollments)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoEnrollments)}
         />
         <KpiCard
           label={intl.formatMessage(messages.kpiCoursesRunning)}
           value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoCoursesRunning)}
           sparkline={summary ? (
             <span className="rwaq-kpi-context">
               {intl.formatMessage(messages.kpiOfTotal, { total: formatCount(summary.totalCourses) })}
@@ -526,6 +552,7 @@ const DashboardPage = () => {
           value={formatCount(summaryQuery.isError ? null : summary?.activePrograms)}
           isLoading={summaryQuery.isLoading}
           badge={allTimeBadge}
+          info={intl.formatMessage(messages.infoProgramsActive)}
         />
         {/* Registrations: label and delta adapt to whether a date range is active. */}
         <KpiCard
@@ -533,12 +560,9 @@ const DashboardPage = () => {
             ? intl.formatMessage(messages.kpiRegistrationsRange)
             : intl.formatMessage(messages.kpiRegistrations)}
           value={formatCount(summaryQuery.isError ? null : summary?.newRegistrationsThisMonth)}
-          // Omitted rather than zeroed when there is no previous month to
-          // compare against — KpiCard hides the badge when delta is undefined.
-          // Also omitted when a date range is active: prior-period comparison
-          // is meaningless for an arbitrary range.
           delta={hasDateRange ? undefined : (summary?.newRegistrationsDeltaPct ?? undefined)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoRegistrations)}
         />
       </div>
 
@@ -552,12 +576,14 @@ const DashboardPage = () => {
           'enrollments',
           intl.formatMessage(messages.seriesEnrollments),
           'bar',
+          intl.formatMessage(messages.infoEnrollmentTrend),
         )}
 
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">
+            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
               {intl.formatMessage(messages.lifecycleTitle)}
+              <InfoTooltip text={intl.formatMessage(messages.infoCourseLifecycle)} />
             </h3>
           </div>
           {renderLifecycle()}
@@ -572,6 +598,7 @@ const DashboardPage = () => {
           'registrations',
           intl.formatMessage(messages.seriesRegistrations),
           'line',
+          intl.formatMessage(messages.infoRegistrations),
         )}
 
         {renderCertificateTrend()}
