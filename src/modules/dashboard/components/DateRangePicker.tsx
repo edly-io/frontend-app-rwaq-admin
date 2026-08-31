@@ -5,11 +5,12 @@
  * selecting one closes the panel and fires onChange. Selecting "Custom"
  * keeps the panel open and reveals inline date inputs below the list.
  *
- * Active preset is derived from URL dates via exact string match, so the
- * URL is the single source of truth. A local `customMode` flag bridges the
- * gap between clicking "Custom" (no URL change yet) and typing a date.
+ * For custom dates, onChange is only fired once BOTH start and end are
+ * filled — the filter doesn't activate on a half-complete range.
+ * Pending values are kept in local state; the parent's applied values
+ * (startDate/endDate props) only update when both inputs are complete.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Button } from '@openedx/paragon';
 import messages from '../messages';
@@ -84,6 +85,16 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
   const [isOpen, setIsOpen] = useState(false);
   const [customMode, setCustomMode] = useState(false);
 
+  // Pending values for the custom date inputs — local only until both are filled.
+  const [pendingStart, setPendingStart] = useState<string>(startDate ?? '');
+  const [pendingEnd, setPendingEnd] = useState<string>(endDate ?? '');
+
+  // Sync pending when the applied range changes externally (preset selected, reset).
+  useEffect(() => {
+    setPendingStart(startDate ?? '');
+    setPendingEnd(endDate ?? '');
+  }, [startDate, endDate]);
+
   const activePreset = deriveActivePreset(startDate, endDate);
   const isCustom = activePreset === 'custom' || customMode;
 
@@ -107,6 +118,10 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
   const handlePresetClick = (preset: Preset) => {
     if (preset.key === 'custom') {
       setCustomMode(true);
+      // Seed the inputs with whatever is currently applied so the user
+      // sees a coherent starting point when editing a custom range.
+      setPendingStart(startDate ?? '');
+      setPendingEnd(endDate ?? '');
       return; // keep panel open so user can enter dates
     }
     setCustomMode(false);
@@ -115,15 +130,24 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
     setIsOpen(false);
   };
 
-  const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (customMode) { setCustomMode(false); }
-    onChange(e.target.value || undefined, endDate);
-  };
+  // Fire onChange only once BOTH start and end are filled.
+  const handleStartChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setPendingStart(val);
+    if (val && pendingEnd) {
+      setCustomMode(false);
+      onChange(val, pendingEnd);
+    }
+  }, [pendingEnd, onChange]);
 
-  const handleEndChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (customMode) { setCustomMode(false); }
-    onChange(startDate, e.target.value || undefined);
-  };
+  const handleEndChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setPendingEnd(val);
+    if (pendingStart && val) {
+      setCustomMode(false);
+      onChange(pendingStart, val);
+    }
+  }, [pendingStart, onChange]);
 
   return (
     <div ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
@@ -228,9 +252,9 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
                   id="date-range-start"
                   type="date"
                   className="form-control form-control-sm"
-                  value={startDate ?? ''}
+                  value={pendingStart}
                   onChange={handleStartChange}
-                  max={endDate}
+                  max={pendingEnd || undefined}
                 />
               </div>
               <div>
@@ -252,9 +276,9 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
                   id="date-range-end"
                   type="date"
                   className="form-control form-control-sm"
-                  value={endDate ?? ''}
+                  value={pendingEnd}
                   onChange={handleEndChange}
-                  min={startDate}
+                  min={pendingStart || undefined}
                 />
               </div>
             </div>

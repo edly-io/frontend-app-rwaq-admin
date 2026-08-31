@@ -98,7 +98,7 @@ describe('DateRangePicker', () => {
     expect(screen.getByLabelText('To')).toBeInTheDocument();
   });
 
-  it('calls onChange when the start date input changes', () => {
+  it('calls onChange when the start date changes and end is already filled', () => {
     const onChange = jest.fn();
     renderWrapper(
       <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={onChange} />,
@@ -108,7 +108,7 @@ describe('DateRangePicker', () => {
     expect(onChange).toHaveBeenCalledWith('2024-04-01', '2024-06-20');
   });
 
-  it('calls onChange when the end date input changes', () => {
+  it('calls onChange when the end date changes and start is already filled', () => {
     const onChange = jest.fn();
     renderWrapper(
       <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={onChange} />,
@@ -118,24 +118,38 @@ describe('DateRangePicker', () => {
     expect(onChange).toHaveBeenCalledWith('2024-03-15', '2024-07-31');
   });
 
-  it('passes undefined when start input is cleared', () => {
+  it('does not call onChange when only start is filled and end is empty', () => {
+    const onChange = jest.fn();
+    renderWrapper(
+      <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
+    );
+    openDropdown();
+    fireEvent.click(screen.getByRole('option', { name: 'Custom' }));
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-04-01' } });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('calls onChange when end is filled after start, completing the range', () => {
+    const onChange = jest.fn();
+    renderWrapper(
+      <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
+    );
+    openDropdown();
+    fireEvent.click(screen.getByRole('option', { name: 'Custom' }));
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-04-01' } });
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-07-31' } });
+    expect(onChange).toHaveBeenCalledWith('2024-04-01', '2024-07-31');
+  });
+
+  it('does not call onChange when a date input is cleared', () => {
     const onChange = jest.fn();
     renderWrapper(
       <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={onChange} />,
     );
     openDropdown();
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '' } });
-    expect(onChange).toHaveBeenCalledWith(undefined, '2024-06-20');
-  });
-
-  it('passes undefined when end input is cleared', () => {
-    const onChange = jest.fn();
-    renderWrapper(
-      <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={onChange} />,
-    );
-    openDropdown();
-    fireEvent.change(screen.getByLabelText('To'), { target: { value: '' } });
-    expect(onChange).toHaveBeenCalledWith('2024-03-15', undefined);
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it('toggle button label reflects the active preset', () => {

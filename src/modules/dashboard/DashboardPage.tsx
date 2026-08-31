@@ -16,8 +16,7 @@
  *   - Every figure is stamped with the backend's generatedAt, because these
  *     numbers are cached and pretending otherwise would be dishonest.
  */
-import { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useMemo, useState } from 'react';
 import { Alert, Spinner } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
@@ -68,19 +67,14 @@ const formatPercent = (value: number | null): string | null => (
 const DashboardPage = () => {
   const intl = useIntl();
 
-  // ── Date range via URL search params ─────────────────────────────────────────
-  const [searchParams, setSearchParams] = useSearchParams();
-  const startDate = searchParams.get('startDate') ?? undefined;
-  const endDate = searchParams.get('endDate') ?? undefined;
+  // ── Date range — internal state only, never written to the URL ───────────────
+  const [startDate, setStartDate] = useState<string | undefined>(undefined);
+  const [endDate, setEndDate] = useState<string | undefined>(undefined);
   const hasDateRange = Boolean(startDate || endDate);
 
   const handleDateChange = (newStart: string | undefined, newEnd: string | undefined) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      if (newStart) { next.set('startDate', newStart); } else { next.delete('startDate'); }
-      if (newEnd) { next.set('endDate', newEnd); } else { next.delete('endDate'); }
-      return next;
-    });
+    setStartDate(newStart);
+    setEndDate(newEnd);
   };
 
   // ── Queries ───────────────────────────────────────────────────────────────────
