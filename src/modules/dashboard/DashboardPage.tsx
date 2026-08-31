@@ -308,7 +308,6 @@ const DashboardPage = () => {
             value={formatPercent(data.certificates.issuancePct)}
             hint={intl.formatMessage(messages.certIssuanceHint)}
             unavailableHint={intl.formatMessage(messages.certificatesUnreadable)}
-            badge={allTimeBadge}
           />
         </div>
         <div className="rwaq-card">
@@ -320,7 +319,6 @@ const DashboardPage = () => {
               enrollments: data.programs.enrollments,
             })}
             unavailableHint={intl.formatMessage(messages.noProgramEnrollments)}
-            badge={allTimeBadge}
           />
         </div>
       </div>
