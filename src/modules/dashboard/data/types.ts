@@ -22,6 +22,8 @@ export interface AnalyticsSummary {
   totalEnrollments: number;
   activePrograms: number;
   generatedAt: string;
+  dateRangeStart: string | null;
+  dateRangeEnd: string | null;
 }
 
 /** GET /api/v1/admin/analytics/trends/ */
@@ -32,6 +34,8 @@ export interface AnalyticsTrends {
   certificates: TrendPoint[] | null;
   registrations: TrendPoint[];
   generatedAt: string;
+  dateRangeStart: string | null;
+  dateRangeEnd: string | null;
 }
 
 /** Mutually exclusive course-run states. There is deliberately no Draft bucket. */
@@ -116,4 +120,8 @@ export interface AnalyticsBreakdowns {
 export interface AnalyticsParams {
   org?: string;
   months?: number;
+  /** ISO date string: "2025-01-01". Sent as start_date on the wire via snakeCaseObject. */
+  startDate?: string;
+  /** ISO date string: "2025-12-31". Sent as end_date on the wire via snakeCaseObject. */
+  endDate?: string;
 }

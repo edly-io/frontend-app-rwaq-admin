@@ -17,6 +17,7 @@
  *     numbers are cached and pretending otherwise would be dishonest.
  */
 import { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Alert, Spinner } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
@@ -24,6 +25,7 @@ import { getErrorStatus } from '@src/data/httpError';
 import KpiCard from '@src/components/KpiCard';
 import MetricChart from '@src/components/charts/MetricChart';
 import type { ChartDataPoint, ChartType } from '@src/components/charts/MetricChart';
+import DateRangePicker from './components/DateRangePicker';
 import MiniTable from './components/MiniTable';
 import StatTile from './components/StatTile';
 import {
@@ -32,7 +34,7 @@ import {
   useAnalyticsTrends,
 } from './data/hooks';
 import type {
-  AnalyticsBreakdowns, OrganizationRow, TopCourse, TrendPoint,
+  AnalyticsBreakdowns, AnalyticsParams, OrganizationRow, TopCourse, TrendPoint,
 } from './data/types';
 import messages from './messages';
 
@@ -66,9 +68,28 @@ const formatPercent = (value: number | null): string | null => (
 const DashboardPage = () => {
   const intl = useIntl();
 
-  const summaryQuery = useAnalyticsSummary();
-  const trendsQuery = useAnalyticsTrends({ months: TREND_MONTHS });
-  const breakdownsQuery = useAnalyticsBreakdowns();
+  // ── Date range via URL search params ─────────────────────────────────────────
+  const [searchParams, setSearchParams] = useSearchParams();
+  const startDate = searchParams.get('startDate') ?? undefined;
+  const endDate = searchParams.get('endDate') ?? undefined;
+  const hasDateRange = Boolean(startDate || endDate);
+
+  const handleDateChange = (newStart: string | undefined, newEnd: string | undefined) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (newStart) { next.set('startDate', newStart); } else { next.delete('startDate'); }
+      if (newEnd) { next.set('endDate', newEnd); } else { next.delete('endDate'); }
+      return next;
+    });
+  };
+
+  // ── Queries ───────────────────────────────────────────────────────────────────
+  // analyticsQueryKeys include the full params object, so adding startDate/endDate
+  // automatically busts the cache and triggers a refetch — no manual calls needed.
+  const params: AnalyticsParams = { startDate, endDate };
+  const summaryQuery = useAnalyticsSummary(params);
+  const trendsQuery = useAnalyticsTrends({ ...params, months: TREND_MONTHS });
+  const breakdownsQuery = useAnalyticsBreakdowns(params);
 
   const summary = summaryQuery.data;
   const trends = trendsQuery.data;
@@ -104,13 +125,25 @@ const DashboardPage = () => {
     query.isError ? getErrorStatus(query.error) : undefined
   );
 
+  // Trend subtitle: date range overrides the default "Last N months" label.
+  const trendSubtitle = hasDateRange
+    ? intl.formatMessage(messages.trendDateRange, {
+      start: startDate ? new Date(startDate).toLocaleDateString() : '—',
+      end: endDate ? new Date(endDate).toLocaleDateString() : intl.formatMessage(messages.today),
+    })
+    : intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS });
+
+  // All-time badge: shown on snapshot metrics when a date range is active.
+  const allTimeBadge = hasDateRange ? intl.formatMessage(messages.allTimeBadge) : undefined;
+
   // A dashboard with no readable numbers at all is an error page, not an empty
   // one — retrying is the only useful action.
   if (summaryQuery.isError && trendsQuery.isError && breakdownsQuery.isError) {
     return (
       <div className="rwaq-page">
-        <div className="rwaq-page-header">
-          <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
+        <div className="rwaq-page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <h1 className="rwaq-page-title mb-0">{intl.formatMessage(messages.title)}</h1>
+          <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
         </div>
         <div className="rwaq-card">
           <ErrorState
@@ -154,7 +187,10 @@ const DashboardPage = () => {
     if (data.length === 0 || data.every((point) => point[seriesKey] === 0)) {
       return (
         <div className="rwaq-dash-card__empty">
-          {intl.formatMessage(messages.emptySeries, { months: trends?.months ?? TREND_MONTHS })}
+          {intl.formatMessage(
+            hasDateRange ? messages.emptySeriesRange : messages.emptySeries,
+            { months: trends?.months ?? TREND_MONTHS },
+          )}
         </div>
       );
     }
@@ -209,7 +245,7 @@ const DashboardPage = () => {
     }
     return renderChartCard(
       intl.formatMessage(messages.certificateTrend),
-      intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+      trendSubtitle,
       certificateSeries,
       'certificates',
       intl.formatMessage(messages.seriesCertificates),
@@ -261,6 +297,7 @@ const DashboardPage = () => {
               total: data.certificates.totalCourses,
             })}
             unavailableHint={intl.formatMessage(messages.noCoursesYet)}
+            badge={allTimeBadge}
           />
         </div>
         <div className="rwaq-card">
@@ -269,6 +306,7 @@ const DashboardPage = () => {
             value={formatPercent(data.certificates.issuancePct)}
             hint={intl.formatMessage(messages.certIssuanceHint)}
             unavailableHint={intl.formatMessage(messages.certificatesUnreadable)}
+            badge={allTimeBadge}
           />
         </div>
         <div className="rwaq-card">
@@ -280,6 +318,7 @@ const DashboardPage = () => {
               enrollments: data.programs.enrollments,
             })}
             unavailableHint={intl.formatMessage(messages.noProgramEnrollments)}
+            badge={allTimeBadge}
           />
         </div>
       </div>
@@ -294,6 +333,7 @@ const DashboardPage = () => {
               total: data.legacyMigration.legacyAccounts,
             })}
             unavailableHint={intl.formatMessage(messages.legacyNone)}
+            badge={allTimeBadge}
           />
         </div>
 
@@ -427,8 +467,9 @@ const DashboardPage = () => {
 
   return (
     <div className="rwaq-page">
-      <div className="rwaq-page-header">
-        <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
+      <div className="rwaq-page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <h1 className="rwaq-page-title mb-0">{intl.formatMessage(messages.title)}</h1>
+        <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
       </div>
 
       {/* Above the row, not below it: under five em dashes the reason has to
@@ -439,38 +480,74 @@ const DashboardPage = () => {
 
       {/* KPI row — first to paint, since it is the cheapest query. */}
       <div className="rwaq-dash-grid rwaq-dash-grid--kpi">
-        <KpiCard
-          label={intl.formatMessage(messages.kpiLearners)}
-          value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
-          isLoading={summaryQuery.isLoading}
-        />
-        <KpiCard
-          label={intl.formatMessage(messages.kpiEnrollments)}
-          value={formatCount(summaryQuery.isError ? null : summary?.totalEnrollments)}
-          isLoading={summaryQuery.isLoading}
-        />
-        <KpiCard
-          label={intl.formatMessage(messages.kpiCoursesRunning)}
-          value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
-          isLoading={summaryQuery.isLoading}
-          // A running count means little without the catalog it is drawn from.
-          sparkline={summary ? (
-            <span className="rwaq-kpi-context">
-              {intl.formatMessage(messages.kpiOfTotal, { total: formatCount(summary.totalCourses) })}
+        {/* Snapshot KPIs: totalLearners, totalEnrollments, runningCourses, activePrograms
+            are all-time figures and do not change with the date range. When a range is
+            active, a muted badge communicates this so users aren't confused. */}
+        <div>
+          <KpiCard
+            label={intl.formatMessage(messages.kpiLearners)}
+            value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
+            isLoading={summaryQuery.isLoading}
+          />
+          {hasDateRange && (
+            <span className="x-small text-muted d-block text-center mt-1">
+              {intl.formatMessage(messages.allTimeBadge)}
             </span>
-          ) : undefined}
-        />
+          )}
+        </div>
+        <div>
+          <KpiCard
+            label={intl.formatMessage(messages.kpiEnrollments)}
+            value={formatCount(summaryQuery.isError ? null : summary?.totalEnrollments)}
+            isLoading={summaryQuery.isLoading}
+          />
+          {hasDateRange && (
+            <span className="x-small text-muted d-block text-center mt-1">
+              {intl.formatMessage(messages.allTimeBadge)}
+            </span>
+          )}
+        </div>
+        <div>
+          <KpiCard
+            label={intl.formatMessage(messages.kpiCoursesRunning)}
+            value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
+            isLoading={summaryQuery.isLoading}
+            // A running count means little without the catalog it is drawn from.
+            sparkline={summary ? (
+              <span className="rwaq-kpi-context">
+                {intl.formatMessage(messages.kpiOfTotal, { total: formatCount(summary.totalCourses) })}
+              </span>
+            ) : undefined}
+          />
+          {hasDateRange && (
+            <span className="x-small text-muted d-block text-center mt-1">
+              {intl.formatMessage(messages.allTimeBadge)}
+            </span>
+          )}
+        </div>
+        <div>
+          <KpiCard
+            label={intl.formatMessage(messages.kpiProgramsActive)}
+            value={formatCount(summaryQuery.isError ? null : summary?.activePrograms)}
+            isLoading={summaryQuery.isLoading}
+          />
+          {hasDateRange && (
+            <span className="x-small text-muted d-block text-center mt-1">
+              {intl.formatMessage(messages.allTimeBadge)}
+            </span>
+          )}
+        </div>
+        {/* Registrations: label and delta adapt to whether a date range is active. */}
         <KpiCard
-          label={intl.formatMessage(messages.kpiProgramsActive)}
-          value={formatCount(summaryQuery.isError ? null : summary?.activePrograms)}
-          isLoading={summaryQuery.isLoading}
-        />
-        <KpiCard
-          label={intl.formatMessage(messages.kpiRegistrations)}
+          label={hasDateRange
+            ? intl.formatMessage(messages.kpiRegistrationsRange)
+            : intl.formatMessage(messages.kpiRegistrations)}
           value={formatCount(summaryQuery.isError ? null : summary?.newRegistrationsThisMonth)}
           // Omitted rather than zeroed when there is no previous month to
           // compare against — KpiCard hides the badge when delta is undefined.
-          delta={summary?.newRegistrationsDeltaPct ?? undefined}
+          // Also omitted when a date range is active: prior-period comparison
+          // is meaningless for an arbitrary range.
+          delta={hasDateRange ? undefined : (summary?.newRegistrationsDeltaPct ?? undefined)}
           isLoading={summaryQuery.isLoading}
         />
       </div>
@@ -480,7 +557,7 @@ const DashboardPage = () => {
       <div className="rwaq-dash-grid rwaq-dash-grid--split">
         {renderChartCard(
           intl.formatMessage(messages.enrollmentTrend),
-          intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+          trendSubtitle,
           enrollmentSeries,
           'enrollments',
           intl.formatMessage(messages.seriesEnrollments),
@@ -500,7 +577,7 @@ const DashboardPage = () => {
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         {renderChartCard(
           intl.formatMessage(messages.registrationTrend),
-          intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+          trendSubtitle,
           registrationSeries,
           'registrations',
           intl.formatMessage(messages.seriesRegistrations),

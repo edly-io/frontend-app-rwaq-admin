@@ -17,10 +17,12 @@ export interface StatTileProps {
   hint?: ReactNode;
   /** Shown instead of the hint when value is null. */
   unavailableHint?: ReactNode;
+  /** Optional muted chip rendered below the value — use for "All time" on snapshot metrics. */
+  badge?: string;
 }
 
 const StatTile = ({
-  label, value, hint, unavailableHint,
+  label, value, hint, unavailableHint, badge,
 }: StatTileProps) => {
   const intl = useIntl();
   const isUnavailable = value === null || value === undefined;
@@ -31,6 +33,9 @@ const StatTile = ({
       <span className={`rwaq-stat-tile__value${isUnavailable ? ' rwaq-stat-tile__value--muted' : ''}`}>
         {isUnavailable ? intl.formatMessage(messages.unavailable) : value}
       </span>
+      {badge && (
+        <span className="x-small text-muted d-block text-center mt-1">{badge}</span>
+      )}
       {(isUnavailable ? unavailableHint : hint) && (
         <span className="rwaq-stat-tile__hint">
           {isUnavailable ? unavailableHint : hint}

@@ -121,12 +121,38 @@ const messages = defineMessages({
     id: 'rwaq.admin.dashboard.emptySeries',
     defaultMessage: 'No activity in the last {months} months.',
   },
+  emptySeriesRange: {
+    id: 'rwaq.admin.dashboard.emptySeriesRange',
+    defaultMessage: 'No activity in the selected period.',
+  },
 
   // ── Section headings, which group the bands ────────────────────────────────
   sectionGrowth: { id: 'rwaq.admin.dashboard.section.growth', defaultMessage: 'Growth' },
   sectionOutcomes: { id: 'rwaq.admin.dashboard.section.outcomes', defaultMessage: 'Outcomes' },
   sectionPlatform: { id: 'rwaq.admin.dashboard.section.platform', defaultMessage: 'Platform health' },
   sectionCatalog: { id: 'rwaq.admin.dashboard.section.catalog', defaultMessage: 'Catalog' },
+
+  // ── Date range picker ──────────────────────────────────────────────────────
+  kpiRegistrationsRange: {
+    id: 'rwaq.admin.dashboard.kpi.registrationsRange',
+    defaultMessage: 'New registrations',
+  },
+  trendDateRange: {
+    id: 'rwaq.admin.dashboard.trendDateRange',
+    defaultMessage: '{start} – {end}',
+  },
+  today: { id: 'rwaq.admin.dashboard.today', defaultMessage: 'today' },
+  allTimeBadge: { id: 'rwaq.admin.dashboard.allTimeBadge', defaultMessage: 'All time' },
+
+  presetLast30Days: { id: 'rwaq.admin.dashboard.preset.last30Days', defaultMessage: 'Last 30 days' },
+  presetLast3Months: { id: 'rwaq.admin.dashboard.preset.last3Months', defaultMessage: 'Last 3 months' },
+  presetLast6Months: { id: 'rwaq.admin.dashboard.preset.last6Months', defaultMessage: 'Last 6 months' },
+  presetLast12Months: { id: 'rwaq.admin.dashboard.preset.last12Months', defaultMessage: 'Last 12 months' },
+  presetYearToDate: { id: 'rwaq.admin.dashboard.preset.yearToDate', defaultMessage: 'Year to date' },
+  presetAllTime: { id: 'rwaq.admin.dashboard.preset.allTime', defaultMessage: 'All time' },
+  presetCustom: { id: 'rwaq.admin.dashboard.preset.custom', defaultMessage: 'Custom' },
+  dateRangeStart: { id: 'rwaq.admin.dashboard.dateRange.start', defaultMessage: 'From' },
+  dateRangeEnd: { id: 'rwaq.admin.dashboard.dateRange.end', defaultMessage: 'To' },
 });
 
 export default messages;
