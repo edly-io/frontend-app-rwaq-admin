@@ -137,67 +137,67 @@ const messages = defineMessages({
   // ── Info tooltips ──────────────────────────────────────────────────────────
   infoLearners: {
     id: 'rwaq.admin.dashboard.info.learners',
-    defaultMessage: 'Registered learner accounts (excludes staff and service accounts). Counts registrations within the selected date range when one is active.',
+    defaultMessage: 'Total registered learners. Filters to new sign-ups when a date range is selected.',
   },
   infoEnrollments: {
     id: 'rwaq.admin.dashboard.info.enrollments',
-    defaultMessage: 'Course enrollments created within the selected date range (or all active enrollments for all time). Includes enrollments that were later cancelled.',
+    defaultMessage: 'Total course enrollments. Filters to enrollments created in the selected period.',
   },
   infoCoursesRunning: {
     id: 'rwaq.admin.dashboard.info.coursesRunning',
-    defaultMessage: 'Courses whose run dates overlap the selected period. For all-time, shows courses currently running.',
+    defaultMessage: 'Courses currently live. Filters to courses whose dates overlap the selected period.',
   },
   infoProgramsActive: {
     id: 'rwaq.admin.dashboard.info.programsActive',
-    defaultMessage: 'Programs currently in Active status. Always all-time — a program\'s status is a current state, not a dated event.',
+    defaultMessage: 'Programs in Active status right now. Always all-time.',
   },
   infoRegistrations: {
     id: 'rwaq.admin.dashboard.info.registrations',
-    defaultMessage: 'New learner accounts registered this calendar month, with a month-on-month delta. When a date range is active, shows registrations within that range.',
+    defaultMessage: 'New accounts this month vs. last month. Filters to the selected period when a date range is active.',
   },
   infoCertCoverage: {
     id: 'rwaq.admin.dashboard.info.certCoverage',
-    defaultMessage: 'Share of published courses that have at least one active web certificate enabled. A platform configuration metric — always all-time.',
+    defaultMessage: 'How many courses offer a certificate. Always all-time.',
   },
   infoCertIssuance: {
     id: 'rwaq.admin.dashboard.info.certIssuance',
-    defaultMessage: 'Among certificate-bearing courses, the percentage of enrollments that earned a certificate. Responds to the date range filter.',
+    defaultMessage: 'Of learners in certificate-enabled courses, how many earned one. Filters to the selected period.',
   },
   infoProgramCompletion: {
     id: 'rwaq.admin.dashboard.info.programCompletion',
-    defaultMessage: 'Share of program enrollments that reached a completion date. Responds to the date range filter.',
+    defaultMessage: 'Of program enrollments, how many reached completion. Filters to the selected period.',
   },
   infoLegacyMigration: {
     id: 'rwaq.admin.dashboard.info.legacyMigration',
-    defaultMessage: 'Accounts imported from the pre-Open-edX platform that have signed in at least once — confirming the password-set flow was completed. Always all-time.',
+    defaultMessage: 'Imported legacy accounts that have signed in at least once. Always all-time.',
   },
   infoEnrollmentTrend: {
     id: 'rwaq.admin.dashboard.info.enrollmentTrend',
-    defaultMessage: 'Monthly course enrollment counts over the selected period or last 12 months.',
+    defaultMessage: 'Monthly enrollment counts over the selected period or last 12 months.',
   },
   infoCertTrend: {
     id: 'rwaq.admin.dashboard.info.certTrend',
-    defaultMessage: 'Monthly certificate issuance counts over the selected period or last 12 months. Blank if the certificate table is not readable from this service.',
+    defaultMessage: 'Monthly certificates issued over the selected period or last 12 months.',
   },
   infoCourseLifecycle: {
     id: 'rwaq.admin.dashboard.info.courseLifecycle',
-    defaultMessage: 'Distribution of all published course runs by current state: Running, Upcoming, Ended, or No dates set. Always all-time.',
+    defaultMessage: 'All courses grouped by status: Running, Upcoming, Ended, or No dates set. Always all-time.',
   },
   infoEnrollmentModes: {
     id: 'rwaq.admin.dashboard.info.enrollmentModes',
-    defaultMessage: 'Share of enrollments by course mode (honor, audit, etc.). Rwaq\'s subscription model uses honor mode, so drift toward audit is a configuration flag. Responds to the date range filter.',
+    defaultMessage: 'Breakdown of enrollments by mode (honor, audit, etc.). Filters to the selected period.',
   },
   infoEnrollmentWindows: {
     id: 'rwaq.admin.dashboard.info.enrollmentWindows',
-    defaultMessage: 'Running courses with a closed or missing enrollment window — learners cannot enroll even though the course is live. A configuration health check. Always all-time.',
+    defaultMessage: 'Running courses where learners cannot enroll due to a closed or missing enrollment window. Always all-time.',
   },
   infoOrgsLeaderboard: {
     id: 'rwaq.admin.dashboard.info.orgsLeaderboard',
-    defaultMessage: 'Organizations ranked by enrollment count. Enrollment counts respond to the date range filter; course and admin counts are always all-time.',
+    defaultMessage: 'Organizations ranked by enrollments. Enrollment counts filter to the selected period.',
   },
   infoBusiestCourses: {
     id: 'rwaq.admin.dashboard.info.busiestCourses',
-    defaultMessage: 'Top 5 courses by enrollment count and their combined share of all enrollments. Responds to the date range filter.',
+    defaultMessage: 'Top 5 courses by enrollment count and their share of all enrollments. Filters to the selected period.',
   },
 
   // ── Date range picker ──────────────────────────────────────────────────────

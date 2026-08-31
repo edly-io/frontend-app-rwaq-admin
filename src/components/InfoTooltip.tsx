@@ -6,7 +6,9 @@
  * the icon's wrapper span. Card containers do not have overflow:hidden, so the
  * panel can bleed outside the card without being clipped.
  */
-import { useEffect, useRef, useState } from 'react';
+import {
+  useEffect, useLayoutEffect, useRef, useState,
+} from 'react';
 
 export interface InfoTooltipProps {
   /** Explanation text shown in the tooltip. Keep to 1–2 short sentences. */
@@ -15,9 +17,32 @@ export interface InfoTooltipProps {
   ariaLabel?: string;
 }
 
+type Placement = 'center' | 'left' | 'right';
+
+const TOOLTIP_BG = '#1a2e43';
+
 const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps) => {
   const [visible, setVisible] = useState(false);
+  const [placement, setPlacement] = useState<Placement>('center');
   const wrapRef = useRef<HTMLSpanElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  // Reset placement when tooltip closes so next open starts centered.
+  useEffect(() => {
+    if (!visible) { setPlacement('center'); }
+  }, [visible]);
+
+  // Flip the tooltip before the browser paints to prevent overflow.
+  useLayoutEffect(() => {
+    if (!visible || !tooltipRef.current) { return; }
+    const rect = tooltipRef.current.getBoundingClientRect();
+    const vw = window.innerWidth;
+    if (rect.right > vw - 8) {
+      setPlacement('right');
+    } else if (rect.left < 8) {
+      setPlacement('left');
+    }
+  }, [visible, placement]);
 
   // Close on outside click (touch-friendly dismiss).
   useEffect(() => {
@@ -30,6 +55,18 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [visible]);
+
+  const tooltipPos: React.CSSProperties = placement === 'right'
+    ? { right: 0, left: 'auto' }
+    : placement === 'left'
+      ? { left: 0, right: 'auto' }
+      : { left: '50%', transform: 'translateX(-50%)', right: 'auto' };
+
+  const arrowPos: React.CSSProperties = placement === 'right'
+    ? { right: '10px', left: 'auto' }
+    : placement === 'left'
+      ? { left: '10px', right: 'auto' }
+      : { left: '50%', transform: 'translateX(-50%)', right: 'auto' };
 
   return (
     <span
@@ -73,14 +110,13 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
 
       {visible && (
         <div
+          ref={tooltipRef}
           role="tooltip"
           style={{
             position: 'absolute',
             top: 'calc(100% + 0.375rem)',
-            right: 0,
-            left: 'auto',
             zIndex: 1060,
-            background: '#1a2e43',
+            background: TOOLTIP_BG,
             color: '#fff',
             borderRadius: '0.375rem',
             padding: '0.5rem 0.6875rem',
@@ -92,21 +128,20 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
             textTransform: 'none',
             letterSpacing: 0,
             whiteSpace: 'normal',
+            ...tooltipPos,
           }}
         >
-          {/* Arrow pointing upward toward the icon — anchored right */}
           <span
             aria-hidden="true"
             style={{
               position: 'absolute',
               top: '-4px',
-              right: '10px',
-              left: 'auto',
               width: 0,
               height: 0,
               borderLeft: '5px solid transparent',
               borderRight: '5px solid transparent',
-              borderBottom: '5px solid #1a2e43',
+              borderBottom: `5px solid ${TOOLTIP_BG}`,
+              ...arrowPos,
             }}
           />
           {text}
