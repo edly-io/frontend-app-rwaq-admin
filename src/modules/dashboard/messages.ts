@@ -137,15 +137,15 @@ const messages = defineMessages({
   // ── Info tooltips ──────────────────────────────────────────────────────────
   infoLearners: {
     id: 'rwaq.admin.dashboard.info.learners',
-    defaultMessage: 'Registered learner accounts — excludes staff and service accounts. Shows new sign-ups when a date range is selected.',
+    defaultMessage: 'Registered learner accounts — excludes staff and service accounts.',
   },
   infoEnrollments: {
     id: 'rwaq.admin.dashboard.info.enrollments',
-    defaultMessage: 'Active course enrollments. Shows enrollments created in the selected period (includes later-cancelled ones).',
+    defaultMessage: 'Active course enrollments, including later-cancelled ones.',
   },
   infoCoursesRunning: {
     id: 'rwaq.admin.dashboard.info.coursesRunning',
-    defaultMessage: 'Courses currently live (start date passed, end date not yet reached). Shows courses whose dates overlap the selected period.',
+    defaultMessage: 'Courses currently live (start date passed, end date not yet reached).',
   },
   infoProgramsActive: {
     id: 'rwaq.admin.dashboard.info.programsActive',
@@ -153,7 +153,7 @@ const messages = defineMessages({
   },
   infoRegistrations: {
     id: 'rwaq.admin.dashboard.info.registrations',
-    defaultMessage: 'New learner accounts registered this calendar month vs. last month. Shows the selected period when a date range is active.',
+    defaultMessage: 'New learner accounts registered this calendar month vs. last month.',
   },
   infoCertCoverage: {
     id: 'rwaq.admin.dashboard.info.certCoverage',
@@ -161,11 +161,11 @@ const messages = defineMessages({
   },
   infoCertIssuance: {
     id: 'rwaq.admin.dashboard.info.certIssuance',
-    defaultMessage: 'Among certificate-enabled courses, the share of enrollments that earned a certificate. Scoped to the selected period.',
+    defaultMessage: 'Among certificate-enabled courses, the share of enrollments that earned a certificate.',
   },
   infoProgramCompletion: {
     id: 'rwaq.admin.dashboard.info.programCompletion',
-    defaultMessage: 'Share of program enrollments that reached a completion date. Scoped to the selected period.',
+    defaultMessage: 'Share of program enrollments that reached a completion date.',
   },
   infoLegacyMigration: {
     id: 'rwaq.admin.dashboard.info.legacyMigration',
