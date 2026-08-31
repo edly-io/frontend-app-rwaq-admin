@@ -185,7 +185,7 @@ const messages = defineMessages({
   },
   infoEnrollmentModes: {
     id: 'rwaq.admin.dashboard.info.enrollmentModes',
-    defaultMessage: 'Enrollment breakdown by course mode (honor, audit, etc.). Rwaq runs on honor mode — a drift toward audit indicates a setup issue. Scoped to the selected period.',
+    defaultMessage: 'Enrollment breakdown by course mode (honor, audit, etc.). Rwaq runs on honor mode — a drift toward audit indicates a setup issue.',
   },
   infoEnrollmentWindows: {
     id: 'rwaq.admin.dashboard.info.enrollmentWindows',
@@ -193,11 +193,11 @@ const messages = defineMessages({
   },
   infoOrgsLeaderboard: {
     id: 'rwaq.admin.dashboard.info.orgsLeaderboard',
-    defaultMessage: 'Organizations ranked by enrollment count. Enrollment counts are scoped to the selected period; course and admin counts are always all-time.',
+    defaultMessage: 'Organizations ranked by enrollment count. Course and admin counts are always all-time.',
   },
   infoBusiestCourses: {
     id: 'rwaq.admin.dashboard.info.busiestCourses',
-    defaultMessage: 'Top 5 courses by enrollment count and their combined share of all enrollments. Scoped to the selected period.',
+    defaultMessage: 'Top 5 courses by enrollment count and their combined share of all enrollments.',
   },
 
   // ── Date range picker ──────────────────────────────────────────────────────
