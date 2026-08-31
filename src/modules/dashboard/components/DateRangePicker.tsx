@@ -84,9 +84,9 @@ const PRESETS: Preset[] = [
 
 /**
  * Derive which preset key is active given a startDate/endDate pair.
- * Comparison is within a 1-day window to absorb rendering timing skew
- * (the preset is computed once at click time; by next render "today" may
- * have ticked over by milliseconds).
+ * Comparison is exact string equality. Named presets are recomputed on each
+ * render relative to today(), so a session left open across midnight will
+ * de-select the active chip until the user re-clicks it — acceptable UX.
  */
 const deriveActivePreset = (
   startDate: string | undefined,
@@ -137,12 +137,12 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
   };
 
   const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCustomMode(false);  // URL will now carry non-preset dates; state not needed
+    if (customMode) { setCustomMode(false); }
     onChange(e.target.value || undefined, endDate);
   };
 
   const handleEndChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCustomMode(false);
+    if (customMode) { setCustomMode(false); }
     onChange(startDate, e.target.value || undefined);
   };
 

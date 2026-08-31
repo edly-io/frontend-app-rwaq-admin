@@ -95,6 +95,16 @@ describe('DateRangePicker', () => {
     expect(onChange).toHaveBeenCalledWith(undefined, '2024-06-20');
   });
 
+  it('passes undefined for end when end input is cleared', () => {
+    const onChange = jest.fn();
+    renderWrapper(
+      <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={onChange} />,
+    );
+    const endInput = screen.getByLabelText('To');
+    fireEvent.change(endInput, { target: { value: '' } });
+    expect(onChange).toHaveBeenCalledWith('2024-03-15', undefined);
+  });
+
   it('clicking Custom chip shows date inputs without calling onChange', () => {
     const onChange = jest.fn();
     renderWrapper(
@@ -111,17 +121,14 @@ describe('DateRangePicker', () => {
   });
 
   it('marks the matching preset chip as active when dates match a preset', () => {
-    // We cannot know the exact dates at test time (they are relative to "today"),
-    // so we test the "All time" case which is deterministic.
+    // "All time" is deterministic (no dates), so it is the reliably testable case.
     renderWrapper(
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />,
     );
     const allTimeBtn = screen.getByText('All time').closest('button');
-    // The active chip uses variant="primary"; unselected ones use "outline-primary".
-    // Paragon renders variant as a class suffix on the btn element.
-    expect(allTimeBtn?.className).toMatch(/btn-primary/);
+    expect(allTimeBtn).toHaveAttribute('aria-pressed', 'true');
 
     const last30Btn = screen.getByText('Last 30 days').closest('button');
-    expect(last30Btn?.className).toMatch(/btn-outline-primary/);
+    expect(last30Btn).toHaveAttribute('aria-pressed', 'false');
   });
 });
