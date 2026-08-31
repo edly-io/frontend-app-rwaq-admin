@@ -137,15 +137,15 @@ const messages = defineMessages({
   // ── Info tooltips ──────────────────────────────────────────────────────────
   infoLearners: {
     id: 'rwaq.admin.dashboard.info.learners',
-    defaultMessage: 'Registered learner accounts — excludes staff and service accounts. Filters to new sign-ups when a date range is selected.',
+    defaultMessage: 'Registered learner accounts — excludes staff and service accounts. Shows new sign-ups when a date range is selected.',
   },
   infoEnrollments: {
     id: 'rwaq.admin.dashboard.info.enrollments',
-    defaultMessage: 'Active course enrollments. Filters to enrollments created in the selected period (includes later-cancelled ones).',
+    defaultMessage: 'Active course enrollments. Shows enrollments created in the selected period (includes later-cancelled ones).',
   },
   infoCoursesRunning: {
     id: 'rwaq.admin.dashboard.info.coursesRunning',
-    defaultMessage: 'Courses currently live (start date passed, end date not yet reached). Filters to courses whose dates overlap the selected period.',
+    defaultMessage: 'Courses currently live (start date passed, end date not yet reached). Shows courses whose dates overlap the selected period.',
   },
   infoProgramsActive: {
     id: 'rwaq.admin.dashboard.info.programsActive',
@@ -153,7 +153,7 @@ const messages = defineMessages({
   },
   infoRegistrations: {
     id: 'rwaq.admin.dashboard.info.registrations',
-    defaultMessage: 'New learner accounts registered this calendar month vs. last month. Filters to the selected period when a date range is active.',
+    defaultMessage: 'New learner accounts registered this calendar month vs. last month. Shows the selected period when a date range is active.',
   },
   infoCertCoverage: {
     id: 'rwaq.admin.dashboard.info.certCoverage',
@@ -161,11 +161,11 @@ const messages = defineMessages({
   },
   infoCertIssuance: {
     id: 'rwaq.admin.dashboard.info.certIssuance',
-    defaultMessage: 'Among certificate-enabled courses, the share of enrollments that earned a certificate. Filters to the selected period.',
+    defaultMessage: 'Among certificate-enabled courses, the share of enrollments that earned a certificate. Scoped to the selected period.',
   },
   infoProgramCompletion: {
     id: 'rwaq.admin.dashboard.info.programCompletion',
-    defaultMessage: 'Share of program enrollments that reached a completion date. Filters to the selected period.',
+    defaultMessage: 'Share of program enrollments that reached a completion date. Scoped to the selected period.',
   },
   infoLegacyMigration: {
     id: 'rwaq.admin.dashboard.info.legacyMigration',
@@ -185,7 +185,7 @@ const messages = defineMessages({
   },
   infoEnrollmentModes: {
     id: 'rwaq.admin.dashboard.info.enrollmentModes',
-    defaultMessage: 'Enrollment breakdown by course mode (honor, audit, etc.). Rwaq runs on honor mode — a drift toward audit indicates a setup issue. Filters to the selected period.',
+    defaultMessage: 'Enrollment breakdown by course mode (honor, audit, etc.). Rwaq runs on honor mode — a drift toward audit indicates a setup issue. Scoped to the selected period.',
   },
   infoEnrollmentWindows: {
     id: 'rwaq.admin.dashboard.info.enrollmentWindows',
@@ -193,11 +193,11 @@ const messages = defineMessages({
   },
   infoOrgsLeaderboard: {
     id: 'rwaq.admin.dashboard.info.orgsLeaderboard',
-    defaultMessage: 'Organizations ranked by enrollment count. Enrollment counts filter to the selected period; course and admin counts are always all-time.',
+    defaultMessage: 'Organizations ranked by enrollment count. Enrollment counts are scoped to the selected period; course and admin counts are always all-time.',
   },
   infoBusiestCourses: {
     id: 'rwaq.admin.dashboard.info.busiestCourses',
-    defaultMessage: 'Top 5 courses by enrollment count and their combined share of all enrollments. Filters to the selected period.',
+    defaultMessage: 'Top 5 courses by enrollment count and their combined share of all enrollments. Scoped to the selected period.',
   },
 
   // ── Date range picker ──────────────────────────────────────────────────────
