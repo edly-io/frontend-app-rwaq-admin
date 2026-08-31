@@ -93,13 +93,18 @@ const KpiCard = ({
       <span
         style={{
           position: 'absolute',
-          top: '0.625rem',
-          right: '0.75rem',
-          fontSize: '0.65rem',
+          top: '0.5rem',
+          right: '0.625rem',
+          padding: '0.15rem 0.5rem',
+          fontSize: '0.6rem',
           fontWeight: 600,
-          color: 'var(--rwaq-muted, #6B757F)',
+          letterSpacing: '0.05em',
           textTransform: 'uppercase',
-          letterSpacing: '0.06em',
+          color: 'var(--rwaq-muted, #6B757F)',
+          background: 'var(--pgn-color-gray-100, #f0f0ef)',
+          border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
+          borderRadius: '999px',
+          lineHeight: 1.5,
         }}
       >
         {badge}

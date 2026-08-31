@@ -1500,7 +1500,7 @@ body {
 }
 
 // ── Stat tile ────────────────────────────────────────────────────────────────
-.rwaq-stat-tile { display: flex; flex-direction: column; gap: 0.25rem; }
+.rwaq-stat-tile { position: relative; display: flex; flex-direction: column; gap: 0.25rem; }
 
 .rwaq-stat-tile__label {
   font-size: 0.6875rem;

@@ -29,13 +29,36 @@ const StatTile = ({
 
   return (
     <div className="rwaq-stat-tile">
-      <span className="rwaq-stat-tile__label">{label}</span>
+      {badge && (
+        <span
+          style={{
+            position: 'absolute',
+            top: '0.5rem',
+            right: '0.625rem',
+            padding: '0.15rem 0.5rem',
+            fontSize: '0.6rem',
+            fontWeight: 600,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+            color: 'var(--rwaq-muted, #6B757F)',
+            background: 'var(--pgn-color-gray-100, #f0f0ef)',
+            border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
+            borderRadius: '999px',
+            lineHeight: 1.5,
+          }}
+        >
+          {badge}
+        </span>
+      )}
+      <span
+        className="rwaq-stat-tile__label"
+        style={{ paddingRight: badge ? '3.5rem' : undefined }}
+      >
+        {label}
+      </span>
       <span className={`rwaq-stat-tile__value${isUnavailable ? ' rwaq-stat-tile__value--muted' : ''}`}>
         {isUnavailable ? intl.formatMessage(messages.unavailable) : value}
       </span>
-      {badge && (
-        <span className="x-small text-muted d-block text-center mt-1">{badge}</span>
-      )}
       {(isUnavailable ? unavailableHint : hint) && (
         <span className="rwaq-stat-tile__hint">
           {isUnavailable ? unavailableHint : hint}
