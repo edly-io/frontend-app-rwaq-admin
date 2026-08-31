@@ -35,8 +35,8 @@ const StatTile = ({
             position: 'absolute',
             top: '0.5rem',
             right: '0.625rem',
-            padding: '0.15rem 0.5rem',
-            fontSize: '0.6rem',
+            padding: '0.1rem 0.375rem',
+            fontSize: '0.55rem',
             fontWeight: 600,
             letterSpacing: '0.05em',
             textTransform: 'uppercase',
@@ -44,7 +44,7 @@ const StatTile = ({
             background: 'var(--pgn-color-gray-100, #f0f0ef)',
             border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
             borderRadius: '999px',
-            lineHeight: 1.5,
+            lineHeight: 1.4,
           }}
         >
           {badge}
