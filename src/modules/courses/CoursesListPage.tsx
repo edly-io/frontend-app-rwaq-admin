@@ -166,7 +166,7 @@ const CoursesListPage = () => {
           return <span className="text-muted">{intl.formatMessage(messages.noCategory)}</span>;
         }
         return (
-          <div className="d-flex flex-wrap gap-1">
+          <div className="d-flex flex-wrap rwaq-gap-xs">
             {cats.map((cat) => (
               <Badge key={cat.slug} variant="light">{cat.name}</Badge>
             ))}
@@ -203,7 +203,7 @@ const CoursesListPage = () => {
           variant="outline-primary"
           size="sm"
           onClick={() => navigate(`/courses/${encodeURIComponent(row.courseId as string)}`)}
-          aria-label={`View ${row.displayName as string}`}
+          aria-label={intl.formatMessage(messages.viewCourseAriaLabel, { courseName: row.displayName as string })}
         >
           {intl.formatMessage(messages.view)}
         </Button>
@@ -219,9 +219,6 @@ const CoursesListPage = () => {
 
       <div className="rwaq-card rwaq-card--fit">
         <SearchFilterBar
-          scopes={[]}
-          scope=""
-          onScopeChange={() => {}}
           searchTerm={search}
           onSearch={(term) => updateParams({ search: term })}
           searchPlaceholder={intl.formatMessage(messages.searchPlaceholder)}

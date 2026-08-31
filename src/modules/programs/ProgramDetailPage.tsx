@@ -68,7 +68,7 @@ const SettingsCard = ({
       </h2>
 
       <Form>
-        <div className="d-flex flex-column gap-4">
+        <div className="d-flex flex-column rwaq-gap-sm">
 
           {/* Status select */}
           <Form.Group>
@@ -86,8 +86,8 @@ const SettingsCard = ({
             <Form.Text>{intl.formatMessage(messages.settingStatusHelp)}</Form.Text>
           </Form.Group>
 
-          {/* is_hide toggle */}
-          <Form.Group>
+          {/* is_hide / is_featured toggles */}
+          <div className="d-flex flex-column rwaq-gap-sm">
             <Form.Switch
               id={`program-${uuid}-is-hide`}
               checked={isHide}
@@ -96,10 +96,6 @@ const SettingsCard = ({
             >
               {intl.formatMessage(messages.settingIsHideHelp)}
             </Form.Switch>
-          </Form.Group>
-
-          {/* is_featured toggle */}
-          <Form.Group>
             <Form.Switch
               id={`program-${uuid}-is-featured`}
               checked={isFeatured}
@@ -108,7 +104,7 @@ const SettingsCard = ({
             >
               {intl.formatMessage(messages.settingIsFeaturedHelp)}
             </Form.Switch>
-          </Form.Group>
+          </div>
 
         </div>
       </Form>
@@ -251,7 +247,7 @@ interface TabBarProps {
 
 const TabBar = ({ active, onChange, labels }: TabBarProps) => (
   <div
-    className="d-flex gap-2 mb-4"
+    className="d-flex rwaq-gap-sm mb-4"
     role="tablist"
     style={{ borderBottom: '2px solid var(--pgn-color-gray-200, #dee2e6)' }}
   >
@@ -329,7 +325,7 @@ const ProgramDetailPage = () => {
           {` / ${program.name}`}
         </div>
 
-        <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mt-2">
+        <div className="d-flex justify-content-between align-items-start flex-wrap rwaq-gap-md mt-2">
           <div className="rwaq-detail-header min-width-0">
             <ProfileAvatar
               src={program.cardImage}

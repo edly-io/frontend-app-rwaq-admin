@@ -6,7 +6,7 @@
  * organization, so changing it would orphan existing courses, and the backend
  * treats both as read-only on PATCH.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -108,6 +108,16 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
       }
     },
   });
+
+  // Paragon keeps modal children mounted for animations, so Formik's values
+  // persist after close. Reset whenever the modal closes so reopening it is
+  // always a blank slate (create) or the latest server values (edit).
+  useEffect(() => {
+    if (!isOpen) {
+      formik.resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const fieldError = (field: keyof FormValues) => (
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''

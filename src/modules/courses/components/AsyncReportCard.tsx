@@ -6,8 +6,10 @@
  * completed runs.  Polls at 10 s while any task is QUEUING or IN_PROGRESS.
  */
 import { Alert, Badge, Button, Spinner } from '@openedx/paragon';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import type { CourseReportType, ReportTask, TaskState } from '../data/reportsTypes';
 import { useCourseReportTasks, useTriggerCourseReport } from '../data/reportsHooks';
+import { asyncReportMessages as messages } from '../messages';
 
 // ── State badge ───────────────────────────────────────────────────────────────
 
@@ -19,26 +21,29 @@ const STATE_VARIANT: Record<TaskState, string> = {
   REVOKED: 'secondary',
 };
 
-const STATE_LABEL: Record<TaskState, string> = {
-  QUEUING: 'Queued',
-  IN_PROGRESS: 'In Progress',
-  SUCCESS: 'Done',
-  FAILURE: 'Failed',
-  REVOKED: 'Revoked',
+const StateBadge = ({ state }: { state: TaskState }) => {
+  const intl = useIntl();
+  const stateLabels: Record<TaskState, string> = {
+    QUEUING: intl.formatMessage(messages.stateQueuing),
+    IN_PROGRESS: intl.formatMessage(messages.stateInProgress),
+    SUCCESS: intl.formatMessage(messages.stateDone),
+    FAILURE: intl.formatMessage(messages.stateFailure),
+    REVOKED: intl.formatMessage(messages.stateRevoked),
+  };
+  return (
+    <Badge variant={STATE_VARIANT[state] ?? 'light'} className="text-uppercase">
+      {state === 'IN_PROGRESS' && (
+        <Spinner animation="border" size="sm" className="mr-1" screenReaderText="" />
+      )}
+      {stateLabels[state] ?? state}
+    </Badge>
+  );
 };
-
-const StateBadge = ({ state }: { state: TaskState }) => (
-  <Badge variant={STATE_VARIANT[state] ?? 'light'} className="text-uppercase">
-    {state === 'IN_PROGRESS' && (
-      <Spinner animation="border" size="sm" className="mr-1" screenReaderText="" />
-    )}
-    {STATE_LABEL[state] ?? state}
-  </Badge>
-);
 
 // ── Task row ──────────────────────────────────────────────────────────────────
 
 const TaskRow = ({ task }: { task: ReportTask }) => {
+  const intl = useIntl();
   const created = new Date(task.created).toLocaleString();
 
   return (
@@ -58,7 +63,7 @@ const TaskRow = ({ task }: { task: ReportTask }) => {
             rel="noreferrer"
             className="btn btn-sm btn-outline-primary"
           >
-            Download CSV
+            {intl.formatMessage(messages.downloadCsv)}
           </a>
         ) : (
           <span className="text-muted small">—</span>
@@ -83,6 +88,7 @@ const AsyncReportCard = ({
   title,
   description,
 }: AsyncReportCardProps) => {
+  const intl = useIntl();
   const {
     data: tasks, isLoading, isError,
   } = useCourseReportTasks(courseId, reportType);
@@ -95,7 +101,7 @@ const AsyncReportCard = ({
 
   return (
     <div className="rwaq-card">
-      <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+      <div className="d-flex justify-content-between align-items-start flex-wrap rwaq-gap-md mb-3">
         <div>
           <h3 className="h5 mb-1">{title}</h3>
           {description && <p className="text-muted small mb-0">{description}</p>}
@@ -108,11 +114,16 @@ const AsyncReportCard = ({
         >
           {isTriggering || hasRunning ? (
             <>
-              <Spinner animation="border" size="sm" className="mr-2" screenReaderText="Generating" />
-              Generating…
+              <Spinner
+                animation="border"
+                size="sm"
+                className="mr-2"
+                screenReaderText={intl.formatMessage(messages.screenReaderGenerating)}
+              />
+              {intl.formatMessage(messages.generating)}
             </>
           ) : (
-            'Generate Report'
+            intl.formatMessage(messages.generateReport)
           )}
         </Button>
       </div>
@@ -121,31 +132,31 @@ const AsyncReportCard = ({
         <Alert variant="danger" className="mb-3">
           {(triggerError as { response?: { data?: { detail?: string } } })
             ?.response?.data?.detail
-            ?? 'Failed to trigger report. Try again.'}
+            ?? intl.formatMessage(messages.errorTriggerFallback)}
         </Alert>
       )}
 
       {isError && (
         <Alert variant="warning" className="mb-3">
-          Could not load report history. The table will refresh automatically.
+          {intl.formatMessage(messages.errorLoadHistory)}
         </Alert>
       )}
 
       {isLoading ? (
         <div className="d-flex justify-content-center py-3">
-          <Spinner animation="border" size="sm" screenReaderText="Loading report history" />
+          <Spinner animation="border" size="sm" screenReaderText={intl.formatMessage(messages.loadingHistory)} />
         </div>
       ) : !tasks || tasks.length === 0 ? (
-        <p className="text-muted small mb-0">No reports generated yet. Click Generate Report to start.</p>
+        <p className="text-muted small mb-0">{intl.formatMessage(messages.noReportsYet)}</p>
       ) : (
         <div style={{ overflowX: 'auto' }}>
           <table className="table table-sm mb-0">
             <thead>
               <tr>
-                <th>Generated</th>
-                <th>Status</th>
-                <th>Processed</th>
-                <th className="text-right">File</th>
+                <th>{intl.formatMessage(messages.colGenerated)}</th>
+                <th>{intl.formatMessage(messages.colStatus)}</th>
+                <th>{intl.formatMessage(messages.colProcessed)}</th>
+                <th className="text-right">{intl.formatMessage(messages.colFile)}</th>
               </tr>
             </thead>
             <tbody>

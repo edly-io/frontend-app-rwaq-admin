@@ -161,7 +161,7 @@ const RoleGrantFields = ({
       )}
 
       {orgAdminOf.length > 0 && (
-        <div className="d-flex align-items-center flex-wrap gap-1 mb-3">
+        <div className="d-flex align-items-center flex-wrap rwaq-gap-xs mb-3">
           <Badge variant="warning">{intl.formatMessage(messages.roleOrgAdmin)}</Badge>
           <span className="small text-muted">{orgAdminOf.join(', ')}</span>
           <GrantInfo id="grant-org-admin-tip" tooltip={messages.tooltipOrgAdmin} />

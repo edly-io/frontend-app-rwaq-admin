@@ -114,6 +114,15 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.addAdmin.notFound',
     defaultMessage: 'No account found for that email address. The person must register first.',
   },
+
+  // ── OrgCoursesTable — FE-C2 (previously raw string literals) ──────────────
+  orgCoursesColCourse: { id: 'rwaq.admin.orgs.courses.col.course', defaultMessage: 'Course' },
+  orgCoursesColStart: { id: 'rwaq.admin.orgs.courses.col.start', defaultMessage: 'Start' },
+  orgCoursesColEnd: { id: 'rwaq.admin.orgs.courses.col.end', defaultMessage: 'End' },
+  orgCoursesColEnrollments: { id: 'rwaq.admin.orgs.courses.col.enrollments', defaultMessage: 'Enrollments' },
+  orgCoursesViewAriaLabel: { id: 'rwaq.admin.orgs.courses.viewAriaLabel', defaultMessage: 'View {name}' },
+  orgCoursesView: { id: 'rwaq.admin.orgs.courses.view', defaultMessage: 'View' },
+  orgCoursesError: { id: 'rwaq.admin.orgs.courses.error', defaultMessage: 'Could not load courses for this organization.' },
 });
 
 export default messages;

@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react';
 import { Form } from '@openedx/paragon';
 import { logError } from '@edx/frontend-platform/logging';
-import { useIntl, defineMessages } from '@edx/frontend-platform/i18n';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorReason } from '@src/data/httpError';
@@ -15,30 +15,7 @@ import type { UserSummary } from '@src/modules/users/data/types';
 import UserPicker from '../components/UserPicker';
 import { useAddCourseStaff } from '../data/hooks';
 import type { CourseRole } from '../data/types';
-import messages from '../messages';
-
-const roleMessages = defineMessages({
-  instructor: {
-    id: 'rwaq.admin.courses.role.instructor.desc',
-    defaultMessage: 'Instructor, can edit the course and manage the team roster',
-  },
-  staff: {
-    id: 'rwaq.admin.courses.role.staff.desc',
-    defaultMessage: 'Staff, can edit the course',
-  },
-  limited_staff: {
-    id: 'rwaq.admin.courses.role.limitedStaff.desc',
-    defaultMessage: 'Limited Staff, restricted edit access',
-  },
-  beta_testers: {
-    id: 'rwaq.admin.courses.role.beta.desc',
-    defaultMessage: 'Beta Tester, early-release preview access only',
-  },
-  data_researcher: {
-    id: 'rwaq.admin.courses.role.dataResearcher.desc',
-    defaultMessage: 'Data Researcher, read-only access to learner data',
-  },
-});
+import messages, { courseRoleMessages as roleMessages } from '../messages';
 
 const ROLES: CourseRole[] = ['instructor', 'staff', 'limited_staff', 'beta_testers', 'data_researcher'];
 
@@ -59,17 +36,19 @@ const AddStaffModal = ({
   const [user, setUser] = useState<UserSummary | null>(null);
   const [role, setRole] = useState<CourseRole>('staff');
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
+  const [mutationError, setMutationError] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       setUser(null);
       setRole('staff');
       setHasTriedSubmit(false);
+      setMutationError('');
     }
   }, [isOpen]);
 
   const userError = hasTriedSubmit && !user
-    ? `${intl.formatMessage(messages.addStaffModalUserLabel)} is required`
+    ? intl.formatMessage(messages.addStaffModalUserRequired)
     : undefined;
 
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
@@ -83,7 +62,7 @@ const AddStaffModal = ({
       onClose();
     } catch (error) {
       logError(error);
-      showToast(getErrorReason(error) ?? intl.formatMessage(messages.addStaffModalError));
+      setMutationError(getErrorReason(error) ?? intl.formatMessage(messages.addStaffModalError));
     }
   };
 
@@ -97,6 +76,10 @@ const AddStaffModal = ({
       cancelLabel={intl.formatMessage(messages.addStaffModalCancel)}
       isSubmitting={mutation.isPending}
     >
+      {mutationError && (
+        <p className="text-danger small">{mutationError}</p>
+      )}
+
       <UserPicker selected={user} onSelect={setUser} error={userError} />
 
       <Form.Group>

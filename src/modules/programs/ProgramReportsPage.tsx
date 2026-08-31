@@ -3,6 +3,8 @@
  */
 import { Link, useParams } from 'react-router-dom';
 import { Alert, Spinner } from '@openedx/paragon';
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { programReportsMessages as messages } from './messages';
 import { useProgram } from './data/hooks';
 import { useProgramCompletionReport } from './data/reportsHooks';
 
@@ -18,9 +20,9 @@ const StatCard = ({ label, value, highlight = false }: StatCardProps) => (
   <div
     className="px-4 py-3 text-center"
     style={{
-      borderRight: '1px solid #dee2e6',
-      borderBottom: '1px solid #dee2e6',
-      backgroundColor: highlight ? 'rgba(10,48,85,0.04)' : undefined,
+      borderRight: '1px solid var(--rwaq-border)',
+      borderBottom: '1px solid var(--rwaq-border)',
+      backgroundColor: highlight ? 'var(--rwaq-accent-soft)' : undefined,
     }}
   >
     <div className="text-muted small">{label}</div>
@@ -29,7 +31,7 @@ const StatCard = ({ label, value, highlight = false }: StatCardProps) => (
       style={{
         fontSize: '1.125rem',
         fontVariantNumeric: 'tabular-nums',
-        color: highlight ? 'var(--pgn-color-primary-500, #0A3055)' : undefined,
+        color: highlight ? 'var(--rwaq-accent)' : undefined,
       }}
     >
       {value}
@@ -40,6 +42,7 @@ const StatCard = ({ label, value, highlight = false }: StatCardProps) => (
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 const ProgramReportsPage = () => {
+  const intl = useIntl();
   const { uuid = '' } = useParams<{ uuid: string }>();
   const { data: program, isLoading: programLoading } = useProgram(uuid);
   const {
@@ -56,7 +59,7 @@ const ProgramReportsPage = () => {
     return (
       <div className="rwaq-page">
         <div className="d-flex justify-content-center py-5">
-          <Spinner animation="border" screenReaderText="Loading report" />
+          <Spinner animation="border" screenReaderText={intl.formatMessage(messages.loadingReport)} />
         </div>
       </div>
     );
@@ -66,26 +69,29 @@ const ProgramReportsPage = () => {
     <div className="rwaq-page">
       <div className="rwaq-page-header">
         <div className="rwaq-page-header__breadcrumb">
-          <Link to="/programs">Programs</Link>
+          <Link to="/programs">{intl.formatMessage(messages.breadcrumbPrograms)}</Link>
           {' / '}
           <Link to={programHref}>{programName}</Link>
-          {' / Reports'}
+          {' '}
+          {intl.formatMessage(messages.breadcrumbReports)}
         </div>
-        <h1 className="rwaq-page-title mt-2">Reports</h1>
+        <h1 className="rwaq-page-title mt-2">{intl.formatMessage(messages.pageTitle)}</h1>
       </div>
 
       <div className="rwaq-card">
-        <h2 className="rwaq-section-title mb-1">Program Completion</h2>
+        <h2 className="rwaq-section-title mb-1">{intl.formatMessage(messages.sectionTitle)}</h2>
         {report && (
           <p className="text-muted small mb-4">
-            Based on {report.numCourses} course{report.numCourses !== 1 ? 's' : ''} linked to this program.
-            Learners enrolled in all courses are counted as completed.
+            {intl.formatMessage(messages.sectionBody, {
+              numCourses: report.numCourses,
+              courseWord: intl.formatMessage(messages.courseWord, { count: report.numCourses }),
+            })}
           </p>
         )}
 
         {reportError && (
           <Alert variant="danger" className="mb-0">
-            Could not load program completion report. Please refresh the page.
+            {intl.formatMessage(messages.errorLoad)}
           </Alert>
         )}
 
@@ -96,17 +102,17 @@ const ProgramReportsPage = () => {
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(9rem, 1fr))',
-                borderTop: '1px solid #dee2e6',
-                borderLeft: '1px solid #dee2e6',
+                borderTop: '1px solid var(--rwaq-border)',
+                borderLeft: '1px solid var(--rwaq-border)',
                 borderRadius: '0.25rem',
                 overflow: 'hidden',
               }}
             >
-              <StatCard label="Total Learners" value={report.totalLearners.toLocaleString()} />
-              <StatCard label="Completed" value={report.completed.toLocaleString()} />
-              <StatCard label="In Progress" value={report.inProgress.toLocaleString()} />
-              <StatCard label="Not Started" value={report.notStarted.toLocaleString()} />
-              <StatCard label="Completion Rate" value={`${report.completionRate}%`} />
+              <StatCard label={intl.formatMessage(messages.statTotalLearners)} value={report.totalLearners.toLocaleString()} />
+              <StatCard label={intl.formatMessage(messages.statCompleted)} value={report.completed.toLocaleString()} />
+              <StatCard label={intl.formatMessage(messages.statInProgress)} value={report.inProgress.toLocaleString()} />
+              <StatCard label={intl.formatMessage(messages.statNotStarted)} value={report.notStarted.toLocaleString()} />
+              <StatCard label={intl.formatMessage(messages.statCompletionRate)} value={`${report.completionRate}%`} highlight />
             </div>
 
             {report.note && (
@@ -120,24 +126,26 @@ const ProgramReportsPage = () => {
                     height: '0.375rem',
                     borderRadius: '0.25rem',
                     overflow: 'hidden',
-                    backgroundColor: '#e9ecef',
+                    backgroundColor: 'var(--rwaq-border)',
                   }}
                   role="progressbar"
                   aria-valuenow={report.completionRate}
                   aria-valuemin={0}
                   aria-valuemax={100}
-                  aria-label={`${report.completionRate}% completion rate`}
+                  aria-label={intl.formatMessage(messages.completionRateAriaLabel, { rate: report.completionRate })}
                 >
                   <div
                     style={{
                       width: `${report.completionRate}%`,
                       height: '100%',
-                      backgroundColor: '#0a3055',
+                      backgroundColor: 'var(--rwaq-accent)',
                       borderRadius: '0.25rem',
                     }}
                   />
                 </div>
-                <p className="text-muted small mt-1 mb-0">{report.completionRate}% completion rate</p>
+                <p className="text-muted small mt-1 mb-0">
+                  {intl.formatMessage(messages.completionRateCaption, { rate: report.completionRate })}
+                </p>
               </div>
             )}
           </>

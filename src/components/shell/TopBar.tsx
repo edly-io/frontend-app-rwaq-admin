@@ -21,24 +21,10 @@ import {
 } from '@openedx/paragon/icons';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { getConfig } from '@edx/frontend-platform';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import { RWAQ_LOGO } from '@src/assets/rwaqLogo';
 import { useThemeVariant } from './useThemeVariant';
-
-const messages = defineMessages({
-  welcome: { id: 'rwaq.admin.topbar.welcome', defaultMessage: 'Welcome' },
-  themeToggle: { id: 'rwaq.admin.topbar.themeToggle', defaultMessage: 'Toggle light/dark theme' },
-  account: { id: 'rwaq.admin.topbar.account', defaultMessage: 'Account menu' },
-  darkMode: { id: 'rwaq.admin.topbar.darkMode', defaultMessage: 'Dark Mode' },
-  roleAdmin: { id: 'rwaq.admin.topbar.role.admin', defaultMessage: 'Administrator' },
-  roleStaff: { id: 'rwaq.admin.topbar.role.staff', defaultMessage: 'Staff' },
-  profile: { id: 'rwaq.admin.topbar.profile', defaultMessage: 'Profile' },
-  accountSettings: { id: 'rwaq.admin.topbar.accountSettings', defaultMessage: 'Account' },
-  studio: { id: 'rwaq.admin.topbar.studio', defaultMessage: 'Studio' },
-  learnerDashboard: { id: 'rwaq.admin.topbar.learnerDashboard', defaultMessage: 'LMS' },
-  logout: { id: 'rwaq.admin.topbar.logout', defaultMessage: 'Log out' },
-  openNav: { id: 'rwaq.admin.topbar.openNav', defaultMessage: 'Open navigation' },
-});
+import { topBarMessages as messages } from './messages';
 
 export interface TopBarProps {
   onMenuToggle?: () => void;
@@ -134,7 +120,7 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
       }}
     >
       {/* ── Left ── */}
-      <div className="d-flex align-items-center gap-2" style={{ minWidth: 0, flex: '0 1 auto' }}>
+      <div className="d-flex align-items-center rwaq-gap-sm" style={{ minWidth: 0, flex: '0 1 auto' }}>
         {isMobile && (
           <>
             <button

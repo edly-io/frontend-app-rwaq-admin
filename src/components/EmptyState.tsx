@@ -1,17 +1,7 @@
 import { ReactNode } from 'react';
 import { Container } from '@openedx/paragon';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-
-const messages = defineMessages({
-  defaultTitle: {
-    id: 'rwaq.admin.emptyState.defaultTitle',
-    defaultMessage: 'No data',
-  },
-  defaultBody: {
-    id: 'rwaq.admin.emptyState.defaultBody',
-    defaultMessage: 'There are no items to display.',
-  },
-});
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { emptyStateMessages as messages } from './messages';
 
 export interface EmptyStateProps {
   title?: string;

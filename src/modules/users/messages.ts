@@ -237,7 +237,7 @@ const messages = defineMessages({
   detailCreated: { id: 'rwaq.admin.users.detail.created', defaultMessage: 'Created' },
   detailLastLogin: { id: 'rwaq.admin.users.detail.lastLogin', defaultMessage: 'Last login' },
   detailOrgAdminOf: { id: 'rwaq.admin.users.detail.orgAdminOf', defaultMessage: 'Organization Admin of' },
-  detailNone: { id: 'rwaq.admin.users.detail.none', defaultMessage: '' },
+  detailNone: { id: 'rwaq.admin.users.detail.none', defaultMessage: '—' },
   edit: { id: 'rwaq.admin.users.detail.edit', defaultMessage: 'Edit' },
   view: { id: 'rwaq.admin.users.detail.view', defaultMessage: 'View' },
 
@@ -259,7 +259,7 @@ const messages = defineMessages({
   },
   enrollmentCourse: { id: 'rwaq.admin.users.enrollments.course', defaultMessage: 'Course' },
   enrollmentDate: { id: 'rwaq.admin.users.enrollments.date', defaultMessage: 'Enrolled' },
-  enrollmentStatus: { id: 'rwaq.admin.users.enrollments.status', defaultMessage: 'Status' },
+  enrollmentStatus: { id: 'rwaq.admin.users.enrollments.status', defaultMessage: 'Enrollment' },
   enrollmentCertificate: { id: 'rwaq.admin.users.enrollments.certificate', defaultMessage: 'Certificate' },
   enrollmentMode: { id: 'rwaq.admin.users.enrollments.mode', defaultMessage: 'Mode' },
   enrollmentCount: {
@@ -270,7 +270,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.enrollments.noCertificate',
     defaultMessage: 'None',
   },
-  enrollmentActive: { id: 'rwaq.admin.users.enrollments.active', defaultMessage: 'Active' },
+  enrollmentActive: { id: 'rwaq.admin.users.enrollments.active', defaultMessage: 'Enrolled' },
   enrollmentInactive: { id: 'rwaq.admin.users.enrollments.inactive', defaultMessage: 'Unenrolled' },
   enrollmentActions: { id: 'rwaq.admin.users.enrollments.actions', defaultMessage: 'Actions' },
   enrollmentLastChangeBy: {
@@ -386,3 +386,28 @@ const messages = defineMessages({
 });
 
 export default messages;
+
+// ── ReasonField — enrollment-change preset reasons ────────────────────────────
+
+export const enrollmentPresetMessages = defineMessages({
+  financialAssistance: {
+    id: 'rwaq.admin.users.reason.preset.financialAssistance',
+    defaultMessage: 'Financial assistance',
+  },
+  supportRequest: {
+    id: 'rwaq.admin.users.reason.preset.supportRequest',
+    defaultMessage: 'Learner support request',
+  },
+  correction: {
+    id: 'rwaq.admin.users.reason.preset.correction',
+    defaultMessage: 'Enrollment correction',
+  },
+  partnerAgreement: {
+    id: 'rwaq.admin.users.reason.preset.partnerAgreement',
+    defaultMessage: 'Partner agreement',
+  },
+  testing: {
+    id: 'rwaq.admin.users.reason.preset.testing',
+    defaultMessage: 'Testing / QA',
+  },
+});

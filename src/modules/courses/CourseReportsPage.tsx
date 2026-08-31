@@ -5,10 +5,11 @@
  *   2. Reports Available for Download — unified polled table (10 s while in-progress)
  */
 import React, { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
   Alert, Badge, Button, Spinner,
 } from '@openedx/paragon';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import { useCourse } from './data/hooks';
@@ -19,6 +20,7 @@ import {
   useCourseReportDownloads,
   useTriggerCourseReport,
 } from './data/reportsHooks';
+import { courseReportsMessages as messages } from './messages';
 
 // ── Report definitions ────────────────────────────────────────────────────────
 
@@ -28,85 +30,22 @@ interface ReportDef {
   description: string;
 }
 
-const REPORT_DEFS: ReportDef[] = [
-  {
-    type: 'grade_csv',
-    label: 'Grade Report',
-    description:
-      'Generates a CSV of current student grades. Each row contains student ID, email, username, '
-      + 'cumulative grade, per-assignment scores, enrollment track, verification status, '
-      + 'and certificate eligibility/delivery status.',
-  },
-  {
-    type: 'problem_grade',
-    label: 'Problem Grade Report',
-    description:
-      'Generates a CSV with per-problem scores for every student. '
-      + 'Useful for identifying which specific problems have low scores or high failure rates.',
-  },
-  {
-    type: 'profile_info',
-    label: 'Profile Information',
-    description:
-      'Generates a CSV of enrolled student profile data including username, name, email, '
-      + 'language, location, year of birth, gender, education level, mailing address, '
-      + 'goals, enrollment mode, account activation status, and enrollment date.',
-  },
-  {
-    type: 'may_enroll',
-    label: 'Learners Who Can Enroll',
-    description:
-      "Generates a CSV of users who are in the course's invitation list but have "
-      + 'not yet enrolled, useful for targeted outreach.',
-  },
-  {
-    type: 'inactive_learner',
-    label: 'Learners, Account Not Activated',
-    description:
-      'Generates a CSV of enrolled learners whose accounts have never been activated '
-      + '(email not confirmed), so they cannot access course content.',
-  },
-  {
-    type: 'survey',
-    label: 'Survey Results',
-    description:
-      'Generates a CSV of responses from the course survey module. '
-      + 'Columns are User ID, User Name, Email, and one column per survey field answered.',
-  },
-  {
-    type: 'proctored_exam',
-    label: 'Proctored Exam Results',
-    description:
-      'Generates a CSV of all proctored exam attempts, including exam name, provider, '
-      + 'student info, attempt timing, attempt status, review status, '
-      + 'and any reviewer comments (suspicious activity or rules violations).',
-  },
-  {
-    type: 'ora_data',
-    label: 'ORA Data Report',
-    description: 'Generates a CSV of all Open Response Assessment submissions. '
-      + 'Columns include Submission ID, block location, question prompt, username, '
-      + 'submission text, submission date, and attempt number.',
-  },
-  {
-    type: 'ora_summary',
-    label: 'ORA Summary Report',
-    description: 'Generates a CSV summary of ORA grading outcomes per learner per problem. '
-      + 'Includes final scores, grader counts, and overall pass/fail determination.',
-  },
-  {
-    type: 'ora_submission_archive',
-    label: 'ORA Submission Files Archive',
-    description: 'Generates a ZIP archive containing all ORA submission text files and '
-      + 'any uploaded file attachments submitted by learners for this course.',
-  },
-  {
-    type: 'anon_ids',
-    label: 'Student Anonymized IDs',
-    description: 'Generates a CSV mapping each enrolled learner\'s real user ID to their '
-      + 'anonymized user ID. Used for research and analytics that require de-identified data.',
-  },
-];
+const useReportDefs = (): ReportDef[] => {
+  const intl = useIntl();
+  return [
+    { type: 'grade_csv', label: intl.formatMessage(messages.reportGradeLabel), description: intl.formatMessage(messages.reportGradeDesc) },
+    { type: 'problem_grade', label: intl.formatMessage(messages.reportProblemGradeLabel), description: intl.formatMessage(messages.reportProblemGradeDesc) },
+    { type: 'profile_info', label: intl.formatMessage(messages.reportProfileInfoLabel), description: intl.formatMessage(messages.reportProfileInfoDesc) },
+    { type: 'may_enroll', label: intl.formatMessage(messages.reportMayEnrollLabel), description: intl.formatMessage(messages.reportMayEnrollDesc) },
+    { type: 'inactive_learner', label: intl.formatMessage(messages.reportInactiveLearnerLabel), description: intl.formatMessage(messages.reportInactiveLearnerDesc) },
+    { type: 'survey', label: intl.formatMessage(messages.reportSurveyLabel), description: intl.formatMessage(messages.reportSurveyDesc) },
+    { type: 'proctored_exam', label: intl.formatMessage(messages.reportProctoredExamLabel), description: intl.formatMessage(messages.reportProctoredExamDesc) },
+    { type: 'ora_data', label: intl.formatMessage(messages.reportOraDataLabel), description: intl.formatMessage(messages.reportOraDataDesc) },
+    { type: 'ora_summary', label: intl.formatMessage(messages.reportOraSummaryLabel), description: intl.formatMessage(messages.reportOraSummaryDesc) },
+    { type: 'ora_submission_archive', label: intl.formatMessage(messages.reportOraArchiveLabel), description: intl.formatMessage(messages.reportOraArchiveDesc) },
+    { type: 'anon_ids', label: intl.formatMessage(messages.reportAnonIdsLabel), description: intl.formatMessage(messages.reportAnonIdsDesc) },
+  ];
+};
 
 // ── State badge ───────────────────────────────────────────────────────────────
 
@@ -118,19 +57,21 @@ const STATE_VARIANT: Record<TaskState, string> = {
   REVOKED: 'secondary',
 };
 
-const STATE_LABEL: Record<TaskState, string> = {
-  QUEUING: 'Queuing',
-  IN_PROGRESS: 'In Progress',
-  SUCCESS: 'Complete',
-  FAILURE: 'Failed',
-  REVOKED: 'Revoked',
+const StateBadge = ({ state }: { state: TaskState }) => {
+  const intl = useIntl();
+  const stateLabels: Record<TaskState, string> = {
+    QUEUING: intl.formatMessage(messages.stateQueuing),
+    IN_PROGRESS: intl.formatMessage(messages.stateInProgress),
+    SUCCESS: intl.formatMessage(messages.stateComplete),
+    FAILURE: intl.formatMessage(messages.stateFailure),
+    REVOKED: intl.formatMessage(messages.stateRevoked),
+  };
+  return (
+    <Badge variant={STATE_VARIANT[state] || 'secondary'}>
+      {stateLabels[state] || state}
+    </Badge>
+  );
 };
-
-const StateBadge = ({ state }: { state: TaskState }) => (
-  <Badge variant={STATE_VARIANT[state] || 'secondary'}>
-    {STATE_LABEL[state] || state}
-  </Badge>
-);
 
 // ── Elapsed time helper ───────────────────────────────────────────────────────
 
@@ -174,16 +115,17 @@ const DownloadIcon = () => (
 const ReportTriggerRow = ({
   def,
   courseId,
+  downloads,
 }: {
   def: ReportDef;
   courseId: string;
+  downloads: ReportDownloadRow[] | undefined;
 }) => {
+  const intl = useIntl();
   const { mutate, isPending } = useTriggerCourseReport(courseId);
   const [trackedTaskId, setTrackedTaskId] = useState<string | null>(null);
   const [triggerError, setTriggerError] = useState<string | null>(null);
 
-  // Shared with DownloadsTable — TanStack Query deduplicates the network call
-  const { data: downloads } = useCourseReportDownloads(courseId, !!courseId);
   const trackedTask = trackedTaskId
     ? (downloads ?? []).find((r) => r.taskId === trackedTaskId) ?? null
     : null;
@@ -199,9 +141,11 @@ const ReportTriggerRow = ({
     setTriggerError(null);
     mutate(def.type, {
       onSuccess: (data) => setTrackedTaskId(data.taskId),
-      onError: (err) => setTriggerError(
-        (err as { message?: string })?.message || 'Failed to trigger report.',
-      ),
+      onError: (err) => {
+        const axiosDetail = (err as { response?: { data?: { detail?: string } } })
+          ?.response?.data?.detail;
+        setTriggerError(axiosDetail || (err as { message?: string })?.message || intl.formatMessage(messages.errorTriggerFallback));
+      },
     });
   };
 
@@ -219,11 +163,11 @@ const ReportTriggerRow = ({
       ? ` (${trackedTask.succeeded} / ${trackedTask.total})`
       : '';
     const label = trackedTask?.state === 'QUEUING'
-      ? 'Queued — waiting to start…'
-      : `Generating…${progress}`;
+      ? intl.formatMessage(messages.statusQueued)
+      : intl.formatMessage(messages.statusGenerating, { progress });
     statusText = <div className="text-muted small mt-1">{label}</div>;
   } else if (isFailed) {
-    statusText = <div className="text-danger small mt-1">Report generation failed. Click Retry to try again.</div>;
+    statusText = <div className="text-danger small mt-1">{intl.formatMessage(messages.statusFailed)}</div>;
   }
 
   // Action widget (right column)
@@ -235,7 +179,7 @@ const ReportTriggerRow = ({
       <Spinner
         animation="border"
         size="sm"
-        screenReaderText="Generating report"
+        screenReaderText={intl.formatMessage(messages.srGeneratingReport)}
         style={{ color: 'var(--pgn-color-primary-500, #0a3055)' }}
       />
     );
@@ -248,7 +192,7 @@ const ReportTriggerRow = ({
           style={{ gap: '0.3rem', whiteSpace: 'nowrap' }}
         >
           <DownloadIcon />
-          Download
+          {intl.formatMessage(messages.btnDownload)}
         </a>
         <button
           type="button"
@@ -256,7 +200,7 @@ const ReportTriggerRow = ({
           className="btn btn-link p-0"
           style={{ fontSize: '0.7rem', color: 'var(--pgn-color-text-muted, #6c757d)', lineHeight: 1.4 }}
         >
-          Re-generate
+          {intl.formatMessage(messages.btnReGenerate)}
         </button>
       </div>
     );
@@ -268,7 +212,7 @@ const ReportTriggerRow = ({
         onClick={handleGenerate}
         style={{ whiteSpace: 'nowrap', width: '100%' }}
       >
-        Retry
+        {intl.formatMessage(messages.btnRetry)}
       </Button>
     );
   } else {
@@ -279,7 +223,7 @@ const ReportTriggerRow = ({
         onClick={handleGenerate}
         style={{ whiteSpace: 'nowrap', width: '100%' }}
       >
-        Generate
+        {intl.formatMessage(messages.btnGenerate)}
       </Button>
     );
   }
@@ -312,70 +256,84 @@ const ReportTriggerRow = ({
 
 const DOWNLOADS_PAGE_SIZE = 10;
 
-const DOWNLOADS_COLUMNS: ColumnDef<ReportDownloadRow>[] = [
-  {
-    key: 'reportLabel',
-    label: 'Report Type',
-  },
-  {
-    key: 'state',
-    label: 'Status',
-    renderCell: (value) => <StateBadge state={value as TaskState} />,
-  },
-  {
-    key: 'created',
-    label: 'Generated',
-    renderCell: (value) => (
-      <span style={{ whiteSpace: 'nowrap' }}>
-        {new Date(value as string).toLocaleString()}
-      </span>
-    ),
-  },
-  {
-    key: 'modified',
-    label: 'Elapsed',
-    id: 'elapsed',
-    renderCell: (value, row) => (
-      <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-        {elapsedLabel(row.created, value as string | null, row.state)}
-      </span>
-    ),
-  },
-  {
-    key: 'succeeded',
-    label: 'Progress',
-    renderCell: (_value, row) => (
-      <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-        {row.total != null ? `${row.succeeded ?? 0} / ${row.total}` : '—'}
-      </span>
-    ),
-  },
-  {
-    key: 'downloadUrl',
-    label: 'Download',
-    renderCell: (value) => (
-      value ? (
-        <a
-          href={value as string}
-          className="btn btn-sm btn-outline-primary d-inline-flex align-items-center"
-          style={{ gap: '0.375rem', whiteSpace: 'nowrap' }}
-        >
-          <DownloadIcon />
-          Download
-        </a>
-      ) : (
-        <span className="text-muted small">—</span>
-      )
-    ),
-  },
-];
+const useDownloadsColumns = (): ColumnDef<ReportDownloadRow>[] => {
+  const intl = useIntl();
+  return [
+    { key: 'reportLabel', label: intl.formatMessage(messages.colReportType) },
+    {
+      key: 'state',
+      label: intl.formatMessage(messages.colStatus),
+      renderCell: (value) => <StateBadge state={value as TaskState} />,
+    },
+    {
+      key: 'created',
+      label: intl.formatMessage(messages.colGenerated),
+      renderCell: (value) => (
+        <span style={{ whiteSpace: 'nowrap' }}>
+          {new Date(value as string).toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      key: 'modified',
+      label: intl.formatMessage(messages.colElapsed),
+      id: 'elapsed',
+      renderCell: (value, row) => (
+        <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+          {elapsedLabel(row.created, value as string | null, row.state)}
+        </span>
+      ),
+    },
+    {
+      key: 'succeeded',
+      label: intl.formatMessage(messages.colProgress),
+      renderCell: (_value, row) => (
+        <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+          {row.total != null ? `${row.succeeded ?? 0} / ${row.total}` : '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'downloadUrl',
+      label: intl.formatMessage(messages.colDownload),
+      renderCell: (value) => (
+        value ? (
+          <a
+            href={value as string}
+            className="btn btn-sm btn-outline-primary d-inline-flex align-items-center"
+            style={{ gap: '0.375rem', whiteSpace: 'nowrap' }}
+          >
+            <DownloadIcon />
+            {intl.formatMessage(messages.btnDownload)}
+          </a>
+        ) : (
+          <span className="text-muted small">—</span>
+        )
+      ),
+    },
+  ];
+};
 
-const DownloadsTable = ({ courseId }: { courseId: string }) => {
-  const { data: rows, isLoading, isError } = useCourseReportDownloads(courseId);
-  const [page, setPage] = useState(1);
+const DownloadsTable = ({
+  rows,
+  isLoading,
+  isError,
+}: {
+  rows: ReportDownloadRow[] | undefined;
+  isLoading: boolean;
+  isError: boolean;
+}) => {
+  const intl = useIntl();
+  const columns = useDownloadsColumns();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = parseInt(searchParams.get('dp') || '1', 10);
+  const setPage = (p: number) => setSearchParams(
+    (prev) => { const next = new URLSearchParams(prev); next.set('dp', String(p)); return next; },
+    { replace: true },
+  );
 
   if (isError) {
-    return <Alert variant="warning" className="mb-0">Could not load available reports.</Alert>;
+    return <Alert variant="warning" className="mb-0">{intl.formatMessage(messages.errorLoadReports)}</Alert>;
   }
 
   const totalRows = rows?.length ?? 0;
@@ -388,7 +346,7 @@ const DownloadsTable = ({ courseId }: { courseId: string }) => {
 
   return (
     <AdminDataTable
-      columns={DOWNLOADS_COLUMNS}
+      columns={columns}
       data={pageRows}
       isLoading={isLoading}
       caption="Reports Available for Download"
@@ -406,14 +364,21 @@ const DownloadsTable = ({ courseId }: { courseId: string }) => {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 const CourseReportsPage = () => {
+  const intl = useIntl();
+  const reportDefs = useReportDefs();
   const { courseId = '' } = useParams<{ courseId: string }>();
   const { data: course, isLoading: courseLoading } = useCourse(courseId);
+  const {
+    data: downloads,
+    isLoading: downloadsLoading,
+    isError: downloadsError,
+  } = useCourseReportDownloads(courseId, !!courseId);
 
   if (courseLoading) {
     return (
       <div className="rwaq-page">
         <div className="d-flex justify-content-center py-5">
-          <Spinner animation="border" screenReaderText="Loading course" />
+          <Spinner animation="border" screenReaderText={intl.formatMessage(messages.srLoadingCourse)} />
         </div>
       </div>
     );
@@ -426,35 +391,34 @@ const CourseReportsPage = () => {
     <div className="rwaq-page">
       <div className="rwaq-page-header">
         <div className="rwaq-page-header__breadcrumb">
-          <Link to="/courses">Courses</Link>
+          <Link to="/courses">{intl.formatMessage(messages.breadcrumbCourses)}</Link>
           {' / '}
           <Link to={courseHref}>{courseName}</Link>
-          {' / Reports'}
+          {' / '}
+          {intl.formatMessage(messages.pageTitle)}
         </div>
-        <h1 className="rwaq-page-title mt-2">Reports</h1>
+        <h1 className="rwaq-page-title mt-2">{intl.formatMessage(messages.pageTitle)}</h1>
       </div>
 
       {/* Generate Reports */}
       <div className="rwaq-card">
-        <h2 className="rwaq-section-title mb-1">Generate Reports</h2>
+        <h2 className="rwaq-section-title mb-1">{intl.formatMessage(messages.generateSectionTitle)}</h2>
         <p className="text-muted small mb-0">
-          Click <strong>Generate</strong> next to a report type to queue an async task.
-          Completed files appear in the <em>Reports Available for Download</em> section below.
+          {intl.formatMessage(messages.generateSectionBody)}
         </p>
         <hr className="mt-3 mb-0" />
-        {REPORT_DEFS.map((def) => (
-          <ReportTriggerRow key={def.type} def={def} courseId={courseId} />
+        {reportDefs.map((def) => (
+          <ReportTriggerRow key={def.type} def={def} courseId={courseId} downloads={downloads} />
         ))}
       </div>
 
       {/* Reports Available for Download */}
       <div className="rwaq-card">
-        <h2 className="rwaq-section-title mb-1">Reports Available for Download</h2>
+        <h2 className="rwaq-section-title mb-1">{intl.formatMessage(messages.downloadsSectionTitle)}</h2>
         <p className="text-muted small mb-3">
-          Auto-refreshes every 10 s while a report is processing.
-          Download links expire after 5 minutes — regenerate if a link stops working.
+          {intl.formatMessage(messages.downloadsSectionBody)}
         </p>
-        <DownloadsTable courseId={courseId} />
+        <DownloadsTable rows={downloads} isLoading={downloadsLoading} isError={downloadsError} />
       </div>
     </div>
   );
