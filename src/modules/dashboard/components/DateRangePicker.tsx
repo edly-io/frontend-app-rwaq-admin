@@ -136,6 +136,7 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
     setPendingStart(val);
     if (val && pendingEnd) {
       setCustomMode(false);
+      setIsOpen(false);
       onChange(val, pendingEnd);
     }
   }, [pendingEnd, onChange]);
@@ -145,6 +146,7 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
     setPendingEnd(val);
     if (pendingStart && val) {
       setCustomMode(false);
+      setIsOpen(false);
       onChange(pendingStart, val);
     }
   }, [pendingStart, onChange]);

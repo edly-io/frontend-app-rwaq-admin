@@ -1,10 +1,15 @@
 /**
  * InfoTooltip — a small ⓘ icon that reveals an explanatory tooltip on hover
- * and click. Hover is primary on desktop; click/tap works on touch devices.
+ * and click. Hover is primary on desktop; click pins the tooltip open so it
+ * survives mouse-leave (useful on touch and for keyboard users).
  *
- * The tooltip appears below the icon and is absolutely positioned relative to
- * the icon's wrapper span. Card containers do not have overflow:hidden, so the
- * panel can bleed outside the card without being clipped.
+ * Visibility states:
+ *   'hidden'  — tooltip not shown
+ *   'hover'   — shown while mouse is over / element has focus; hides on leave/blur
+ *   'pinned'  — shown until a second click, outside click, or Escape
+ *
+ * The tooltip auto-flips (left / center / right) via useLayoutEffect so it
+ * never overflows the viewport edge on either side.
  */
 import {
   useEffect, useId, useLayoutEffect, useRef, useState,
@@ -18,25 +23,28 @@ export interface InfoTooltipProps {
 }
 
 type Placement = 'center' | 'left' | 'right';
+type Vis = 'hidden' | 'hover' | 'pinned';
 
 const TOOLTIP_BG = '#1a2e43';
 
 const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps) => {
-  const [visible, setVisible] = useState(false);
+  const [vis, setVis] = useState<Vis>('hidden');
   const [placement, setPlacement] = useState<Placement>('center');
   const wrapRef = useRef<HTMLSpanElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const rawId = useId();
   const tooltipId = `info-tooltip-${rawId.replace(/:/g, '')}`;
 
+  const isVisible = vis !== 'hidden';
+
   // Reset placement when tooltip closes so next open starts centered.
   useEffect(() => {
-    if (!visible) { setPlacement('center'); }
-  }, [visible]);
+    if (!isVisible) { setPlacement('center'); }
+  }, [isVisible]);
 
   // Flip the tooltip before the browser paints to prevent overflow.
   useLayoutEffect(() => {
-    if (!visible || !tooltipRef.current) { return; }
+    if (!isVisible || !tooltipRef.current) { return; }
     const rect = tooltipRef.current.getBoundingClientRect();
     const vw = window.innerWidth;
     if (rect.right > vw - 8) {
@@ -44,18 +52,18 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
     } else if (rect.left < 8) {
       setPlacement('left');
     }
-  }, [visible, placement]);
+  }, [isVisible, placement]);
 
   // Close on outside click or Escape key (WCAG 1.4.13).
   useEffect(() => {
-    if (!visible) { return undefined; }
+    if (!isVisible) { return undefined; }
     const handleMouse = (e: MouseEvent) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setVisible(false);
+        setVis('hidden');
       }
     };
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setVisible(false); }
+      if (e.key === 'Escape') { setVis('hidden'); }
     };
     document.addEventListener('mousedown', handleMouse);
     document.addEventListener('keydown', handleKey);
@@ -63,7 +71,7 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
       document.removeEventListener('mousedown', handleMouse);
       document.removeEventListener('keydown', handleKey);
     };
-  }, [visible]);
+  }, [isVisible]);
 
   const tooltipPos: React.CSSProperties = placement === 'right'
     ? { right: 0, left: 'auto' }
@@ -91,12 +99,18 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
       <button
         type="button"
         aria-label={ariaLabel}
-        aria-describedby={visible ? tooltipId : undefined}
-        onMouseEnter={() => setVisible(true)}
-        onMouseLeave={() => setVisible(false)}
-        onFocus={() => setVisible(true)}
-        onBlur={() => setVisible(false)}
-        onClick={() => setVisible((v) => !v)}
+        aria-describedby={isVisible ? tooltipId : undefined}
+        onMouseEnter={(e) => {
+          setVis((v) => (v === 'hidden' ? 'hover' : v));
+          (e.currentTarget as HTMLButtonElement).style.opacity = '1';
+        }}
+        onMouseLeave={(e) => {
+          setVis((v) => (v === 'hover' ? 'hidden' : v));
+          (e.currentTarget as HTMLButtonElement).style.opacity = '0.7';
+        }}
+        onFocus={() => setVis((v) => (v === 'hidden' ? 'hover' : v))}
+        onBlur={() => setVis((v) => (v === 'hover' ? 'hidden' : v))}
+        onClick={() => setVis((v) => (v === 'pinned' ? 'hidden' : 'pinned'))}
         style={{
           border: 'none',
           background: 'transparent',
@@ -110,13 +124,11 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
           opacity: 0.7,
           transition: 'opacity 120ms',
         }}
-        onMouseEnterCapture={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
-        onMouseLeaveCapture={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.7'; }}
       >
         ⓘ
       </button>
 
-      {visible && (
+      {isVisible && (
         <div
           ref={tooltipRef}
           id={tooltipId}

@@ -140,6 +140,8 @@ describe('DateRangePicker', () => {
     expect(onChange).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-07-31' } });
     expect(onChange).toHaveBeenCalledWith('2024-04-01', '2024-07-31');
+    // Dropdown closes after both dates are set
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('does not call onChange when a date input is cleared', () => {
