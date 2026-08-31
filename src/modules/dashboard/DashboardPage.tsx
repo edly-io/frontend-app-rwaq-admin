@@ -488,22 +488,19 @@ const DashboardPage = () => {
             are all-time figures and do not change with the date range. When a range is
             active, a muted badge communicates this so users aren't confused. */}
         <KpiCard
-          label={intl.formatMessage(messages.kpiLearners)}
+          label={intl.formatMessage(hasDateRange ? messages.kpiLearnersRange : messages.kpiLearners)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
           isLoading={summaryQuery.isLoading}
-          badge={allTimeBadge}
         />
         <KpiCard
-          label={intl.formatMessage(messages.kpiEnrollments)}
+          label={intl.formatMessage(hasDateRange ? messages.kpiEnrollmentsRange : messages.kpiEnrollments)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalEnrollments)}
           isLoading={summaryQuery.isLoading}
-          badge={allTimeBadge}
         />
         <KpiCard
           label={intl.formatMessage(messages.kpiCoursesRunning)}
           value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
           isLoading={summaryQuery.isLoading}
-          badge={allTimeBadge}
           sparkline={summary ? (
             <span className="rwaq-kpi-context">
               {intl.formatMessage(messages.kpiOfTotal, { total: formatCount(summary.totalCourses) })}

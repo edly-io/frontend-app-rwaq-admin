@@ -13,7 +13,9 @@ const messages = defineMessages({
 
   // ── KPI row ────────────────────────────────────────────────────────────────
   kpiLearners: { id: 'rwaq.admin.dashboard.kpi.learners', defaultMessage: 'Learners' },
+  kpiLearnersRange: { id: 'rwaq.admin.dashboard.kpi.learnersRange', defaultMessage: 'New learners' },
   kpiEnrollments: { id: 'rwaq.admin.dashboard.kpi.enrollments', defaultMessage: 'Enrollments' },
+  kpiEnrollmentsRange: { id: 'rwaq.admin.dashboard.kpi.enrollmentsRange', defaultMessage: 'New enrollments' },
   kpiCoursesRunning: { id: 'rwaq.admin.dashboard.kpi.coursesRunning', defaultMessage: 'Courses running' },
   kpiProgramsActive: { id: 'rwaq.admin.dashboard.kpi.programsActive', defaultMessage: 'Programs active' },
   kpiRegistrations: { id: 'rwaq.admin.dashboard.kpi.registrations', defaultMessage: 'Registrations this month' },
