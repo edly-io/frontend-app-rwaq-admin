@@ -109,6 +109,13 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     },
   });
 
+  const handleClose = () => {
+    formik.resetForm();
+    createMutation.reset();
+    updateMutation.reset();
+    onClose();
+  };
+
   const fieldError = (field: keyof FormValues) => (
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''
   );
@@ -117,7 +124,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     <FormModal
       title={intl.formatMessage(isEdit ? messages.editTitle : messages.createTitle)}
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       onSubmit={formik.handleSubmit}
       submitLabel={intl.formatMessage(isEdit ? messages.save : messages.create)}
       cancelLabel={intl.formatMessage(messages.cancel)}
