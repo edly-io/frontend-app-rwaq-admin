@@ -77,36 +77,36 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
           style={{
             position: 'absolute',
             top: 'calc(100% + 0.375rem)',
-            left: '50%',
-            transform: 'translateX(-50%)',
+            right: 0,
+            left: 'auto',
             zIndex: 1060,
-            background: 'var(--rwaq-heading, #273F58)',
+            background: '#1a2e43',
             color: '#fff',
             borderRadius: '0.375rem',
             padding: '0.5rem 0.6875rem',
             fontSize: '0.75rem',
             lineHeight: 1.5,
             width: '220px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
             fontWeight: 400,
             textTransform: 'none',
             letterSpacing: 0,
             whiteSpace: 'normal',
           }}
         >
-          {/* Arrow pointing upward toward the icon */}
+          {/* Arrow pointing upward toward the icon — anchored right */}
           <span
             aria-hidden="true"
             style={{
               position: 'absolute',
               top: '-4px',
-              left: '50%',
-              transform: 'translateX(-50%)',
+              right: '10px',
+              left: 'auto',
               width: 0,
               height: 0,
               borderLeft: '5px solid transparent',
               borderRight: '5px solid transparent',
-              borderBottom: '5px solid var(--rwaq-heading, #273F58)',
+              borderBottom: '5px solid #1a2e43',
             }}
           />
           {text}
