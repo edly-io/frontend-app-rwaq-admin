@@ -150,6 +150,42 @@ const AccessibleFallbackTable = ({ data, series }: FallbackTableProps) => {
   );
 };
 
+// ── Chart legend ─────────────────────────────────────────────────────────────
+
+// Defined at module scope so React gets a stable component reference across
+// renders of MetricChart. An inline definition would create a new type on every
+// render, causing React to unmount/remount the legend instead of diffing it.
+const ChartLegend = ({ payload = [] }: { payload?: { value: string; color: string }[] }) => (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '0.25rem',
+    marginTop: '0.5rem',
+    fontSize: '0.8125rem',
+  }}
+  >
+    {payload.map((entry, index) => (
+      <span key={entry.value} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}>
+        {index > 0 && (
+          <span style={{ color: resolveParagonToken('--rwaq-muted', '#9ca3af'), padding: '0 0.125rem' }}>/</span>
+        )}
+        <span style={{
+          display: 'inline-block',
+          width: 10,
+          height: 10,
+          backgroundColor: entry.color,
+          borderRadius: 2,
+          flexShrink: 0,
+        }}
+        />
+        <span style={{ color: resolveParagonToken('--pgn-color-gray-700', '#3b3b3b') }}>{entry.value}</span>
+      </span>
+    ))}
+  </div>
+);
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 const MetricChart = ({
@@ -230,36 +266,7 @@ const MetricChart = ({
     cursor: { fill: resolveParagonToken('--rwaq-row-hover', 'rgba(0,0,0,0.04)') },
   };
 
-  const ChartLegend = ({ payload = [] }: { payload?: { value: string; color: string }[] }) => (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      gap: '0.25rem',
-      marginTop: '0.5rem',
-      fontSize: '0.8125rem',
-    }}
-    >
-      {payload.map((entry, index) => (
-        <span key={entry.value} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}>
-          {index > 0 && (
-            <span style={{ color: resolveParagonToken('--rwaq-muted', '#9ca3af'), padding: '0 0.125rem' }}>/</span>
-          )}
-          <span style={{
-            display: 'inline-block',
-            width: 10,
-            height: 10,
-            backgroundColor: entry.color,
-            borderRadius: 2,
-            flexShrink: 0,
-          }}
-          />
-          <span style={{ color: resolveParagonToken('--pgn-color-gray-700', '#3b3b3b') }}>{entry.value}</span>
-        </span>
-      ))}
-    </div>
-  );
+  // ChartLegend is defined at module scope above MetricChart (stable reference).
 
   const renderContent = () => {
     if (type === 'line') {
