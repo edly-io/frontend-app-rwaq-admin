@@ -124,6 +124,59 @@ const messages = defineMessages({
     defaultMessage: 'No activity in the last {months} months.',
   },
 
+  // ── Program status breakdown ───────────────────────────────────────────────
+  programStatusTitle: {
+    id: 'rwaq.admin.dashboard.programStatus.title',
+    defaultMessage: 'Programs by status',
+  },
+  programStatusHint: {
+    id: 'rwaq.admin.dashboard.programStatus.hint',
+    defaultMessage: 'Cross-check: active (visible) matches the KPI above; active (admin-only) explains why the Programs page shows a higher number.',
+  },
+  programStatusColStatus: {
+    id: 'rwaq.admin.dashboard.programStatus.colStatus',
+    defaultMessage: 'Status',
+  },
+  programStatusColCount: {
+    id: 'rwaq.admin.dashboard.programStatus.colCount',
+    defaultMessage: 'Count',
+  },
+  programStatusColNote: {
+    id: 'rwaq.admin.dashboard.programStatus.colNote',
+    defaultMessage: 'Note',
+  },
+  programStatusActiveVisible: {
+    id: 'rwaq.admin.dashboard.programStatus.activeVisible',
+    defaultMessage: 'Active (learner-visible)',
+  },
+  programStatusActiveHidden: {
+    id: 'rwaq.admin.dashboard.programStatus.activeHidden',
+    defaultMessage: 'Active (admin-only)',
+  },
+  programStatusDraft: { id: 'rwaq.admin.dashboard.programStatus.draft', defaultMessage: 'Draft' },
+  programStatusArchived: { id: 'rwaq.admin.dashboard.programStatus.archived', defaultMessage: 'Archived' },
+  programStatusTotal: { id: 'rwaq.admin.dashboard.programStatus.total', defaultMessage: 'Total (all)' },
+  programStatusNoteVisible: {
+    id: 'rwaq.admin.dashboard.programStatus.noteVisible',
+    defaultMessage: 'Shown to learners · matches KPI card',
+  },
+  programStatusNoteHidden: {
+    id: 'rwaq.admin.dashboard.programStatus.noteHidden',
+    defaultMessage: 'Hidden via is_hide flag · admins only',
+  },
+  programStatusNoteDraft: {
+    id: 'rwaq.admin.dashboard.programStatus.noteDraft',
+    defaultMessage: 'Not yet published',
+  },
+  programStatusNoteArchived: {
+    id: 'rwaq.admin.dashboard.programStatus.noteArchived',
+    defaultMessage: 'No longer offered',
+  },
+  programStatusNoteTotal: {
+    id: 'rwaq.admin.dashboard.programStatus.noteTotal',
+    defaultMessage: 'All statuses combined · matches Programs management page',
+  },
+
   // ── Section headings, which group the bands ────────────────────────────────
   sectionGrowth: { id: 'rwaq.admin.dashboard.section.growth', defaultMessage: 'Growth' },
   sectionOutcomes: { id: 'rwaq.admin.dashboard.section.outcomes', defaultMessage: 'Outcomes' },

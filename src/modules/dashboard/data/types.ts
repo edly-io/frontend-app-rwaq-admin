@@ -60,6 +60,12 @@ export interface ProgramFunnel {
   completions: number;
   completionPct: number | null;
   avgCoursesPerProgram: number | null;
+  /** Full status breakdown for cross-verification against Studio / Programs page. */
+  totalAll: number;
+  activeVisible: number;
+  activeHidden: number;
+  draft: number;
+  archived: number;
 }
 
 export interface LegacyMigration {

@@ -407,6 +407,79 @@ const DashboardPage = () => {
         </div>
       </div>
 
+      {/* Program status breakdown — lets admins cross-verify the KPI card
+          against what the Programs management page and Studio each show. */}
+      <div className="rwaq-card rwaq-dash-card">
+        <div className="rwaq-dash-card__head">
+          <h3 className="rwaq-section-title mb-0">
+            {intl.formatMessage(messages.programStatusTitle)}
+          </h3>
+          <span className="rwaq-dash-card__sub">
+            {intl.formatMessage(messages.programStatusHint)}
+          </span>
+        </div>
+        <MiniTable
+          caption={intl.formatMessage(messages.programStatusTitle)}
+          rows={[
+            {
+              status: intl.formatMessage(messages.programStatusActiveVisible),
+              count: data.programs.activeVisible,
+              note: intl.formatMessage(messages.programStatusNoteVisible),
+              highlight: true,
+            },
+            {
+              status: intl.formatMessage(messages.programStatusActiveHidden),
+              count: data.programs.activeHidden,
+              note: intl.formatMessage(messages.programStatusNoteHidden),
+            },
+            {
+              status: intl.formatMessage(messages.programStatusDraft),
+              count: data.programs.draft,
+              note: intl.formatMessage(messages.programStatusNoteDraft),
+            },
+            {
+              status: intl.formatMessage(messages.programStatusArchived),
+              count: data.programs.archived,
+              note: intl.formatMessage(messages.programStatusNoteArchived),
+            },
+            {
+              status: intl.formatMessage(messages.programStatusTotal),
+              count: data.programs.totalAll,
+              note: intl.formatMessage(messages.programStatusNoteTotal),
+              isTotal: true,
+            },
+          ]}
+          rowKey={(row) => row.status}
+          columns={[
+            {
+              label: intl.formatMessage(messages.programStatusColStatus),
+              render: (row) => (
+                <span style={{ fontWeight: row.isTotal ? 600 : undefined }}>
+                  {row.status}
+                </span>
+              ),
+            },
+            {
+              label: intl.formatMessage(messages.programStatusColCount),
+              render: (row) => (
+                <span style={{ fontWeight: row.isTotal ? 600 : undefined }}>
+                  {formatCount(row.count)}
+                </span>
+              ),
+              isNumeric: true,
+            },
+            {
+              label: intl.formatMessage(messages.programStatusColNote),
+              render: (row) => (
+                <span style={{ color: 'var(--rwaq-muted, #6B757F)', fontSize: '0.8125rem' }}>
+                  {row.note}
+                </span>
+              ),
+            },
+          ]}
+        />
+      </div>
+
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
