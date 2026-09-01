@@ -16,18 +16,18 @@ import {
 } from './api';
 import type { AnalyticsParams } from './types';
 
-const analyticsQueryKeys = {
+export const analyticsQueryKeys = {
   all: [appId, 'analytics'] as const,
   summary: (params: AnalyticsParams) => [...analyticsQueryKeys.all, 'summary', params] as const,
   trends: (params: AnalyticsParams) => [...analyticsQueryKeys.all, 'trends', params] as const,
   breakdowns: (params: AnalyticsParams) => [...analyticsQueryKeys.all, 'breakdowns', params] as const,
 };
 
-// Analytics data is already cached server-side for 60 s and stamped with
-// generatedAt. Setting staleTime: 0 means React Query always refetches on
-// window focus or component mount, so the UI picks up the latest backend
-// snapshot without an extra layer of client-side staleness on top.
-const ANALYTICS_QUERY_OPTIONS = { staleTime: 0 } as const;
+// Analytics data is cached server-side for 5 min and stamped with generatedAt.
+// Match the client staleTime to the backend TTL so React Query never fires an
+// extra refetch that the backend will serve from cache anyway. The Refresh
+// button bypasses both layers via ?force_refresh=true.
+const ANALYTICS_QUERY_OPTIONS = { staleTime: 5 * 60 * 1000 } as const;
 
 /** Headline counts for the KPI row. */
 export const useAnalyticsSummary = (params: AnalyticsParams = {}) => useQuery({

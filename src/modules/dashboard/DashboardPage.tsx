@@ -16,7 +16,8 @@
  *   - Every figure is stamped with the backend's generatedAt, because these
  *     numbers are cached and pretending otherwise would be dishonest.
  */
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Icon, Spinner } from '@openedx/paragon';
 import { Refresh } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -28,10 +29,16 @@ import type { ChartDataPoint, ChartType } from '@src/components/charts/MetricCha
 import MiniTable from './components/MiniTable';
 import StatTile from './components/StatTile';
 import {
+  analyticsQueryKeys,
   useAnalyticsBreakdowns,
   useAnalyticsSummary,
   useAnalyticsTrends,
 } from './data/hooks';
+import {
+  getAnalyticsBreakdowns,
+  getAnalyticsSummary,
+  getAnalyticsTrends,
+} from './data/api';
 import type {
   AnalyticsBreakdowns, OrganizationRow, TopCourse, TrendPoint,
 } from './data/types';
@@ -76,9 +83,35 @@ const formatPercent = (value: number | null): string | null => (
 const DashboardPage = () => {
   const intl = useIntl();
 
-  const summaryQuery = useAnalyticsSummary();
-  const trendsQuery = useAnalyticsTrends({ months: TREND_MONTHS });
-  const breakdownsQuery = useAnalyticsBreakdowns();
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  // Track the params for each query so we can write back to the same key.
+  const summaryParams = useRef({});
+  const trendsParams = useRef({ months: TREND_MONTHS });
+  const breakdownsParams = useRef({});
+
+  const summaryQuery = useAnalyticsSummary(summaryParams.current);
+  const trendsQuery = useAnalyticsTrends(trendsParams.current);
+  const breakdownsQuery = useAnalyticsBreakdowns(breakdownsParams.current);
+
+  // Bypass the backend cache and inject fresh data directly into React Query's
+  // cache so all three queries update atomically in a single re-render.
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const forceParams = { forceRefresh: true };
+      const [freshSummary, freshTrends, freshBreakdowns] = await Promise.all([
+        getAnalyticsSummary({ ...summaryParams.current, ...forceParams }),
+        getAnalyticsTrends({ ...trendsParams.current, ...forceParams }),
+        getAnalyticsBreakdowns({ ...breakdownsParams.current, ...forceParams }),
+      ]);
+      queryClient.setQueryData(analyticsQueryKeys.summary(summaryParams.current), freshSummary);
+      queryClient.setQueryData(analyticsQueryKeys.trends(trendsParams.current), freshTrends);
+      queryClient.setQueryData(analyticsQueryKeys.breakdowns(breakdownsParams.current), freshBreakdowns);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const summary = summaryQuery.data;
   const trends = trendsQuery.data;
@@ -435,14 +468,6 @@ const DashboardPage = () => {
     </>
   );
 
-  const isRefetching = summaryQuery.isFetching || trendsQuery.isFetching || breakdownsQuery.isFetching;
-
-  const handleRefresh = () => {
-    summaryQuery.refetch();
-    trendsQuery.refetch();
-    breakdownsQuery.refetch();
-  };
-
   const generatedAt = summary?.generatedAt ?? trends?.generatedAt ?? breakdowns?.generatedAt;
 
   return (
@@ -458,17 +483,17 @@ const DashboardPage = () => {
           <button
             type="button"
             onClick={handleRefresh}
-            disabled={isRefetching}
+            disabled={isRefreshing}
             aria-label={intl.formatMessage(messages.refreshAriaLabel)}
             style={{
               border: 'none',
               background: 'transparent',
-              cursor: isRefetching ? 'default' : 'pointer',
+              cursor: isRefreshing ? 'default' : 'pointer',
               color: 'var(--rwaq-muted, #6B757F)',
               display: 'inline-flex',
               alignItems: 'center',
               padding: '0.25rem',
-              opacity: isRefetching ? 0.5 : 1,
+              opacity: isRefreshing ? 0.5 : 1,
               transition: 'opacity 150ms',
             }}
           >
