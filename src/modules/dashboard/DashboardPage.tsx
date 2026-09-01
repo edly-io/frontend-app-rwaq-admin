@@ -16,7 +16,7 @@
  *   - Every figure is stamped with the backend's generatedAt, because these
  *     numbers are cached and pretending otherwise would be dishonest.
  */
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Icon, Spinner } from '@openedx/paragon';
 import { Refresh } from '@openedx/paragon/icons';
@@ -85,6 +85,12 @@ const DashboardPage = () => {
 
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  // Tick every minute so the relative timestamp ("3 min ago") stays accurate.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
   // Track the params for each query so we can write back to the same key.
   const summaryParams = useRef({});
   const trendsParams = useRef({ months: TREND_MONTHS });
