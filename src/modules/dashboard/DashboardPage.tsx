@@ -500,6 +500,12 @@ const DashboardPage = () => {
                 animation="border"
                 size="sm"
                 screenReaderText={intl.formatMessage(messages.refreshAriaLabel)}
+                style={{
+                  width: '1.125rem',
+                  height: '1.125rem',
+                  color: 'var(--rwaq-muted, #6B757F)',
+                  borderWidth: '0.15em',
+                }}
               />
             ) : (
               <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
