@@ -17,7 +17,8 @@
  *     numbers are cached and pretending otherwise would be dishonest.
  */
 import { useMemo } from 'react';
-import { Alert, Spinner } from '@openedx/paragon';
+import { Alert, Icon, Spinner } from '@openedx/paragon';
+import { Refresh } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
@@ -38,6 +39,15 @@ import messages from './messages';
 
 const TREND_MONTHS = 12;
 const CHART_HEIGHT = 190;
+
+/** "2026-08-28T09:14:00Z" → "Just now" / "3 min ago" / "1 hr ago" */
+const formatRelativeTime = (isoString: string): string => {
+  const diffMs = Date.now() - new Date(isoString).getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  if (diffMin < 1) { return 'Just now'; }
+  if (diffMin < 60) { return `${diffMin} min ago`; }
+  return `${Math.floor(diffMin / 60)} hr ago`;
+};
 
 /** "2026-08" → "Aug" for compact bar-chart axis labels. */
 const formatPeriod = (period: string): string => {
@@ -425,10 +435,46 @@ const DashboardPage = () => {
     </>
   );
 
+  const isRefetching = summaryQuery.isFetching || trendsQuery.isFetching || breakdownsQuery.isFetching;
+
+  const handleRefresh = () => {
+    summaryQuery.refetch();
+    trendsQuery.refetch();
+    breakdownsQuery.refetch();
+  };
+
+  const generatedAt = summary?.generatedAt ?? trends?.generatedAt ?? breakdowns?.generatedAt;
+
   return (
     <div className="rwaq-page">
       <div className="rwaq-page-header">
         <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {generatedAt && (
+            <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
+              {intl.formatMessage(messages.lastUpdated, { time: formatRelativeTime(generatedAt) })}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={isRefetching}
+            aria-label={intl.formatMessage(messages.refreshAriaLabel)}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              cursor: isRefetching ? 'default' : 'pointer',
+              color: 'var(--rwaq-muted, #6B757F)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '0.25rem',
+              opacity: isRefetching ? 0.5 : 1,
+              transition: 'opacity 150ms',
+            }}
+          >
+            <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
+          </button>
+        </div>
       </div>
 
       {/* Above the row, not below it: under five em dashes the reason has to

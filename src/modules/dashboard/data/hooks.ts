@@ -23,20 +23,29 @@ const analyticsQueryKeys = {
   breakdowns: (params: AnalyticsParams) => [...analyticsQueryKeys.all, 'breakdowns', params] as const,
 };
 
+// Analytics data is already cached server-side for 60 s and stamped with
+// generatedAt. Setting staleTime: 0 means React Query always refetches on
+// window focus or component mount, so the UI picks up the latest backend
+// snapshot without an extra layer of client-side staleness on top.
+const ANALYTICS_QUERY_OPTIONS = { staleTime: 0 } as const;
+
 /** Headline counts for the KPI row. */
 export const useAnalyticsSummary = (params: AnalyticsParams = {}) => useQuery({
   queryKey: analyticsQueryKeys.summary(params),
   queryFn: () => getAnalyticsSummary(params),
+  ...ANALYTICS_QUERY_OPTIONS,
 });
 
 /** Bounded monthly series for the trend charts. */
 export const useAnalyticsTrends = (params: AnalyticsParams = {}) => useQuery({
   queryKey: analyticsQueryKeys.trends(params),
   queryFn: () => getAnalyticsTrends(params),
+  ...ANALYTICS_QUERY_OPTIONS,
 });
 
 /** Grouped aggregates for the breakdown cards and tables. */
 export const useAnalyticsBreakdowns = (params: AnalyticsParams = {}) => useQuery({
   queryKey: analyticsQueryKeys.breakdowns(params),
   queryFn: () => getAnalyticsBreakdowns(params),
+  ...ANALYTICS_QUERY_OPTIONS,
 });
