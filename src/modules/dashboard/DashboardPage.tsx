@@ -493,11 +493,17 @@ const DashboardPage = () => {
               display: 'inline-flex',
               alignItems: 'center',
               padding: '0.25rem',
-              opacity: isRefreshing ? 0.5 : 1,
-              transition: 'opacity 150ms',
             }}
           >
-            <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
+            {isRefreshing ? (
+              <Spinner
+                animation="border"
+                size="sm"
+                screenReaderText={intl.formatMessage(messages.refreshAriaLabel)}
+              />
+            ) : (
+              <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
+            )}
           </button>
         </div>
       </div>
