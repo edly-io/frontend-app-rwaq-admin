@@ -503,7 +503,7 @@ const DashboardPage = () => {
                 style={{
                   width: '1.125rem',
                   height: '1.125rem',
-                  color: 'var(--rwaq-muted, #6B757F)',
+                  color: 'var(--pgn-color-primary-base, #449cc2)',
                   borderWidth: '0.15em',
                 }}
               />
