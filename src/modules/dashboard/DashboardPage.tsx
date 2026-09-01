@@ -171,8 +171,8 @@ const DashboardPage = () => {
   // Trend subtitle: date range overrides the default "Last N months" label.
   const trendSubtitle = hasDateRange
     ? intl.formatMessage(messages.trendDateRange, {
-      start: startDate ? new Date(startDate).toLocaleDateString() : '—',
-      end: endDate ? new Date(endDate).toLocaleDateString() : intl.formatMessage(messages.today),
+      start: startDate ? new Date(`${startDate}T12:00:00`).toLocaleDateString() : '—',
+      end: endDate ? new Date(`${endDate}T12:00:00`).toLocaleDateString() : intl.formatMessage(messages.today),
     })
     : intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS });
 

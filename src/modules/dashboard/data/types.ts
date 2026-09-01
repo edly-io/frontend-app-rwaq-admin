@@ -114,6 +114,9 @@ export interface AnalyticsBreakdowns {
   catalogConcentration: CatalogConcentration;
   enrollmentWindows: EnrollmentWindows;
   generatedAt: string;
+  /** Null when no explicit date range was requested. */
+  dateRangeStart: string | null;
+  dateRangeEnd: string | null;
 }
 
 /** Shared query params. Every endpoint accepts an optional org scope. */
