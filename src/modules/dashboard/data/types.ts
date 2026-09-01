@@ -116,4 +116,6 @@ export interface AnalyticsBreakdowns {
 export interface AnalyticsParams {
   org?: string;
   months?: number;
+  /** When true the backend skips its cache and recomputes fresh data. */
+  forceRefresh?: boolean;
 }
