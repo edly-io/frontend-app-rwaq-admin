@@ -190,6 +190,7 @@ const MetricChart = ({
           axisLine={false}
           tickLine={false}
           dy={6}
+          interval={0}
         />
       ),
       yAxis: (

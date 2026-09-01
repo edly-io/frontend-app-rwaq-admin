@@ -39,11 +39,11 @@ import messages from './messages';
 const TREND_MONTHS = 12;
 const CHART_HEIGHT = 190;
 
-/** "2026-08" → "Aug 26", so a 12-month axis stays readable. */
+/** "2026-08" → "Aug" for compact bar-chart axis labels. */
 const formatPeriod = (period: string): string => {
   const [year, month] = period.split('-');
   const date = new Date(Number(year), Number(month) - 1, 1);
-  return date.toLocaleDateString(undefined, { month: 'short', year: '2-digit' });
+  return date.toLocaleDateString(undefined, { month: 'short' });
 };
 
 /** Reshape a series for MetricChart, which keys on `name` plus a series key. */
