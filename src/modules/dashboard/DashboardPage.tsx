@@ -16,16 +16,18 @@
  *   - Every figure is stamped with the backend's generatedAt, because these
  *     numbers are cached and pretending otherwise would be dishonest.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Icon, Spinner } from '@openedx/paragon';
 import { Refresh } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
+import InfoTooltip from '@src/components/InfoTooltip';
 import KpiCard from '@src/components/KpiCard';
 import MetricChart from '@src/components/charts/MetricChart';
 import type { ChartDataPoint, ChartType } from '@src/components/charts/MetricChart';
+import DateRangePicker from './components/DateRangePicker';
 import MiniTable from './components/MiniTable';
 import StatTile from './components/StatTile';
 import {
@@ -40,7 +42,7 @@ import {
   getAnalyticsTrends,
 } from './data/api';
 import type {
-  AnalyticsBreakdowns, OrganizationRow, TopCourse, TrendPoint,
+  AnalyticsBreakdowns, AnalyticsParams, OrganizationRow, TopCourse, TrendPoint,
 } from './data/types';
 import messages from './messages';
 
@@ -85,20 +87,33 @@ const DashboardPage = () => {
 
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // ── Date range — internal state only, never written to the URL ───────────────
+  const [startDate, setStartDate] = useState<string | undefined>(undefined);
+  const [endDate, setEndDate] = useState<string | undefined>(undefined);
+  const hasDateRange = Boolean(startDate || endDate);
+
+  const handleDateChange = (newStart: string | undefined, newEnd: string | undefined) => {
+    setStartDate(newStart);
+    setEndDate(newEnd);
+  };
+
   // Tick every minute so the relative timestamp ("3 min ago") stays accurate.
   const [, setTick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 60_000);
     return () => clearInterval(id);
   }, []);
-  // Track the params for each query so we can write back to the same key.
-  const summaryParams = useRef({});
-  const trendsParams = useRef({ months: TREND_MONTHS });
-  const breakdownsParams = useRef({});
 
-  const summaryQuery = useAnalyticsSummary(summaryParams.current);
-  const trendsQuery = useAnalyticsTrends(trendsParams.current);
-  const breakdownsQuery = useAnalyticsBreakdowns(breakdownsParams.current);
+  // ── Queries ───────────────────────────────────────────────────────────────────
+  // analyticsQueryKeys include the full params object, so adding startDate/endDate
+  // automatically busts the cache and triggers a refetch — no manual calls needed.
+  const params: AnalyticsParams = { startDate, endDate };
+  const trendsParams: AnalyticsParams = { ...params, months: TREND_MONTHS };
+
+  const summaryQuery = useAnalyticsSummary(params);
+  const trendsQuery = useAnalyticsTrends(trendsParams);
+  const breakdownsQuery = useAnalyticsBreakdowns(params);
 
   // Bypass the backend cache and inject fresh data directly into React Query's
   // cache so all three queries update atomically in a single re-render.
@@ -107,13 +122,13 @@ const DashboardPage = () => {
     try {
       const forceParams = { forceRefresh: true };
       const [freshSummary, freshTrends, freshBreakdowns] = await Promise.all([
-        getAnalyticsSummary({ ...summaryParams.current, ...forceParams }),
-        getAnalyticsTrends({ ...trendsParams.current, ...forceParams }),
-        getAnalyticsBreakdowns({ ...breakdownsParams.current, ...forceParams }),
+        getAnalyticsSummary({ ...params, ...forceParams }),
+        getAnalyticsTrends({ ...trendsParams, ...forceParams }),
+        getAnalyticsBreakdowns({ ...params, ...forceParams }),
       ]);
-      queryClient.setQueryData(analyticsQueryKeys.summary(summaryParams.current), freshSummary);
-      queryClient.setQueryData(analyticsQueryKeys.trends(trendsParams.current), freshTrends);
-      queryClient.setQueryData(analyticsQueryKeys.breakdowns(breakdownsParams.current), freshBreakdowns);
+      queryClient.setQueryData(analyticsQueryKeys.summary(params), freshSummary);
+      queryClient.setQueryData(analyticsQueryKeys.trends(trendsParams), freshTrends);
+      queryClient.setQueryData(analyticsQueryKeys.breakdowns(params), freshBreakdowns);
     } finally {
       setIsRefreshing(false);
     }
@@ -153,13 +168,27 @@ const DashboardPage = () => {
     query.isError ? getErrorStatus(query.error) : undefined
   );
 
+  // Trend subtitle: date range overrides the default "Last N months" label.
+  const trendSubtitle = hasDateRange
+    ? intl.formatMessage(messages.trendDateRange, {
+      start: startDate ? new Date(startDate).toLocaleDateString() : '—',
+      end: endDate ? new Date(endDate).toLocaleDateString() : intl.formatMessage(messages.today),
+    })
+    : intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS });
+
+  // All-time badge: shown on snapshot metrics when a date range is active.
+  const allTimeBadge = hasDateRange ? intl.formatMessage(messages.allTimeBadge) : undefined;
+
   // A dashboard with no readable numbers at all is an error page, not an empty
   // one — retrying is the only useful action.
   if (summaryQuery.isError && trendsQuery.isError && breakdownsQuery.isError) {
     return (
       <div className="rwaq-page">
         <div className="rwaq-page-header">
-          <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h1 className="rwaq-page-title mb-0">{intl.formatMessage(messages.title)}</h1>
+            <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
+          </div>
         </div>
         <div className="rwaq-card">
           <ErrorState
@@ -203,7 +232,10 @@ const DashboardPage = () => {
     if (data.length === 0 || data.every((point) => point[seriesKey] === 0)) {
       return (
         <div className="rwaq-dash-card__empty">
-          {intl.formatMessage(messages.emptySeries, { months: trends?.months ?? TREND_MONTHS })}
+          {intl.formatMessage(
+            hasDateRange ? messages.emptySeriesRange : messages.emptySeries,
+            { months: trends?.months ?? TREND_MONTHS },
+          )}
         </div>
       );
     }
@@ -228,10 +260,14 @@ const DashboardPage = () => {
     seriesKey: string,
     seriesLabel: string,
     type: ChartType,
+    infoText?: string,
   ) => (
     <div className="rwaq-card rwaq-dash-card">
       <div className="rwaq-dash-card__head">
-        <h3 className="rwaq-section-title mb-0">{title}</h3>
+        <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
+          {title}
+          {infoText && <InfoTooltip text={infoText} />}
+        </h3>
         <span className="rwaq-dash-card__sub">{subtitle}</span>
       </div>
       {renderChartBody(data, seriesKey, seriesLabel, type, title)}
@@ -248,8 +284,9 @@ const DashboardPage = () => {
       return (
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">
+            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
               {intl.formatMessage(messages.certificateTrend)}
+              <InfoTooltip text={intl.formatMessage(messages.infoCertTrend)} />
             </h3>
           </div>
           <p className="text-muted mb-0">{intl.formatMessage(messages.certificatesUnreadable)}</p>
@@ -258,11 +295,12 @@ const DashboardPage = () => {
     }
     return renderChartCard(
       intl.formatMessage(messages.certificateTrend),
-      intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+      trendSubtitle,
       certificateSeries,
       'certificates',
       intl.formatMessage(messages.seriesCertificates),
       'line',
+      intl.formatMessage(messages.infoCertTrend),
     );
   };
 
@@ -310,6 +348,8 @@ const DashboardPage = () => {
               total: data.certificates.totalCourses,
             })}
             unavailableHint={intl.formatMessage(messages.noCoursesYet)}
+            badge={allTimeBadge}
+            info={intl.formatMessage(messages.infoCertCoverage)}
           />
         </div>
         <div className="rwaq-card">
@@ -318,6 +358,7 @@ const DashboardPage = () => {
             value={formatPercent(data.certificates.issuancePct)}
             hint={intl.formatMessage(messages.certIssuanceHint)}
             unavailableHint={intl.formatMessage(messages.certificatesUnreadable)}
+            info={intl.formatMessage(messages.infoCertIssuance)}
           />
         </div>
         <div className="rwaq-card">
@@ -329,6 +370,7 @@ const DashboardPage = () => {
               enrollments: data.programs.enrollments,
             })}
             unavailableHint={intl.formatMessage(messages.noProgramEnrollments)}
+            info={intl.formatMessage(messages.infoProgramCompletion)}
           />
         </div>
       </div>
@@ -343,12 +385,17 @@ const DashboardPage = () => {
               total: data.legacyMigration.legacyAccounts,
             })}
             unavailableHint={intl.formatMessage(messages.legacyNone)}
+            badge={allTimeBadge}
+            info={intl.formatMessage(messages.infoLegacyMigration)}
           />
         </div>
 
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.modesTitle)}</h3>
+            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
+              {intl.formatMessage(messages.modesTitle)}
+              <InfoTooltip text={intl.formatMessage(messages.infoEnrollmentModes)} />
+            </h3>
             <span className="rwaq-dash-card__sub">{intl.formatMessage(messages.modesHint)}</span>
           </div>
           {data.enrollmentModes.length > 0 ? (
@@ -378,10 +425,36 @@ const DashboardPage = () => {
         </div>
 
         {/* Enrollment windows: a health check, so it reads as prose rather
-            than a figure — the useful state is "nothing wrong". */}
+            than a figure — the useful state is "nothing wrong".
+            Always all-time: it reflects the current state of running courses,
+            not a count of events, so a date range has no meaningful effect. */}
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.windowsTitle)}</h3>
+            <h3 className="rwaq-section-title mb-0 d-flex align-items-center gap-2">
+              {intl.formatMessage(messages.windowsTitle)}
+              <InfoTooltip text={intl.formatMessage(messages.infoEnrollmentWindows)} />
+              {allTimeBadge && (
+                <span
+                  style={{
+                    marginLeft: 'auto',
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                    padding: '0.1rem 0.375rem',
+                    fontSize: '0.55rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    color: 'var(--rwaq-muted, #6B757F)',
+                    background: 'var(--pgn-color-gray-100, #f0f0ef)',
+                    border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
+                    borderRadius: '999px',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {allTimeBadge}
+                </span>
+              )}
+            </h3>
           </div>
           {data.enrollmentWindows.closedButRunning === 0
             && data.enrollmentWindows.runningWithoutWindow === 0 ? (
@@ -410,7 +483,10 @@ const DashboardPage = () => {
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.orgsTitle)}</h3>
+            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
+              {intl.formatMessage(messages.orgsTitle)}
+              <InfoTooltip text={intl.formatMessage(messages.infoOrgsLeaderboard)} />
+            </h3>
           </div>
           <MiniTable<OrganizationRow>
             caption={intl.formatMessage(messages.orgsTitle)}
@@ -439,7 +515,10 @@ const DashboardPage = () => {
 
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.topCoursesTitle)}</h3>
+            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
+              {intl.formatMessage(messages.topCoursesTitle)}
+              <InfoTooltip text={intl.formatMessage(messages.infoBusiestCourses)} />
+            </h3>
             {data.catalogConcentration.topSharePct !== null && (
               <span className="rwaq-dash-card__sub">
                 {intl.formatMessage(messages.topCoursesHint, {
@@ -479,44 +558,47 @@ const DashboardPage = () => {
   return (
     <div className="rwaq-page">
       <div className="rwaq-page-header">
-        <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {generatedAt && (
-            <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
-              {intl.formatMessage(messages.lastUpdated, { time: formatRelativeTime(generatedAt) })}
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            aria-label={intl.formatMessage(messages.refreshAriaLabel)}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              cursor: isRefreshing ? 'default' : 'pointer',
-              color: 'var(--rwaq-muted, #6B757F)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '0.25rem',
-            }}
-          >
-            {isRefreshing ? (
-              <Spinner
-                animation="border"
-                size="sm"
-                screenReaderText={intl.formatMessage(messages.refreshAriaLabel)}
-                style={{
-                  width: '1.125rem',
-                  height: '1.125rem',
-                  color: 'var(--pgn-color-primary-base, #449cc2)',
-                  borderWidth: '0.15em',
-                }}
-              />
-            ) : (
-              <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <h1 className="rwaq-page-title mb-0">{intl.formatMessage(messages.title)}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
+            {generatedAt && (
+              <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
+                {intl.formatMessage(messages.lastUpdated, { time: formatRelativeTime(generatedAt) })}
+              </span>
             )}
-          </button>
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              aria-label={intl.formatMessage(messages.refreshAriaLabel)}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                cursor: isRefreshing ? 'default' : 'pointer',
+                color: 'var(--rwaq-muted, #6B757F)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '0.25rem',
+              }}
+            >
+              {isRefreshing ? (
+                <Spinner
+                  animation="border"
+                  size="sm"
+                  screenReaderText={intl.formatMessage(messages.refreshAriaLabel)}
+                  style={{
+                    width: '1.125rem',
+                    height: '1.125rem',
+                    color: 'var(--pgn-color-primary-base, #449cc2)',
+                    borderWidth: '0.15em',
+                  }}
+                />
+              ) : (
+                <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -528,21 +610,25 @@ const DashboardPage = () => {
 
       {/* KPI row — first to paint, since it is the cheapest query. */}
       <div className="rwaq-dash-grid rwaq-dash-grid--kpi">
+        {/* KPI row: learners, enrollments, runningCourses respond to the date range.
+            activePrograms has no date dimension and remains all-time; its badge says so. */}
         <KpiCard
-          label={intl.formatMessage(messages.kpiLearners)}
+          label={intl.formatMessage(hasDateRange ? messages.kpiLearnersRange : messages.kpiLearners)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoLearners)}
         />
         <KpiCard
-          label={intl.formatMessage(messages.kpiEnrollments)}
+          label={intl.formatMessage(hasDateRange ? messages.kpiEnrollmentsRange : messages.kpiEnrollments)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalEnrollments)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoEnrollments)}
         />
         <KpiCard
           label={intl.formatMessage(messages.kpiCoursesRunning)}
           value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
           isLoading={summaryQuery.isLoading}
-          // A running count means little without the catalog it is drawn from.
+          info={intl.formatMessage(messages.infoCoursesRunning)}
           sparkline={summary ? (
             <span className="rwaq-kpi-context">
               {intl.formatMessage(messages.kpiOfTotal, { total: formatCount(summary.totalCourses) })}
@@ -553,14 +639,18 @@ const DashboardPage = () => {
           label={intl.formatMessage(messages.kpiProgramsActive)}
           value={formatCount(summaryQuery.isError ? null : summary?.activePrograms)}
           isLoading={summaryQuery.isLoading}
+          badge={allTimeBadge}
+          info={intl.formatMessage(messages.infoProgramsActive)}
         />
+        {/* Registrations: label and delta adapt to whether a date range is active. */}
         <KpiCard
-          label={intl.formatMessage(messages.kpiRegistrations)}
+          label={hasDateRange
+            ? intl.formatMessage(messages.kpiRegistrationsRange)
+            : intl.formatMessage(messages.kpiRegistrations)}
           value={formatCount(summaryQuery.isError ? null : summary?.newRegistrationsThisMonth)}
-          // Omitted rather than zeroed when there is no previous month to
-          // compare against — KpiCard hides the badge when delta is undefined.
-          delta={summary?.newRegistrationsDeltaPct ?? undefined}
+          delta={hasDateRange ? undefined : (summary?.newRegistrationsDeltaPct ?? undefined)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoRegistrations)}
         />
       </div>
 
@@ -569,17 +659,19 @@ const DashboardPage = () => {
       <div className="rwaq-dash-grid rwaq-dash-grid--split">
         {renderChartCard(
           intl.formatMessage(messages.enrollmentTrend),
-          intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+          trendSubtitle,
           enrollmentSeries,
           'enrollments',
           intl.formatMessage(messages.seriesEnrollments),
           'bar',
+          intl.formatMessage(messages.infoEnrollmentTrend),
         )}
 
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">
+            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
               {intl.formatMessage(messages.lifecycleTitle)}
+              <InfoTooltip text={intl.formatMessage(messages.infoCourseLifecycle)} />
             </h3>
           </div>
           {renderLifecycle()}
@@ -589,11 +681,12 @@ const DashboardPage = () => {
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         {renderChartCard(
           intl.formatMessage(messages.registrationTrend),
-          intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+          trendSubtitle,
           registrationSeries,
           'registrations',
           intl.formatMessage(messages.seriesRegistrations),
           'line',
+          intl.formatMessage(messages.infoRegistrations),
         )}
 
         {renderCertificateTrend()}

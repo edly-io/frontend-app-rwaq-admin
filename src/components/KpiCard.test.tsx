@@ -49,4 +49,14 @@ describe('KpiCard', () => {
     );
     expect(screen.getByTestId('sparkline')).toBeInTheDocument();
   });
+
+  it('renders badge text when badge prop is provided', () => {
+    renderWrapper(<KpiCard label="Programs Active" value="10" badge="All time" />);
+    expect(screen.getByText('All time')).toBeInTheDocument();
+  });
+
+  it('does not render badge when badge prop is omitted', () => {
+    renderWrapper(<KpiCard label="Learners" value="42" />);
+    expect(screen.queryByText('All time')).not.toBeInTheDocument();
+  });
 });

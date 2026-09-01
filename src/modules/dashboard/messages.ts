@@ -15,7 +15,9 @@ const messages = defineMessages({
 
   // ── KPI row ────────────────────────────────────────────────────────────────
   kpiLearners: { id: 'rwaq.admin.dashboard.kpi.learners', defaultMessage: 'Learners' },
+  kpiLearnersRange: { id: 'rwaq.admin.dashboard.kpi.learnersRange', defaultMessage: 'New learners' },
   kpiEnrollments: { id: 'rwaq.admin.dashboard.kpi.enrollments', defaultMessage: 'Enrollments' },
+  kpiEnrollmentsRange: { id: 'rwaq.admin.dashboard.kpi.enrollmentsRange', defaultMessage: 'New enrollments' },
   kpiCoursesRunning: { id: 'rwaq.admin.dashboard.kpi.coursesRunning', defaultMessage: 'Courses running' },
   kpiProgramsActive: { id: 'rwaq.admin.dashboard.kpi.programsActive', defaultMessage: 'Programs active' },
   kpiRegistrations: { id: 'rwaq.admin.dashboard.kpi.registrations', defaultMessage: 'Registrations this month' },
@@ -123,12 +125,105 @@ const messages = defineMessages({
     id: 'rwaq.admin.dashboard.emptySeries',
     defaultMessage: 'No activity in the last {months} months.',
   },
+  emptySeriesRange: {
+    id: 'rwaq.admin.dashboard.emptySeriesRange',
+    defaultMessage: 'No activity in the selected period.',
+  },
 
   // ── Section headings, which group the bands ────────────────────────────────
   sectionGrowth: { id: 'rwaq.admin.dashboard.section.growth', defaultMessage: 'Growth' },
   sectionOutcomes: { id: 'rwaq.admin.dashboard.section.outcomes', defaultMessage: 'Outcomes' },
   sectionPlatform: { id: 'rwaq.admin.dashboard.section.platform', defaultMessage: 'Platform health' },
   sectionCatalog: { id: 'rwaq.admin.dashboard.section.catalog', defaultMessage: 'Catalog' },
+
+  // ── Info tooltips ──────────────────────────────────────────────────────────
+  infoLearners: {
+    id: 'rwaq.admin.dashboard.info.learners',
+    defaultMessage: 'Registered learner accounts — excludes staff and service accounts.',
+  },
+  infoEnrollments: {
+    id: 'rwaq.admin.dashboard.info.enrollments',
+    defaultMessage: 'Active course enrollments, including later-cancelled ones.',
+  },
+  infoCoursesRunning: {
+    id: 'rwaq.admin.dashboard.info.coursesRunning',
+    defaultMessage: 'Courses currently live (start date passed, end date not yet reached).',
+  },
+  infoProgramsActive: {
+    id: 'rwaq.admin.dashboard.info.programsActive',
+    defaultMessage: 'Programs currently in Active status. Always all-time — status reflects the current state, not a dated event.',
+  },
+  infoRegistrations: {
+    id: 'rwaq.admin.dashboard.info.registrations',
+    defaultMessage: 'New learner accounts registered this calendar month vs. last month.',
+  },
+  infoCertCoverage: {
+    id: 'rwaq.admin.dashboard.info.certCoverage',
+    defaultMessage: 'Published courses with at least one active web certificate enabled. Always all-time.',
+  },
+  infoCertIssuance: {
+    id: 'rwaq.admin.dashboard.info.certIssuance',
+    defaultMessage: 'Among certificate-enabled courses, the share of enrollments that earned a certificate.',
+  },
+  infoProgramCompletion: {
+    id: 'rwaq.admin.dashboard.info.programCompletion',
+    defaultMessage: 'Share of program enrollments that reached a completion date.',
+  },
+  infoLegacyMigration: {
+    id: 'rwaq.admin.dashboard.info.legacyMigration',
+    defaultMessage: 'Legacy accounts imported from the old platform that have signed in at least once. Always all-time.',
+  },
+  infoEnrollmentTrend: {
+    id: 'rwaq.admin.dashboard.info.enrollmentTrend',
+    defaultMessage: 'Monthly course enrollment counts over the selected period or last 12 months.',
+  },
+  infoCertTrend: {
+    id: 'rwaq.admin.dashboard.info.certTrend',
+    defaultMessage: 'Monthly certificates issued over the selected period or last 12 months.',
+  },
+  infoCourseLifecycle: {
+    id: 'rwaq.admin.dashboard.info.courseLifecycle',
+    defaultMessage: 'All courses grouped by current status: Running, Upcoming, Ended, or No dates set. Always all-time.',
+  },
+  infoEnrollmentModes: {
+    id: 'rwaq.admin.dashboard.info.enrollmentModes',
+    defaultMessage: 'Enrollment breakdown by course mode (honor, audit, etc.). Rwaq runs on honor mode — a drift toward audit indicates a setup issue.',
+  },
+  infoEnrollmentWindows: {
+    id: 'rwaq.admin.dashboard.info.enrollmentWindows',
+    defaultMessage: 'Running courses with a closed or missing enrollment window — learners cannot self-enroll even though the course is live. Always all-time.',
+  },
+  infoOrgsLeaderboard: {
+    id: 'rwaq.admin.dashboard.info.orgsLeaderboard',
+    defaultMessage: 'Organizations ranked by enrollment count. Course and admin counts are always all-time.',
+  },
+  infoBusiestCourses: {
+    id: 'rwaq.admin.dashboard.info.busiestCourses',
+    defaultMessage: 'Top 5 courses by enrollment count and their combined share of all enrollments.',
+  },
+
+  // ── Date range picker ──────────────────────────────────────────────────────
+  kpiRegistrationsRange: {
+    id: 'rwaq.admin.dashboard.kpi.registrationsRange',
+    defaultMessage: 'New registrations',
+  },
+  trendDateRange: {
+    id: 'rwaq.admin.dashboard.trendDateRange',
+    defaultMessage: '{start} – {end}',
+  },
+  today: { id: 'rwaq.admin.dashboard.today', defaultMessage: 'today' },
+  allTimeBadge: { id: 'rwaq.admin.dashboard.allTimeBadge', defaultMessage: 'All time' },
+
+  dateRangePickerLabel: { id: 'rwaq.admin.dashboard.dateRange.pickerLabel', defaultMessage: 'Select time period' },
+  presetLast30Days: { id: 'rwaq.admin.dashboard.preset.last30Days', defaultMessage: 'Last 30 days' },
+  presetLast3Months: { id: 'rwaq.admin.dashboard.preset.last3Months', defaultMessage: 'Last 3 months' },
+  presetLast6Months: { id: 'rwaq.admin.dashboard.preset.last6Months', defaultMessage: 'Last 6 months' },
+  presetLast12Months: { id: 'rwaq.admin.dashboard.preset.last12Months', defaultMessage: 'Last 12 months' },
+  presetYearToDate: { id: 'rwaq.admin.dashboard.preset.yearToDate', defaultMessage: 'Year to date' },
+  presetAllTime: { id: 'rwaq.admin.dashboard.preset.allTime', defaultMessage: 'All time' },
+  presetCustom: { id: 'rwaq.admin.dashboard.preset.custom', defaultMessage: 'Custom' },
+  dateRangeStart: { id: 'rwaq.admin.dashboard.dateRange.start', defaultMessage: 'From' },
+  dateRangeEnd: { id: 'rwaq.admin.dashboard.dateRange.end', defaultMessage: 'To' },
 });
 
 export default messages;
