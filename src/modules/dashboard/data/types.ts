@@ -124,4 +124,6 @@ export interface AnalyticsParams {
   startDate?: string;
   /** ISO date string: "2025-12-31". Sent as end_date on the wire via snakeCaseObject. */
   endDate?: string;
+  /** When true the backend skips its cache and recomputes fresh data. */
+  forceRefresh?: boolean;
 }

@@ -16,8 +16,10 @@
  *   - Every figure is stamped with the backend's generatedAt, because these
  *     numbers are cached and pretending otherwise would be dishonest.
  */
-import { useMemo, useState } from 'react';
-import { Alert, Spinner } from '@openedx/paragon';
+import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Alert, Icon, Spinner } from '@openedx/paragon';
+import { Refresh } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
@@ -29,10 +31,16 @@ import DateRangePicker from './components/DateRangePicker';
 import MiniTable from './components/MiniTable';
 import StatTile from './components/StatTile';
 import {
+  analyticsQueryKeys,
   useAnalyticsBreakdowns,
   useAnalyticsSummary,
   useAnalyticsTrends,
 } from './data/hooks';
+import {
+  getAnalyticsBreakdowns,
+  getAnalyticsSummary,
+  getAnalyticsTrends,
+} from './data/api';
 import type {
   AnalyticsBreakdowns, AnalyticsParams, OrganizationRow, TopCourse, TrendPoint,
 } from './data/types';
@@ -41,11 +49,20 @@ import messages from './messages';
 const TREND_MONTHS = 12;
 const CHART_HEIGHT = 190;
 
-/** "2026-08" → "Aug 26", so a 12-month axis stays readable. */
+/** "2026-08-28T09:14:00Z" → "Just now" / "3 min ago" / "1 hr ago" */
+const formatRelativeTime = (isoString: string): string => {
+  const diffMs = Date.now() - new Date(isoString).getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  if (diffMin < 1) { return 'Just now'; }
+  if (diffMin < 60) { return `${diffMin} min ago`; }
+  return `${Math.floor(diffMin / 60)} hr ago`;
+};
+
+/** "2026-08" → "Aug" for compact bar-chart axis labels. */
 const formatPeriod = (period: string): string => {
   const [year, month] = period.split('-');
   const date = new Date(Number(year), Number(month) - 1, 1);
-  return date.toLocaleDateString(undefined, { month: 'short', year: '2-digit' });
+  return date.toLocaleDateString(undefined, { month: 'short' });
 };
 
 /** Reshape a series for MetricChart, which keys on `name` plus a series key. */
@@ -68,6 +85,9 @@ const formatPercent = (value: number | null): string | null => (
 const DashboardPage = () => {
   const intl = useIntl();
 
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   // ── Date range — internal state only, never written to the URL ───────────────
   const [startDate, setStartDate] = useState<string | undefined>(undefined);
   const [endDate, setEndDate] = useState<string | undefined>(undefined);
@@ -78,13 +98,41 @@ const DashboardPage = () => {
     setEndDate(newEnd);
   };
 
+  // Tick every minute so the relative timestamp ("3 min ago") stays accurate.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   // ── Queries ───────────────────────────────────────────────────────────────────
   // analyticsQueryKeys include the full params object, so adding startDate/endDate
   // automatically busts the cache and triggers a refetch — no manual calls needed.
   const params: AnalyticsParams = { startDate, endDate };
+  const trendsParams: AnalyticsParams = { ...params, months: TREND_MONTHS };
+
   const summaryQuery = useAnalyticsSummary(params);
-  const trendsQuery = useAnalyticsTrends({ ...params, months: TREND_MONTHS });
+  const trendsQuery = useAnalyticsTrends(trendsParams);
   const breakdownsQuery = useAnalyticsBreakdowns(params);
+
+  // Bypass the backend cache and inject fresh data directly into React Query's
+  // cache so all three queries update atomically in a single re-render.
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const forceParams = { forceRefresh: true };
+      const [freshSummary, freshTrends, freshBreakdowns] = await Promise.all([
+        getAnalyticsSummary({ ...params, ...forceParams }),
+        getAnalyticsTrends({ ...trendsParams, ...forceParams }),
+        getAnalyticsBreakdowns({ ...params, ...forceParams }),
+      ]);
+      queryClient.setQueryData(analyticsQueryKeys.summary(params), freshSummary);
+      queryClient.setQueryData(analyticsQueryKeys.trends(trendsParams), freshTrends);
+      queryClient.setQueryData(analyticsQueryKeys.breakdowns(params), freshBreakdowns);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const summary = summaryQuery.data;
   const trends = trendsQuery.data;
@@ -505,12 +553,52 @@ const DashboardPage = () => {
     </>
   );
 
+  const generatedAt = summary?.generatedAt ?? trends?.generatedAt ?? breakdowns?.generatedAt;
+
   return (
     <div className="rwaq-page">
       <div className="rwaq-page-header">
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
           <h1 className="rwaq-page-title mb-0">{intl.formatMessage(messages.title)}</h1>
-          <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
+            {generatedAt && (
+              <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
+                {intl.formatMessage(messages.lastUpdated, { time: formatRelativeTime(generatedAt) })}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              aria-label={intl.formatMessage(messages.refreshAriaLabel)}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                cursor: isRefreshing ? 'default' : 'pointer',
+                color: 'var(--rwaq-muted, #6B757F)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '0.25rem',
+              }}
+            >
+              {isRefreshing ? (
+                <Spinner
+                  animation="border"
+                  size="sm"
+                  screenReaderText={intl.formatMessage(messages.refreshAriaLabel)}
+                  style={{
+                    width: '1.125rem',
+                    height: '1.125rem',
+                    color: 'var(--pgn-color-primary-base, #449cc2)',
+                    borderWidth: '0.15em',
+                  }}
+                />
+              ) : (
+                <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
