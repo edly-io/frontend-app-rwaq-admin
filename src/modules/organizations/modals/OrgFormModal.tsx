@@ -156,8 +156,6 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
       isSubmitting={mutation.isPending}
     >
       <section className="rwaq-form-section">
-        <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionProfile)}</h3>
-
         {/* Logo upload — available in both create and edit mode. */}
         <div className="d-flex align-items-center mb-4" style={{ gap: '1.25rem' }}>
           <button
