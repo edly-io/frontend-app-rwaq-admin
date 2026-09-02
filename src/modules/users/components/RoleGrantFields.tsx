@@ -57,6 +57,9 @@ interface RoleGrantFieldsProps {
   /** False when the admin is editing their own account. */
   canRevokeGlobalStaff?: boolean;
   canRevokeSuperuser?: boolean;
+  /** When true the superuser toggle is not rendered. The value is still
+   *  carried in formik so existing superuser state is never zeroed on save. */
+  hideSuperuser?: boolean;
 }
 
 const RoleGrantFields = ({
@@ -67,6 +70,7 @@ const RoleGrantFields = ({
   orgAdminOf = [],
   canRevokeGlobalStaff = true,
   canRevokeSuperuser = true,
+  hideSuperuser = false,
 }: RoleGrantFieldsProps) => {
   const intl = useIntl();
   const [isConfirmingGlobalStaff, setIsConfirmingGlobalStaff] = useState(false);
@@ -128,22 +132,24 @@ const RoleGrantFields = ({
         )}
       </Form.Group>
 
-      <Form.Group className="mb-4">
-        <div className="d-flex align-items-center">
-          <Form.Switch
-            checked={values.isSuperuser}
-            onChange={handleSuperuserChange}
-            disabled={superuserLocked}
-            name="isSuperuser"
-          >
-            {intl.formatMessage(messages.roleSuperuser)}
-          </Form.Switch>
-          <GrantInfo id="grant-superuser-tip" tooltip={messages.tooltipSuperuser} />
-        </div>
-        {superuserLocked && (
-          <Form.Text muted>{intl.formatMessage(messages.selfRevokeSuperuserBlocked)}</Form.Text>
-        )}
-      </Form.Group>
+      {!hideSuperuser && (
+        <Form.Group className="mb-4">
+          <div className="d-flex align-items-center">
+            <Form.Switch
+              checked={values.isSuperuser}
+              onChange={handleSuperuserChange}
+              disabled={superuserLocked}
+              name="isSuperuser"
+            >
+              {intl.formatMessage(messages.roleSuperuser)}
+            </Form.Switch>
+            <GrantInfo id="grant-superuser-tip" tooltip={messages.tooltipSuperuser} />
+          </div>
+          {superuserLocked && (
+            <Form.Text muted>{intl.formatMessage(messages.selfRevokeSuperuserBlocked)}</Form.Text>
+          )}
+        </Form.Group>
+      )}
 
       {/* Read-only grants — real access this screen cannot assign. */}
       {isCourseCreator && (
@@ -175,7 +181,6 @@ const RoleGrantFields = ({
         <span className="rwaq-role-notes__title">{intl.formatMessage(messages.notesTitle)}</span>
         <ul className="rwaq-role-notes__list">
           <li>{intl.formatMessage(messages.orgAdminNote)}</li>
-          <li>{intl.formatMessage(messages.courseCreatorNote)}</li>
           <li>{intl.formatMessage(messages.courseRolesNote)}</li>
         </ul>
       </div>

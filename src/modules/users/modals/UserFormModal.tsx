@@ -50,7 +50,7 @@ const emptyValues: FormValues = {
   country: '',
   biography: '',
   profileVisibility: 'private',
-  isActive: true,
+  isActive: false,
   isGlobalStaff: false,
   isSuperuser: false,
 };
@@ -308,6 +308,7 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
           orgAdminOf={user?.roles.orgAdminOf}
           canRevokeGlobalStaff={!isSelf}
           canRevokeSuperuser={!isSelf}
+          hideSuperuser
         />
       </section>
 

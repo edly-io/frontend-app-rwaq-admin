@@ -19,7 +19,7 @@ export interface AnalyticsSummary {
   newRegistrationsDeltaPct: number | null;
   totalCourses: number;
   runningCourses: number;
-  totalEnrollments: number;
+  activeEnrollments: number;
   activePrograms: number;
   generatedAt: string;
 }
@@ -31,6 +31,7 @@ export interface AnalyticsTrends {
   /** null when the certificates table isn't reachable from the API host. */
   certificates: TrendPoint[] | null;
   registrations: TrendPoint[];
+  legacyRegistrations: TrendPoint[];
   generatedAt: string;
 }
 
@@ -94,11 +95,6 @@ export interface CatalogConcentration {
   courses: TopCourse[];
 }
 
-export interface EnrollmentWindows {
-  closedButRunning: number;
-  runningWithoutWindow: number;
-}
-
 /** GET /api/v1/admin/analytics/breakdowns/ */
 export interface AnalyticsBreakdowns {
   courseLifecycle: CourseLifecycle;
@@ -108,7 +104,6 @@ export interface AnalyticsBreakdowns {
   enrollmentModes: EnrollmentMode[];
   organizations: OrganizationRow[];
   catalogConcentration: CatalogConcentration;
-  enrollmentWindows: EnrollmentWindows;
   generatedAt: string;
 }
 

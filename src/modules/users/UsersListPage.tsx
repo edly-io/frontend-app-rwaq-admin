@@ -43,7 +43,6 @@ const SEARCH_SCOPES: { value: SearchBy; label: MessageKey }[] = [
   { value: 'email', label: 'searchByEmail' },
   { value: 'name', label: 'searchByName' },
   { value: 'user_id', label: 'searchByUserId' },
-  { value: 'job', label: 'searchByJob' },
 ];
 
 /** What each scope actually accepts, so the field stops asking for an email
@@ -52,7 +51,6 @@ const SEARCH_PLACEHOLDERS: Record<SearchBy, typeof messages[MessageKey]> = {
   email: messages.searchPlaceholderEmail,
   name: messages.searchPlaceholderName,
   user_id: messages.searchPlaceholderUserId,
-  job: messages.searchPlaceholderJob,
 };
 
 /** Every ?filter= value the backend accepts, in the order the spec lists them. */
