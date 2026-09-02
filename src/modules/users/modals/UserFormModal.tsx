@@ -9,7 +9,7 @@
  * re-asserted and the backend's audit log stays honest about what an admin
  * actually did.
  */
-import { useContext, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -24,6 +24,7 @@ import { getErrorReason } from '@src/data/httpError';
 import RoleGrantFields, { RoleGrantValues } from '../components/RoleGrantFields';
 import COUNTRIES from '../data/countries';
 import { useCreateUser, useUpdateUser } from '../data/hooks';
+import { uploadUserImage } from '../data/api';
 import type {
   ProfileVisibility, UserCreatePayload, UserDetail, UserPatchPayload,
 } from '../data/types';
@@ -97,6 +98,9 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
   // The email hint is guidance for filling the field in, not a standing
   // statement about the form — so it appears on focus and leaves on blur.
   const [isEmailFocused, setIsEmailFocused] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const isEdit = user !== null;
   const isSelf = isEdit && authenticatedUser?.userId === user.id;
@@ -124,12 +128,12 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
     validationSchema,
     onSubmit: async (values) => {
       try {
+        let savedUserId = user?.id ?? 0;
         if (isEdit) {
           const patch = changedFields(values, initialValues);
           if (Object.keys(patch).length > 0) {
             await updateMutation.mutateAsync(patch);
           }
-          showToast(intl.formatMessage(messages.toastUpdated, { name: values.name }));
         } else {
           const payload: UserCreatePayload = {
             email: values.email,
@@ -142,9 +146,18 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
             isGlobalStaff: values.isGlobalStaff,
             isSuperuser: values.isSuperuser,
           };
-          await createMutation.mutateAsync(payload);
-          showToast(intl.formatMessage(messages.toastCreated, { name: values.name }));
+          const created = await createMutation.mutateAsync(payload);
+          savedUserId = created.id;
         }
+        if (avatarFile && savedUserId > 0) {
+          await uploadUserImage(savedUserId, avatarFile);
+        }
+        showToast(intl.formatMessage(
+          isEdit ? messages.toastUpdated : messages.toastCreated,
+          { name: values.name },
+        ));
+        setAvatarFile(null);
+        setAvatarPreview(null);
         onClose();
       } catch (error) {
         logError(error);
@@ -159,6 +172,17 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''
   );
 
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) { return; }
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+    // eslint-disable-next-line no-param-reassign
+    event.target.value = '';
+  };
+
+  const currentAvatarSrc = avatarPreview ?? user?.image ?? null;
+
   return (
     <FormModal
       title={intl.formatMessage(isEdit ? messages.editTitle : messages.createTitle)}
@@ -171,6 +195,59 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
     >
       <section className="rwaq-form-section">
         <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionProfile)}</h3>
+
+        {/* Avatar upload — hidden file input triggered by the avatar circle. */}
+        <div className="d-flex align-items-center mb-4 gap-3">
+          <button
+            type="button"
+            className="rwaq-avatar-upload-btn"
+            aria-label={intl.formatMessage(messages.fieldAvatar)}
+            onClick={() => avatarInputRef.current?.click()}
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: '50%',
+              border: '2px dashed var(--pgn-color-border, #d2d2d2)',
+              overflow: 'hidden',
+              cursor: 'pointer',
+              background: 'var(--rwaq-surface-sunken, #f5f5f5)',
+              flexShrink: 0,
+              padding: 0,
+            }}
+          >
+            {currentAvatarSrc ? (
+              <img src={currentAvatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <span aria-hidden="true" style={{ fontSize: '1.75rem' }}>👤</span>
+            )}
+          </button>
+          <div>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => avatarInputRef.current?.click()}
+            >
+              {intl.formatMessage(messages.fieldAvatarChange)}
+            </button>
+            {avatarFile && (
+              <button
+                type="button"
+                className="btn btn-sm btn-link text-danger ml-2"
+                onClick={() => { setAvatarFile(null); setAvatarPreview(null); }}
+              >
+                {intl.formatMessage(messages.fieldAvatarRemove)}
+              </button>
+            )}
+            <div className="small text-muted mt-1">{intl.formatMessage(messages.fieldAvatarHelp)}</div>
+          </div>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleAvatarChange}
+          />
+        </div>
 
         <Row>
           <Col xs={12} md={6}>

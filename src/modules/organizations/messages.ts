@@ -53,6 +53,13 @@ const messages = defineMessages({
   },
   fieldArabicName: { id: 'rwaq.admin.orgs.form.arabicName', defaultMessage: 'Arabic name' },
   fieldFeaturedVideo: { id: 'rwaq.admin.orgs.form.featuredVideo', defaultMessage: 'Featured video URL' },
+  fieldLogo: { id: 'rwaq.admin.orgs.form.logo', defaultMessage: 'Organization logo' },
+  fieldLogoChange: { id: 'rwaq.admin.orgs.form.logoChange', defaultMessage: 'Change logo' },
+  fieldLogoRemove: { id: 'rwaq.admin.orgs.form.logoRemove', defaultMessage: 'Remove' },
+  fieldLogoHelp: {
+    id: 'rwaq.admin.orgs.form.logoHelp',
+    defaultMessage: 'PNG or JPG recommended. Saved together with the form.',
+  },
   sectionProfile: { id: 'rwaq.admin.orgs.form.sectionProfile', defaultMessage: 'Identity' },
   sectionPublic: { id: 'rwaq.admin.orgs.form.sectionPublic', defaultMessage: 'Public profile' },
   save: { id: 'rwaq.admin.orgs.form.save', defaultMessage: 'Save changes' },

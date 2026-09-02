@@ -6,7 +6,7 @@
  * organization, so changing it would orphan existing courses, and the backend
  * treats both as read-only on PATCH.
  */
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -61,6 +61,9 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
   // Guidance for filling the field in, so it appears on focus and leaves on
   // blur rather than standing permanently under the input.
   const [isShortNameFocused, setIsShortNameFocused] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const createMutation = useCreateOrganization();
   const updateMutation = useUpdateOrganization(organization?.shortName ?? '');
@@ -88,7 +91,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             arabicName: values.arabicName,
             featuredVideo: values.featuredVideo,
           };
-          await updateMutation.mutateAsync(patch);
+          await updateMutation.mutateAsync({ patch, logoFile });
           showToast(intl.formatMessage(messages.toastUpdated, { name: values.name }));
         } else {
           const payload: OrgCreatePayload = {
@@ -100,6 +103,8 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
           await createMutation.mutateAsync(payload);
           showToast(intl.formatMessage(messages.toastCreated, { name: values.name }));
         }
+        setLogoFile(null);
+        setLogoPreview(null);
         onClose();
       } catch (error) {
         logError(error);
@@ -113,8 +118,21 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     formik.resetForm();
     createMutation.reset();
     updateMutation.reset();
+    setLogoFile(null);
+    setLogoPreview(null);
     onClose();
   };
+
+  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) { return; }
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+    // eslint-disable-next-line no-param-reassign
+    event.target.value = '';
+  };
+
+  const currentLogoSrc = logoPreview ?? organization?.logo ?? null;
 
   const fieldError = (field: keyof FormValues) => (
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''
@@ -132,6 +150,62 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     >
       <section className="rwaq-form-section">
         <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionProfile)}</h3>
+
+        {/* Logo upload — only shown in edit mode; creation happens first, then
+            the admin can upload a logo on the next open. */}
+        {isEdit && (
+          <div className="d-flex align-items-center mb-4 gap-3">
+            <button
+              type="button"
+              className="rwaq-logo-upload-btn"
+              aria-label={intl.formatMessage(messages.fieldLogo)}
+              onClick={() => logoInputRef.current?.click()}
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: 8,
+                border: '2px dashed var(--pgn-color-border, #d2d2d2)',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                background: 'var(--rwaq-surface-sunken, #f5f5f5)',
+                flexShrink: 0,
+                padding: 0,
+              }}
+            >
+              {currentLogoSrc ? (
+                <img src={currentLogoSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              ) : (
+                <span aria-hidden="true" style={{ fontSize: '1.75rem' }}>🏢</span>
+              )}
+            </button>
+            <div>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-primary"
+                onClick={() => logoInputRef.current?.click()}
+              >
+                {intl.formatMessage(messages.fieldLogoChange)}
+              </button>
+              {logoFile && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-link text-danger ml-2"
+                  onClick={() => { setLogoFile(null); setLogoPreview(null); }}
+                >
+                  {intl.formatMessage(messages.fieldLogoRemove)}
+                </button>
+              )}
+              <div className="small text-muted mt-1">{intl.formatMessage(messages.fieldLogoHelp)}</div>
+            </div>
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handleLogoChange}
+            />
+          </div>
+        )}
 
         <Row>
           <Col xs={12} md={6}>

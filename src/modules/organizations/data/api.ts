@@ -75,14 +75,34 @@ export const getOrganization = async (shortName: string): Promise<OrgDetail> => 
   return camelCaseObject(data) as OrgDetail;
 };
 
-/** PATCH /rwaq/api/organizations/<short_name>/ */
+/**
+ * PATCH /rwaq/api/organizations/<short_name>/
+ *
+ * When logoFile is supplied the request is sent as multipart/form-data so
+ * the binary is included in the same round-trip as the profile fields.
+ * Without a logo the body stays application/json.
+ */
 export const updateOrganization = async (
   shortName: string,
   patch: OrgProfilePatch,
+  logoFile?: File | null,
 ): Promise<OrgDetail> => {
+  let body: FormData | Record<string, unknown>;
+  if (logoFile) {
+    const form = new FormData();
+    Object.entries(snakeCaseObject(patch) as Record<string, unknown>).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        form.append(key, String(value));
+      }
+    });
+    form.append('logo', logoFile);
+    body = form;
+  } else {
+    body = snakeCaseObject(patch);
+  }
   const { data } = await getAuthenticatedHttpClient().patch(
     `${getOrgsBaseUrl()}/${shortName}/`,
-    snakeCaseObject(patch),
+    body,
   );
   return camelCaseObject(data) as OrgDetail;
 };

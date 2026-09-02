@@ -131,6 +131,13 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.form.emailHelp',
     defaultMessage: 'The username is generated from the email and cannot be changed later.',
   },
+  fieldAvatar: { id: 'rwaq.admin.users.form.avatar', defaultMessage: 'Profile picture' },
+  fieldAvatarChange: { id: 'rwaq.admin.users.form.avatarChange', defaultMessage: 'Change photo' },
+  fieldAvatarRemove: { id: 'rwaq.admin.users.form.avatarRemove', defaultMessage: 'Remove' },
+  fieldAvatarHelp: {
+    id: 'rwaq.admin.users.form.avatarHelp',
+    defaultMessage: 'JPG or PNG, max 1 MB. Saved together with the form.',
+  },
   fieldName: { id: 'rwaq.admin.users.form.name', defaultMessage: 'Full name' },
   fieldJob: { id: 'rwaq.admin.users.form.job', defaultMessage: 'Job title' },
   fieldCountry: { id: 'rwaq.admin.users.form.country', defaultMessage: 'Country' },
