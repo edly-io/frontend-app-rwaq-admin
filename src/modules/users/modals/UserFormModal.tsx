@@ -57,7 +57,7 @@ const emptyValues: FormValues = {
 
 const toFormValues = (user: UserDetail | null): FormValues => (user
   ? {
-    email: user.email,
+    email: user.email ?? '',
     name: user.name ?? '',
     job: user.job ?? '',
     country: user.country ?? '',
