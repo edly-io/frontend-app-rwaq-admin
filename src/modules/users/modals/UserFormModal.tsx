@@ -207,10 +207,8 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
       isSubmitting={mutation.isPending}
     >
       <section className="rwaq-form-section">
-        <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionProfile)}</h3>
-
         {/* Avatar upload — hidden file input triggered by the avatar circle. */}
-        <div className="d-flex align-items-center mb-4 gap-3">
+        <div className="d-flex align-items-center mb-4" style={{ gap: '1.25rem' }}>
           <button
             type="button"
             className="rwaq-avatar-upload-btn"
