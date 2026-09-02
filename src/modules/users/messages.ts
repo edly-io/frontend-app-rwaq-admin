@@ -221,6 +221,7 @@ const messages = defineMessages({
   toastCreated: { id: 'rwaq.admin.users.toast.created', defaultMessage: '{name} was created.' },
   toastUpdated: { id: 'rwaq.admin.users.toast.updated', defaultMessage: '{name} was updated.' },
   toastError: { id: 'rwaq.admin.users.toast.error', defaultMessage: 'Could not save: {reason}' },
+  toastAvatarError: { id: 'rwaq.admin.users.toast.avatarError', defaultMessage: 'User was saved, but the profile photo could not be uploaded.' },
   genericError: { id: 'rwaq.admin.users.toast.genericError', defaultMessage: 'Something went wrong. Please try again.' },
 
   // ── Detail drawer ──────────────────────────────────────────────────────────

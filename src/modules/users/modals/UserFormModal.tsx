@@ -127,8 +127,8 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
     enableReinitialize: true,
     validationSchema,
     onSubmit: async (values) => {
+      let savedUserId = user?.id ?? 0;
       try {
-        let savedUserId = user?.id ?? 0;
         if (isEdit) {
           const patch = changedFields(values, initialValues);
           if (Object.keys(patch).length > 0) {
@@ -149,21 +149,31 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
           const created = await createMutation.mutateAsync(payload);
           savedUserId = created.id;
         }
-        if (avatarFile && savedUserId > 0) {
-          await uploadUserImage(savedUserId, avatarFile);
-        }
-        showToast(intl.formatMessage(
-          isEdit ? messages.toastUpdated : messages.toastCreated,
-          { name: values.name },
-        ));
-        setAvatarFile(null);
-        setAvatarPreview(null);
-        onClose();
       } catch (error) {
         logError(error);
         showToast(intl.formatMessage(messages.toastError, {
           reason: getErrorReason(error) ?? intl.formatMessage(messages.genericError),
         }));
+        return;
+      }
+
+      // User was saved — close the modal before the avatar upload so a failed
+      // upload never traps the admin in a create form with a duplicate email.
+      showToast(intl.formatMessage(
+        isEdit ? messages.toastUpdated : messages.toastCreated,
+        { name: values.name },
+      ));
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      onClose();
+
+      if (avatarFile && savedUserId > 0) {
+        try {
+          await uploadUserImage(savedUserId, avatarFile);
+        } catch (avatarError) {
+          logError(avatarError);
+          showToast(intl.formatMessage(messages.toastAvatarError));
+        }
       }
     },
   });
@@ -176,7 +186,10 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
     const file = event.target.files?.[0];
     if (!file) { return; }
     setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
+    setAvatarPreview((prev) => {
+      if (prev) { URL.revokeObjectURL(prev); }
+      return URL.createObjectURL(file);
+    });
     // eslint-disable-next-line no-param-reassign
     event.target.value = '';
   };
@@ -233,7 +246,7 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
               <button
                 type="button"
                 className="btn btn-sm btn-link text-danger ml-2"
-                onClick={() => { setAvatarFile(null); setAvatarPreview(null); }}
+                onClick={() => { setAvatarFile(null); setAvatarPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; }); }}
               >
                 {intl.formatMessage(messages.fieldAvatarRemove)}
               </button>

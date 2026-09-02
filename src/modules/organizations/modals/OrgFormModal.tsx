@@ -119,7 +119,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     createMutation.reset();
     updateMutation.reset();
     setLogoFile(null);
-    setLogoPreview(null);
+    setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
     onClose();
   };
 
@@ -127,7 +127,10 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     const file = event.target.files?.[0];
     if (!file) { return; }
     setLogoFile(file);
-    setLogoPreview(URL.createObjectURL(file));
+    setLogoPreview((prev) => {
+      if (prev) { URL.revokeObjectURL(prev); }
+      return URL.createObjectURL(file);
+    });
     // eslint-disable-next-line no-param-reassign
     event.target.value = '';
   };
@@ -190,7 +193,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
                 <button
                   type="button"
                   className="btn btn-sm btn-link text-danger ml-2"
-                  onClick={() => { setLogoFile(null); setLogoPreview(null); }}
+                  onClick={() => { setLogoFile(null); setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; }); }}
                 >
                   {intl.formatMessage(messages.fieldLogoRemove)}
                 </button>
