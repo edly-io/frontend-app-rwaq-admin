@@ -164,7 +164,7 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
         { name: values.name },
       ));
       setAvatarFile(null);
-      setAvatarPreview(null);
+      setAvatarPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
       onClose();
 
       if (avatarFile && savedUserId > 0) {

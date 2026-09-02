@@ -140,7 +140,7 @@ const DashboardPage = () => {
     [trends],
   );
   const legacyRegistrationSeries = useMemo(
-    () => (trends ? toChartData(trends.legacyRegistrations, 'legacyRegistrations') : []),
+    () => (trends?.legacyRegistrations ? toChartData(trends.legacyRegistrations, 'legacyRegistrations') : []),
     [trends],
   );
 

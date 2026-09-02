@@ -19,7 +19,8 @@ export interface AnalyticsSummary {
   newRegistrationsDeltaPct: number | null;
   totalCourses: number;
   runningCourses: number;
-  activeEnrollments: number;
+  /** null when courseware table isn't reachable from the API host (CMS context). */
+  activeEnrollments: number | null;
   activePrograms: number;
   generatedAt: string;
 }
@@ -31,7 +32,8 @@ export interface AnalyticsTrends {
   /** null when the certificates table isn't reachable from the API host. */
   certificates: TrendPoint[] | null;
   registrations: TrendPoint[];
-  legacyRegistrations: TrendPoint[];
+  /** null when the field is absent from a cached/older response. */
+  legacyRegistrations: TrendPoint[] | null;
   generatedAt: string;
 }
 
