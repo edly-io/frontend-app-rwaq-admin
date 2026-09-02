@@ -153,7 +153,10 @@ const OrgListPage = () => {
       renderCell: (value, row) => (
         <div className="rwaq-user-cell">
           <ProfileAvatar src={(row.image as string | null) ?? null} name={value as string} size="sm" />
-          <span className="rwaq-user-cell__name">{value as string}</span>
+          <div className="min-width-0">
+            <div className="rwaq-user-cell__name">{value as string}</div>
+            <div className="rwaq-user-cell__meta">{row.shortName as string}</div>
+          </div>
         </div>
       ),
     },
