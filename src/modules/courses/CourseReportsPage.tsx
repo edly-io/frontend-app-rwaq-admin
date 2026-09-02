@@ -100,12 +100,6 @@ const REPORT_DEFS: ReportDef[] = [
     description: 'Generates a ZIP archive containing all ORA submission text files and '
       + 'any uploaded file attachments submitted by learners for this course.',
   },
-  {
-    type: 'anon_ids',
-    label: 'Student Anonymized IDs',
-    description: 'Generates a CSV mapping each enrolled learner\'s real user ID to their '
-      + 'anonymized user ID. Used for research and analytics that require de-identified data.',
-  },
 ];
 
 // ── State badge ───────────────────────────────────────────────────────────────

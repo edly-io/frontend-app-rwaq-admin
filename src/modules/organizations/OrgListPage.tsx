@@ -10,6 +10,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Chip } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import ProfileAvatar from '@src/components/ProfileAvatar';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import ErrorState from '@src/components/ErrorState';
@@ -149,7 +150,15 @@ const OrgListPage = () => {
     {
       label: intl.formatMessage(messages.colName),
       key: 'name',
-      renderCell: (value) => <span className="rwaq-user-cell__name">{value as string}</span>,
+      renderCell: (value, row) => (
+        <div className="rwaq-user-cell">
+          <ProfileAvatar src={(row.image as string | null) ?? null} name={value as string} size="sm" />
+          <div className="min-width-0">
+            <div className="rwaq-user-cell__name">{value as string}</div>
+            <div className="rwaq-user-cell__meta">{row.shortName as string}</div>
+          </div>
+        </div>
+      ),
     },
     {
       // Its own column: stacked under the Latin name, a bidi string never

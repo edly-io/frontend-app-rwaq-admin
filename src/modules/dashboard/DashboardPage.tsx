@@ -16,7 +16,9 @@
  *   - Every figure is stamped with the backend's generatedAt, because these
  *     numbers are cached and pretending otherwise would be dishonest.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useEffect, useMemo, useRef, useState,
+} from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Icon, Spinner } from '@openedx/paragon';
 import { Refresh } from '@openedx/paragon/icons';
@@ -135,6 +137,10 @@ const DashboardPage = () => {
   );
   const registrationSeries = useMemo(
     () => (trends ? toChartData(trends.registrations, 'registrations') : []),
+    [trends],
+  );
+  const legacyRegistrationSeries = useMemo(
+    () => (trends?.legacyRegistrations ? toChartData(trends.legacyRegistrations, 'legacyRegistrations') : []),
     [trends],
   );
 
@@ -333,7 +339,7 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      <div className="rwaq-dash-grid rwaq-dash-grid--thirds">
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card">
           <StatTile
             label={intl.formatMessage(messages.legacyTitle)}
@@ -376,35 +382,6 @@ const DashboardPage = () => {
             </p>
           )}
         </div>
-
-        {/* Enrollment windows: a health check, so it reads as prose rather
-            than a figure — the useful state is "nothing wrong". */}
-        <div className="rwaq-card rwaq-dash-card">
-          <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.windowsTitle)}</h3>
-          </div>
-          {data.enrollmentWindows.closedButRunning === 0
-            && data.enrollmentWindows.runningWithoutWindow === 0 ? (
-              <p className="text-muted mb-0">{intl.formatMessage(messages.windowsHealthy)}</p>
-            ) : (
-              <ul className="rwaq-dash-list">
-                {data.enrollmentWindows.closedButRunning > 0 && (
-                  <li>
-                    {intl.formatMessage(messages.windowsClosed, {
-                      count: data.enrollmentWindows.closedButRunning,
-                    })}
-                  </li>
-                )}
-                {data.enrollmentWindows.runningWithoutWindow > 0 && (
-                  <li>
-                    {intl.formatMessage(messages.windowsNone, {
-                      count: data.enrollmentWindows.runningWithoutWindow,
-                    })}
-                  </li>
-                )}
-              </ul>
-            )}
-        </div>
       </div>
 
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">
@@ -416,6 +393,7 @@ const DashboardPage = () => {
             caption={intl.formatMessage(messages.orgsTitle)}
             rows={data.organizations}
             rowKey={(row) => row.shortName}
+            maxHeight={280}
             columns={[
               { label: intl.formatMessage(messages.orgColName), render: (row) => row.name },
               {
@@ -452,6 +430,7 @@ const DashboardPage = () => {
             caption={intl.formatMessage(messages.topCoursesTitle)}
             rows={data.catalogConcentration.courses}
             rowKey={(row) => row.courseId}
+            maxHeight={280}
             columns={[
               {
                 label: intl.formatMessage(messages.courseColName),
@@ -535,7 +514,7 @@ const DashboardPage = () => {
         />
         <KpiCard
           label={intl.formatMessage(messages.kpiEnrollments)}
-          value={formatCount(summaryQuery.isError ? null : summary?.totalEnrollments)}
+          value={formatCount(summaryQuery.isError ? null : summary?.activeEnrollments)}
           isLoading={summaryQuery.isLoading}
         />
         <KpiCard
@@ -586,13 +565,22 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
+      <div className="rwaq-dash-grid rwaq-dash-grid--thirds">
         {renderChartCard(
           intl.formatMessage(messages.registrationTrend),
           intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
           registrationSeries,
           'registrations',
           intl.formatMessage(messages.seriesRegistrations),
+          'line',
+        )}
+
+        {renderChartCard(
+          intl.formatMessage(messages.legacyRegistrationTrend),
+          intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+          legacyRegistrationSeries,
+          'legacyRegistrations',
+          intl.formatMessage(messages.seriesLegacyRegistrations),
           'line',
         )}
 

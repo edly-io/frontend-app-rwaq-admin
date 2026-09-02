@@ -147,12 +147,19 @@ const OrgDetailPage = () => {
         </div>
 
         <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mt-2">
-          <div className="min-width-0">
-            <h1 className="rwaq-page-title mb-2">{organization.name}</h1>
-            <div className="d-flex align-items-center flex-wrap rwaq-chip-list">
-              <Chip className={`rwaq-chip rwaq-chip--${organization.active ? 'success' : 'light'}`}>
-                {intl.formatMessage(organization.active ? messages.statusActive : messages.statusInactive)}
-              </Chip>
+          <div className="rwaq-detail-header min-width-0">
+            <ProfileAvatar
+              src={organization.organizationLogo ?? organization.logo ?? null}
+              name={organization.name}
+              size="lg"
+            />
+            <div className="min-width-0">
+              <h1 className="rwaq-page-title mb-2">{organization.name}</h1>
+              <div className="d-flex align-items-center flex-wrap rwaq-chip-list">
+                <Chip className={`rwaq-chip rwaq-chip--${organization.active ? 'success' : 'light'}`}>
+                  {intl.formatMessage(organization.active ? messages.statusActive : messages.statusInactive)}
+                </Chip>
+              </div>
             </div>
           </div>
 

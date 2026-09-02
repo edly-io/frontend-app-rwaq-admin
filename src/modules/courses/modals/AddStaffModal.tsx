@@ -26,21 +26,9 @@ const roleMessages = defineMessages({
     id: 'rwaq.admin.courses.role.staff.desc',
     defaultMessage: 'Staff, can edit the course',
   },
-  limited_staff: {
-    id: 'rwaq.admin.courses.role.limitedStaff.desc',
-    defaultMessage: 'Limited Staff, restricted edit access',
-  },
-  beta_testers: {
-    id: 'rwaq.admin.courses.role.beta.desc',
-    defaultMessage: 'Beta Tester, early-release preview access only',
-  },
-  data_researcher: {
-    id: 'rwaq.admin.courses.role.dataResearcher.desc',
-    defaultMessage: 'Data Researcher, read-only access to learner data',
-  },
 });
 
-const ROLES: CourseRole[] = ['instructor', 'staff', 'limited_staff', 'beta_testers', 'data_researcher'];
+const ROLES: CourseRole[] = ['instructor', 'staff'];
 
 interface AddStaffModalProps {
   isOpen: boolean;

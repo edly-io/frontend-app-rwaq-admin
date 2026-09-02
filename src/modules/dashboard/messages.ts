@@ -14,17 +14,19 @@ const messages = defineMessages({
   none: { id: 'rwaq.admin.dashboard.none', defaultMessage: '—' },
 
   // ── KPI row ────────────────────────────────────────────────────────────────
-  kpiLearners: { id: 'rwaq.admin.dashboard.kpi.learners', defaultMessage: 'Learners' },
-  kpiEnrollments: { id: 'rwaq.admin.dashboard.kpi.enrollments', defaultMessage: 'Enrollments' },
+  kpiLearners: { id: 'rwaq.admin.dashboard.kpi.learners', defaultMessage: 'Active Learners' },
+  kpiEnrollments: { id: 'rwaq.admin.dashboard.kpi.enrollments', defaultMessage: 'Active Enrolments' },
   kpiCoursesRunning: { id: 'rwaq.admin.dashboard.kpi.coursesRunning', defaultMessage: 'Courses running' },
-  kpiProgramsActive: { id: 'rwaq.admin.dashboard.kpi.programsActive', defaultMessage: 'Programs active' },
-  kpiRegistrations: { id: 'rwaq.admin.dashboard.kpi.registrations', defaultMessage: 'Registrations this month' },
+  kpiProgramsActive: { id: 'rwaq.admin.dashboard.kpi.programsActive', defaultMessage: 'Active Programs' },
+  kpiRegistrations: { id: 'rwaq.admin.dashboard.kpi.registrations', defaultMessage: 'New Registrations this month' },
   kpiOfTotal: { id: 'rwaq.admin.dashboard.kpi.ofTotal', defaultMessage: 'of {total} total' },
 
   // ── Trends ─────────────────────────────────────────────────────────────────
-  enrollmentTrend: { id: 'rwaq.admin.dashboard.enrollmentTrend', defaultMessage: 'Enrollment trend' },
+  enrollmentTrend: { id: 'rwaq.admin.dashboard.enrollmentTrend', defaultMessage: 'Active Enrolment trend' },
   certificateTrend: { id: 'rwaq.admin.dashboard.certificateTrend', defaultMessage: 'Certificates issued' },
-  registrationTrend: { id: 'rwaq.admin.dashboard.registrationTrend', defaultMessage: 'New registrations' },
+  registrationTrend: { id: 'rwaq.admin.dashboard.registrationTrend', defaultMessage: 'New Registration' },
+  legacyRegistrationTrend: { id: 'rwaq.admin.dashboard.legacyRegistrationTrend', defaultMessage: 'Legacy Registration' },
+  seriesLegacyRegistrations: { id: 'rwaq.admin.dashboard.series.legacyRegistrations', defaultMessage: 'Legacy registrations' },
   trendMonths: { id: 'rwaq.admin.dashboard.trendMonths', defaultMessage: 'Last {months} months' },
   seriesEnrollments: { id: 'rwaq.admin.dashboard.series.enrollments', defaultMessage: 'Enrollments' },
   seriesCertificates: { id: 'rwaq.admin.dashboard.series.certificates', defaultMessage: 'Certificates' },
@@ -59,7 +61,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.dashboard.program.completionHint',
     defaultMessage: '{completions} of {enrollments} program enrollments completed',
   },
-  legacyTitle: { id: 'rwaq.admin.dashboard.legacy.title', defaultMessage: 'Legacy migration' },
+  legacyTitle: { id: 'rwaq.admin.dashboard.legacy.title', defaultMessage: 'Legacy Registration' },
   legacyHint: {
     id: 'rwaq.admin.dashboard.legacy.hint',
     defaultMessage: '{signedIn} of {total} imported accounts have signed in',

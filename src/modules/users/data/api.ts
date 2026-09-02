@@ -145,3 +145,10 @@ export const updateUser = async (id: number, patch: UserPatchPayload): Promise<U
   );
   return camelCaseObject(data) as UserDetail;
 };
+
+/** POST /api/v1/admin/users/{id}/image/ — upload or replace the profile picture. */
+export const uploadUserImage = async (id: number, file: File): Promise<void> => {
+  const form = new FormData();
+  form.append('image', file);
+  await getAuthenticatedHttpClient().post(`${getUsersBaseUrl()}/${id}/image/`, form);
+};

@@ -8,7 +8,9 @@
  *   3. Course Team — staff table, Add Member, Remove per row
  */
 import { useCallback, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import {
+  Link, useNavigate, useParams, useSearchParams,
+} from 'react-router-dom';
 import {
   Alert, Badge, Button, Spinner,
 } from '@openedx/paragon';
