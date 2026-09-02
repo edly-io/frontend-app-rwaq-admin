@@ -16,7 +16,9 @@
  *   - Every figure is stamped with the backend's generatedAt, because these
  *     numbers are cached and pretending otherwise would be dishonest.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useEffect, useMemo, useRef, useState,
+} from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Icon, Spinner } from '@openedx/paragon';
 import { Refresh } from '@openedx/paragon/icons';
