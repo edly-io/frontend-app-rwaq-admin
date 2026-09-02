@@ -347,15 +347,7 @@ const ProgramDetailPage = () => {
               />
             </div>
           </div>
-          <div className="flex-shrink-0">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => navigate(`/programs/${uuid}/reports`)}
-            >
-              View Reports
-            </Button>
-          </div>
+          <div className="flex-shrink-0" />
         </div>
       </div>
 
