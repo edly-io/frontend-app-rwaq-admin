@@ -18,6 +18,7 @@ import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorReason } from '@src/data/httpError';
 import { useCreateOrganization, useUpdateOrganization } from '../data/hooks';
+import { updateOrganization } from '../data/api';
 import type { OrgCreatePayload, OrgDetail, OrgProfilePatch } from '../data/types';
 import messages from '../messages';
 
@@ -100,7 +101,10 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             arabicName: values.arabicName,
             featuredVideo: values.featuredVideo,
           };
-          await createMutation.mutateAsync(payload);
+          const created = await createMutation.mutateAsync(payload);
+          if (logoFile) {
+            await updateOrganization(created.shortName, {}, logoFile);
+          }
           showToast(intl.formatMessage(messages.toastCreated, { name: values.name }));
         }
         setLogoFile(null);
@@ -154,61 +158,58 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
       <section className="rwaq-form-section">
         <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionProfile)}</h3>
 
-        {/* Logo upload — only shown in edit mode; creation happens first, then
-            the admin can upload a logo on the next open. */}
-        {isEdit && (
-          <div className="d-flex align-items-center mb-4 gap-3">
+        {/* Logo upload — available in both create and edit mode. */}
+        <div className="d-flex align-items-center mb-4" style={{ gap: '1.25rem' }}>
+          <button
+            type="button"
+            className="rwaq-logo-upload-btn"
+            aria-label={intl.formatMessage(messages.fieldLogo)}
+            onClick={() => logoInputRef.current?.click()}
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: '50%',
+              border: '2px dashed var(--pgn-color-border, #d2d2d2)',
+              overflow: 'hidden',
+              cursor: 'pointer',
+              background: 'var(--rwaq-surface-sunken, #f5f5f5)',
+              flexShrink: 0,
+              padding: 0,
+            }}
+          >
+            {currentLogoSrc ? (
+              <img src={currentLogoSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <span aria-hidden="true" style={{ fontSize: '1.75rem' }}>🏢</span>
+            )}
+          </button>
+          <div>
             <button
               type="button"
-              className="rwaq-logo-upload-btn"
-              aria-label={intl.formatMessage(messages.fieldLogo)}
+              className="btn btn-sm btn-outline-primary"
               onClick={() => logoInputRef.current?.click()}
-              style={{
-                width: 72,
-                height: 72,
-                borderRadius: 8,
-                border: '2px dashed var(--pgn-color-border, #d2d2d2)',
-                overflow: 'hidden',
-                cursor: 'pointer',
-                background: 'var(--rwaq-surface-sunken, #f5f5f5)',
-                flexShrink: 0,
-                padding: 0,
-              }}
             >
-              {currentLogoSrc ? (
-                <img src={currentLogoSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              ) : (
-                <span aria-hidden="true" style={{ fontSize: '1.75rem' }}>🏢</span>
-              )}
+              {intl.formatMessage(messages.fieldLogoChange)}
             </button>
-            <div>
+            {logoFile && (
               <button
                 type="button"
-                className="btn btn-sm btn-outline-primary"
-                onClick={() => logoInputRef.current?.click()}
+                className="btn btn-sm btn-link text-danger ml-2"
+                onClick={() => { setLogoFile(null); setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; }); }}
               >
-                {intl.formatMessage(messages.fieldLogoChange)}
+                {intl.formatMessage(messages.fieldLogoRemove)}
               </button>
-              {logoFile && (
-                <button
-                  type="button"
-                  className="btn btn-sm btn-link text-danger ml-2"
-                  onClick={() => { setLogoFile(null); setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; }); }}
-                >
-                  {intl.formatMessage(messages.fieldLogoRemove)}
-                </button>
-              )}
-              <div className="small text-muted mt-1">{intl.formatMessage(messages.fieldLogoHelp)}</div>
-            </div>
-            <input
-              ref={logoInputRef}
-              type="file"
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={handleLogoChange}
-            />
+            )}
+            <div className="small text-muted mt-1">{intl.formatMessage(messages.fieldLogoHelp)}</div>
           </div>
-        )}
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleLogoChange}
+          />
+        </div>
 
         <Row>
           <Col xs={12} md={6}>
