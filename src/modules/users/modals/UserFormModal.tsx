@@ -172,7 +172,8 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
           await uploadUserImage(savedUserId, avatarFile);
         } catch (avatarError) {
           logError(avatarError);
-          showToast(intl.formatMessage(messages.toastAvatarError));
+          const reason = getErrorReason(avatarError as Error);
+          showToast(reason ?? intl.formatMessage(messages.toastAvatarError));
         }
       }
     },
@@ -227,7 +228,12 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
             }}
           >
             {currentAvatarSrc ? (
-              <img src={currentAvatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img
+                src={currentAvatarSrc}
+                alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              />
             ) : (
               <span aria-hidden="true" style={{ fontSize: '1.75rem' }}>👤</span>
             )}
