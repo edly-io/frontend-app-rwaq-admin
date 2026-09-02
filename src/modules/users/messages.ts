@@ -259,7 +259,7 @@ const messages = defineMessages({
   },
   enrollmentCourse: { id: 'rwaq.admin.users.enrollments.course', defaultMessage: 'Course' },
   enrollmentDate: { id: 'rwaq.admin.users.enrollments.date', defaultMessage: 'Enrolled' },
-  enrollmentStatus: { id: 'rwaq.admin.users.enrollments.status', defaultMessage: 'Status' },
+  enrollmentStatus: { id: 'rwaq.admin.users.enrollments.status', defaultMessage: 'Enrollment Status' },
   enrollmentCertificate: { id: 'rwaq.admin.users.enrollments.certificate', defaultMessage: 'Certificate' },
   enrollmentMode: { id: 'rwaq.admin.users.enrollments.mode', defaultMessage: 'Mode' },
   enrollmentCount: {
