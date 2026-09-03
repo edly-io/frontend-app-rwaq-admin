@@ -21,6 +21,9 @@ export interface MiniTableProps<Row> {
   rows: Row[];
   rowKey: (row: Row) => string;
   caption: string;
+  /** When set, the scroll container is capped at this height so long lists
+   *  do not blow out the card's layout. */
+  maxHeight?: number | string;
 }
 
 // `<Row extends object>` rather than a bare `<Row>`: in a .tsx file a bare type
@@ -29,7 +32,7 @@ export interface MiniTableProps<Row> {
 // parses. The constraint removes the ambiguity and stays an arrow component,
 // which is the house rule.
 const MiniTable = <Row extends object>({
-  columns, rows, rowKey, caption,
+  columns, rows, rowKey, caption, maxHeight,
 }: MiniTableProps<Row>) => {
   const intl = useIntl();
 
@@ -41,7 +44,7 @@ const MiniTable = <Row extends object>({
     // Not .rwaq-table-scroll: that forces a 60rem minimum width, which is
     // correct for the eight-column admin tables and clips a table sitting in a
     // dashboard card. This scrolls only when it genuinely needs to.
-    <div className="rwaq-minitable-scroll">
+    <div className="rwaq-minitable-scroll" style={maxHeight !== undefined ? { maxHeight, overflowY: 'auto' } : undefined}>
       <table className="table table-sm mb-0 rwaq-mini-table">
         <caption className="sr-only">{caption}</caption>
         <thead>

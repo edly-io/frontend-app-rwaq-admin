@@ -9,6 +9,7 @@ import { Link, useParams } from 'react-router-dom';
 import {
   Alert, Badge, Button, Spinner,
 } from '@openedx/paragon';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import { useCourse } from './data/hooks';
@@ -19,92 +20,30 @@ import {
   useCourseReportDownloads,
   useTriggerCourseReport,
 } from './data/reportsHooks';
+import messages from './messages';
 
 // ── Report definitions ────────────────────────────────────────────────────────
 
 interface ReportDef {
   type: CourseReportType;
-  label: string;
-  description: string;
+  labelMsgKey: keyof typeof messages;
+  descMsgKey: keyof typeof messages;
 }
 
 const REPORT_DEFS: ReportDef[] = [
-  {
-    type: 'grade_csv',
-    label: 'Grade Report',
-    description:
-      'Generates a CSV of current student grades. Each row contains student ID, email, username, '
-      + 'cumulative grade, per-assignment scores, enrollment track, verification status, '
-      + 'and certificate eligibility/delivery status.',
-  },
-  {
-    type: 'problem_grade',
-    label: 'Problem Grade Report',
-    description:
-      'Generates a CSV with per-problem scores for every student. '
-      + 'Useful for identifying which specific problems have low scores or high failure rates.',
-  },
-  {
-    type: 'profile_info',
-    label: 'Profile Information',
-    description:
-      'Generates a CSV of enrolled student profile data including username, name, email, '
-      + 'language, location, year of birth, gender, education level, mailing address, '
-      + 'goals, enrollment mode, account activation status, and enrollment date.',
-  },
-  {
-    type: 'may_enroll',
-    label: 'Learners Who Can Enroll',
-    description:
-      "Generates a CSV of users who are in the course's invitation list but have "
-      + 'not yet enrolled, useful for targeted outreach.',
-  },
-  {
-    type: 'inactive_learner',
-    label: 'Learners, Account Not Activated',
-    description:
-      'Generates a CSV of enrolled learners whose accounts have never been activated '
-      + '(email not confirmed), so they cannot access course content.',
-  },
-  {
-    type: 'survey',
-    label: 'Survey Results',
-    description:
-      'Generates a CSV of responses from the course survey module. '
-      + 'Columns are User ID, User Name, Email, and one column per survey field answered.',
-  },
-  {
-    type: 'proctored_exam',
-    label: 'Proctored Exam Results',
-    description:
-      'Generates a CSV of all proctored exam attempts, including exam name, provider, '
-      + 'student info, attempt timing, attempt status, review status, '
-      + 'and any reviewer comments (suspicious activity or rules violations).',
-  },
-  {
-    type: 'ora_data',
-    label: 'ORA Data Report',
-    description: 'Generates a CSV of all Open Response Assessment submissions. '
-      + 'Columns include Submission ID, block location, question prompt, username, '
-      + 'submission text, submission date, and attempt number.',
-  },
-  {
-    type: 'ora_summary',
-    label: 'ORA Summary Report',
-    description: 'Generates a CSV summary of ORA grading outcomes per learner per problem. '
-      + 'Includes final scores, grader counts, and overall pass/fail determination.',
-  },
+  { type: 'grade_csv', labelMsgKey: 'reportLabelGradeCsv', descMsgKey: 'reportDescGradeCsv' },
+  { type: 'problem_grade', labelMsgKey: 'reportLabelProblemGrade', descMsgKey: 'reportDescProblemGrade' },
+  { type: 'profile_info', labelMsgKey: 'reportLabelProfileInfo', descMsgKey: 'reportDescProfileInfo' },
+  { type: 'may_enroll', labelMsgKey: 'reportLabelMayEnroll', descMsgKey: 'reportDescMayEnroll' },
+  { type: 'inactive_learner', labelMsgKey: 'reportLabelInactiveLearner', descMsgKey: 'reportDescInactiveLearner' },
+  { type: 'survey', labelMsgKey: 'reportLabelSurvey', descMsgKey: 'reportDescSurvey' },
+  { type: 'proctored_exam', labelMsgKey: 'reportLabelProctoredExam', descMsgKey: 'reportDescProctoredExam' },
+  { type: 'ora_data', labelMsgKey: 'reportLabelOraData', descMsgKey: 'reportDescOraData' },
+  { type: 'ora_summary', labelMsgKey: 'reportLabelOraSummary', descMsgKey: 'reportDescOraSummary' },
   {
     type: 'ora_submission_archive',
-    label: 'ORA Submission Files Archive',
-    description: 'Generates a ZIP archive containing all ORA submission text files and '
-      + 'any uploaded file attachments submitted by learners for this course.',
-  },
-  {
-    type: 'anon_ids',
-    label: 'Student Anonymized IDs',
-    description: 'Generates a CSV mapping each enrolled learner\'s real user ID to their '
-      + 'anonymized user ID. Used for research and analytics that require de-identified data.',
+    labelMsgKey: 'reportLabelOraSubmissionArchive',
+    descMsgKey: 'reportDescOraSubmissionArchive',
   },
 ];
 
@@ -118,19 +57,23 @@ const STATE_VARIANT: Record<TaskState, string> = {
   REVOKED: 'secondary',
 };
 
-const STATE_LABEL: Record<TaskState, string> = {
-  QUEUING: 'Queuing',
-  IN_PROGRESS: 'In Progress',
-  SUCCESS: 'Complete',
-  FAILURE: 'Failed',
-  REVOKED: 'Revoked',
-};
+const StateBadge = ({ state }: { state: TaskState }) => {
+  const { formatMessage } = useIntl();
 
-const StateBadge = ({ state }: { state: TaskState }) => (
-  <Badge variant={STATE_VARIANT[state] || 'secondary'}>
-    {STATE_LABEL[state] || state}
-  </Badge>
-);
+  const STATE_LABEL: Record<TaskState, string> = {
+    QUEUING: formatMessage(messages.reportsStateQueuing),
+    IN_PROGRESS: formatMessage(messages.reportsStateInProgress),
+    SUCCESS: formatMessage(messages.reportsStateSuccess),
+    FAILURE: formatMessage(messages.reportsStateFailure),
+    REVOKED: formatMessage(messages.reportsStateRevoked),
+  };
+
+  return (
+    <Badge variant={STATE_VARIANT[state] || 'secondary'}>
+      {STATE_LABEL[state] || state}
+    </Badge>
+  );
+};
 
 // ── Elapsed time helper ───────────────────────────────────────────────────────
 
@@ -178,6 +121,7 @@ const ReportTriggerRow = ({
   def: ReportDef;
   courseId: string;
 }) => {
+  const { formatMessage } = useIntl();
   const { mutate, isPending } = useTriggerCourseReport(courseId);
   const [trackedTaskId, setTrackedTaskId] = useState<string | null>(null);
   const [triggerError, setTriggerError] = useState<string | null>(null);
@@ -200,7 +144,7 @@ const ReportTriggerRow = ({
     mutate(def.type, {
       onSuccess: (data) => setTrackedTaskId(data.taskId),
       onError: (err) => setTriggerError(
-        (err as { message?: string })?.message || 'Failed to trigger report.',
+        (err as { message?: string })?.message || formatMessage(messages.reportsStatusFailed),
       ),
     });
   };
@@ -219,11 +163,11 @@ const ReportTriggerRow = ({
       ? ` (${trackedTask.succeeded} / ${trackedTask.total})`
       : '';
     const label = trackedTask?.state === 'QUEUING'
-      ? 'Queued — waiting to start…'
-      : `Generating…${progress}`;
+      ? formatMessage(messages.reportsStatusQueued)
+      : formatMessage(messages.reportsStatusGenerating, { progress });
     statusText = <div className="text-muted small mt-1">{label}</div>;
   } else if (isFailed) {
-    statusText = <div className="text-danger small mt-1">Report generation failed. Click Retry to try again.</div>;
+    statusText = <div className="text-danger small mt-1">{formatMessage(messages.reportsStatusFailed)}</div>;
   }
 
   // Action widget (right column)
@@ -235,7 +179,7 @@ const ReportTriggerRow = ({
       <Spinner
         animation="border"
         size="sm"
-        screenReaderText="Generating report"
+        screenReaderText={formatMessage(messages.reportsGeneratingReport)}
         style={{ color: 'var(--pgn-color-primary-500, #0a3055)' }}
       />
     );
@@ -248,7 +192,7 @@ const ReportTriggerRow = ({
           style={{ gap: '0.3rem', whiteSpace: 'nowrap' }}
         >
           <DownloadIcon />
-          Download
+          {formatMessage(messages.reportsButtonDownload)}
         </a>
         <button
           type="button"
@@ -256,7 +200,7 @@ const ReportTriggerRow = ({
           className="btn btn-link p-0"
           style={{ fontSize: '0.7rem', color: 'var(--pgn-color-text-muted, #6c757d)', lineHeight: 1.4 }}
         >
-          Re-generate
+          {formatMessage(messages.reportsButtonRegenerate)}
         </button>
       </div>
     );
@@ -268,7 +212,7 @@ const ReportTriggerRow = ({
         onClick={handleGenerate}
         style={{ whiteSpace: 'nowrap', width: '100%' }}
       >
-        Retry
+        {formatMessage(messages.reportsButtonRetry)}
       </Button>
     );
   } else {
@@ -279,7 +223,7 @@ const ReportTriggerRow = ({
         onClick={handleGenerate}
         style={{ whiteSpace: 'nowrap', width: '100%' }}
       >
-        Generate
+        {formatMessage(messages.reportsButtonGenerate)}
       </Button>
     );
   }
@@ -290,8 +234,12 @@ const ReportTriggerRow = ({
       style={{ gap: '2rem' }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="font-weight-semibold" style={{ fontSize: '0.9375rem' }}>{def.label}</div>
-        <div className="text-muted small mt-1" style={{ lineHeight: '1.5' }}>{def.description}</div>
+        <div className="font-weight-semibold" style={{ fontSize: '0.9375rem' }}>
+          {formatMessage(messages[def.labelMsgKey])}
+        </div>
+        <div className="text-muted small mt-1" style={{ lineHeight: '1.5' }}>
+          {formatMessage(messages[def.descMsgKey])}
+        </div>
         {statusText}
       </div>
       <div style={{
@@ -312,70 +260,62 @@ const ReportTriggerRow = ({
 
 const DOWNLOADS_PAGE_SIZE = 10;
 
-const DOWNLOADS_COLUMNS: ColumnDef<ReportDownloadRow>[] = [
-  {
-    key: 'reportLabel',
-    label: 'Report Type',
-  },
-  {
-    key: 'state',
-    label: 'Status',
-    renderCell: (value) => <StateBadge state={value as TaskState} />,
-  },
-  {
-    key: 'created',
-    label: 'Generated',
-    renderCell: (value) => (
-      <span style={{ whiteSpace: 'nowrap' }}>
-        {new Date(value as string).toLocaleString()}
-      </span>
-    ),
-  },
-  {
-    key: 'modified',
-    label: 'Elapsed',
-    id: 'elapsed',
-    renderCell: (value, row) => (
-      <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-        {elapsedLabel(row.created, value as string | null, row.state)}
-      </span>
-    ),
-  },
-  {
-    key: 'succeeded',
-    label: 'Progress',
-    renderCell: (_value, row) => (
-      <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-        {row.total != null ? `${row.succeeded ?? 0} / ${row.total}` : '—'}
-      </span>
-    ),
-  },
-  {
-    key: 'downloadUrl',
-    label: 'Download',
-    renderCell: (value) => (
-      value ? (
-        <a
-          href={value as string}
-          className="btn btn-sm btn-outline-primary d-inline-flex align-items-center"
-          style={{ gap: '0.375rem', whiteSpace: 'nowrap' }}
-        >
-          <DownloadIcon />
-          Download
-        </a>
-      ) : (
-        <span className="text-muted small">—</span>
-      )
-    ),
-  },
-];
-
 const DownloadsTable = ({ courseId }: { courseId: string }) => {
+  const { formatMessage } = useIntl();
   const { data: rows, isLoading, isError } = useCourseReportDownloads(courseId);
   const [page, setPage] = useState(1);
 
+  const DOWNLOADS_COLUMNS: ColumnDef<ReportDownloadRow>[] = [
+    {
+      key: 'reportLabel',
+      label: formatMessage(messages.reportsColType),
+    },
+    {
+      key: 'state',
+      label: formatMessage(messages.reportsColStatus),
+      renderCell: (value) => <StateBadge state={value as TaskState} />,
+    },
+    {
+      key: 'created',
+      label: formatMessage(messages.reportsColGenerated),
+      renderCell: (value) => (
+        <span style={{ whiteSpace: 'nowrap' }}>
+          {new Date(value as string).toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      key: 'modified',
+      label: formatMessage(messages.reportsColElapsed),
+      id: 'elapsed',
+      renderCell: (value, row) => (
+        <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+          {elapsedLabel(row.created, value as string | null, row.state)}
+        </span>
+      ),
+    },
+    {
+      key: 'downloadUrl',
+      label: formatMessage(messages.reportsColDownload),
+      renderCell: (value) => (
+        value ? (
+          <a
+            href={value as string}
+            className="btn btn-sm btn-outline-primary d-inline-flex align-items-center"
+            style={{ gap: '0.375rem', whiteSpace: 'nowrap' }}
+          >
+            <DownloadIcon />
+            {formatMessage(messages.reportsButtonDownload)}
+          </a>
+        ) : (
+          <span className="text-muted small">—</span>
+        )
+      ),
+    },
+  ];
+
   if (isError) {
-    return <Alert variant="warning" className="mb-0">Could not load available reports.</Alert>;
+    return <Alert variant="warning" className="mb-0">{formatMessage(messages.reportsDownloadsError)}</Alert>;
   }
 
   const totalRows = rows?.length ?? 0;
@@ -391,7 +331,7 @@ const DownloadsTable = ({ courseId }: { courseId: string }) => {
       columns={DOWNLOADS_COLUMNS}
       data={pageRows}
       isLoading={isLoading}
-      caption="Reports Available for Download"
+      caption={formatMessage(messages.reportsDownloadsCaption)}
       pagination={{
         currentPage,
         pageCount,
@@ -406,6 +346,7 @@ const DownloadsTable = ({ courseId }: { courseId: string }) => {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 const CourseReportsPage = () => {
+  const { formatMessage } = useIntl();
   const { courseId = '' } = useParams<{ courseId: string }>();
   const { data: course, isLoading: courseLoading } = useCourse(courseId);
 
@@ -413,7 +354,7 @@ const CourseReportsPage = () => {
     return (
       <div className="rwaq-page">
         <div className="d-flex justify-content-center py-5">
-          <Spinner animation="border" screenReaderText="Loading course" />
+          <Spinner animation="border" screenReaderText={formatMessage(messages.reportsLoadingCourse)} />
         </div>
       </div>
     );
@@ -426,20 +367,22 @@ const CourseReportsPage = () => {
     <div className="rwaq-page">
       <div className="rwaq-page-header">
         <div className="rwaq-page-header__breadcrumb">
-          <Link to="/courses">Courses</Link>
+          <Link to="/courses">{formatMessage(messages.reportsBreadcrumbCourses)}</Link>
           {' / '}
           <Link to={courseHref}>{courseName}</Link>
-          {' / Reports'}
+          {' '}{formatMessage(messages.reportsBreadcrumbSuffix)}
         </div>
-        <h1 className="rwaq-page-title mt-2">Reports</h1>
+        <h1 className="rwaq-page-title mt-2">{formatMessage(messages.reportsPageTitle)}</h1>
       </div>
 
       {/* Generate Reports */}
       <div className="rwaq-card">
-        <h2 className="rwaq-section-title mb-1">Generate Reports</h2>
+        <h2 className="rwaq-section-title mb-1">{formatMessage(messages.reportsGenerateTitle)}</h2>
         <p className="text-muted small mb-0">
-          Click <strong>Generate</strong> next to a report type to queue an async task.
-          Completed files appear in the <em>Reports Available for Download</em> section below.
+          {formatMessage(messages.reportsGenerateDesc, {
+            generate: <strong>{formatMessage(messages.reportsGenerateWord)}</strong>,
+            available: <em>{formatMessage(messages.reportsAvailableWord)}</em>,
+          })}
         </p>
         <hr className="mt-3 mb-0" />
         {REPORT_DEFS.map((def) => (
@@ -449,11 +392,8 @@ const CourseReportsPage = () => {
 
       {/* Reports Available for Download */}
       <div className="rwaq-card">
-        <h2 className="rwaq-section-title mb-1">Reports Available for Download</h2>
-        <p className="text-muted small mb-3">
-          Auto-refreshes every 10 s while a report is processing.
-          Download links expire after 5 minutes — regenerate if a link stops working.
-        </p>
+        <h2 className="rwaq-section-title mb-1">{formatMessage(messages.reportsDownloadsTitle)}</h2>
+        <p className="text-muted small mb-3">{formatMessage(messages.reportsDownloadsDesc)}</p>
         <DownloadsTable courseId={courseId} />
       </div>
     </div>

@@ -5,7 +5,9 @@
  * "Generate" button to trigger a new run, and a "Download" link for
  * completed runs.  Polls at 10 s while any task is QUEUING or IN_PROGRESS.
  */
-import { Alert, Badge, Button, Spinner } from '@openedx/paragon';
+import {
+  Alert, Badge, Button, Spinner,
+} from '@openedx/paragon';
 import type { CourseReportType, ReportTask, TaskState } from '../data/reportsTypes';
 import { useCourseReportTasks, useTriggerCourseReport } from '../data/reportsHooks';
 
@@ -131,13 +133,15 @@ const AsyncReportCard = ({
         </Alert>
       )}
 
-      {isLoading ? (
+      {isLoading && (
         <div className="d-flex justify-content-center py-3">
           <Spinner animation="border" size="sm" screenReaderText="Loading report history" />
         </div>
-      ) : !tasks || tasks.length === 0 ? (
+      )}
+      {!isLoading && (!tasks || tasks.length === 0) && (
         <p className="text-muted small mb-0">No reports generated yet. Click Generate Report to start.</p>
-      ) : (
+      )}
+      {!isLoading && tasks && tasks.length > 0 && (
         <div style={{ overflowX: 'auto' }}>
           <table className="table table-sm mb-0">
             <thead>

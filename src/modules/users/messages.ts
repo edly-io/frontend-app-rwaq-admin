@@ -14,13 +14,11 @@ const messages = defineMessages({
   searchByEmail: { id: 'rwaq.admin.users.search.byEmail', defaultMessage: 'Email' },
   searchByName: { id: 'rwaq.admin.users.search.byName', defaultMessage: 'Name' },
   searchByUserId: { id: 'rwaq.admin.users.search.byUserId', defaultMessage: 'User ID' },
-  searchByJob: { id: 'rwaq.admin.users.search.byJob', defaultMessage: 'Job title' },
   searchTermLabel: { id: 'rwaq.admin.users.search.termLabel', defaultMessage: 'Search term' },
   searchTermPlaceholder: { id: 'rwaq.admin.users.search.placeholder', defaultMessage: 'Search users…' },
   searchPlaceholderEmail: { id: 'rwaq.admin.users.search.phEmail', defaultMessage: 'Search by email address…' },
   searchPlaceholderName: { id: 'rwaq.admin.users.search.phName', defaultMessage: 'Search by full name…' },
   searchPlaceholderUserId: { id: 'rwaq.admin.users.search.phUserId', defaultMessage: 'Search by numeric user ID…' },
-  searchPlaceholderJob: { id: 'rwaq.admin.users.search.phJob', defaultMessage: 'Search by job title…' },
   searchButton: { id: 'rwaq.admin.users.search.submit', defaultMessage: 'Search' },
   clearButton: { id: 'rwaq.admin.users.search.clear', defaultMessage: 'Clear' },
   validationUserIdInvalid: {
@@ -133,6 +131,17 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.form.emailHelp',
     defaultMessage: 'The username is generated from the email and cannot be changed later.',
   },
+  fieldAvatar: { id: 'rwaq.admin.users.form.avatar', defaultMessage: 'Profile picture' },
+  fieldAvatarChange: { id: 'rwaq.admin.users.form.avatarChange', defaultMessage: 'Change photo' },
+  fieldAvatarRemove: { id: 'rwaq.admin.users.form.avatarRemove', defaultMessage: 'Remove' },
+  fieldAvatarHelp: {
+    id: 'rwaq.admin.users.form.avatarHelp',
+    defaultMessage: 'JPG, PNG or GIF, max 1 MB. Saved together with the form.',
+  },
+  fieldAvatarTypeError: {
+    id: 'rwaq.admin.users.form.avatarTypeError',
+    defaultMessage: 'Only JPG, PNG and GIF files are allowed.',
+  },
   fieldName: { id: 'rwaq.admin.users.form.name', defaultMessage: 'Full name' },
   fieldJob: { id: 'rwaq.admin.users.form.job', defaultMessage: 'Job title' },
   fieldCountry: { id: 'rwaq.admin.users.form.country', defaultMessage: 'Country' },
@@ -161,14 +170,9 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.form.orgAdminNote',
     defaultMessage: 'Organization Admin, granted on the Organizations screen.',
   },
-  courseCreatorNote: {
-    id: 'rwaq.admin.users.form.courseCreatorNote',
-    defaultMessage: 'Course Creator, follows automatically from an Organization Admin grant, '
-      + 'scoped to that organization.',
-  },
   courseRolesNote: {
     id: 'rwaq.admin.users.form.courseRolesNote',
-    defaultMessage: 'Course Instructor, Course Staff and Forum Moderator, per-course roles, assigned in Studio on the course\'s Course Team page.',
+    defaultMessage: 'Course Instructor, Course Staff, per-course roles, assigned in Studio on the course\'s Course Team page.',
   },
   save: { id: 'rwaq.admin.users.form.save', defaultMessage: 'Save' },
   create: { id: 'rwaq.admin.users.form.create', defaultMessage: 'Create user' },
@@ -221,6 +225,7 @@ const messages = defineMessages({
   toastCreated: { id: 'rwaq.admin.users.toast.created', defaultMessage: '{name} was created.' },
   toastUpdated: { id: 'rwaq.admin.users.toast.updated', defaultMessage: '{name} was updated.' },
   toastError: { id: 'rwaq.admin.users.toast.error', defaultMessage: 'Could not save: {reason}' },
+  toastAvatarError: { id: 'rwaq.admin.users.toast.avatarError', defaultMessage: 'User was saved, but the profile photo could not be uploaded.' },
   genericError: { id: 'rwaq.admin.users.toast.genericError', defaultMessage: 'Something went wrong. Please try again.' },
 
   // ── Detail drawer ──────────────────────────────────────────────────────────
@@ -237,7 +242,7 @@ const messages = defineMessages({
   detailCreated: { id: 'rwaq.admin.users.detail.created', defaultMessage: 'Created' },
   detailLastLogin: { id: 'rwaq.admin.users.detail.lastLogin', defaultMessage: 'Last login' },
   detailOrgAdminOf: { id: 'rwaq.admin.users.detail.orgAdminOf', defaultMessage: 'Organization Admin of' },
-  detailNone: { id: 'rwaq.admin.users.detail.none', defaultMessage: '' },
+  detailNone: { id: 'rwaq.admin.users.detail.none', defaultMessage: '—' },
   edit: { id: 'rwaq.admin.users.detail.edit', defaultMessage: 'Edit' },
   view: { id: 'rwaq.admin.users.detail.view', defaultMessage: 'View' },
 
@@ -259,7 +264,7 @@ const messages = defineMessages({
   },
   enrollmentCourse: { id: 'rwaq.admin.users.enrollments.course', defaultMessage: 'Course' },
   enrollmentDate: { id: 'rwaq.admin.users.enrollments.date', defaultMessage: 'Enrolled' },
-  enrollmentStatus: { id: 'rwaq.admin.users.enrollments.status', defaultMessage: 'Status' },
+  enrollmentStatus: { id: 'rwaq.admin.users.enrollments.status', defaultMessage: 'Enrollment Status' },
   enrollmentCertificate: { id: 'rwaq.admin.users.enrollments.certificate', defaultMessage: 'Certificate' },
   enrollmentMode: { id: 'rwaq.admin.users.enrollments.mode', defaultMessage: 'Mode' },
   enrollmentCount: {

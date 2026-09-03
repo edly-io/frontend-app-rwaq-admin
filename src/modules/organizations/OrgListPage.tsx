@@ -10,6 +10,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Chip } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import ProfileAvatar from '@src/components/ProfileAvatar';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import ErrorState from '@src/components/ErrorState';
@@ -22,7 +23,7 @@ import type { OrgFilter, OrgOrdering, OrgSummary } from './data/types';
 import messages from './messages';
 
 const PAGE_SIZE = 10;
-const DEFAULT_ORDERING: OrgOrdering = 'name';
+const DEFAULT_ORDERING: OrgOrdering = '-created';
 
 type MessageKey = keyof typeof messages;
 
@@ -147,9 +148,21 @@ const OrgListPage = () => {
 
   const columns: ColumnDef<OrgSummary>[] = [
     {
+      label: '',
+      key: 'logo',
+      renderCell: (value, row) => (
+        <ProfileAvatar src={(value as string | null) ?? null} name={row.name as string} size="sm" />
+      ),
+    },
+    {
       label: intl.formatMessage(messages.colName),
       key: 'name',
-      renderCell: (value) => <span className="rwaq-user-cell__name">{value as string}</span>,
+      renderCell: (value, row) => (
+        <div className="min-width-0">
+          <div className="rwaq-user-cell__name">{value as string}</div>
+          <div className="rwaq-user-cell__meta">{row.shortName as string}</div>
+        </div>
+      ),
     },
     {
       // Its own column: stacked under the Latin name, a bidi string never

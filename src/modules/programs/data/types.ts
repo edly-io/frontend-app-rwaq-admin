@@ -37,11 +37,11 @@ export interface ProgramSummary {
   programKey: string;
   name: string;
   cardImage: string | null;
-  organization: string;             // short_name
-  organizationName: string | null;  // full English name
+  organization: string; // short_name
+  organizationName: string | null; // full English name
   organizationLogo: string | null;
   organizationArabicName: string | null;
-  programType: string | null;       // program_type slug
+  programType: string | null; // program_type slug
   batch: string | null;
   status: ProgramStatus;
   isHide: boolean;

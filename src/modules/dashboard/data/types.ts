@@ -19,7 +19,8 @@ export interface AnalyticsSummary {
   newRegistrationsDeltaPct: number | null;
   totalCourses: number;
   runningCourses: number;
-  totalEnrollments: number;
+  /** null when courseware table isn't reachable from the API host (CMS context). */
+  activeEnrollments: number | null;
   activePrograms: number;
   generatedAt: string;
 }
@@ -31,6 +32,8 @@ export interface AnalyticsTrends {
   /** null when the certificates table isn't reachable from the API host. */
   certificates: TrendPoint[] | null;
   registrations: TrendPoint[];
+  /** null when the field is absent from a cached/older response. */
+  legacyRegistrations: TrendPoint[] | null;
   generatedAt: string;
 }
 
@@ -94,11 +97,6 @@ export interface CatalogConcentration {
   courses: TopCourse[];
 }
 
-export interface EnrollmentWindows {
-  closedButRunning: number;
-  runningWithoutWindow: number;
-}
-
 /** GET /api/v1/admin/analytics/breakdowns/ */
 export interface AnalyticsBreakdowns {
   courseLifecycle: CourseLifecycle;
@@ -108,7 +106,6 @@ export interface AnalyticsBreakdowns {
   enrollmentModes: EnrollmentMode[];
   organizations: OrganizationRow[];
   catalogConcentration: CatalogConcentration;
-  enrollmentWindows: EnrollmentWindows;
   generatedAt: string;
 }
 
@@ -116,4 +113,6 @@ export interface AnalyticsBreakdowns {
 export interface AnalyticsParams {
   org?: string;
   months?: number;
+  /** When true the backend skips its cache and recomputes fresh data. */
+  forceRefresh?: boolean;
 }
