@@ -58,17 +58,17 @@ const formatRelativeTime = (isoString: string): string => {
   return `${Math.floor(diffMin / 60)} hr ago`;
 };
 
-/** "2026-08" → "Aug" for compact bar-chart axis labels. */
-const formatPeriod = (period: string): string => {
+/** "2026-08" → "Aug" (or its locale equivalent) for compact bar-chart axis labels. */
+const formatPeriod = (period: string, locale: string): string => {
   const [year, month] = period.split('-');
   const date = new Date(Number(year), Number(month) - 1, 1);
-  return date.toLocaleDateString(undefined, { month: 'short' });
+  return date.toLocaleDateString(locale, { month: 'short' });
 };
 
 /** Reshape a series for MetricChart, which keys on `name` plus a series key. */
-const toChartData = (points: TrendPoint[], seriesKey: string): ChartDataPoint[] => points.map(
+const toChartData = (points: TrendPoint[], seriesKey: string, locale: string): ChartDataPoint[] => points.map(
   (point) => ({
-    name: formatPeriod(point.period),
+    name: formatPeriod(point.period, locale),
     [seriesKey]: point.value,
   }),
 );
@@ -127,21 +127,23 @@ const DashboardPage = () => {
 
   // Derived once per payload rather than on every render — these map over up to
   // 12 points each and the page re-renders on any query settling.
+  const { locale } = intl;
+
   const enrollmentSeries = useMemo(
-    () => (trends ? toChartData(trends.enrollments, 'enrollments') : []),
-    [trends],
+    () => (trends ? toChartData(trends.enrollments, 'enrollments', locale) : []),
+    [trends, locale],
   );
   const certificateSeries = useMemo(
-    () => (trends?.certificates ? toChartData(trends.certificates, 'certificates') : []),
-    [trends],
+    () => (trends?.certificates ? toChartData(trends.certificates, 'certificates', locale) : []),
+    [trends, locale],
   );
   const registrationSeries = useMemo(
-    () => (trends ? toChartData(trends.registrations, 'registrations') : []),
-    [trends],
+    () => (trends ? toChartData(trends.registrations, 'registrations', locale) : []),
+    [trends, locale],
   );
   const legacyRegistrationSeries = useMemo(
-    () => (trends?.legacyRegistrations ? toChartData(trends.legacyRegistrations, 'legacyRegistrations') : []),
-    [trends],
+    () => (trends?.legacyRegistrations ? toChartData(trends.legacyRegistrations, 'legacyRegistrations', locale) : []),
+    [trends, locale],
   );
 
   const lifecycleSlices = useMemo(() => {
