@@ -130,7 +130,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     onClose();
   };
 
-  const ALLOWED_IMAGE_EXTS = ['jpg', 'jpeg', 'png'];
+  const ALLOWED_IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif'];
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

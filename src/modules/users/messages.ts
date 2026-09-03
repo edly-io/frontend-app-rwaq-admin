@@ -136,11 +136,11 @@ const messages = defineMessages({
   fieldAvatarRemove: { id: 'rwaq.admin.users.form.avatarRemove', defaultMessage: 'Remove' },
   fieldAvatarHelp: {
     id: 'rwaq.admin.users.form.avatarHelp',
-    defaultMessage: 'JPG or PNG, max 1 MB. Saved together with the form.',
+    defaultMessage: 'JPG, PNG or GIF, max 1 MB. Saved together with the form.',
   },
   fieldAvatarTypeError: {
     id: 'rwaq.admin.users.form.avatarTypeError',
-    defaultMessage: 'Only JPG and PNG files are allowed.',
+    defaultMessage: 'Only JPG, PNG and GIF files are allowed.',
   },
   fieldName: { id: 'rwaq.admin.users.form.name', defaultMessage: 'Full name' },
   fieldJob: { id: 'rwaq.admin.users.form.job', defaultMessage: 'Job title' },

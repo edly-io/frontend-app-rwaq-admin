@@ -58,11 +58,11 @@ const messages = defineMessages({
   fieldLogoRemove: { id: 'rwaq.admin.orgs.form.logoRemove', defaultMessage: 'Remove' },
   fieldLogoHelp: {
     id: 'rwaq.admin.orgs.form.logoHelp',
-    defaultMessage: 'PNG or JPG recommended. Saved together with the form.',
+    defaultMessage: 'JPG, PNG or GIF recommended. Saved together with the form.',
   },
   fieldLogoTypeError: {
     id: 'rwaq.admin.orgs.form.logoTypeError',
-    defaultMessage: 'Only JPG and PNG files are allowed.',
+    defaultMessage: 'Only JPG, PNG and GIF files are allowed.',
   },
   sectionProfile: { id: 'rwaq.admin.orgs.form.sectionProfile', defaultMessage: 'Identity' },
   sectionPublic: { id: 'rwaq.admin.orgs.form.sectionPublic', defaultMessage: 'Public profile' },

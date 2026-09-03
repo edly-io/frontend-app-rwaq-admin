@@ -185,7 +185,7 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''
   );
 
-  const ALLOWED_IMAGE_EXTS = ['jpg', 'jpeg', 'png'];
+  const ALLOWED_IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif'];
 
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
