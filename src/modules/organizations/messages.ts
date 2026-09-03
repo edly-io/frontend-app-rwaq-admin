@@ -126,6 +126,18 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.addAdmin.notFound',
     defaultMessage: 'No account found for that email address. The person must register first.',
   },
+
+  // ── OrgCoursesTable ────────────────────────────────────────────────────────
+  orgCoursesTitle: { id: 'rwaq.admin.orgs.courses.title', defaultMessage: 'Courses' },
+  orgCoursesCaption: { id: 'rwaq.admin.orgs.courses.caption', defaultMessage: 'Courses' },
+  orgCoursesError: { id: 'rwaq.admin.orgs.courses.error', defaultMessage: 'Could not load courses for this organization.' },
+  orgCoursesColCourse: { id: 'rwaq.admin.orgs.courses.col.course', defaultMessage: 'Course' },
+  orgCoursesColStart: { id: 'rwaq.admin.orgs.courses.col.start', defaultMessage: 'Start' },
+  orgCoursesColEnd: { id: 'rwaq.admin.orgs.courses.col.end', defaultMessage: 'End' },
+  orgCoursesColEnrollments: { id: 'rwaq.admin.orgs.courses.col.enrollments', defaultMessage: 'Enrollments' },
+  orgCoursesColActions: { id: 'rwaq.admin.orgs.courses.col.actions', defaultMessage: 'Actions' },
+  orgCoursesView: { id: 'rwaq.admin.orgs.courses.action.view', defaultMessage: 'View' },
+  orgCoursesViewAriaLabel: { id: 'rwaq.admin.orgs.courses.action.viewAriaLabel', defaultMessage: 'View {name}' },
 });
 
 export default messages;

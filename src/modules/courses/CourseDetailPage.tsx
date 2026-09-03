@@ -119,7 +119,7 @@ const CourseDetailPage = () => {
       URL.revokeObjectURL(url);
     } catch (err) {
       logError(err);
-      showToast('Failed to download CSV');
+      showToast(intl.formatMessage(messages.toastCsvError));
     }
   };
 
@@ -128,10 +128,10 @@ const CourseDetailPage = () => {
   const handleRemoveStaff = async (member: CourseStaffMember) => {
     try {
       await removeStaffMutation.mutateAsync({ userId: member.userId, role: member.role });
-      showToast(`${member.name || member.username} removed from team.`);
+      showToast(`${member.name || member.username} ${intl.formatMessage(messages.toastRemovedFromTeam)}`);
     } catch (err) {
       logError(err);
-      showToast('Could not remove team member.');
+      showToast(intl.formatMessage(messages.toastRemoveTeamError));
     }
   };
 
@@ -143,7 +143,7 @@ const CourseDetailPage = () => {
     return (
       <div className="rwaq-page">
         <div className="d-flex justify-content-center py-5">
-          <Spinner animation="border" screenReaderText="Loading course" />
+          <Spinner animation="border" screenReaderText={intl.formatMessage(messages.loadingCourse)} />
         </div>
       </div>
     );
@@ -284,7 +284,7 @@ const CourseDetailPage = () => {
               size="sm"
               onClick={() => navigate(`/courses/${encodeURIComponent(courseId)}/reports`)}
             >
-              View Reports
+              {intl.formatMessage(messages.viewReports)}
             </Button>
           </div>
         </div>

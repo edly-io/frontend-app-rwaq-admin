@@ -438,6 +438,244 @@ const messages = defineMessages({
     id: 'rwaq.admin.courses.reason.otherPlaceholder',
     defaultMessage: 'Describe the reason',
   },
+
+  // ── CourseDetailPage ──────────────────────────────────────────────────────────
+  viewReports: {
+    id: 'rwaq.admin.courseDetail.viewReports',
+    defaultMessage: 'View Reports',
+  },
+  loadingCourse: {
+    id: 'rwaq.admin.courseDetail.loading',
+    defaultMessage: 'Loading course',
+  },
+  toastCsvError: {
+    id: 'rwaq.admin.courseDetail.toast.csvError',
+    defaultMessage: 'Failed to download CSV',
+  },
+  toastRemovedFromTeam: {
+    id: 'rwaq.admin.courseDetail.toast.removedFromTeam',
+    defaultMessage: 'removed from team.',
+  },
+  toastRemoveTeamError: {
+    id: 'rwaq.admin.courseDetail.toast.removeTeamError',
+    defaultMessage: 'Could not remove team member.',
+  },
+
+  // ── CourseReportsPage ─────────────────────────────────────────────────────────
+  reportsBreadcrumbCourses: {
+    id: 'rwaq.admin.courseReports.breadcrumb.courses',
+    defaultMessage: 'Courses',
+  },
+  reportsBreadcrumbSuffix: {
+    id: 'rwaq.admin.courseReports.breadcrumb.reports',
+    defaultMessage: '/ Reports',
+  },
+  reportsPageTitle: {
+    id: 'rwaq.admin.courseReports.title',
+    defaultMessage: 'Reports',
+  },
+  reportsLoadingCourse: {
+    id: 'rwaq.admin.courseReports.loadingCourse',
+    defaultMessage: 'Loading course',
+  },
+
+  // Generate section
+  reportsGenerateTitle: {
+    id: 'rwaq.admin.courseReports.generate.title',
+    defaultMessage: 'Generate Reports',
+  },
+  reportsGenerateDesc: {
+    id: 'rwaq.admin.courseReports.generate.desc',
+    defaultMessage: 'Click {generate} next to a report type to queue an async task. Completed files appear in the {available} section below.',
+  },
+  reportsGenerateWord: {
+    id: 'rwaq.admin.courseReports.generate.word',
+    defaultMessage: 'Generate',
+  },
+  reportsAvailableWord: {
+    id: 'rwaq.admin.courseReports.available.word',
+    defaultMessage: 'Reports Available for Download',
+  },
+
+  // Downloads section
+  reportsDownloadsTitle: {
+    id: 'rwaq.admin.courseReports.downloads.title',
+    defaultMessage: 'Reports Available for Download',
+  },
+  reportsDownloadsDesc: {
+    id: 'rwaq.admin.courseReports.downloads.desc',
+    defaultMessage: 'Auto-refreshes every 10 s while a report is processing. Download links expire after 5 minutes — regenerate if a link stops working.',
+  },
+  reportsDownloadsError: {
+    id: 'rwaq.admin.courseReports.downloads.error',
+    defaultMessage: 'Could not load available reports.',
+  },
+  reportsDownloadsCaption: {
+    id: 'rwaq.admin.courseReports.downloads.caption',
+    defaultMessage: 'Reports Available for Download',
+  },
+
+  // Table columns
+  reportsColType: {
+    id: 'rwaq.admin.courseReports.col.type',
+    defaultMessage: 'Report Type',
+  },
+  reportsColStatus: {
+    id: 'rwaq.admin.courseReports.col.status',
+    defaultMessage: 'Status',
+  },
+  reportsColGenerated: {
+    id: 'rwaq.admin.courseReports.col.generated',
+    defaultMessage: 'Generated',
+  },
+  reportsColElapsed: {
+    id: 'rwaq.admin.courseReports.col.elapsed',
+    defaultMessage: 'Elapsed',
+  },
+  reportsColDownload: {
+    id: 'rwaq.admin.courseReports.col.download',
+    defaultMessage: 'Download',
+  },
+
+  // State badge labels
+  reportsStateQueuing: {
+    id: 'rwaq.admin.courseReports.state.queuing',
+    defaultMessage: 'Queuing',
+  },
+  reportsStateInProgress: {
+    id: 'rwaq.admin.courseReports.state.inProgress',
+    defaultMessage: 'In Progress',
+  },
+  reportsStateSuccess: {
+    id: 'rwaq.admin.courseReports.state.success',
+    defaultMessage: 'Complete',
+  },
+  reportsStateFailure: {
+    id: 'rwaq.admin.courseReports.state.failure',
+    defaultMessage: 'Failed',
+  },
+  reportsStateRevoked: {
+    id: 'rwaq.admin.courseReports.state.revoked',
+    defaultMessage: 'Revoked',
+  },
+
+  // Buttons
+  reportsButtonGenerate: {
+    id: 'rwaq.admin.courseReports.button.generate',
+    defaultMessage: 'Generate',
+  },
+  reportsButtonRetry: {
+    id: 'rwaq.admin.courseReports.button.retry',
+    defaultMessage: 'Retry',
+  },
+  reportsButtonDownload: {
+    id: 'rwaq.admin.courseReports.button.download',
+    defaultMessage: 'Download',
+  },
+  reportsButtonRegenerate: {
+    id: 'rwaq.admin.courseReports.button.regenerate',
+    defaultMessage: 'Re-generate',
+  },
+
+  // Status text
+  reportsGeneratingReport: {
+    id: 'rwaq.admin.courseReports.sr.generating',
+    defaultMessage: 'Generating report',
+  },
+  reportsStatusQueued: {
+    id: 'rwaq.admin.courseReports.status.queued',
+    defaultMessage: 'Queued — waiting to start…',
+  },
+  reportsStatusGenerating: {
+    id: 'rwaq.admin.courseReports.status.generating',
+    defaultMessage: 'Generating…{progress}',
+  },
+  reportsStatusFailed: {
+    id: 'rwaq.admin.courseReports.status.failed',
+    defaultMessage: 'Report generation failed. Click Retry to try again.',
+  },
+
+  // Report type labels
+  reportLabelGradeCsv: {
+    id: 'rwaq.admin.courseReports.type.gradeCsv.label',
+    defaultMessage: 'Grade Report',
+  },
+  reportDescGradeCsv: {
+    id: 'rwaq.admin.courseReports.type.gradeCsv.desc',
+    defaultMessage: 'Generates a CSV of current student grades. Each row contains student ID, email, username, cumulative grade, per-assignment scores, enrollment track, verification status, and certificate eligibility/delivery status.',
+  },
+  reportLabelProblemGrade: {
+    id: 'rwaq.admin.courseReports.type.problemGrade.label',
+    defaultMessage: 'Problem Grade Report',
+  },
+  reportDescProblemGrade: {
+    id: 'rwaq.admin.courseReports.type.problemGrade.desc',
+    defaultMessage: 'Generates a CSV with per-problem scores for every student. Useful for identifying which specific problems have low scores or high failure rates.',
+  },
+  reportLabelProfileInfo: {
+    id: 'rwaq.admin.courseReports.type.profileInfo.label',
+    defaultMessage: 'Profile Information',
+  },
+  reportDescProfileInfo: {
+    id: 'rwaq.admin.courseReports.type.profileInfo.desc',
+    defaultMessage: 'Generates a CSV of enrolled student profile data including username, name, email, language, location, year of birth, gender, education level, mailing address, goals, enrollment mode, account activation status, and enrollment date.',
+  },
+  reportLabelMayEnroll: {
+    id: 'rwaq.admin.courseReports.type.mayEnroll.label',
+    defaultMessage: 'Learners Who Can Enroll',
+  },
+  reportDescMayEnroll: {
+    id: 'rwaq.admin.courseReports.type.mayEnroll.desc',
+    defaultMessage: "Generates a CSV of users who are in the course's invitation list but have not yet enrolled, useful for targeted outreach.",
+  },
+  reportLabelInactiveLearner: {
+    id: 'rwaq.admin.courseReports.type.inactiveLearner.label',
+    defaultMessage: 'Learners, Account Not Activated',
+  },
+  reportDescInactiveLearner: {
+    id: 'rwaq.admin.courseReports.type.inactiveLearner.desc',
+    defaultMessage: 'Generates a CSV of enrolled learners whose accounts have never been activated (email not confirmed), so they cannot access course content.',
+  },
+  reportLabelSurvey: {
+    id: 'rwaq.admin.courseReports.type.survey.label',
+    defaultMessage: 'Survey Results',
+  },
+  reportDescSurvey: {
+    id: 'rwaq.admin.courseReports.type.survey.desc',
+    defaultMessage: 'Generates a CSV of responses from the course survey module. Columns are User ID, User Name, Email, and one column per survey field answered.',
+  },
+  reportLabelProctoredExam: {
+    id: 'rwaq.admin.courseReports.type.proctoredExam.label',
+    defaultMessage: 'Proctored Exam Results',
+  },
+  reportDescProctoredExam: {
+    id: 'rwaq.admin.courseReports.type.proctoredExam.desc',
+    defaultMessage: 'Generates a CSV of all proctored exam attempts, including exam name, provider, student info, attempt timing, attempt status, review status, and any reviewer comments (suspicious activity or rules violations).',
+  },
+  reportLabelOraData: {
+    id: 'rwaq.admin.courseReports.type.oraData.label',
+    defaultMessage: 'ORA Data Report',
+  },
+  reportDescOraData: {
+    id: 'rwaq.admin.courseReports.type.oraData.desc',
+    defaultMessage: 'Generates a CSV of all Open Response Assessment submissions. Columns include Submission ID, block location, question prompt, username, submission text, submission date, and attempt number.',
+  },
+  reportLabelOraSummary: {
+    id: 'rwaq.admin.courseReports.type.oraSummary.label',
+    defaultMessage: 'ORA Summary Report',
+  },
+  reportDescOraSummary: {
+    id: 'rwaq.admin.courseReports.type.oraSummary.desc',
+    defaultMessage: 'Generates a CSV summary of ORA grading outcomes per learner per problem. Includes final scores, grader counts, and overall pass/fail determination.',
+  },
+  reportLabelOraSubmissionArchive: {
+    id: 'rwaq.admin.courseReports.type.oraSubmissionArchive.label',
+    defaultMessage: 'ORA Submission Files Archive',
+  },
+  reportDescOraSubmissionArchive: {
+    id: 'rwaq.admin.courseReports.type.oraSubmissionArchive.desc',
+    defaultMessage: 'Generates a ZIP archive containing all ORA submission text files and any uploaded file attachments submitted by learners for this course.',
+  },
 });
 
 export default messages;
