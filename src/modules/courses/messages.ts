@@ -240,7 +240,7 @@ const messages = defineMessages({
   },
   enrollmentColStatus: {
     id: 'rwaq.admin.courseDetail.enrollments.col.status',
-    defaultMessage: 'Status',
+    defaultMessage: 'Enrollment Status',
   },
   enrollmentColEnrolledAt: {
     id: 'rwaq.admin.courseDetail.enrollments.col.enrolledAt',
