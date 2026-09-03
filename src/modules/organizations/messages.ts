@@ -29,6 +29,7 @@ const messages = defineMessages({
   chipSort: { id: 'rwaq.admin.orgs.chip.sort', defaultMessage: 'Sorted by: {label}' },
 
   // ── Columns ────────────────────────────────────────────────────────────────
+  colLogo: { id: 'rwaq.admin.orgs.col.logo', defaultMessage: 'Logo' },
   colName: { id: 'rwaq.admin.orgs.col.name', defaultMessage: 'Organization' },
   colArabicName: { id: 'rwaq.admin.orgs.col.arabicName', defaultMessage: 'Arabic name' },
   colShortName: { id: 'rwaq.admin.orgs.col.shortName', defaultMessage: 'Short name' },

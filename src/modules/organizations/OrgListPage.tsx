@@ -148,15 +148,19 @@ const OrgListPage = () => {
 
   const columns: ColumnDef<OrgSummary>[] = [
     {
+      label: intl.formatMessage(messages.colLogo),
+      key: 'logo',
+      renderCell: (value, row) => (
+        <ProfileAvatar src={(value as string | null) ?? null} name={row.name as string} size="sm" />
+      ),
+    },
+    {
       label: intl.formatMessage(messages.colName),
       key: 'name',
       renderCell: (value, row) => (
-        <div className="rwaq-user-cell">
-          <ProfileAvatar src={(row.image as string | null) ?? null} name={value as string} size="sm" />
-          <div className="min-width-0">
-            <div className="rwaq-user-cell__name">{value as string}</div>
-            <div className="rwaq-user-cell__meta">{row.shortName as string}</div>
-          </div>
+        <div className="min-width-0">
+          <div className="rwaq-user-cell__name">{value as string}</div>
+          <div className="rwaq-user-cell__meta">{row.shortName as string}</div>
         </div>
       ),
     },
