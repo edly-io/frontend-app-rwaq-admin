@@ -336,15 +336,6 @@ const DOWNLOADS_COLUMNS: ColumnDef<ReportDownloadRow>[] = [
     ),
   },
   {
-    key: 'succeeded',
-    label: 'Progress',
-    renderCell: (_value, row) => (
-      <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-        {row.total != null ? `${row.succeeded ?? 0} / ${row.total}` : '—'}
-      </span>
-    ),
-  },
-  {
     key: 'downloadUrl',
     label: 'Download',
     renderCell: (value) => (

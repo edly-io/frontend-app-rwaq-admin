@@ -23,6 +23,7 @@ export interface OrgSummary {
   name: string;
   shortName: string;
   arabicName: string;
+  logo: string | null;
   active: boolean;
   courseCount: number;
   adminCount: number;
