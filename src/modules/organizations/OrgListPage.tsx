@@ -148,7 +148,7 @@ const OrgListPage = () => {
 
   const columns: ColumnDef<OrgSummary>[] = [
     {
-      label: intl.formatMessage(messages.colLogo),
+      label: '',
       key: 'logo',
       renderCell: (value, row) => (
         <ProfileAvatar src={(value as string | null) ?? null} name={row.name as string} size="sm" />
