@@ -23,7 +23,7 @@ import type { OrgFilter, OrgOrdering, OrgSummary } from './data/types';
 import messages from './messages';
 
 const PAGE_SIZE = 10;
-const DEFAULT_ORDERING: OrgOrdering = 'name';
+const DEFAULT_ORDERING: OrgOrdering = '-created';
 
 type MessageKey = keyof typeof messages;
 
