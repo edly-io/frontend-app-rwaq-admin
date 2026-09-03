@@ -64,6 +64,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
   const [isShortNameFocused, setIsShortNameFocused] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoTypeError, setLogoTypeError] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   const createMutation = useCreateOrganization();
@@ -108,6 +109,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
           showToast(intl.formatMessage(messages.toastCreated, { name: values.name }));
         }
         setLogoFile(null);
+        setLogoTypeError(null);
         setLogoPreview(null);
         onClose();
       } catch (error) {
@@ -123,20 +125,29 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     createMutation.reset();
     updateMutation.reset();
     setLogoFile(null);
+    setLogoTypeError(null);
     setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
     onClose();
   };
 
+  const ALLOWED_IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif'];
+
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    // eslint-disable-next-line no-param-reassign
+    event.target.value = '';
     if (!file) { return; }
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (!ALLOWED_IMAGE_EXTS.includes(ext)) {
+      setLogoTypeError(intl.formatMessage(messages.fieldLogoTypeError));
+      return;
+    }
+    setLogoTypeError(null);
     setLogoFile(file);
     setLogoPreview((prev) => {
       if (prev) { URL.revokeObjectURL(prev); }
       return URL.createObjectURL(file);
     });
-    // eslint-disable-next-line no-param-reassign
-    event.target.value = '';
   };
 
   const currentLogoSrc = logoPreview ?? organization?.logo ?? null;
@@ -193,12 +204,19 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
               <button
                 type="button"
                 className="btn btn-sm btn-link text-danger ml-2"
-                onClick={() => { setLogoFile(null); setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; }); }}
+                onClick={() => {
+                  setLogoFile(null);
+                  setLogoTypeError(null);
+                  setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
+                }}
               >
                 {intl.formatMessage(messages.fieldLogoRemove)}
               </button>
             )}
             <div className="small text-muted mt-1">{intl.formatMessage(messages.fieldLogoHelp)}</div>
+            {logoTypeError && (
+              <div className="small text-danger mt-1">{logoTypeError}</div>
+            )}
           </div>
           <input
             ref={logoInputRef}
