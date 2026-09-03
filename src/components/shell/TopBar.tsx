@@ -26,6 +26,7 @@ import { RWAQ_LOGO } from '@src/assets/rwaqLogo';
 import { useThemeVariant } from './useThemeVariant';
 
 const messages = defineMessages({
+  home: { id: 'rwaq.admin.topbar.home', defaultMessage: 'Home' },
   welcome: { id: 'rwaq.admin.topbar.welcome', defaultMessage: 'Welcome' },
   themeToggle: { id: 'rwaq.admin.topbar.themeToggle', defaultMessage: 'Toggle light/dark theme' },
   account: { id: 'rwaq.admin.topbar.account', defaultMessage: 'Account menu' },
@@ -114,6 +115,7 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
   // item is omitted rather than shown broken.
   const profileBase = (config?.ACCOUNT_PROFILE_URL as string) || '';
   const links = {
+    home: (config?.MARKETING_SITE_BASE_URL as string) || '',
     profile: profileBase && username ? `${profileBase}/u/${username}` : '',
     account: (config?.ACCOUNT_SETTINGS_URL as string) || `${lms}/account`,
     studio: (config?.STUDIO_BASE_URL as string) || '',
@@ -204,6 +206,11 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
             <Dropdown.Divider />
 
             {/* Cross-platform navigation */}
+            {!!links.home && (
+              <Dropdown.Item href={links.home} target="_blank" rel="noreferrer">
+                {intl.formatMessage(messages.home)}
+              </Dropdown.Item>
+            )}
             {!!links.profile && (
               <Dropdown.Item href={links.profile}>{intl.formatMessage(messages.profile)}</Dropdown.Item>
             )}
