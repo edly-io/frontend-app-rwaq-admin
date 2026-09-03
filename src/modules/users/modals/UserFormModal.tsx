@@ -100,6 +100,7 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarTypeError, setAvatarTypeError] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const isEdit = user !== null;
@@ -164,6 +165,7 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
         { name: values.name },
       ));
       setAvatarFile(null);
+      setAvatarTypeError(null);
       setAvatarPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
       onClose();
 
@@ -183,16 +185,24 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''
   );
 
+  const ALLOWED_IMAGE_EXTS = ['jpg', 'jpeg', 'png'];
+
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    // eslint-disable-next-line no-param-reassign
+    event.target.value = '';
     if (!file) { return; }
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (!ALLOWED_IMAGE_EXTS.includes(ext)) {
+      setAvatarTypeError(intl.formatMessage(messages.fieldAvatarTypeError));
+      return;
+    }
+    setAvatarTypeError(null);
     setAvatarFile(file);
     setAvatarPreview((prev) => {
       if (prev) { URL.revokeObjectURL(prev); }
       return URL.createObjectURL(file);
     });
-    // eslint-disable-next-line no-param-reassign
-    event.target.value = '';
   };
 
   const currentAvatarSrc = avatarPreview ?? user?.image ?? null;
@@ -250,12 +260,19 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
               <button
                 type="button"
                 className="btn btn-sm btn-link text-danger ml-2"
-                onClick={() => { setAvatarFile(null); setAvatarPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; }); }}
+                onClick={() => {
+                  setAvatarFile(null);
+                  setAvatarTypeError(null);
+                  setAvatarPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
+                }}
               >
                 {intl.formatMessage(messages.fieldAvatarRemove)}
               </button>
             )}
             <div className="small text-muted mt-1">{intl.formatMessage(messages.fieldAvatarHelp)}</div>
+            {avatarTypeError && (
+              <div className="small text-danger mt-1">{avatarTypeError}</div>
+            )}
           </div>
           <input
             ref={avatarInputRef}

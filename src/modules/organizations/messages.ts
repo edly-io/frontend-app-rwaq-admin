@@ -60,6 +60,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.form.logoHelp',
     defaultMessage: 'PNG or JPG recommended. Saved together with the form.',
   },
+  fieldLogoTypeError: {
+    id: 'rwaq.admin.orgs.form.logoTypeError',
+    defaultMessage: 'Only JPG and PNG files are allowed.',
+  },
   sectionProfile: { id: 'rwaq.admin.orgs.form.sectionProfile', defaultMessage: 'Identity' },
   sectionPublic: { id: 'rwaq.admin.orgs.form.sectionPublic', defaultMessage: 'Public profile' },
   save: { id: 'rwaq.admin.orgs.form.save', defaultMessage: 'Save changes' },
