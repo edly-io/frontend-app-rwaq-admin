@@ -6,7 +6,7 @@
  * organization, so changing it would orphan existing courses, and the backend
  * treats both as read-only on PATCH.
  */
-import { useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -120,37 +120,15 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     },
   });
 
-  const handleClose = () => {
-    formik.resetForm();
-    createMutation.reset();
-    updateMutation.reset();
-    setLogoFile(null);
-    setLogoTypeError(null);
-    setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
-    onClose();
-  };
-
-  const ALLOWED_IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif'];
-
-  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    // eslint-disable-next-line no-param-reassign
-    event.target.value = '';
-    if (!file) { return; }
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-    if (!ALLOWED_IMAGE_EXTS.includes(ext)) {
-      setLogoTypeError(intl.formatMessage(messages.fieldLogoTypeError));
-      return;
+  // Paragon keeps modal children mounted for animations, so Formik's values
+  // persist after close. Reset whenever the modal closes so reopening it is
+  // always a blank slate (create) or the latest server values (edit).
+  useEffect(() => {
+    if (!isOpen) {
+      formik.resetForm();
     }
-    setLogoTypeError(null);
-    setLogoFile(file);
-    setLogoPreview((prev) => {
-      if (prev) { URL.revokeObjectURL(prev); }
-      return URL.createObjectURL(file);
-    });
-  };
-
-  const currentLogoSrc = logoPreview ?? organization?.logo ?? null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const fieldError = (field: keyof FormValues) => (
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''

@@ -20,34 +20,18 @@ import {
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Container, Spinner } from '@openedx/paragon';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import { useAdminCapabilities } from '@src/data/whoami';
 import SideNav from './SideNav';
 import TopBar from './TopBar';
 import ErrorState from '../ErrorState';
-
-const messages = defineMessages({
-  accessDeniedTitle: {
-    id: 'rwaq.admin.shell.accessDeniedTitle',
-    defaultMessage: 'Access denied',
-  },
-  // Names the requirement and who can grant it. The generic 403 body ("you do
-  // not have permission to view this page") leaves a locked-out Global Staff
-  // admin — privileged on every other Open edX surface — with no idea what is
-  // missing or who to ask.
-  accessDeniedBody: {
-    id: 'rwaq.admin.shell.accessDeniedBody',
-    defaultMessage: 'The admin panel is available to superusers only. If you need access, '
-      + 'ask an existing superuser to grant it from this panel, or a platform administrator '
-      + 'to set it in Django admin.',
-  },
-});
+import { adminShellMessages as messages } from './messages';
 
 const BREAKPOINT_MD = 768;
 
 // ── Guard ─────────────────────────────────────────────────────────────────────
 
-type GuardState = 'pending' | 'allowed' | 'denied';
+type GuardState = 'pending' | 'allowed' | 'denied' | 'error';
 
 const useStaffGuard = (): GuardState => {
   const navigate = useNavigate();
@@ -64,10 +48,11 @@ const useStaffGuard = (): GuardState => {
 
   if (!isSignedIn) { return 'pending'; }
   if (isLoading) { return 'pending'; }
-  // A failed capability check is treated as denied rather than allowed. Getting
-  // this backwards would render the whole panel to someone the API will refuse,
-  // which reads as a broken app rather than a closed door.
-  if (isError || !data) { return 'denied'; }
+  // A network failure (5xx, timeout, offline) is distinct from a permission
+  // denial: the user may have access but the /me/ call just failed transiently.
+  // Show a retryable error rather than "Access Denied" so they know to refresh.
+  if (isError) { return 'error'; }
+  if (!data) { return 'denied'; }
 
   return data.canAccessAdminPanel ? 'allowed' : 'denied';
 };
@@ -161,6 +146,20 @@ const AdminShell = () => {
 
   if (guardState === 'pending') {
     return null;
+  }
+
+  if (guardState === 'error') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Container>
+          <ErrorState
+            statusCode={503}
+            title={intl.formatMessage(messages.networkErrorTitle)}
+            body={intl.formatMessage(messages.networkErrorBody)}
+          />
+        </Container>
+      </div>
+    );
   }
 
   if (guardState === 'denied') {

@@ -138,7 +138,7 @@ export interface CourseStaffAddPayload {
   role: CourseRole;
 }
 
-/** DELETE /api/v1/admin/courses/{courseId}/staff/{userId}/?role= */
+/** DELETE /api/v1/admin/courses/{courseId}/staff/{userId}/{role}/ */
 export interface CourseStaffRemoveParams {
   userId: number;
   role: CourseRole;

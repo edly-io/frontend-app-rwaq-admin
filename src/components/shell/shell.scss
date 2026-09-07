@@ -38,6 +38,7 @@
   --rwaq-accent-hover: #3a86a7;
   --rwaq-accent-contrast: #ffffff;
   --rwaq-accent-soft: rgba(68, 156, 194, 0.12);
+  --rwaq-error: #d92d20;
 }
 
 // Dark palette, taken from the Rwaq brand package's own dark theme
@@ -74,6 +75,7 @@ html[data-paragon-theme-variant='dark'] {
   --rwaq-accent-hover: #63b4d6;
   --rwaq-accent-contrast: #08222c;
   --rwaq-accent-soft: rgba(74, 163, 201, 0.16);
+  --rwaq-error: #f97066;
 }
 
 // ── Rwaq brand palette applied to Paragon ────────────────────────────────────
@@ -202,18 +204,21 @@ html[data-paragon-theme-variant='dark'] {
 }
 
 .rwaq-card {
+  position: relative;
   background: var(--rwaq-card-bg);
   border: 1px solid var(--rwaq-card-border);
   border-radius: var(--rwaq-radius);
   box-shadow: var(--rwaq-card-shadow);
   padding: var(--rwaq-space-5);
   color: var(--rwaq-text);
+  margin-top: 0.5rem;
 }
 
 .rwaq-page-header {
   display: flex;
   flex-direction: column;
   gap: var(--rwaq-space-2);
+  margin-bottom: var(--rwaq-space-2);
 }
 .rwaq-page-header__breadcrumb { font-size: 0.8125rem; color: var(--rwaq-muted); }
 .rwaq-page-header__breadcrumb a { color: var(--rwaq-muted); text-decoration: none; }
@@ -247,7 +252,7 @@ html[data-paragon-theme-variant='dark'] {
 .rwaq-form { display: flex; flex-direction: column; gap: var(--rwaq-space-4); max-width: 720px; }
 .rwaq-field { display: flex; flex-direction: column; gap: var(--rwaq-space-2); }
 .rwaq-field__label { font-size: 0.875rem; font-weight: 600; color: var(--rwaq-text); }
-.rwaq-field__label .required { color: #d92d20; margin-inline-start: 2px; }
+.rwaq-field__label .required { color: var(--rwaq-error); margin-inline-start: 2px; }
 
 // A two- or three-option select doesn't need the full row width; a very wide
 // control also makes its native option popup span the whole field.
@@ -620,6 +625,31 @@ html[data-paragon-theme-variant='dark'] {
     color: #ff8a80;
   }
 
+  .alert-info {
+    background: rgba(174, 199, 246, 0.14);
+    border-color: rgba(174, 199, 246, 0.4);
+    color: var(--rwaq-accent);
+  }
+
+  .alert-success {
+    background: rgba(108, 223, 165, 0.14);
+    border-color: rgba(108, 223, 165, 0.4);
+    color: #6cdfa5;
+  }
+
+  .alert-warning {
+    background: rgba(247, 179, 84, 0.14);
+    border-color: rgba(247, 179, 84, 0.4);
+    color: #f7b354;
+  }
+
+  .alert-secondary,
+  .alert-primary {
+    background: var(--rwaq-surface-raised);
+    border-color: var(--rwaq-border);
+    color: var(--rwaq-text);
+  }
+
   // Tooltips and dropdown menus
   .tooltip-inner {
     background: var(--rwaq-surface-raised);
@@ -638,6 +668,25 @@ html[data-paragon-theme-variant='dark'] {
     border-radius: 50%;
     filter: invert(1) hue-rotate(180deg);
   }
+
+  // DataTable wrapper: Paragon's bundled light CSS sets background: white on
+  // .pgn__data-table; the table element and footer are overridden above but
+  // the wrapper div itself was not, causing the white box in empty-state.
+  .pgn__data-table {
+    background: var(--rwaq-card-bg);
+    color: var(--rwaq-text);
+  }
+
+  // User menu shadow: rgba(16,24,40) is near-black on black — invisible.
+  .rwaq-admin-usermenu.dropdown-menu,
+  .rwaq-admin-usermenu {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .rwaq-field__label .required { color: var(--rwaq-error); }
+  .rwaq-actionbar__error { color: var(--rwaq-error); }
+  .rwaq-searchgroup--invalid { border-color: var(--rwaq-error); }
+  .rwaq-searchgroup--invalid:focus-within { box-shadow: 0 0 0 3px rgba(249, 112, 102, 0.3); }
 }
 
 // ── Action bar: search + filter/sort + applied chips ─────────────────────────
@@ -665,7 +714,7 @@ html[data-paragon-theme-variant='dark'] {
 .rwaq-actionbar__error {
   margin-top: var(--rwaq-space-2);
   font-size: 0.8125rem;
-  color: #d92d20;
+  color: var(--rwaq-error);
 }
 
 .rwaq-searchgroup {
@@ -685,7 +734,7 @@ html[data-paragon-theme-variant='dark'] {
 }
 
 .rwaq-searchgroup--invalid {
-  border-color: #d92d20;
+  border-color: var(--rwaq-error);
 
   &:focus-within { box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.18); }
 }

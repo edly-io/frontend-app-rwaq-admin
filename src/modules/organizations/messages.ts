@@ -127,17 +127,14 @@ const messages = defineMessages({
     defaultMessage: 'No account found for that email address. The person must register first.',
   },
 
-  // ── OrgCoursesTable ────────────────────────────────────────────────────────
-  orgCoursesTitle: { id: 'rwaq.admin.orgs.courses.title', defaultMessage: 'Courses' },
-  orgCoursesCaption: { id: 'rwaq.admin.orgs.courses.caption', defaultMessage: 'Courses' },
-  orgCoursesError: { id: 'rwaq.admin.orgs.courses.error', defaultMessage: 'Could not load courses for this organization.' },
+  // ── OrgCoursesTable — FE-C2 (previously raw string literals) ──────────────
   orgCoursesColCourse: { id: 'rwaq.admin.orgs.courses.col.course', defaultMessage: 'Course' },
   orgCoursesColStart: { id: 'rwaq.admin.orgs.courses.col.start', defaultMessage: 'Start' },
   orgCoursesColEnd: { id: 'rwaq.admin.orgs.courses.col.end', defaultMessage: 'End' },
   orgCoursesColEnrollments: { id: 'rwaq.admin.orgs.courses.col.enrollments', defaultMessage: 'Enrollments' },
-  orgCoursesColActions: { id: 'rwaq.admin.orgs.courses.col.actions', defaultMessage: 'Actions' },
-  orgCoursesView: { id: 'rwaq.admin.orgs.courses.action.view', defaultMessage: 'View' },
-  orgCoursesViewAriaLabel: { id: 'rwaq.admin.orgs.courses.action.viewAriaLabel', defaultMessage: 'View {name}' },
+  orgCoursesViewAriaLabel: { id: 'rwaq.admin.orgs.courses.viewAriaLabel', defaultMessage: 'View {name}' },
+  orgCoursesView: { id: 'rwaq.admin.orgs.courses.view', defaultMessage: 'View' },
+  orgCoursesError: { id: 'rwaq.admin.orgs.courses.error', defaultMessage: 'Could not load courses for this organization.' },
 });
 
 export default messages;
