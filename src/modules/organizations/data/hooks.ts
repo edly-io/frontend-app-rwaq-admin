@@ -60,7 +60,7 @@ export const useUpdateOrganization = (shortName: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (patch: OrgProfilePatch) => updateOrganization(shortName, patch),
+    mutationFn: ({ patch, logoFile }: { patch: OrgProfilePatch; logoFile?: File | null }) => updateOrganization(shortName, patch, logoFile),
     onSuccess: (updated: OrgDetail) => {
       queryClient.setQueryData(orgQueryKeys.detail(shortName), updated);
     },

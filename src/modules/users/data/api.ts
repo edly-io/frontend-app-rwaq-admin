@@ -22,7 +22,7 @@
  */
 import { camelCaseObject, snakeCaseObject } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
-import { getStudioApiUrl } from '@src/data/utils';
+import { getApiUrl, getStudioApiUrl } from '@src/data/utils';
 import type {
   ChangeModePayload,
   EnrollableCourse,
@@ -144,4 +144,17 @@ export const updateUser = async (id: number, patch: UserPatchPayload): Promise<U
     snakeCaseObject(patch),
   );
   return camelCaseObject(data) as UserDetail;
+};
+
+/**
+ * POST /api/v1/admin/users/{id}/image/ — upload or replace the profile picture.
+ *
+ * Deliberately hits LMS (not CMS) because `create_profile_images` on the backend
+ * uses PROFILE_IMAGE_BACKEND which is configured for the LMS process only.
+ * The CMS process doesn't have a writable profile-image storage in all environments.
+ */
+export const uploadUserImage = async (id: number, file: File): Promise<void> => {
+  const form = new FormData();
+  form.append('image', file);
+  await getAuthenticatedHttpClient().post(getApiUrl(`/api/v1/admin/users/${id}/image/`), form);
 };

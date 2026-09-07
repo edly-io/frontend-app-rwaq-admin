@@ -30,6 +30,7 @@ const PAGE_SIZE = 10;
 
 const OrgCoursesTable = ({ org }: { org: string }) => {
   const navigate = useNavigate();
+  const { formatMessage } = useIntl();
   const [page, setPage] = useState(1);
   const { data, isLoading, isError } = useCourses({ org, page, pageSize: PAGE_SIZE });
 
@@ -37,7 +38,7 @@ const OrgCoursesTable = ({ org }: { org: string }) => {
 
   const columns: ColumnDef<CourseSummary>[] = [
     {
-      label: 'Course',
+      label: formatMessage(messages.orgCoursesColCourse),
       key: 'displayName',
       renderCell: (value, row) => (
         <div className="rwaq-user-cell">
@@ -54,17 +55,17 @@ const OrgCoursesTable = ({ org }: { org: string }) => {
       ),
     },
     {
-      label: 'Start',
+      label: formatMessage(messages.orgCoursesColStart),
       key: 'start',
       renderCell: (value) => formatDate(value as string | null),
     },
     {
-      label: 'End',
+      label: formatMessage(messages.orgCoursesColEnd),
       key: 'end',
       renderCell: (value) => formatDate(value as string | null),
     },
     {
-      label: 'Enrollments',
+      label: formatMessage(messages.orgCoursesColEnrollments),
       key: 'enrollmentCount',
       renderCell: (value) => String(value as number),
     },
@@ -77,16 +78,16 @@ const OrgCoursesTable = ({ org }: { org: string }) => {
           variant="outline-primary"
           size="sm"
           onClick={() => navigate(`/courses/${encodeURIComponent(row.courseId as string)}`)}
-          aria-label={`View ${row.displayName as string}`}
+          aria-label={formatMessage(messages.orgCoursesViewAriaLabel, { name: row.displayName as string })}
         >
-          View
+          {formatMessage(messages.orgCoursesView)}
         </Button>
       ),
     },
   ];
 
   if (isError) {
-    return <Alert variant="warning">Could not load courses for this organization.</Alert>;
+    return <Alert variant="warning">{formatMessage(messages.orgCoursesError)}</Alert>;
   }
 
   const count = data?.pagination?.count ?? 0;
@@ -97,7 +98,7 @@ const OrgCoursesTable = ({ org }: { org: string }) => {
       columns={columns}
       data={data?.results ?? []}
       isLoading={isLoading}
-      caption="Courses"
+      caption={formatMessage(messages.orgCoursesCaption)}
       pagination={count > PAGE_SIZE ? {
         currentPage: page,
         pageCount: numPages || 1,
@@ -147,12 +148,19 @@ const OrgDetailPage = () => {
         </div>
 
         <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mt-2">
-          <div className="min-width-0">
-            <h1 className="rwaq-page-title mb-2">{organization.name}</h1>
-            <div className="d-flex align-items-center flex-wrap rwaq-chip-list">
-              <Chip className={`rwaq-chip rwaq-chip--${organization.active ? 'success' : 'light'}`}>
-                {intl.formatMessage(organization.active ? messages.statusActive : messages.statusInactive)}
-              </Chip>
+          <div className="rwaq-detail-header min-width-0">
+            <ProfileAvatar
+              src={organization.organizationLogo ?? organization.logo ?? null}
+              name={organization.name}
+              size="lg"
+            />
+            <div className="min-width-0">
+              <h1 className="rwaq-page-title mb-2">{organization.name}</h1>
+              <div className="d-flex align-items-center flex-wrap rwaq-chip-list">
+                <Chip className={`rwaq-chip rwaq-chip--${organization.active ? 'success' : 'light'}`}>
+                  {intl.formatMessage(organization.active ? messages.statusActive : messages.statusInactive)}
+                </Chip>
+              </div>
             </div>
           </div>
 
@@ -203,7 +211,7 @@ const OrgDetailPage = () => {
       </div>
 
       <div className="rwaq-card">
-        <h2 className="rwaq-section-title mb-4">Courses</h2>
+        <h2 className="rwaq-section-title mb-4">{intl.formatMessage(messages.orgCoursesTitle)}</h2>
         <OrgCoursesTable org={organization.shortName} />
       </div>
 

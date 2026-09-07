@@ -26,14 +26,15 @@ import DetailGrid from '@src/components/DetailGrid';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
 import ProgramStatusChips from './components/ProgramStatusChips';
-import type { ProgramCourse, ProgramLearner } from './data/types';
+import type {
+  ProgramCourse, ProgramLearner, ProgramPatch, ProgramStatus,
+} from './data/types';
 import {
   useProgram,
   useProgramCourses,
   useProgramLearners,
   useUpdateProgram,
 } from './data/hooks';
-import type { ProgramPatch, ProgramStatus } from './data/types';
 import messages from './messages';
 
 type Tab = 'courses' | 'learners';
@@ -346,15 +347,7 @@ const ProgramDetailPage = () => {
               />
             </div>
           </div>
-          <div className="flex-shrink-0">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => navigate(`/programs/${uuid}/reports`)}
-            >
-              View Reports
-            </Button>
-          </div>
+          <div className="flex-shrink-0" />
         </div>
       </div>
 

@@ -178,7 +178,7 @@ describe('useUpdateOrganization', () => {
 
     const { result } = renderHook(() => useUpdateOrganization('Rwaq'), { wrapper: createWrapper() });
 
-    result.current.mutate({ arabicName: 'رواق' });
+    result.current.mutate({ patch: { arabicName: 'رواق' } });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(patch).toHaveBeenCalledWith(`${BASE}/Rwaq/`, {

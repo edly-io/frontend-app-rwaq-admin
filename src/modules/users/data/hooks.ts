@@ -25,6 +25,7 @@ import {
   getUsers,
   unenrollUser,
   updateUser,
+  uploadUserImage,
 } from './api';
 
 // ── Query key factory ─────────────────────────────────────────────────────────
@@ -186,6 +187,24 @@ export const useChangeEnrollmentMode = (id: number) => {
       { courseId, ...payload }: ChangeModePayload & { courseId: string },
     ) => changeEnrollmentMode(id, courseId, payload),
     onSuccess: () => invalidateAfterEnrollmentChange(queryClient, id),
+  });
+};
+
+/**
+ * Upload or replace the user's profile picture.
+ *
+ * Fires after the JSON create/patch so the user row already exists.
+ * Invalidates detail + list so the avatar updates without a manual reload.
+ */
+export const useUploadUserImage = (id: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (file: File) => uploadUserImage(id, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.lists() });
+    },
   });
 };
 

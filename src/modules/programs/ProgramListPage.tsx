@@ -131,12 +131,16 @@ const ProgramListPage = () => {
     [setSearchParams],
   );
 
+  const isHideRaw = searchParams.get('is_hide');
+  let isHideFilter: boolean | undefined;
+  if (isHideRaw === 'true') { isHideFilter = true; } else if (isHideRaw === 'false') { isHideFilter = false; }
+
   const {
     data, isLoading, isError, error, refetch,
   } = usePrograms({
     search: search || undefined,
     status: (searchParams.get('status') as ProgramStatus | null) || undefined,
-    isHide: searchParams.get('is_hide') === 'true' ? true : searchParams.get('is_hide') === 'false' ? false : undefined,
+    isHide: isHideFilter,
     isFeatured: searchParams.get('is_featured') === 'true' ? true : undefined,
     ordering,
     page,
@@ -215,7 +219,9 @@ const ProgramListPage = () => {
         <div style={{ minWidth: 0 }}>
           <span
             className="rwaq-user-cell__name d-block"
-            style={{ maxWidth: '18rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+            style={{
+              maxWidth: '18rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}
             title={row.name}
           >
             {row.name}

@@ -16,8 +16,12 @@
  *   - Every figure is stamped with the backend's generatedAt, because these
  *     numbers are cached and pretending otherwise would be dishonest.
  */
-import { useMemo } from 'react';
-import { Alert, Spinner } from '@openedx/paragon';
+import {
+  useEffect, useMemo, useRef, useState,
+} from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Alert, Icon, Spinner } from '@openedx/paragon';
+import { Refresh } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
@@ -27,10 +31,16 @@ import type { ChartDataPoint, ChartType } from '@src/components/charts/MetricCha
 import MiniTable from './components/MiniTable';
 import StatTile from './components/StatTile';
 import {
+  analyticsQueryKeys,
   useAnalyticsBreakdowns,
   useAnalyticsSummary,
   useAnalyticsTrends,
 } from './data/hooks';
+import {
+  getAnalyticsBreakdowns,
+  getAnalyticsSummary,
+  getAnalyticsTrends,
+} from './data/api';
 import type {
   AnalyticsBreakdowns, OrganizationRow, TopCourse, TrendPoint,
 } from './data/types';
@@ -39,17 +49,26 @@ import messages from './messages';
 const TREND_MONTHS = 12;
 const CHART_HEIGHT = 190;
 
-/** "2026-08" → "Aug 26", so a 12-month axis stays readable. */
-const formatPeriod = (period: string): string => {
+/** "2026-08-28T09:14:00Z" → "Just now" / "3 min ago" / "1 hr ago" */
+const formatRelativeTime = (isoString: string): string => {
+  const diffMs = Date.now() - new Date(isoString).getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  if (diffMin < 1) { return 'Just now'; }
+  if (diffMin < 60) { return `${diffMin} min ago`; }
+  return `${Math.floor(diffMin / 60)} hr ago`;
+};
+
+/** "2026-08" → "Aug" (or its locale equivalent) for compact bar-chart axis labels. */
+const formatPeriod = (period: string, locale: string): string => {
   const [year, month] = period.split('-');
   const date = new Date(Number(year), Number(month) - 1, 1);
-  return date.toLocaleDateString(undefined, { month: 'short', year: '2-digit' });
+  return date.toLocaleDateString(locale, { month: 'short' });
 };
 
 /** Reshape a series for MetricChart, which keys on `name` plus a series key. */
-const toChartData = (points: TrendPoint[], seriesKey: string): ChartDataPoint[] => points.map(
+const toChartData = (points: TrendPoint[], seriesKey: string, locale: string): ChartDataPoint[] => points.map(
   (point) => ({
-    name: formatPeriod(point.period),
+    name: formatPeriod(point.period, locale),
     [seriesKey]: point.value,
   }),
 );
@@ -66,9 +85,41 @@ const formatPercent = (value: number | null): string | null => (
 const DashboardPage = () => {
   const intl = useIntl();
 
-  const summaryQuery = useAnalyticsSummary();
-  const trendsQuery = useAnalyticsTrends({ months: TREND_MONTHS });
-  const breakdownsQuery = useAnalyticsBreakdowns();
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  // Tick every minute so the relative timestamp ("3 min ago") stays accurate.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  // Track the params for each query so we can write back to the same key.
+  const summaryParams = useRef({});
+  const trendsParams = useRef({ months: TREND_MONTHS });
+  const breakdownsParams = useRef({});
+
+  const summaryQuery = useAnalyticsSummary(summaryParams.current);
+  const trendsQuery = useAnalyticsTrends(trendsParams.current);
+  const breakdownsQuery = useAnalyticsBreakdowns(breakdownsParams.current);
+
+  // Bypass the backend cache and inject fresh data directly into React Query's
+  // cache so all three queries update atomically in a single re-render.
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const forceParams = { forceRefresh: true };
+      const [freshSummary, freshTrends, freshBreakdowns] = await Promise.all([
+        getAnalyticsSummary({ ...summaryParams.current, ...forceParams }),
+        getAnalyticsTrends({ ...trendsParams.current, ...forceParams }),
+        getAnalyticsBreakdowns({ ...breakdownsParams.current, ...forceParams }),
+      ]);
+      queryClient.setQueryData(analyticsQueryKeys.summary(summaryParams.current), freshSummary);
+      queryClient.setQueryData(analyticsQueryKeys.trends(trendsParams.current), freshTrends);
+      queryClient.setQueryData(analyticsQueryKeys.breakdowns(breakdownsParams.current), freshBreakdowns);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const summary = summaryQuery.data;
   const trends = trendsQuery.data;
@@ -76,17 +127,23 @@ const DashboardPage = () => {
 
   // Derived once per payload rather than on every render — these map over up to
   // 12 points each and the page re-renders on any query settling.
+  const { locale } = intl;
+
   const enrollmentSeries = useMemo(
-    () => (trends ? toChartData(trends.enrollments, 'enrollments') : []),
-    [trends],
+    () => (trends ? toChartData(trends.enrollments, 'enrollments', locale) : []),
+    [trends, locale],
   );
   const certificateSeries = useMemo(
-    () => (trends?.certificates ? toChartData(trends.certificates, 'certificates') : []),
-    [trends],
+    () => (trends?.certificates ? toChartData(trends.certificates, 'certificates', locale) : []),
+    [trends, locale],
   );
   const registrationSeries = useMemo(
-    () => (trends ? toChartData(trends.registrations, 'registrations') : []),
-    [trends],
+    () => (trends ? toChartData(trends.registrations, 'registrations', locale) : []),
+    [trends, locale],
+  );
+  const legacyRegistrationSeries = useMemo(
+    () => (trends?.legacyRegistrations ? toChartData(trends.legacyRegistrations, 'legacyRegistrations', locale) : []),
+    [trends, locale],
   );
 
   const lifecycleSlices = useMemo(() => {
@@ -284,7 +341,7 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      <div className="rwaq-dash-grid rwaq-dash-grid--thirds">
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card">
           <StatTile
             label={intl.formatMessage(messages.legacyTitle)}
@@ -327,35 +384,6 @@ const DashboardPage = () => {
             </p>
           )}
         </div>
-
-        {/* Enrollment windows: a health check, so it reads as prose rather
-            than a figure — the useful state is "nothing wrong". */}
-        <div className="rwaq-card rwaq-dash-card">
-          <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.windowsTitle)}</h3>
-          </div>
-          {data.enrollmentWindows.closedButRunning === 0
-            && data.enrollmentWindows.runningWithoutWindow === 0 ? (
-              <p className="text-muted mb-0">{intl.formatMessage(messages.windowsHealthy)}</p>
-            ) : (
-              <ul className="rwaq-dash-list">
-                {data.enrollmentWindows.closedButRunning > 0 && (
-                  <li>
-                    {intl.formatMessage(messages.windowsClosed, {
-                      count: data.enrollmentWindows.closedButRunning,
-                    })}
-                  </li>
-                )}
-                {data.enrollmentWindows.runningWithoutWindow > 0 && (
-                  <li>
-                    {intl.formatMessage(messages.windowsNone, {
-                      count: data.enrollmentWindows.runningWithoutWindow,
-                    })}
-                  </li>
-                )}
-              </ul>
-            )}
-        </div>
       </div>
 
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">
@@ -367,6 +395,7 @@ const DashboardPage = () => {
             caption={intl.formatMessage(messages.orgsTitle)}
             rows={data.organizations}
             rowKey={(row) => row.shortName}
+            maxHeight={280}
             columns={[
               { label: intl.formatMessage(messages.orgColName), render: (row) => row.name },
               {
@@ -403,6 +432,7 @@ const DashboardPage = () => {
             caption={intl.formatMessage(messages.topCoursesTitle)}
             rows={data.catalogConcentration.courses}
             rowKey={(row) => row.courseId}
+            maxHeight={280}
             columns={[
               {
                 label: intl.formatMessage(messages.courseColName),
@@ -425,10 +455,50 @@ const DashboardPage = () => {
     </>
   );
 
+  const generatedAt = summary?.generatedAt ?? trends?.generatedAt ?? breakdowns?.generatedAt;
+
   return (
     <div className="rwaq-page">
       <div className="rwaq-page-header">
         <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {generatedAt && (
+            <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
+              {intl.formatMessage(messages.lastUpdated, { time: formatRelativeTime(generatedAt) })}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            aria-label={intl.formatMessage(messages.refreshAriaLabel)}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              cursor: isRefreshing ? 'default' : 'pointer',
+              color: 'var(--rwaq-muted, #6B757F)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '0.25rem',
+            }}
+          >
+            {isRefreshing ? (
+              <Spinner
+                animation="border"
+                size="sm"
+                screenReaderText={intl.formatMessage(messages.refreshAriaLabel)}
+                style={{
+                  width: '1.125rem',
+                  height: '1.125rem',
+                  color: 'var(--pgn-color-primary-base, #449cc2)',
+                  borderWidth: '0.15em',
+                }}
+              />
+            ) : (
+              <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Above the row, not below it: under five em dashes the reason has to
@@ -446,7 +516,7 @@ const DashboardPage = () => {
         />
         <KpiCard
           label={intl.formatMessage(messages.kpiEnrollments)}
-          value={formatCount(summaryQuery.isError ? null : summary?.totalEnrollments)}
+          value={formatCount(summaryQuery.isError ? null : summary?.activeEnrollments)}
           isLoading={summaryQuery.isLoading}
         />
         <KpiCard
@@ -497,13 +567,22 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
+      <div className="rwaq-dash-grid rwaq-dash-grid--thirds">
         {renderChartCard(
           intl.formatMessage(messages.registrationTrend),
           intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
           registrationSeries,
           'registrations',
           intl.formatMessage(messages.seriesRegistrations),
+          'line',
+        )}
+
+        {renderChartCard(
+          intl.formatMessage(messages.legacyRegistrationTrend),
+          intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+          legacyRegistrationSeries,
+          'legacyRegistrations',
+          intl.formatMessage(messages.seriesLegacyRegistrations),
           'line',
         )}
 

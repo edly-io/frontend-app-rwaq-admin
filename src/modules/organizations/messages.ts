@@ -29,6 +29,7 @@ const messages = defineMessages({
   chipSort: { id: 'rwaq.admin.orgs.chip.sort', defaultMessage: 'Sorted by: {label}' },
 
   // ── Columns ────────────────────────────────────────────────────────────────
+  colLogo: { id: 'rwaq.admin.orgs.col.logo', defaultMessage: 'Logo' },
   colName: { id: 'rwaq.admin.orgs.col.name', defaultMessage: 'Organization' },
   colArabicName: { id: 'rwaq.admin.orgs.col.arabicName', defaultMessage: 'Arabic name' },
   colShortName: { id: 'rwaq.admin.orgs.col.shortName', defaultMessage: 'Short name' },
@@ -53,6 +54,17 @@ const messages = defineMessages({
   },
   fieldArabicName: { id: 'rwaq.admin.orgs.form.arabicName', defaultMessage: 'Arabic name' },
   fieldFeaturedVideo: { id: 'rwaq.admin.orgs.form.featuredVideo', defaultMessage: 'Featured video URL' },
+  fieldLogo: { id: 'rwaq.admin.orgs.form.logo', defaultMessage: 'Organization logo' },
+  fieldLogoChange: { id: 'rwaq.admin.orgs.form.logoChange', defaultMessage: 'Change logo' },
+  fieldLogoRemove: { id: 'rwaq.admin.orgs.form.logoRemove', defaultMessage: 'Remove' },
+  fieldLogoHelp: {
+    id: 'rwaq.admin.orgs.form.logoHelp',
+    defaultMessage: 'JPG, PNG or GIF recommended. Saved together with the form.',
+  },
+  fieldLogoTypeError: {
+    id: 'rwaq.admin.orgs.form.logoTypeError',
+    defaultMessage: 'Only JPG, PNG and GIF files are allowed.',
+  },
   sectionProfile: { id: 'rwaq.admin.orgs.form.sectionProfile', defaultMessage: 'Identity' },
   sectionPublic: { id: 'rwaq.admin.orgs.form.sectionPublic', defaultMessage: 'Public profile' },
   save: { id: 'rwaq.admin.orgs.form.save', defaultMessage: 'Save changes' },
@@ -114,6 +126,18 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.addAdmin.notFound',
     defaultMessage: 'No account found for that email address. The person must register first.',
   },
+
+  // ── OrgCoursesTable ────────────────────────────────────────────────────────
+  orgCoursesTitle: { id: 'rwaq.admin.orgs.courses.title', defaultMessage: 'Courses' },
+  orgCoursesCaption: { id: 'rwaq.admin.orgs.courses.caption', defaultMessage: 'Courses' },
+  orgCoursesError: { id: 'rwaq.admin.orgs.courses.error', defaultMessage: 'Could not load courses for this organization.' },
+  orgCoursesColCourse: { id: 'rwaq.admin.orgs.courses.col.course', defaultMessage: 'Course' },
+  orgCoursesColStart: { id: 'rwaq.admin.orgs.courses.col.start', defaultMessage: 'Start' },
+  orgCoursesColEnd: { id: 'rwaq.admin.orgs.courses.col.end', defaultMessage: 'End' },
+  orgCoursesColEnrollments: { id: 'rwaq.admin.orgs.courses.col.enrollments', defaultMessage: 'Enrollments' },
+  orgCoursesColActions: { id: 'rwaq.admin.orgs.courses.col.actions', defaultMessage: 'Actions' },
+  orgCoursesView: { id: 'rwaq.admin.orgs.courses.action.view', defaultMessage: 'View' },
+  orgCoursesViewAriaLabel: { id: 'rwaq.admin.orgs.courses.action.viewAriaLabel', defaultMessage: 'View {name}' },
 });
 
 export default messages;

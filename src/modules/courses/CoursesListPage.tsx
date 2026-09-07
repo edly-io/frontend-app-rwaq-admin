@@ -136,19 +136,23 @@ const CoursesListPage = () => {
 
   const columns: ColumnDef<CourseSummary>[] = [
     {
+      label: '',
+      key: 'courseImageUrl',
+      renderCell: (value, row) => (
+        <ProfileAvatar
+          src={value ? `${getConfig().LMS_BASE_URL}${value as string}` : null}
+          name={row.displayName as string}
+          size="sm"
+        />
+      ),
+    },
+    {
       label: intl.formatMessage(messages.colCourse),
       key: 'displayName',
       renderCell: (value, row) => (
-        <div className="rwaq-user-cell">
-          <ProfileAvatar
-            src={row.courseImageUrl ? `${getConfig().LMS_BASE_URL}${row.courseImageUrl as string}` : null}
-            name={value as string}
-            size="sm"
-          />
-          <div className="min-width-0">
-            <div className="rwaq-user-cell__name">{value as string}</div>
-            <div className="rwaq-user-cell__meta">{row.courseId as string}</div>
-          </div>
+        <div className="min-width-0">
+          <div className="rwaq-user-cell__name">{value as string}</div>
+          <div className="rwaq-user-cell__meta">{row.courseId as string}</div>
         </div>
       ),
     },

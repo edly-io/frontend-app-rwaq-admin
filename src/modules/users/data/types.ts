@@ -154,7 +154,7 @@ export interface UserPatchPayload extends UserGrantPayload {
 }
 
 /** Search-by values supported by the backend */
-export type SearchBy = 'email' | 'name' | 'user_id' | 'job';
+export type SearchBy = 'email' | 'name' | 'user_id';
 
 /** Single-select filter values supported by the backend */
 export type UserFilter =

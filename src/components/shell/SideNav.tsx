@@ -219,10 +219,6 @@ const SideNav = ({ onNavigate }: SideNavProps) => {
           <NavItem key={item.to} def={item} onNavigate={onNavigate} />
         ))}
 
-        {/* Divider before settings */}
-        <hr style={{ margin: '0.75rem 0', borderColor: 'var(--pgn-color-gray-200, #dee2e6)' }} />
-
-        <SettingsGroup />
       </nav>
     </div>
   );
