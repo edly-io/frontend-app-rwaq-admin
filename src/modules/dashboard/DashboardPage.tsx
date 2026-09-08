@@ -658,6 +658,7 @@ const DashboardPage = () => {
           'legacyRegistrations',
           intl.formatMessage(messages.seriesLegacyRegistrations),
           'line',
+          intl.formatMessage(messages.infoLegacyMigration),
         )}
 
         {renderCertificateTrend()}

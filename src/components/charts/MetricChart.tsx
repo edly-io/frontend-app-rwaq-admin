@@ -234,6 +234,7 @@ const MetricChart = ({
           horizontal
           vertical={false}
           stroke={ruleColor}
+          syncWithTicks
         />
       ),
     };
