@@ -653,7 +653,7 @@ const DashboardPage = () => {
 
         {renderChartCard(
           intl.formatMessage(messages.legacyRegistrationTrend),
-          intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+          trendSubtitle,
           legacyRegistrationSeries,
           'legacyRegistrations',
           intl.formatMessage(messages.seriesLegacyRegistrations),
