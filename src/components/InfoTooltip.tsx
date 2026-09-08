@@ -3,17 +3,11 @@
  *
  * Two modes:
  *   Icon mode   (no children) — renders a small ⓘ button as the trigger.
- *   Title mode  (children)    — wraps the children; hovering them shows the
- *                               tooltip. Use this when the trigger is already
- *                               a visible element (e.g. a section heading).
- *
- * Visibility states:
- *   'hidden'  — tooltip not shown
- *   'hover'   — shown while mouse is over / element has focus; hides on leave/blur
- *   'pinned'  — shown until a second click, outside click, or Escape
- *
- * The tooltip auto-flips (left / center / right) via useLayoutEffect so it
- * never overflows the viewport edge on either side.
+ *                               Tooltip is position:absolute relative to wrapper.
+ *   Title mode  (children)    — wraps children; hovering them shows the tooltip.
+ *                               Tooltip is position:fixed anchored to the trigger's
+ *                               bounding rect so it always appears below the title
+ *                               text regardless of the container layout.
  */
 import {
   useEffect, useId, useLayoutEffect, useRef, useState,
@@ -21,16 +15,9 @@ import {
 import type { ReactNode } from 'react';
 
 export interface InfoTooltipProps {
-  /** Explanation text shown in the tooltip. Keep to 1–2 short sentences. */
   text: string;
-  /** When true, renders children as-is with no tooltip machinery. */
   disabled?: boolean;
-  /** Accessible label for the trigger button (icon mode only; defaults to "More information"). */
   ariaLabel?: string;
-  /**
-   * Title mode: wrap children so hovering them triggers the tooltip.
-   * When omitted, falls back to the ⓘ icon button.
-   */
   children?: ReactNode;
 }
 
@@ -38,38 +25,42 @@ type Placement = 'center' | 'left' | 'right';
 type Vis = 'hidden' | 'hover' | 'pinned';
 
 const TOOLTIP_BG = '#1a2e43';
+const TOOLTIP_W = 220;
 
 const InfoTooltip = ({
   text, ariaLabel = 'More information', children, disabled = false,
 }: InfoTooltipProps) => {
   if (disabled) { return <>{children}</>; }
+
   const [vis, setVis] = useState<Vis>('hidden');
+  // Icon mode: flip placement to avoid viewport overflow
   const [placement, setPlacement] = useState<Placement>('center');
+  // Title mode: fixed-position anchor computed at hover time
+  const [fixedPos, setFixedPos] = useState<{ top: number; left: number; flip: boolean } | null>(null);
+
   const wrapRef = useRef<HTMLSpanElement>(null);
+  const triggerRef = useRef<HTMLSpanElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const rawId = useId();
   const tooltipId = `info-tooltip-${rawId.replace(/:/g, '')}`;
 
   const isVisible = vis !== 'hidden';
+  const isTitleMode = Boolean(children);
 
-  // Reset placement when tooltip closes so next open starts centered.
   useEffect(() => {
     if (!isVisible) { setPlacement('center'); }
   }, [isVisible]);
 
-  // Flip the tooltip before the browser paints to prevent overflow.
+  // Icon mode only: flip after paint to prevent overflow.
   useLayoutEffect(() => {
-    if (!isVisible || !tooltipRef.current) { return; }
+    if (isTitleMode || !isVisible || !tooltipRef.current) { return; }
     const rect = tooltipRef.current.getBoundingClientRect();
     const vw = window.innerWidth;
-    if (rect.right > vw - 8) {
-      setPlacement('right');
-    } else if (rect.left < 8) {
-      setPlacement('left');
-    }
-  }, [isVisible, placement]);
+    if (rect.right > vw - 8) { setPlacement('right'); }
+    else if (rect.left < 8) { setPlacement('left'); }
+  }, [isVisible, placement, isTitleMode]);
 
-  // Close on outside click or Escape key (WCAG 1.4.13).
+  // Close on outside click or Escape (WCAG 1.4.13).
   useEffect(() => {
     if (!isVisible) { return undefined; }
     const handleMouse = (e: MouseEvent) => {
@@ -77,9 +68,7 @@ const InfoTooltip = ({
         setVis('hidden');
       }
     };
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setVis('hidden'); }
-    };
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setVis('hidden'); } };
     document.addEventListener('mousedown', handleMouse);
     document.addEventListener('keydown', handleKey);
     return () => {
@@ -88,52 +77,98 @@ const InfoTooltip = ({
     };
   }, [isVisible]);
 
-  const tooltipPos: React.CSSProperties = placement === 'right'
+  // Title mode: compute fixed position from the trigger element's bounding rect.
+  const computeFixed = () => {
+    const el = triggerRef.current ?? wrapRef.current;
+    if (!el) { return; }
+    const rect = el.getBoundingClientRect();
+    const flip = rect.left + TOOLTIP_W > window.innerWidth - 8;
+    setFixedPos({
+      top: rect.bottom + 6,
+      left: flip ? rect.right - TOOLTIP_W : rect.left,
+      flip,
+    });
+  };
+
+  // Icon mode tooltip position (position:absolute, relative to wrapper).
+  const iconTipPos: React.CSSProperties = placement === 'right'
     ? { right: 0, left: 'auto' }
     : placement === 'left'
       ? { left: 0, right: 'auto' }
       : { left: '50%', transform: 'translateX(-50%)', right: 'auto' };
-
-  const arrowPos: React.CSSProperties = placement === 'right'
+  const iconArrowPos: React.CSSProperties = placement === 'right'
     ? { right: '10px', left: 'auto' }
     : placement === 'left'
       ? { left: '10px', right: 'auto' }
       : { left: '50%', transform: 'translateX(-50%)', right: 'auto' };
 
-  const sharedTriggerProps = {
-    onMouseEnter: () => setVis((v) => (v === 'hidden' ? 'hover' : v)),
-    onMouseLeave: () => setVis((v) => (v === 'hover' ? 'hidden' : v)),
-    onFocus: () => setVis((v) => (v === 'hidden' ? 'hover' : v)),
-    onBlur: () => setVis((v) => (v === 'hover' ? 'hidden' : v)),
-  };
+  const tooltipBody = (extraStyle: React.CSSProperties, arrowStyle: React.CSSProperties) => (
+    <div
+      ref={tooltipRef}
+      id={tooltipId}
+      role="tooltip"
+      style={{
+        background: TOOLTIP_BG,
+        color: '#fff',
+        borderRadius: '0.375rem',
+        padding: '0.5rem 0.6875rem',
+        fontSize: '0.75rem',
+        lineHeight: 1.5,
+        width: `${TOOLTIP_W}px`,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
+        fontWeight: 400,
+        textTransform: 'none',
+        letterSpacing: 0,
+        whiteSpace: 'normal',
+        zIndex: 1060,
+        ...extraStyle,
+      }}
+    >
+      <span
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: '-4px',
+          width: 0,
+          height: 0,
+          borderLeft: '5px solid transparent',
+          borderRight: '5px solid transparent',
+          borderBottom: `5px solid ${TOOLTIP_BG}`,
+          ...arrowStyle,
+        }}
+      />
+      {text}
+    </div>
+  );
 
   return (
     <span
       ref={wrapRef}
       style={{
-        position: 'relative',
-        display: children ? 'inline-block' : 'inline-flex',
-        alignItems: children ? undefined : 'center',
-        marginInlineStart: children ? undefined : '0.25rem',
-        verticalAlign: children ? undefined : 'middle',
+        position: isTitleMode ? undefined : 'relative',
+        display: isTitleMode ? 'inline-block' : 'inline-flex',
+        alignItems: isTitleMode ? undefined : 'center',
+        marginInlineStart: isTitleMode ? undefined : '0.25rem',
+        verticalAlign: isTitleMode ? undefined : 'middle',
       }}
     >
       {children ? (
-        // Title mode — the children are the hover trigger.
-        // inline-block keeps the hover area tight to the text, not full-width.
         <span
+          ref={triggerRef}
           // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
           tabIndex={0}
           role="group"
           aria-describedby={isVisible ? tooltipId : undefined}
-          {...sharedTriggerProps}
+          onMouseEnter={() => { computeFixed(); setVis((v) => (v === 'hidden' ? 'hover' : v)); }}
+          onMouseLeave={() => setVis((v) => (v === 'hover' ? 'hidden' : v))}
+          onFocus={() => { computeFixed(); setVis((v) => (v === 'hidden' ? 'hover' : v)); }}
+          onBlur={() => setVis((v) => (v === 'hover' ? 'hidden' : v))}
           onKeyDown={(e) => { if (e.key === 'Escape') { setVis('hidden'); } }}
           style={{ cursor: 'help', display: 'inline-block' }}
         >
           {children}
         </span>
       ) : (
-        // Icon mode — ⓘ button is the trigger.
         <button
           type="button"
           aria-label={ariaLabel}
@@ -167,45 +202,16 @@ const InfoTooltip = ({
         </button>
       )}
 
-      {isVisible && (
-        <div
-          ref={tooltipRef}
-          id={tooltipId}
-          role="tooltip"
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 0.375rem)',
-            zIndex: 1060,
-            background: TOOLTIP_BG,
-            color: '#fff',
-            borderRadius: '0.375rem',
-            padding: '0.5rem 0.6875rem',
-            fontSize: '0.75rem',
-            lineHeight: 1.5,
-            width: '220px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
-            fontWeight: 400,
-            textTransform: 'none',
-            letterSpacing: 0,
-            whiteSpace: 'normal',
-            ...tooltipPos,
-          }}
-        >
-          <span
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              top: '-4px',
-              width: 0,
-              height: 0,
-              borderLeft: '5px solid transparent',
-              borderRight: '5px solid transparent',
-              borderBottom: `5px solid ${TOOLTIP_BG}`,
-              ...arrowPos,
-            }}
-          />
-          {text}
-        </div>
+      {/* Title mode: fixed position anchored to trigger's bounding rect */}
+      {isTitleMode && isVisible && fixedPos && tooltipBody(
+        { position: 'fixed', top: fixedPos.top, left: fixedPos.left },
+        { left: fixedPos.flip ? 'auto' : '12px', right: fixedPos.flip ? '12px' : 'auto' },
+      )}
+
+      {/* Icon mode: absolute position relative to wrapper */}
+      {!isTitleMode && isVisible && tooltipBody(
+        { position: 'absolute', top: 'calc(100% + 0.375rem)', ...iconTipPos },
+        iconArrowPos,
       )}
     </span>
   );
