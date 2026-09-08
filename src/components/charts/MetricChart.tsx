@@ -204,6 +204,21 @@ const MetricChart = ({
   };
   const ruleColor = resolveParagonToken('--rwaq-border', '#e6e8ec');
 
+  // Compute explicit integer Y-axis ticks from the data so the grid lines
+  // land on the exact same values as the axis labels. syncWithTicks alone
+  // isn't reliable when Recharts auto-calculates the domain — an explicit
+  // ticks array forces both axis and grid to use the same set of points.
+  const yTicks = (() => {
+    if (compact || type === 'donut') { return undefined; }
+    const max = Math.max(0, ...data.flatMap(
+      (d) => series.map((k) => Number((d as Record<string, number>)[k] ?? 0)),
+    ));
+    if (max === 0) { return [0, 1, 2, 3, 4]; }
+    const TICK_COUNT = 5;
+    const step = Math.ceil(max / (TICK_COUNT - 1));
+    return Array.from({ length: TICK_COUNT }, (_, i) => i * step);
+  })();
+
   const axisProps = compact
     ? {}
     : {
@@ -222,11 +237,10 @@ const MetricChart = ({
           tick={mutedTick}
           axisLine={false}
           tickLine={false}
-          // These series are counts. Without this Recharts invents fractional
-          // ticks (0, 0.75, 1.5…) for small integer data, which reads as a
-          // measurement error rather than a tally.
           allowDecimals={false}
           width={36}
+          ticks={yTicks}
+          domain={yTicks ? [0, yTicks[yTicks.length - 1]] : [0, 'auto']}
         />
       ),
       grid: (
