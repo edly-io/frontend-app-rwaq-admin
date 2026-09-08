@@ -10,6 +10,8 @@ export interface UserListPagination {
   previous: string | null;
   count: number;
   numPages: number;
+  /** True when count equals the backend cap (10,000) and the real total is higher. */
+  countCapped?: boolean;
 }
 
 /** Paginated list response from GET /api/v1/admin/users/ */
