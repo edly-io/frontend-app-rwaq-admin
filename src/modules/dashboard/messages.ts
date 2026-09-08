@@ -142,7 +142,7 @@ const messages = defineMessages({
   // ── Info tooltips ──────────────────────────────────────────────────────────
   infoLearners: {
     id: 'rwaq.admin.dashboard.info.learners',
-    defaultMessage: 'Registered learner accounts — excludes staff and service accounts.',
+    defaultMessage: 'Registered learner accounts - excludes staff and service accounts.',
   },
   infoEnrollments: {
     id: 'rwaq.admin.dashboard.info.enrollments',
@@ -154,19 +154,19 @@ const messages = defineMessages({
   },
   infoProgramsActive: {
     id: 'rwaq.admin.dashboard.info.programsActive',
-    defaultMessage: 'Programs currently in Active status. Always all-time — status reflects the current state, not a dated event.',
+    defaultMessage: 'Programs currently in Active status. Always all-time.',
   },
   infoRegistrations: {
     id: 'rwaq.admin.dashboard.info.registrations',
-    defaultMessage: 'New learner accounts registered this calendar month vs. last month.',
+    defaultMessage: 'New learner accounts registered this calendar month vs last month.',
   },
   infoCertCoverage: {
     id: 'rwaq.admin.dashboard.info.certCoverage',
-    defaultMessage: 'Published courses with at least one active web certificate enabled. Always all-time.',
+    defaultMessage: 'Published courses with at least one active certificate enabled. Always all-time.',
   },
   infoCertIssuance: {
     id: 'rwaq.admin.dashboard.info.certIssuance',
-    defaultMessage: 'Among certificate-enabled courses, the share of enrollments that earned a certificate.',
+    defaultMessage: 'Among certificate enabled courses, the share of enrollments that earned a certificate.',
   },
   infoProgramCompletion: {
     id: 'rwaq.admin.dashboard.info.programCompletion',
@@ -190,11 +190,7 @@ const messages = defineMessages({
   },
   infoEnrollmentModes: {
     id: 'rwaq.admin.dashboard.info.enrollmentModes',
-    defaultMessage: 'Enrollment breakdown by course mode (honor, audit, etc.). Rwaq runs on honor mode — a drift toward audit indicates a setup issue.',
-  },
-  infoEnrollmentWindows: {
-    id: 'rwaq.admin.dashboard.info.enrollmentWindows',
-    defaultMessage: 'Running courses with a closed or missing enrollment window — learners cannot self-enroll even though the course is live. Always all-time.',
+    defaultMessage: 'Enrollment breakdown by course mode (honor, audit).',
   },
   infoOrgsLeaderboard: {
     id: 'rwaq.admin.dashboard.info.orgsLeaderboard',
