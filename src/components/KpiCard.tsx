@@ -95,41 +95,43 @@ const KpiCard = ({
   >
     <Card.Body className="d-flex flex-column justify-content-between p-3">
       <div>
-        <p
-          className="small text-uppercase mb-1"
-          style={{
-            color: 'var(--rwaq-muted, #6B757F)',
-            letterSpacing: '0.04em',
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.25rem',
-          }}
-        >
-          {label}
-          {info && <InfoTooltip text={info} />}
-          {badge && (
-            <span
-              style={{
-                marginLeft: 'auto',
-                flexShrink: 0,
-                whiteSpace: 'nowrap',
-                padding: '0.1rem 0.375rem',
-                fontSize: '0.55rem',
-                fontWeight: 600,
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-                color: 'var(--rwaq-muted, #6B757F)',
-                background: 'var(--pgn-color-gray-100, #f0f0ef)',
-                border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
-                borderRadius: '999px',
-                lineHeight: 1.4,
-              }}
-            >
-              {badge}
-            </span>
-          )}
-        </p>
+        <InfoTooltip text={info ?? ''} disabled={!info}>
+          <p
+            className="small text-uppercase mb-1"
+            style={{
+              color: 'var(--rwaq-muted, #6B757F)',
+              letterSpacing: '0.04em',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              cursor: info ? 'help' : undefined,
+            }}
+          >
+            {label}
+            {badge && (
+              <span
+                style={{
+                  marginLeft: 'auto',
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
+                  padding: '0.1rem 0.375rem',
+                  fontSize: '0.55rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                  color: 'var(--rwaq-muted, #6B757F)',
+                  background: 'var(--pgn-color-gray-100, #f0f0ef)',
+                  border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
+                  borderRadius: '999px',
+                  lineHeight: 1.4,
+                }}
+              >
+                {badge}
+              </span>
+            )}
+          </p>
+        </InfoTooltip>
 
         {isLoading ? (
           <div

@@ -18,7 +18,8 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Alert, Spinner } from '@openedx/paragon';
+import { Alert, Icon, Spinner } from '@openedx/paragon';
+import { Refresh } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
@@ -358,6 +359,7 @@ const DashboardPage = () => {
             })}
             unavailableHint={intl.formatMessage(messages.noCoursesYet)}
             badge={allTimeBadge}
+            info={intl.formatMessage(messages.infoCertCoverage)}
           />
         </div>
         <div className="rwaq-card">
@@ -366,6 +368,7 @@ const DashboardPage = () => {
             value={formatPercent(data.certificates.issuancePct)}
             hint={intl.formatMessage(messages.certIssuanceHint)}
             unavailableHint={intl.formatMessage(messages.certificatesUnreadable)}
+            info={intl.formatMessage(messages.infoCertIssuance)}
           />
         </div>
         <div className="rwaq-card">
@@ -377,6 +380,7 @@ const DashboardPage = () => {
               enrollments: data.programs.enrollments,
             })}
             unavailableHint={intl.formatMessage(messages.noProgramEnrollments)}
+            info={intl.formatMessage(messages.infoProgramCompletion)}
           />
         </div>
       </div>
@@ -392,6 +396,7 @@ const DashboardPage = () => {
             })}
             unavailableHint={intl.formatMessage(messages.legacyNone)}
             badge={allTimeBadge}
+            info={intl.formatMessage(messages.infoLegacyMigration)}
           />
         </div>
 
@@ -528,35 +533,30 @@ const DashboardPage = () => {
               disabled={isRefreshing}
               aria-label={intl.formatMessage(messages.refreshAriaLabel)}
               style={{
+                border: 'none',
+                background: 'transparent',
+                padding: '0.25rem',
+                cursor: isRefreshing ? 'default' : 'pointer',
+                color: 'var(--rwaq-muted, #6B757F)',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.375rem',
-                padding: '0.3125rem 0.75rem',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                lineHeight: 1.5,
-                border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
-                borderRadius: '0.375rem',
-                background: 'transparent',
-                color: 'var(--pgn-color-gray-700, #3d3e3f)',
-                cursor: isRefreshing ? 'default' : 'pointer',
-                whiteSpace: 'nowrap',
               }}
             >
-              {isRefreshing && (
+              {isRefreshing ? (
                 <Spinner
                   animation="border"
                   size="sm"
                   screenReaderText={intl.formatMessage(messages.refreshAriaLabel)}
                   style={{
-                    width: '0.875rem',
-                    height: '0.875rem',
+                    width: '1.125rem',
+                    height: '1.125rem',
                     color: 'var(--pgn-color-primary-base, #449cc2)',
                     borderWidth: '0.15em',
                   }}
                 />
+              ) : (
+                <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
               )}
-              {intl.formatMessage(messages.refreshLabel)}
             </button>
             <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
           </div>
@@ -577,16 +577,19 @@ const DashboardPage = () => {
           label={intl.formatMessage(hasDateRange ? messages.kpiLearnersRange : messages.kpiLearners)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoLearners)}
         />
         <KpiCard
           label={intl.formatMessage(hasDateRange ? messages.kpiEnrollmentsRange : messages.kpiEnrollments)}
           value={formatCount(summaryQuery.isError ? null : summary?.activeEnrollments)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoEnrollments)}
         />
         <KpiCard
           label={intl.formatMessage(messages.kpiCoursesRunning)}
           value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoCoursesRunning)}
           sparkline={summary ? (
             <span className="rwaq-kpi-context">
               {intl.formatMessage(messages.kpiOfTotal, { total: formatCount(summary.totalCourses) })}
@@ -597,6 +600,7 @@ const DashboardPage = () => {
           label={intl.formatMessage(messages.kpiProgramsActive)}
           value={formatCount(summaryQuery.isError ? null : summary?.activePrograms)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoProgramsActive)}
           badge={allTimeBadge}
         />
         {/* Registrations: label and delta adapt to whether a date range is active. */}
@@ -607,6 +611,7 @@ const DashboardPage = () => {
           value={formatCount(summaryQuery.isError ? null : summary?.newRegistrationsThisMonth)}
           delta={hasDateRange ? undefined : (summary?.newRegistrationsDeltaPct ?? undefined)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoRegistrations)}
         />
       </div>
 

@@ -1427,6 +1427,12 @@ body {
 .rwaq-dash-grid--kpi { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
 .rwaq-dash-grid--thirds { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
 .rwaq-dash-grid--halves { grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr)); }
+
+@media (max-width: 40rem) {
+  .rwaq-dash-grid--halves,
+  .rwaq-dash-grid--thirds { grid-template-columns: 1fr; }
+  .rwaq-dash-grid--kpi { grid-template-columns: repeat(2, 1fr); }
+}
 .rwaq-dash-grid--split { grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); }
 
 @media (max-width: 62rem) {
@@ -1542,6 +1548,10 @@ body {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+
+  // Force a minimum table width so narrow viewports get a scrollbar rather
+  // than squishing all columns into illegibility.
+  > table { min-width: 22rem; }
 }
 
 .rwaq-mini-table {

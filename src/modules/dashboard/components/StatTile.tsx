@@ -32,17 +32,18 @@ const StatTile = ({
 
   return (
     <div className="rwaq-stat-tile">
-      <span
-        className="rwaq-stat-tile__label"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.25rem',
-        }}
-      >
-        {label}
-        {info && <InfoTooltip text={info} />}
-        {badge && (
+      <InfoTooltip text={info ?? ''} disabled={!info}>
+        <span
+          className="rwaq-stat-tile__label"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.25rem',
+            cursor: info ? 'help' : undefined,
+          }}
+        >
+          {label}
+          {badge && (
           <span
             style={{
               marginLeft: 'auto',
@@ -61,9 +62,10 @@ const StatTile = ({
             }}
           >
             {badge}
-          </span>
-        )}
-      </span>
+            </span>
+          )}
+        </span>
+      </InfoTooltip>
       <span className={`rwaq-stat-tile__value${isUnavailable ? ' rwaq-stat-tile__value--muted' : ''}`}>
         {isUnavailable ? intl.formatMessage(messages.unavailable) : value}
       </span>

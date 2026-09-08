@@ -23,6 +23,8 @@ import type { ReactNode } from 'react';
 export interface InfoTooltipProps {
   /** Explanation text shown in the tooltip. Keep to 1–2 short sentences. */
   text: string;
+  /** When true, renders children as-is with no tooltip machinery. */
+  disabled?: boolean;
   /** Accessible label for the trigger button (icon mode only; defaults to "More information"). */
   ariaLabel?: string;
   /**
@@ -37,7 +39,10 @@ type Vis = 'hidden' | 'hover' | 'pinned';
 
 const TOOLTIP_BG = '#1a2e43';
 
-const InfoTooltip = ({ text, ariaLabel = 'More information', children }: InfoTooltipProps) => {
+const InfoTooltip = ({
+  text, ariaLabel = 'More information', children, disabled = false,
+}: InfoTooltipProps) => {
+  if (disabled) { return <>{children}</>; }
   const [vis, setVis] = useState<Vis>('hidden');
   const [placement, setPlacement] = useState<Placement>('center');
   const wrapRef = useRef<HTMLSpanElement>(null);
@@ -107,7 +112,7 @@ const InfoTooltip = ({ text, ariaLabel = 'More information', children }: InfoToo
       ref={wrapRef}
       style={{
         position: 'relative',
-        display: children ? 'block' : 'inline-flex',
+        display: children ? 'inline-block' : 'inline-flex',
         alignItems: children ? undefined : 'center',
         marginInlineStart: children ? undefined : '0.25rem',
         verticalAlign: children ? undefined : 'middle',
@@ -115,6 +120,7 @@ const InfoTooltip = ({ text, ariaLabel = 'More information', children }: InfoToo
     >
       {children ? (
         // Title mode — the children are the hover trigger.
+        // inline-block keeps the hover area tight to the text, not full-width.
         <span
           // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
           tabIndex={0}
@@ -122,7 +128,7 @@ const InfoTooltip = ({ text, ariaLabel = 'More information', children }: InfoToo
           aria-describedby={isVisible ? tooltipId : undefined}
           {...sharedTriggerProps}
           onKeyDown={(e) => { if (e.key === 'Escape') { setVis('hidden'); } }}
-          style={{ cursor: 'help', display: 'block' }}
+          style={{ cursor: 'help', display: 'inline-block' }}
         >
           {children}
         </span>
