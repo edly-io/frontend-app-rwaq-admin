@@ -126,7 +126,6 @@ const UserDetailPage = () => {
           className="rwaq-detail-block"
           title={intl.formatMessage(messages.sectionProfileDetails)}
           items={[
-            { label: intl.formatMessage(messages.detailJob), value: user.job || dash },
             {
               label: intl.formatMessage(messages.detailCountry),
               // The API stores the ISO code; a reader wants the country.
