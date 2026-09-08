@@ -161,4 +161,85 @@ describe('DateRangePicker', () => {
     // Arbitrary date pair → Custom
     expect(screen.getByRole('button', { name: /custom/i })).toBeInTheDocument();
   });
+
+  // ── Outside-click and Escape key (AUDIT-014, AUDIT-019, AUDIT-020) ──────────
+
+  it('clicking outside the panel closes it', () => {
+    renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />);
+    openDropdown();
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('pressing Escape closes the panel', () => {
+    renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />);
+    openDropdown();
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  // ── Untested presets (AUDIT-020) ─────────────────────────────────────────────
+
+  it('clicking "Last 3 months" calls onChange with valid ISO dates and closes the panel', () => {
+    const onChange = jest.fn();
+    renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />);
+    openDropdown();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 3 months' }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    const [start, end] = onChange.mock.calls[0];
+    expect(start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(end).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('clicking "Last 6 months" calls onChange with valid ISO dates and closes the panel', () => {
+    const onChange = jest.fn();
+    renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />);
+    openDropdown();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 6 months' }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    const [start, end] = onChange.mock.calls[0];
+    expect(start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(end).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('clicking "Last 12 months" calls onChange with valid ISO dates and closes the panel', () => {
+    const onChange = jest.fn();
+    renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />);
+    openDropdown();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 12 months' }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    const [start, end] = onChange.mock.calls[0];
+    expect(start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(end).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('clicking "Year to date" calls onChange with valid ISO dates and closes the panel', () => {
+    const onChange = jest.fn();
+    renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />);
+    openDropdown();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Year to date' }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    const [start, end] = onChange.mock.calls[0];
+    expect(start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(end).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  // ── Last 30 days — verify actual 30-day offset (AUDIT-014) ─────────────────
+
+  it('Last 30 days start date is approximately 30 days ago', () => {
+    const onChange = jest.fn();
+    renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />);
+    openDropdown();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 30 days' }));
+    const [start] = onChange.mock.calls[0];
+    const diff = (Date.now() - new Date(start).getTime()) / (1000 * 60 * 60 * 24);
+    expect(diff).toBeGreaterThanOrEqual(29);
+    expect(diff).toBeLessThanOrEqual(31);
+  });
 });

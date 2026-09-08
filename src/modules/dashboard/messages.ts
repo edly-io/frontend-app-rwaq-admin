@@ -226,6 +226,9 @@ const messages = defineMessages({
   presetCustom: { id: 'rwaq.admin.dashboard.preset.custom', defaultMessage: 'Custom' },
   dateRangeStart: { id: 'rwaq.admin.dashboard.dateRange.start', defaultMessage: 'From' },
   dateRangeEnd: { id: 'rwaq.admin.dashboard.dateRange.end', defaultMessage: 'To' },
+  relativeJustNow: { id: 'rwaq.admin.dashboard.relative.justNow', defaultMessage: 'Just now' },
+  relativeMinutes: { id: 'rwaq.admin.dashboard.relative.minutes', defaultMessage: '{count} min ago' },
+  relativeHours: { id: 'rwaq.admin.dashboard.relative.hours', defaultMessage: '{count} hr ago' },
 });
 
 export default messages;

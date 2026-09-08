@@ -55,6 +55,7 @@ export const topBarMessages = defineMessages({
   learnerDashboard: { id: 'rwaq.admin.topbar.learnerDashboard', defaultMessage: 'LMS' },
   logout: { id: 'rwaq.admin.topbar.logout', defaultMessage: 'Log out' },
   openNav: { id: 'rwaq.admin.topbar.openNav', defaultMessage: 'Open navigation' },
+  home: { id: 'rwaq.admin.topbar.home', defaultMessage: 'Home' },
 });
 
 // ── FilterBar ─────────────────────────────────────────────────────────────────

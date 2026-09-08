@@ -142,7 +142,7 @@ const AsyncReportCard = ({
         </Alert>
       )}
 
-      {isLoading && (
+      {isLoading ? (
         <div className="d-flex justify-content-center py-3">
           <Spinner animation="border" size="sm" screenReaderText={intl.formatMessage(messages.loadingHistory)} />
         </div>

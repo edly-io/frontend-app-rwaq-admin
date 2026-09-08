@@ -81,6 +81,7 @@ export interface DateRangePickerProps {
 const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps) => {
   const intl = useIntl();
   const containerRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLDivElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const [customMode, setCustomMode] = useState(false);
@@ -103,7 +104,7 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
     ? 'presetCustom'
     : (PRESETS.find((p) => p.key === activePreset)?.labelKey ?? 'presetAllTime');
 
-  // Close the panel on outside click
+  // Close the panel on outside click or Escape key
   useEffect(() => {
     if (!isOpen) { return undefined; }
     const handler = (e: MouseEvent) => {
@@ -111,8 +112,18 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
         setIsOpen(false);
       }
     };
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        toggleRef.current?.querySelector('button')?.focus();
+      }
+    };
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('keydown', keyHandler);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('keydown', keyHandler);
+    };
   }, [isOpen]);
 
   const handlePresetClick = (preset: Preset) => {
@@ -154,17 +165,19 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
   return (
     <div ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
       {/* Toggle button */}
-      <Button
-        variant="outline-primary"
-        size="sm"
-        onClick={() => setIsOpen((o) => !o)}
-        aria-expanded={isOpen}
-        aria-haspopup="menu"
-        style={{ whiteSpace: 'nowrap' }}
-      >
-        {intl.formatMessage(messages[activeLabelKey])}
-        <span aria-hidden="true" style={{ marginInlineStart: '0.375rem', opacity: 0.6 }}>▾</span>
-      </Button>
+      <div ref={toggleRef} style={{ display: 'inline-block' }}>
+        <Button
+          variant="outline-primary"
+          size="sm"
+          onClick={() => setIsOpen((o) => !o)}
+          aria-expanded={isOpen}
+          aria-haspopup="menu"
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          {intl.formatMessage(messages[activeLabelKey])}
+          <span aria-hidden="true" style={{ marginInlineStart: '0.375rem', opacity: 0.6 }}>▾</span>
+        </Button>
+      </div>
 
       {/* Dropdown panel */}
       {isOpen && (

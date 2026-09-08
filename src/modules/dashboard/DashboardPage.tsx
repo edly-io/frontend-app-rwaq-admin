@@ -50,12 +50,12 @@ const TREND_MONTHS = 12;
 const CHART_HEIGHT = 190;
 
 /** "2026-08-28T09:14:00Z" → "Just now" / "3 min ago" / "1 hr ago" */
-const formatRelativeTime = (isoString: string): string => {
+const formatRelativeTime = (isoString: string, intl: ReturnType<typeof useIntl>): string => {
   const diffMs = Date.now() - new Date(isoString).getTime();
   const diffMin = Math.floor(diffMs / 60_000);
-  if (diffMin < 1) { return 'Just now'; }
-  if (diffMin < 60) { return `${diffMin} min ago`; }
-  return `${Math.floor(diffMin / 60)} hr ago`;
+  if (diffMin < 1) { return intl.formatMessage(messages.relativeJustNow); }
+  if (diffMin < 60) { return intl.formatMessage(messages.relativeMinutes, { count: diffMin }); }
+  return intl.formatMessage(messages.relativeHours, { count: Math.floor(diffMin / 60) });
 };
 
 /** "2026-08" → "Aug" (or its locale equivalent) for compact bar-chart axis labels. */
@@ -572,7 +572,7 @@ const DashboardPage = () => {
             <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
             {generatedAt && (
               <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
-                {intl.formatMessage(messages.lastUpdated, { time: formatRelativeTime(generatedAt) })}
+                {intl.formatMessage(messages.lastUpdated, { time: formatRelativeTime(generatedAt, intl) })}
               </span>
             )}
             <button

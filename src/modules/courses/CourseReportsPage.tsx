@@ -235,10 +235,10 @@ const ReportTriggerRow = ({
     >
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="font-weight-semibold" style={{ fontSize: '0.9375rem' }}>
-          {formatMessage(messages[def.labelMsgKey])}
+          {def.label}
         </div>
         <div className="text-muted small mt-1" style={{ lineHeight: '1.5' }}>
-          {formatMessage(messages[def.descMsgKey])}
+          {def.description}
         </div>
         {statusText}
       </div>
@@ -339,16 +339,16 @@ const DownloadsTable = ({
   const DOWNLOADS_COLUMNS: ColumnDef<ReportDownloadRow>[] = [
     {
       key: 'reportLabel',
-      label: formatMessage(messages.reportsColType),
+      label: intl.formatMessage(messages.reportsColType),
     },
     {
       key: 'state',
-      label: formatMessage(messages.reportsColStatus),
+      label: intl.formatMessage(messages.reportsColStatus),
       renderCell: (value) => <StateBadge state={value as TaskState} />,
     },
     {
       key: 'created',
-      label: formatMessage(messages.reportsColGenerated),
+      label: intl.formatMessage(messages.reportsColGenerated),
       renderCell: (value) => (
         <span style={{ whiteSpace: 'nowrap' }}>
           {new Date(value as string).toLocaleString()}
@@ -357,7 +357,7 @@ const DownloadsTable = ({
     },
     {
       key: 'modified',
-      label: formatMessage(messages.reportsColElapsed),
+      label: intl.formatMessage(messages.reportsColElapsed),
       id: 'elapsed',
       renderCell: (value, row) => (
         <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
@@ -367,7 +367,7 @@ const DownloadsTable = ({
     },
     {
       key: 'downloadUrl',
-      label: formatMessage(messages.reportsColDownload),
+      label: intl.formatMessage(messages.reportsColDownload),
       renderCell: (value) => (
         value ? (
           <a
@@ -376,7 +376,7 @@ const DownloadsTable = ({
             style={{ gap: '0.375rem', whiteSpace: 'nowrap' }}
           >
             <DownloadIcon />
-            {formatMessage(messages.reportsButtonDownload)}
+            {intl.formatMessage(messages.reportsButtonDownload)}
           </a>
         ) : (
           <span className="text-muted small">—</span>
@@ -402,7 +402,7 @@ const DownloadsTable = ({
       columns={columns}
       data={pageRows}
       isLoading={isLoading}
-      caption={formatMessage(messages.reportsDownloadsCaption)}
+      caption={intl.formatMessage(messages.reportsDownloadsCaption)}
       pagination={{
         currentPage,
         pageCount,

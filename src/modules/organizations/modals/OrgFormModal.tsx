@@ -6,7 +6,7 @@
  * organization, so changing it would orphan existing courses, and the backend
  * treats both as read-only on PATCH.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -134,11 +134,28 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''
   );
 
+  const currentLogoSrc: string | null = logoPreview ?? organization?.logo ?? null;
+
+  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    if (!file) { return; }
+    if (!file.type.startsWith('image/')) {
+      setLogoTypeError(intl.formatMessage(messages.logoTypeError));
+      return;
+    }
+    setLogoTypeError(null);
+    setLogoFile(file);
+    setLogoPreview((prev) => {
+      if (prev) { URL.revokeObjectURL(prev); }
+      return URL.createObjectURL(file);
+    });
+  };
+
   return (
     <FormModal
       title={intl.formatMessage(isEdit ? messages.editTitle : messages.createTitle)}
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={onClose}
       onSubmit={formik.handleSubmit}
       submitLabel={intl.formatMessage(isEdit ? messages.save : messages.create)}
       cancelLabel={intl.formatMessage(messages.cancel)}
