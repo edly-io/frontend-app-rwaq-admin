@@ -2,31 +2,29 @@
  * AdminDataTable — thin wrapper over Paragon DataTable for server-side
  * pagination, sort, and filter. All consumers get the same consistent
  * loading/empty/error handling without repeating it.
+ *
+ * Pagination strategy:
+ *
+ * DataTable is given `manualPagination` so it never slices the `data` array
+ * itself — every page is a fresh server response.  `fetchData` fires only
+ * when the internal page index actually changes (guarded by a currentPage
+ * comparison), so the initial mount never triggers a redundant request.
+ *
+ * Footer pagination control:
+ *  - countCapped=false → Paragon `Pagination` (numbered, variant="secondary",
+ *    real arrows) — DataTable.TablePagination is not used because its reduced
+ *    variant hardcodes leftIcon/rightIcon: null, leaving it arrow-free.
+ *  - countCapped=true  → DataTable.TablePaginationMinimal (prev/next only,
+ *    no page number picker) — reads canNextPage / canPreviousPage from
+ *    DataTableContext, which we wire correctly via `pageCount`:
+ *      hasNext=true  → pageCount = currentPage + 1  (next is enabled)
+ *      hasNext=false → pageCount = currentPage      (next is disabled)
  */
-import { ReactNode } from 'react';
+import { useCallback } from 'react';
 import { DataTable, Pagination, Spinner } from '@openedx/paragon';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-
-const messages = defineMessages({
-  loadingLabel: {
-    id: 'rwaq.admin.dataTable.loading',
-    defaultMessage: 'Loading data…',
-  },
-  noResults: {
-    id: 'rwaq.admin.dataTable.noResults',
-    defaultMessage: 'No results found.',
-  },
-  rowStatus: {
-    id: 'rwaq.admin.dataTable.rowStatus',
-    defaultMessage: 'Showing {first}–{last} of {total}',
-  },
-  paginationLabel: { id: 'rwaq.admin.dataTable.paginationLabel', defaultMessage: 'Table pages' },
-  previousPage: { id: 'rwaq.admin.dataTable.previousPage', defaultMessage: 'Previous' },
-  nextPage: { id: 'rwaq.admin.dataTable.nextPage', defaultMessage: 'Next' },
-  page: { id: 'rwaq.admin.dataTable.page', defaultMessage: 'Page' },
-  currentPage: { id: 'rwaq.admin.dataTable.currentPage', defaultMessage: 'Current page' },
-  pageOfCount: { id: 'rwaq.admin.dataTable.pageOfCount', defaultMessage: 'of' },
-});
+import { useIntl } from '@edx/frontend-platform/i18n';
+import type { ReactNode } from 'react';
+import { adminDataTableMessages as messages } from './messages';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -52,8 +50,14 @@ export interface ServerPaginationState {
   pageCount: number;
   /** Total number of items across all pages (drives the "Showing X of Y" status). */
   itemCount?: number;
-  /** When true, the real total exceeds the backend cap; display as "10,000+" instead. */
+  /** When true, the real total exceeds the backend cap; display as "1,000+" instead
+   *  and use DataTable.TablePaginationMinimal (prev/next only) instead of the
+   *  numbered Pagination component. */
   countCapped?: boolean;
+  /** Whether a next page exists — required when countCapped=true to set
+   *  DataTable's internal pageCount correctly so TablePaginationMinimal's
+   *  Next button knows when to disable itself. */
+  hasNext?: boolean;
   /** Rows per page. Must match what the API actually returns, or the footer's
    *  "Showing X of Y" range and the page count disagree with the data. */
   pageSize?: number;
@@ -116,6 +120,29 @@ const AdminDataTable = <Row extends object>({
     ? Math.min(rangeStart + data.length - 1, pagination.itemCount ?? data.length)
     : data.length;
 
+  // DataTable's internal pageCount drives canNextPage / canPreviousPage in
+  // DataTableContext, which TablePaginationMinimal reads.
+  // - Capped: real total unknown; encode only whether a next page exists.
+  // - Non-capped: use the accurate server-supplied page count.
+  const dataTablePageCount = pagination
+    ? (pagination.countCapped
+      ? (pagination.hasNext ? pagination.currentPage + 1 : pagination.currentPage)
+      : pagination.pageCount)
+    : 1;
+
+  // fetchData fires when DataTable's internal pageIndex changes.  Guard against
+  // the initial mount call (pageIndex === currentPage - 1 on first render) to
+  // avoid a redundant setSearchParams → React Router navigation cycle.
+  const handleFetchData = useCallback(
+    ({ pageIndex }: { pageIndex: number }) => {
+      const newPage = pageIndex + 1;
+      if (pagination && newPage !== pagination.currentPage) {
+        pagination.onPageChange(newPage);
+      }
+    },
+    [pagination],
+  );
+
   if (isLoading) {
     return (
       // rwaq-table-shell is a flex *column*, which flips what
@@ -142,59 +169,73 @@ const AdminDataTable = <Row extends object>({
       {/* sr-only heading instead of a raw <caption> (which is invalid nested in
           DataTable's wrapper <div> and triggers a DOM-nesting warning). */}
       {caption && <div className="sr-only" role="heading" aria-level={2}>{caption}</div>}
-      {/* Below ~1200px eight columns can't fit; letting the browser shrink them
-          wraps every cell to one character per line. Scroll the table instead. */}
-      <div className="rwaq-table-scroll">
-        {/* No pagination wiring on DataTable itself. It was keeping its own
-            pageIndex alongside our URL state, and its fetchData callback fired
-            with that stale index — so pressing Previous re-wrote the page back
-            and rendered the wrong rows. The data is already one server page,
-            so DataTable just renders what it is given and our footer owns
-            paging entirely. */}
-        <DataTable
-          columns={buildTableColumns(columns)}
-          data={data}
-          itemCount={data.length}
-          initialState={{ pageSize: Math.max(data.length, 1) }}
-        >
+
+      {/* DataTable wraps both the scroll area and the footer so compound
+          subcomponents (DataTable.Table, DataTable.TablePaginationMinimal)
+          can read from DataTableContext regardless of where they sit in the
+          tree.  manualPagination tells react-table not to slice the data
+          array — the server already did that. */}
+      <DataTable
+        columns={buildTableColumns(columns)}
+        data={data}
+        itemCount={pagination?.itemCount ?? data.length}
+        pageCount={dataTablePageCount}
+        initialState={{
+          pageIndex: pagination ? pagination.currentPage - 1 : 0,
+          pageSize,
+        }}
+        fetchData={pagination ? handleFetchData : undefined}
+        manualPagination={!!pagination}
+      >
+        {/* Below ~1200px eight columns can't fit; letting the browser shrink
+            them wraps every cell to one character per line. Scroll the table
+            inside its own container so the footer stays pinned below. */}
+        <div className="rwaq-table-scroll">
           <DataTable.Table />
-        </DataTable>
-      </div>
-
-      {/* Our own footer rather than DataTable.TableFooter: its TablePagination
-          hardcodes Paragon's `reduced` variant with `leftIcon: null,
-          rightIcon: null`, so it has no previous/next controls at all.
-          Paragon's Pagination in its default variant gives real arrows. */}
-      {pagination && (
-        <div className="rwaq-table-footer">
-          <span className="rwaq-table-footer__status">
-            {intl.formatMessage(messages.rowStatus, {
-              first: rangeStart,
-              last: rangeEnd,
-              total: pagination.countCapped
-                ? '10,000+'
-                : (pagination.itemCount ?? data.length),
-            })}
-          </span>
-
-          {pagination.pageCount > 1 && (
-            <Pagination
-              variant="secondary"
-              currentPage={pagination.currentPage}
-              pageCount={pagination.pageCount}
-              onPageSelect={(page: number) => pagination.onPageChange(page)}
-              paginationLabel={intl.formatMessage(messages.paginationLabel)}
-              buttonLabels={{
-                previous: intl.formatMessage(messages.previousPage),
-                next: intl.formatMessage(messages.nextPage),
-                page: intl.formatMessage(messages.page),
-                currentPage: intl.formatMessage(messages.currentPage),
-                pageOfCount: intl.formatMessage(messages.pageOfCount),
-              }}
-            />
-          )}
         </div>
-      )}
+
+        {/* Custom footer layout: our own status text on the left, Paragon
+            pagination control on the right.
+            - countCapped=true  → DataTable.TablePaginationMinimal (reads
+              canNextPage / canPreviousPage from context, no page numbers)
+            - countCapped=false → standalone Pagination (variant="secondary",
+              real arrows; DataTable.TablePagination is not used because its
+              reduced variant hardcodes leftIcon/rightIcon: null) */}
+        {pagination && (
+          <div className="rwaq-table-footer">
+            <span className="rwaq-table-footer__status">
+              {intl.formatMessage(messages.rowStatus, {
+                first: rangeStart,
+                last: rangeEnd,
+                total: pagination.countCapped
+                  ? '1,000+'
+                  : (pagination.itemCount ?? data.length),
+              })}
+            </span>
+
+            {pagination.countCapped ? (
+              <DataTable.TablePaginationMinimal />
+            ) : (
+              pagination.pageCount > 1 && (
+                <Pagination
+                  variant="secondary"
+                  currentPage={pagination.currentPage}
+                  pageCount={pagination.pageCount}
+                  onPageSelect={(page: number) => pagination.onPageChange(page)}
+                  paginationLabel={intl.formatMessage(messages.paginationLabel)}
+                  buttonLabels={{
+                    previous: intl.formatMessage(messages.previousPage),
+                    next: intl.formatMessage(messages.nextPage),
+                    page: intl.formatMessage(messages.page),
+                    currentPage: intl.formatMessage(messages.currentPage),
+                    pageOfCount: intl.formatMessage(messages.pageOfCount),
+                  }}
+                />
+              )
+            )}
+          </div>
+        )}
+      </DataTable>
     </div>
   );
 };
