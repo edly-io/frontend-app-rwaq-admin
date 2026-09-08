@@ -574,13 +574,13 @@ const DashboardPage = () => {
         {/* KPI row: learners, enrollments, runningCourses respond to the date range.
             activePrograms has no date dimension and remains all-time; its badge says so. */}
         <KpiCard
-          label={intl.formatMessage(messages.kpiLearners)}
+          label={intl.formatMessage(hasDateRange ? messages.kpiLearnersRange : messages.kpiLearners)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
           isLoading={summaryQuery.isLoading}
           info={intl.formatMessage(messages.infoLearners)}
         />
         <KpiCard
-          label={intl.formatMessage(messages.kpiEnrollments)}
+          label={intl.formatMessage(hasDateRange ? messages.kpiEnrollmentsRange : messages.kpiEnrollments)}
           value={formatCount(summaryQuery.isError ? null : summary?.activeEnrollments)}
           isLoading={summaryQuery.isLoading}
           info={intl.formatMessage(messages.infoEnrollments)}
