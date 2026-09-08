@@ -18,8 +18,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Alert, Icon, Spinner } from '@openedx/paragon';
-import { Refresh } from '@openedx/paragon/icons';
+import { Alert, Spinner } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
@@ -359,7 +358,6 @@ const DashboardPage = () => {
             })}
             unavailableHint={intl.formatMessage(messages.noCoursesYet)}
             badge={allTimeBadge}
-            info={intl.formatMessage(messages.infoCertCoverage)}
           />
         </div>
         <div className="rwaq-card">
@@ -368,7 +366,6 @@ const DashboardPage = () => {
             value={formatPercent(data.certificates.issuancePct)}
             hint={intl.formatMessage(messages.certIssuanceHint)}
             unavailableHint={intl.formatMessage(messages.certificatesUnreadable)}
-            info={intl.formatMessage(messages.infoCertIssuance)}
           />
         </div>
         <div className="rwaq-card">
@@ -380,7 +377,6 @@ const DashboardPage = () => {
               enrollments: data.programs.enrollments,
             })}
             unavailableHint={intl.formatMessage(messages.noProgramEnrollments)}
-            info={intl.formatMessage(messages.infoProgramCompletion)}
           />
         </div>
       </div>
@@ -396,7 +392,6 @@ const DashboardPage = () => {
             })}
             unavailableHint={intl.formatMessage(messages.legacyNone)}
             badge={allTimeBadge}
-            info={intl.formatMessage(messages.infoLegacyMigration)}
           />
         </div>
 
@@ -548,7 +543,7 @@ const DashboardPage = () => {
                 whiteSpace: 'nowrap',
               }}
             >
-              {isRefreshing ? (
+              {isRefreshing && (
                 <Spinner
                   animation="border"
                   size="sm"
@@ -560,8 +555,6 @@ const DashboardPage = () => {
                     borderWidth: '0.15em',
                   }}
                 />
-              ) : (
-                <Icon src={Refresh} style={{ width: '0.875rem', height: '0.875rem' }} />
               )}
               {intl.formatMessage(messages.refreshLabel)}
             </button>
@@ -584,19 +577,16 @@ const DashboardPage = () => {
           label={intl.formatMessage(hasDateRange ? messages.kpiLearnersRange : messages.kpiLearners)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
           isLoading={summaryQuery.isLoading}
-          info={intl.formatMessage(messages.infoLearners)}
         />
         <KpiCard
           label={intl.formatMessage(hasDateRange ? messages.kpiEnrollmentsRange : messages.kpiEnrollments)}
           value={formatCount(summaryQuery.isError ? null : summary?.activeEnrollments)}
           isLoading={summaryQuery.isLoading}
-          info={intl.formatMessage(messages.infoEnrollments)}
         />
         <KpiCard
           label={intl.formatMessage(messages.kpiCoursesRunning)}
           value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
           isLoading={summaryQuery.isLoading}
-          info={intl.formatMessage(messages.infoCoursesRunning)}
           sparkline={summary ? (
             <span className="rwaq-kpi-context">
               {intl.formatMessage(messages.kpiOfTotal, { total: formatCount(summary.totalCourses) })}
@@ -608,7 +598,6 @@ const DashboardPage = () => {
           value={formatCount(summaryQuery.isError ? null : summary?.activePrograms)}
           isLoading={summaryQuery.isLoading}
           badge={allTimeBadge}
-          info={intl.formatMessage(messages.infoProgramsActive)}
         />
         {/* Registrations: label and delta adapt to whether a date range is active. */}
         <KpiCard
@@ -618,7 +607,6 @@ const DashboardPage = () => {
           value={formatCount(summaryQuery.isError ? null : summary?.newRegistrationsThisMonth)}
           delta={hasDateRange ? undefined : (summary?.newRegistrationsDeltaPct ?? undefined)}
           isLoading={summaryQuery.isLoading}
-          info={intl.formatMessage(messages.infoRegistrations)}
         />
       </div>
 

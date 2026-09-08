@@ -6,7 +6,7 @@ import { defineMessages } from '@edx/frontend-platform/i18n';
 const messages = defineMessages({
   title: { id: 'rwaq.admin.dashboard.title', defaultMessage: 'Dashboard' },
   asOf: { id: 'rwaq.admin.dashboard.asOf', defaultMessage: 'Figures as of {time}' },
-  lastUpdated: { id: 'rwaq.admin.dashboard.lastUpdated', defaultMessage: 'Updated {time}' },
+  lastUpdated: { id: 'rwaq.admin.dashboard.lastUpdated', defaultMessage: 'updated {time}' },
   refreshAriaLabel: { id: 'rwaq.admin.dashboard.refresh', defaultMessage: 'Refresh dashboard' },
   refreshLabel: { id: 'rwaq.admin.dashboard.refreshLabel', defaultMessage: 'Refresh' },
   errorTitle: { id: 'rwaq.admin.dashboard.error.title', defaultMessage: 'Could not load analytics' },
