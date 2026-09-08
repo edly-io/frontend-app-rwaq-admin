@@ -339,16 +339,16 @@ const DownloadsTable = ({
   const DOWNLOADS_COLUMNS: ColumnDef<ReportDownloadRow>[] = [
     {
       key: 'reportLabel',
-      label: intl.formatMessage(messages.reportsColType),
+      label: intl.formatMessage(messages.colReportType),
     },
     {
       key: 'state',
-      label: intl.formatMessage(messages.reportsColStatus),
+      label: intl.formatMessage(messages.colStatus),
       renderCell: (value) => <StateBadge state={value as TaskState} />,
     },
     {
       key: 'created',
-      label: intl.formatMessage(messages.reportsColGenerated),
+      label: intl.formatMessage(messages.colGenerated),
       renderCell: (value) => (
         <span style={{ whiteSpace: 'nowrap' }}>
           {new Date(value as string).toLocaleString()}
@@ -357,7 +357,7 @@ const DownloadsTable = ({
     },
     {
       key: 'modified',
-      label: intl.formatMessage(messages.reportsColElapsed),
+      label: intl.formatMessage(messages.colElapsed),
       id: 'elapsed',
       renderCell: (value, row) => (
         <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
@@ -367,7 +367,7 @@ const DownloadsTable = ({
     },
     {
       key: 'downloadUrl',
-      label: intl.formatMessage(messages.reportsColDownload),
+      label: intl.formatMessage(messages.colDownload),
       renderCell: (value) => (
         value ? (
           <a
