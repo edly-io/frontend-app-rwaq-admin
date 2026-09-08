@@ -376,7 +376,7 @@ const DownloadsTable = ({
             style={{ gap: '0.375rem', whiteSpace: 'nowrap' }}
           >
             <DownloadIcon />
-            {intl.formatMessage(messages.reportsButtonDownload)}
+            {intl.formatMessage(messages.btnDownload)}
           </a>
         ) : (
           <span className="text-muted small">—</span>
@@ -402,7 +402,7 @@ const DownloadsTable = ({
       columns={columns}
       data={pageRows}
       isLoading={isLoading}
-      caption={intl.formatMessage(messages.reportsDownloadsCaption)}
+      caption={intl.formatMessage(messages.downloadsSectionTitle)}
       pagination={{
         currentPage,
         pageCount,
