@@ -1,7 +1,11 @@
 /**
- * InfoTooltip — a small ⓘ icon that reveals an explanatory tooltip on hover
- * and click. Hover is primary on desktop; click pins the tooltip open so it
- * survives mouse-leave (useful on touch and for keyboard users).
+ * InfoTooltip — reveals an explanatory tooltip on hover.
+ *
+ * Two modes:
+ *   Icon mode   (no children) — renders a small ⓘ button as the trigger.
+ *   Title mode  (children)    — wraps the children; hovering them shows the
+ *                               tooltip. Use this when the trigger is already
+ *                               a visible element (e.g. a section heading).
  *
  * Visibility states:
  *   'hidden'  — tooltip not shown
@@ -14,12 +18,18 @@
 import {
   useEffect, useId, useLayoutEffect, useRef, useState,
 } from 'react';
+import type { ReactNode } from 'react';
 
 export interface InfoTooltipProps {
   /** Explanation text shown in the tooltip. Keep to 1–2 short sentences. */
   text: string;
-  /** Accessible label for the trigger button (defaults to "More information"). */
+  /** Accessible label for the trigger button (icon mode only; defaults to "More information"). */
   ariaLabel?: string;
+  /**
+   * Title mode: wrap children so hovering them triggers the tooltip.
+   * When omitted, falls back to the ⓘ icon button.
+   */
+  children?: ReactNode;
 }
 
 type Placement = 'center' | 'left' | 'right';
@@ -27,7 +37,7 @@ type Vis = 'hidden' | 'hover' | 'pinned';
 
 const TOOLTIP_BG = '#1a2e43';
 
-const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps) => {
+const InfoTooltip = ({ text, ariaLabel = 'More information', children }: InfoTooltipProps) => {
   const [vis, setVis] = useState<Vis>('hidden');
   const [placement, setPlacement] = useState<Placement>('center');
   const wrapRef = useRef<HTMLSpanElement>(null);
@@ -85,48 +95,71 @@ const InfoTooltip = ({ text, ariaLabel = 'More information' }: InfoTooltipProps)
       ? { left: '10px', right: 'auto' }
       : { left: '50%', transform: 'translateX(-50%)', right: 'auto' };
 
+  const sharedTriggerProps = {
+    onMouseEnter: () => setVis((v) => (v === 'hidden' ? 'hover' : v)),
+    onMouseLeave: () => setVis((v) => (v === 'hover' ? 'hidden' : v)),
+    onFocus: () => setVis((v) => (v === 'hidden' ? 'hover' : v)),
+    onBlur: () => setVis((v) => (v === 'hover' ? 'hidden' : v)),
+  };
+
   return (
     <span
       ref={wrapRef}
       style={{
         position: 'relative',
-        display: 'inline-flex',
-        alignItems: 'center',
-        marginInlineStart: '0.25rem',
-        verticalAlign: 'middle',
+        display: children ? 'block' : 'inline-flex',
+        alignItems: children ? undefined : 'center',
+        marginInlineStart: children ? undefined : '0.25rem',
+        verticalAlign: children ? undefined : 'middle',
       }}
     >
-      <button
-        type="button"
-        aria-label={ariaLabel}
-        aria-describedby={isVisible ? tooltipId : undefined}
-        onMouseEnter={(e) => {
-          setVis((v) => (v === 'hidden' ? 'hover' : v));
-          (e.currentTarget as HTMLButtonElement).style.opacity = '1';
-        }}
-        onMouseLeave={(e) => {
-          setVis((v) => (v === 'hover' ? 'hidden' : v));
-          (e.currentTarget as HTMLButtonElement).style.opacity = '0.7';
-        }}
-        onFocus={() => setVis((v) => (v === 'hidden' ? 'hover' : v))}
-        onBlur={() => setVis((v) => (v === 'hover' ? 'hidden' : v))}
-        onClick={() => setVis((v) => (v === 'pinned' ? 'hidden' : 'pinned'))}
-        style={{
-          border: 'none',
-          background: 'transparent',
-          padding: '0 0.1rem',
-          cursor: 'help',
-          color: 'var(--rwaq-muted, #6B757F)',
-          lineHeight: 1,
-          fontSize: '0.8rem',
-          display: 'inline-flex',
-          alignItems: 'center',
-          opacity: 0.7,
-          transition: 'opacity 120ms',
-        }}
-      >
-        ⓘ
-      </button>
+      {children ? (
+        // Title mode — the children are the hover trigger.
+        <span
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+          tabIndex={0}
+          role="group"
+          aria-describedby={isVisible ? tooltipId : undefined}
+          {...sharedTriggerProps}
+          onKeyDown={(e) => { if (e.key === 'Escape') { setVis('hidden'); } }}
+          style={{ cursor: 'help', display: 'block' }}
+        >
+          {children}
+        </span>
+      ) : (
+        // Icon mode — ⓘ button is the trigger.
+        <button
+          type="button"
+          aria-label={ariaLabel}
+          aria-describedby={isVisible ? tooltipId : undefined}
+          onMouseEnter={(e) => {
+            setVis((v) => (v === 'hidden' ? 'hover' : v));
+            (e.currentTarget as HTMLButtonElement).style.opacity = '1';
+          }}
+          onMouseLeave={(e) => {
+            setVis((v) => (v === 'hover' ? 'hidden' : v));
+            (e.currentTarget as HTMLButtonElement).style.opacity = '0.7';
+          }}
+          onFocus={() => setVis((v) => (v === 'hidden' ? 'hover' : v))}
+          onBlur={() => setVis((v) => (v === 'hover' ? 'hidden' : v))}
+          onClick={() => setVis((v) => (v === 'pinned' ? 'hidden' : 'pinned'))}
+          style={{
+            border: 'none',
+            background: 'transparent',
+            padding: '0 0.1rem',
+            cursor: 'help',
+            color: 'var(--rwaq-muted, #6B757F)',
+            lineHeight: 1,
+            fontSize: '0.8rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            opacity: 0.7,
+            transition: 'opacity 120ms',
+          }}
+        >
+          ⓘ
+        </button>
+      )}
 
       {isVisible && (
         <div

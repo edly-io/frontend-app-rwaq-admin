@@ -270,10 +270,13 @@ const DashboardPage = () => {
   ) => (
     <div className="rwaq-card rwaq-dash-card">
       <div className="rwaq-dash-card__head">
-        <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
-          {title}
-          {infoText && <InfoTooltip text={infoText} />}
-        </h3>
+        {infoText ? (
+          <InfoTooltip text={infoText}>
+            <h3 className="rwaq-section-title mb-0">{title}</h3>
+          </InfoTooltip>
+        ) : (
+          <h3 className="rwaq-section-title mb-0">{title}</h3>
+        )}
         <span className="rwaq-dash-card__sub">{subtitle}</span>
       </div>
       {renderChartBody(data, seriesKey, seriesLabel, type, title)}
@@ -290,10 +293,11 @@ const DashboardPage = () => {
       return (
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
-              {intl.formatMessage(messages.certificateTrend)}
-              <InfoTooltip text={intl.formatMessage(messages.infoCertTrend)} />
-            </h3>
+            <InfoTooltip text={intl.formatMessage(messages.infoCertTrend)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.certificateTrend)}
+              </h3>
+            </InfoTooltip>
           </div>
           <p className="text-muted mb-0">{intl.formatMessage(messages.certificatesUnreadable)}</p>
         </div>
@@ -398,10 +402,11 @@ const DashboardPage = () => {
 
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
-              {intl.formatMessage(messages.modesTitle)}
-              <InfoTooltip text={intl.formatMessage(messages.infoEnrollmentModes)} />
-            </h3>
+            <InfoTooltip text={intl.formatMessage(messages.infoEnrollmentModes)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.modesTitle)}
+              </h3>
+            </InfoTooltip>
             <span className="rwaq-dash-card__sub">{intl.formatMessage(messages.modesHint)}</span>
           </div>
           {data.enrollmentModes.length > 0 ? (
@@ -435,10 +440,11 @@ const DashboardPage = () => {
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
-              {intl.formatMessage(messages.orgsTitle)}
-              <InfoTooltip text={intl.formatMessage(messages.infoOrgsLeaderboard)} />
-            </h3>
+            <InfoTooltip text={intl.formatMessage(messages.infoOrgsLeaderboard)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.orgsTitle)}
+              </h3>
+            </InfoTooltip>
           </div>
           <MiniTable<OrganizationRow>
             caption={intl.formatMessage(messages.orgsTitle)}
@@ -468,10 +474,11 @@ const DashboardPage = () => {
 
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
-              {intl.formatMessage(messages.topCoursesTitle)}
-              <InfoTooltip text={intl.formatMessage(messages.infoBusiestCourses)} />
-            </h3>
+            <InfoTooltip text={intl.formatMessage(messages.infoBusiestCourses)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.topCoursesTitle)}
+              </h3>
+            </InfoTooltip>
             {data.catalogConcentration.topSharePct !== null && (
               <span className="rwaq-dash-card__sub">
                 {intl.formatMessage(messages.topCoursesHint, {
@@ -630,10 +637,11 @@ const DashboardPage = () => {
 
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0 d-flex align-items-center">
-              {intl.formatMessage(messages.lifecycleTitle)}
-              <InfoTooltip text={intl.formatMessage(messages.infoCourseLifecycle)} />
-            </h3>
+            <InfoTooltip text={intl.formatMessage(messages.infoCourseLifecycle)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.lifecycleTitle)}
+              </h3>
+            </InfoTooltip>
           </div>
           {renderLifecycle()}
         </div>
