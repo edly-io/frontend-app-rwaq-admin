@@ -52,6 +52,8 @@ export interface ServerPaginationState {
   pageCount: number;
   /** Total number of items across all pages (drives the "Showing X of Y" status). */
   itemCount?: number;
+  /** When true, the real total exceeds the backend cap; display as "10,000+" instead. */
+  countCapped?: boolean;
   /** Rows per page. Must match what the API actually returns, or the footer's
    *  "Showing X of Y" range and the page count disagree with the data. */
   pageSize?: number;
@@ -169,7 +171,9 @@ const AdminDataTable = <Row extends object>({
             {intl.formatMessage(messages.rowStatus, {
               first: rangeStart,
               last: rangeEnd,
-              total: pagination.itemCount ?? data.length,
+              total: pagination.countCapped
+                ? '10,000+'
+                : (pagination.itemCount ?? data.length),
             })}
           </span>
 

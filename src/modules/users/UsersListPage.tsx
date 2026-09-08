@@ -359,6 +359,7 @@ const UsersListPage = () => {
               pageCount: data.pagination?.numPages
                 ?? Math.max(1, Math.ceil((data.pagination?.count ?? 0) / PAGE_SIZE)),
               itemCount: data.pagination?.count ?? data.results.length,
+              countCapped: data.pagination?.countCapped,
               pageSize: PAGE_SIZE,
               onPageChange: handlePageChange,
             } : undefined}
