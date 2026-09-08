@@ -81,21 +81,6 @@ const messages = defineMessages({
     defaultMessage: 'Rwaq runs its access model on honor, so a drift toward audit is worth checking.',
   },
 
-  // ── Enrollment window health ───────────────────────────────────────────────
-  windowsTitle: { id: 'rwaq.admin.dashboard.windows.title', defaultMessage: 'Enrollment windows' },
-  windowsClosed: {
-    id: 'rwaq.admin.dashboard.windows.closed',
-    defaultMessage: '{count, plural, one {# running course has a closed enrollment window} other {# running courses have closed enrollment windows}}',
-  },
-  windowsNone: {
-    id: 'rwaq.admin.dashboard.windows.none',
-    defaultMessage: '{count, plural, one {# running course has no enrollment window set} other {# running courses have no enrollment window set}}',
-  },
-  windowsHealthy: {
-    id: 'rwaq.admin.dashboard.windows.healthy',
-    defaultMessage: 'Every running course has an open enrollment window.',
-  },
-
   // ── Tables ─────────────────────────────────────────────────────────────────
   orgsTitle: { id: 'rwaq.admin.dashboard.orgs.title', defaultMessage: 'Top 10 Organizations by enrollment' },
   orgColName: { id: 'rwaq.admin.dashboard.orgs.colName', defaultMessage: 'Organization' },

@@ -101,11 +101,6 @@ export interface CatalogConcentration {
   courses: TopCourse[];
 }
 
-export interface EnrollmentWindowHealth {
-  closedButRunning: number;
-  runningWithoutWindow: number;
-}
-
 /** GET /api/v1/admin/analytics/breakdowns/ */
 export interface AnalyticsBreakdowns {
   courseLifecycle: CourseLifecycle;
@@ -115,7 +110,6 @@ export interface AnalyticsBreakdowns {
   enrollmentModes: EnrollmentMode[];
   organizations: OrganizationRow[];
   catalogConcentration: CatalogConcentration;
-  enrollmentWindows: EnrollmentWindowHealth;
   generatedAt: string;
   /** Null when no explicit date range was requested. */
   dateRangeStart: string | null;

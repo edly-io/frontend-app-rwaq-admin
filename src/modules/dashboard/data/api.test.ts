@@ -89,7 +89,6 @@ const snakeBreakdownsResponse = {
   enrollment_modes: [{ mode: 'honor', count: 2800, share_pct: 93 }],
   organizations: [],
   catalog_concentration: { total_enrollments: 3000, top_share_pct: 40, courses: [] },
-  enrollment_windows: { closed_but_running: 1, running_without_window: 0 },
   generated_at: '2026-08-01T00:00:00Z',
   date_range_start: null,
   date_range_end: null,
@@ -186,15 +185,6 @@ describe('getAnalyticsBreakdowns', () => {
 
     expect(result).toHaveProperty('courseLifecycle');
     expect(result.courseLifecycle).toHaveProperty('running', 20);
-  });
-
-  it('returns camelCase enrollmentWindows fields', async () => {
-    mockGet.mockResolvedValue({ data: snakeBreakdownsResponse });
-    const result = await getAnalyticsBreakdowns();
-
-    expect(result).toHaveProperty('enrollmentWindows');
-    expect(result.enrollmentWindows).toHaveProperty('closedButRunning', 1);
-    expect(result.enrollmentWindows).toHaveProperty('runningWithoutWindow', 0);
   });
 
   it('sends startDate and forceRefresh correctly on the wire', async () => {

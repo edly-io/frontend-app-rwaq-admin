@@ -98,7 +98,6 @@ const mockBreakdowns = {
   enrollmentModes: [{ mode: 'honor', count: 5000, sharePct: 88 }],
   organizations: [],
   catalogConcentration: { totalEnrollments: 5678, topSharePct: 30, courses: [] },
-  enrollmentWindows: { closedButRunning: 3, runningWithoutWindow: 2 },
   generatedAt: new Date().toISOString(),
   dateRangeStart: null,
   dateRangeEnd: null,
@@ -195,42 +194,6 @@ describe('DashboardPage — data state', () => {
     setDataState();
     renderWrapper(<DashboardPage />);
     expect(screen.getByText('10')).toBeInTheDocument();
-  });
-});
-
-describe('DashboardPage — enrollmentWindows section', () => {
-  it('renders the closedButRunning count when non-zero', () => {
-    setDataState();
-    renderWrapper(<DashboardPage />);
-    // Plural message: "3 running courses have closed enrollment windows"
-    expect(screen.getByText(/3 running courses have closed enrollment windows/i)).toBeInTheDocument();
-  });
-
-  it('renders the runningWithoutWindow count when non-zero', () => {
-    setDataState();
-    renderWrapper(<DashboardPage />);
-    expect(screen.getByText(/2 running courses have no enrollment window set/i)).toBeInTheDocument();
-  });
-
-  it('shows healthy message when both counts are zero', () => {
-    (hooks.useAnalyticsSummary as jest.Mock).mockReturnValue({
-      isLoading: false, isError: false, data: mockSummary, error: null, refetch: jest.fn(),
-    });
-    (hooks.useAnalyticsTrends as jest.Mock).mockReturnValue({
-      isLoading: false, isError: false, data: mockTrends, error: null, refetch: jest.fn(),
-    });
-    (hooks.useAnalyticsBreakdowns as jest.Mock).mockReturnValue({
-      isLoading: false,
-      isError: false,
-      data: {
-        ...mockBreakdowns,
-        enrollmentWindows: { closedButRunning: 0, runningWithoutWindow: 0 },
-      },
-      error: null,
-      refetch: jest.fn(),
-    });
-    renderWrapper(<DashboardPage />);
-    expect(screen.getByText('Every running course has an open enrollment window.')).toBeInTheDocument();
   });
 });
 
