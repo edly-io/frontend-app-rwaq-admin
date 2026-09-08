@@ -515,7 +515,6 @@ const DashboardPage = () => {
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
           <h1 className="rwaq-page-title mb-0">{intl.formatMessage(messages.title)}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
             {generatedAt && (
               <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
                 {intl.formatMessage(messages.lastUpdated, { time: formatRelativeTime(generatedAt, intl) })}
@@ -527,13 +526,19 @@ const DashboardPage = () => {
               disabled={isRefreshing}
               aria-label={intl.formatMessage(messages.refreshAriaLabel)}
               style={{
-                border: 'none',
-                background: 'transparent',
-                cursor: isRefreshing ? 'default' : 'pointer',
-                color: 'var(--rwaq-muted, #6B757F)',
                 display: 'inline-flex',
                 alignItems: 'center',
-                padding: '0.25rem',
+                gap: '0.375rem',
+                padding: '0.3125rem 0.75rem',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                lineHeight: 1.5,
+                border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
+                borderRadius: '0.375rem',
+                background: 'transparent',
+                color: 'var(--pgn-color-gray-700, #3d3e3f)',
+                cursor: isRefreshing ? 'default' : 'pointer',
+                whiteSpace: 'nowrap',
               }}
             >
               {isRefreshing ? (
@@ -542,16 +547,18 @@ const DashboardPage = () => {
                   size="sm"
                   screenReaderText={intl.formatMessage(messages.refreshAriaLabel)}
                   style={{
-                    width: '1.125rem',
-                    height: '1.125rem',
+                    width: '0.875rem',
+                    height: '0.875rem',
                     color: 'var(--pgn-color-primary-base, #449cc2)',
                     borderWidth: '0.15em',
                   }}
                 />
               ) : (
-                <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
+                <Icon src={Refresh} style={{ width: '0.875rem', height: '0.875rem' }} />
               )}
+              {intl.formatMessage(messages.refreshLabel)}
             </button>
+            <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
           </div>
         </div>
       </div>
