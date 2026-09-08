@@ -430,60 +430,6 @@ const DashboardPage = () => {
           )}
         </div>
 
-        {/* Enrollment windows: a health check, so it reads as prose rather
-            than a figure — the useful state is "nothing wrong".
-            Always all-time: it reflects the current state of running courses,
-            not a count of events, so a date range has no meaningful effect. */}
-        <div className="rwaq-card rwaq-dash-card">
-          <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0 d-flex align-items-center gap-2">
-              {intl.formatMessage(messages.windowsTitle)}
-              <InfoTooltip text={intl.formatMessage(messages.infoEnrollmentWindows)} />
-              {allTimeBadge && (
-                <span
-                  style={{
-                    marginLeft: 'auto',
-                    flexShrink: 0,
-                    whiteSpace: 'nowrap',
-                    padding: '0.1rem 0.375rem',
-                    fontSize: '0.55rem',
-                    fontWeight: 600,
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    color: 'var(--rwaq-muted, #6B757F)',
-                    background: 'var(--pgn-color-gray-100, #f0f0ef)',
-                    border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
-                    borderRadius: '999px',
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {allTimeBadge}
-                </span>
-              )}
-            </h3>
-          </div>
-          {data.enrollmentWindows.closedButRunning === 0
-            && data.enrollmentWindows.runningWithoutWindow === 0 ? (
-              <p className="text-muted mb-0">{intl.formatMessage(messages.windowsHealthy)}</p>
-            ) : (
-              <ul className="rwaq-dash-list">
-                {data.enrollmentWindows.closedButRunning > 0 && (
-                  <li>
-                    {intl.formatMessage(messages.windowsClosed, {
-                      count: data.enrollmentWindows.closedButRunning,
-                    })}
-                  </li>
-                )}
-                {data.enrollmentWindows.runningWithoutWindow > 0 && (
-                  <li>
-                    {intl.formatMessage(messages.windowsNone, {
-                      count: data.enrollmentWindows.runningWithoutWindow,
-                    })}
-                  </li>
-                )}
-              </ul>
-            )}
-        </div>
       </div>
 
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">

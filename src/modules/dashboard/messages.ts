@@ -14,10 +14,10 @@ const messages = defineMessages({
   none: { id: 'rwaq.admin.dashboard.none', defaultMessage: '—' },
 
   // ── KPI row ────────────────────────────────────────────────────────────────
-  kpiLearners: { id: 'rwaq.admin.dashboard.kpi.learners', defaultMessage: 'Learners' },
+  kpiLearners: { id: 'rwaq.admin.dashboard.kpi.learners', defaultMessage: 'Active Learners' },
   kpiLearnersRange: { id: 'rwaq.admin.dashboard.kpi.learnersRange', defaultMessage: 'New learners' },
-  kpiEnrollments: { id: 'rwaq.admin.dashboard.kpi.enrollments', defaultMessage: 'Enrollments' },
-  kpiEnrollmentsRange: { id: 'rwaq.admin.dashboard.kpi.enrollmentsRange', defaultMessage: 'New enrollments' },
+  kpiEnrollments: { id: 'rwaq.admin.dashboard.kpi.enrollments', defaultMessage: 'Active Enrolments' },
+  kpiEnrollmentsRange: { id: 'rwaq.admin.dashboard.kpi.enrollmentsRange', defaultMessage: 'New enrolments' },
   kpiCoursesRunning: { id: 'rwaq.admin.dashboard.kpi.coursesRunning', defaultMessage: 'Courses running' },
   kpiProgramsActive: { id: 'rwaq.admin.dashboard.kpi.programsActive', defaultMessage: 'Active Programs' },
   kpiRegistrations: { id: 'rwaq.admin.dashboard.kpi.registrations', defaultMessage: 'New Registrations this month' },
@@ -96,13 +96,13 @@ const messages = defineMessages({
   },
 
   // ── Tables ─────────────────────────────────────────────────────────────────
-  orgsTitle: { id: 'rwaq.admin.dashboard.orgs.title', defaultMessage: 'Organizations by enrollment' },
+  orgsTitle: { id: 'rwaq.admin.dashboard.orgs.title', defaultMessage: 'Top 10 Organizations by enrollment' },
   orgColName: { id: 'rwaq.admin.dashboard.orgs.colName', defaultMessage: 'Organization' },
   orgColCourses: { id: 'rwaq.admin.dashboard.orgs.colCourses', defaultMessage: 'Courses' },
   orgColEnrollments: { id: 'rwaq.admin.dashboard.orgs.colEnrollments', defaultMessage: 'Enrollments' },
   orgColAdmins: { id: 'rwaq.admin.dashboard.orgs.colAdmins', defaultMessage: 'Admins' },
 
-  topCoursesTitle: { id: 'rwaq.admin.dashboard.topCourses.title', defaultMessage: 'Busiest courses' },
+  topCoursesTitle: { id: 'rwaq.admin.dashboard.topCourses.title', defaultMessage: 'Top 10 courses by enrollment' },
   topCoursesHint: {
     id: 'rwaq.admin.dashboard.topCourses.hint',
     defaultMessage: 'These hold {share}% of all enrollments',
@@ -197,11 +197,11 @@ const messages = defineMessages({
   },
   infoOrgsLeaderboard: {
     id: 'rwaq.admin.dashboard.info.orgsLeaderboard',
-    defaultMessage: 'Organizations ranked by enrollment count. Course and admin counts are always all-time.',
+    defaultMessage: 'Top 10 organizations ranked by enrollment count. Course and admin counts are always all-time.',
   },
   infoBusiestCourses: {
     id: 'rwaq.admin.dashboard.info.busiestCourses',
-    defaultMessage: 'Top 5 courses by enrollment count and their combined share of all enrollments.',
+    defaultMessage: 'Top 10 courses by enrollment count and their combined share of all enrollments.',
   },
 
   // ── Date range picker ──────────────────────────────────────────────────────
