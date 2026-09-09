@@ -605,6 +605,7 @@ const DashboardPage = () => {
           value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
           isLoading={summaryQuery.isLoading}
           info={intl.formatMessage(messages.infoCoursesRunning)}
+          badge={allTimeBadge}
           sparkline={summary ? (
             <span className="rwaq-kpi-context">
               {intl.formatMessage(messages.kpiOfTotal, { total: formatCount(summary.totalCourses) })}
@@ -649,6 +650,7 @@ const DashboardPage = () => {
                 {intl.formatMessage(messages.lifecycleTitle)}
               </h3>
             </InfoTooltip>
+            {allTimeBadge && <span className="rwaq-dash-card__sub">{allTimeBadge}</span>}
           </div>
           {renderLifecycle()}
         </div>
