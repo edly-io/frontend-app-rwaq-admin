@@ -168,7 +168,7 @@ const ChartLegend = ({ payload = [] }: { payload?: { value: string; color: strin
           flexShrink: 0,
         }}
         />
-        <span style={{ color: resolveParagonToken('--pgn-color-gray-700', '#3b3b3b') }}>{entry.value}</span>
+        <span style={{ color: resolveParagonToken('--rwaq-text', '#1f2937') }}>{entry.value}</span>
       </span>
     ))}
   </div>
@@ -261,10 +261,14 @@ const MetricChart = ({
       borderRadius: '0.5rem',
       boxShadow: '0 4px 12px rgba(16, 24, 40, 0.1)',
       fontSize: '0.8125rem',
+      color: resolveParagonToken('--rwaq-text', '#1f2937'),
     },
     labelStyle: {
       color: resolveParagonToken('--rwaq-muted', '#6b7280'),
       marginBottom: '0.25rem',
+    },
+    itemStyle: {
+      color: resolveParagonToken('--rwaq-text', '#1f2937'),
     },
     cursor: { fill: resolveParagonToken('--rwaq-row-hover', 'rgba(0,0,0,0.04)') },
   };
