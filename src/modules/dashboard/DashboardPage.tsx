@@ -58,20 +58,27 @@ const formatRelativeTime = (isoString: string, intl: ReturnType<typeof useIntl>)
   return intl.formatMessage(messages.relativeHours, { count: Math.floor(diffMin / 60) });
 };
 
-/** "2026-08" → "Aug" (or its locale equivalent) for compact bar-chart axis labels. */
-const formatPeriod = (period: string, locale: string): string => {
-  const [year, month] = period.split('-');
-  const date = new Date(Number(year), Number(month) - 1, 1);
+/** "2026-08" → "Aug" or "2026-08-15" → "Aug 15" for compact bar-chart axis labels. */
+const formatPeriod = (period: string, locale: string, granularity: 'month' | 'day' = 'month'): string => {
+  const parts = period.split('-').map(Number);
+  if (granularity === 'day') {
+    const date = new Date(parts[0], parts[1] - 1, parts[2]);
+    return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+  }
+  const date = new Date(parts[0], parts[1] - 1, 1);
   return date.toLocaleDateString(locale, { month: 'short' });
 };
 
 /** Reshape a series for MetricChart, which keys on `name` plus a series key. */
-const toChartData = (points: TrendPoint[], seriesKey: string, locale: string): ChartDataPoint[] => points.map(
-  (point) => ({
-    name: formatPeriod(point.period, locale),
-    [seriesKey]: point.value,
-  }),
-);
+const toChartData = (
+  points: TrendPoint[],
+  seriesKey: string,
+  locale: string,
+  granularity: 'month' | 'day' = 'month',
+): ChartDataPoint[] => points.map((point) => ({
+  name: formatPeriod(point.period, locale, granularity),
+  [seriesKey]: point.value,
+}));
 
 /** Thousands separators, so a five-figure count is legible at a glance. */
 const formatCount = (value: number | null | undefined): string => (
@@ -109,11 +116,9 @@ const DashboardPage = () => {
   // analyticsQueryKeys include the full params object, so adding startDate/endDate
   // automatically busts the cache and triggers a refetch — no manual calls needed.
   const params: AnalyticsParams = { startDate, endDate };
-  // Trends use a month-count window, not a calendar date range — the backend
-  // intentionally ignores start_date/end_date on the trends endpoint. Keeping
-  // these params out of trendsParams also prevents React Query from creating
-  // a new cache slot for every unique date-range combination.
-  const trendsParams: AnalyticsParams = { months: TREND_MONTHS };
+  // Trends now honour the date range: the backend uses start_date/end_date to
+  // scope the series and picks daily vs monthly granularity automatically.
+  const trendsParams: AnalyticsParams = { startDate, endDate, months: TREND_MONTHS };
 
   const summaryQuery = useAnalyticsSummary(params);
   const trendsQuery = useAnalyticsTrends(trendsParams);
@@ -145,22 +150,23 @@ const DashboardPage = () => {
   // Derived once per payload rather than on every render — these map over up to
   // 12 points each and the page re-renders on any query settling.
   const { locale } = intl;
+  const granularity = trends?.granularity ?? 'month';
 
   const enrollmentSeries = useMemo(
-    () => (trends ? toChartData(trends.enrollments, 'enrollments', locale) : []),
-    [trends, locale],
+    () => (trends ? toChartData(trends.enrollments, 'enrollments', locale, granularity) : []),
+    [trends, locale, granularity],
   );
   const certificateSeries = useMemo(
-    () => (trends?.certificates ? toChartData(trends.certificates, 'certificates', locale) : []),
-    [trends, locale],
+    () => (trends?.certificates ? toChartData(trends.certificates, 'certificates', locale, granularity) : []),
+    [trends, locale, granularity],
   );
   const registrationSeries = useMemo(
-    () => (trends ? toChartData(trends.registrations, 'registrations', locale) : []),
-    [trends, locale],
+    () => (trends ? toChartData(trends.registrations, 'registrations', locale, granularity) : []),
+    [trends, locale, granularity],
   );
   const legacyRegistrationSeries = useMemo(
-    () => (trends?.legacyRegistrations ? toChartData(trends.legacyRegistrations, 'legacyRegistrations', locale) : []),
-    [trends, locale],
+    () => (trends?.legacyRegistrations ? toChartData(trends.legacyRegistrations, 'legacyRegistrations', locale, granularity) : []),
+    [trends, locale, granularity],
   );
 
   const lifecycleSlices = useMemo(() => {
@@ -178,9 +184,18 @@ const DashboardPage = () => {
     query.isError ? getErrorStatus(query.error) : undefined
   );
 
-  // Trend subtitle always shows the month-count window — trends are not
-  // date-range-filtered (the backend ignores start_date/end_date on /trends/).
-  const trendSubtitle = intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS });
+  // Trend subtitle reflects the actual data window: the selected date range
+  // when one is active, or the rolling month-count window otherwise.
+  const trendSubtitle = hasDateRange
+    ? intl.formatMessage(messages.trendDateRange, {
+      start: startDate
+        ? new Date(`${startDate}T12:00:00`).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })
+        : '—',
+      end: endDate
+        ? new Date(`${endDate}T12:00:00`).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })
+        : intl.formatMessage(messages.today),
+    })
+    : intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS });
 
   // All-time badge: shown on snapshot metrics when a date range is active.
   const allTimeBadge = hasDateRange ? intl.formatMessage(messages.allTimeBadge) : undefined;
@@ -603,16 +618,14 @@ const DashboardPage = () => {
           info={intl.formatMessage(messages.infoProgramsActive)}
           badge={allTimeBadge}
         />
-        {/* Registrations: always shows the current month's figure — the backend does
-            not filter registrations by date range, so the label stays constant and
-            the allTimeBadge signals to the user that this tile is not date-scoped. */}
+        {/* Registrations: shows date-range count when a range is selected,
+            otherwise shows the current month with a month-over-month delta. */}
         <KpiCard
-          label={intl.formatMessage(messages.kpiRegistrations)}
-          value={formatCount(summaryQuery.isError ? null : summary?.newRegistrationsThisMonth)}
+          label={intl.formatMessage(hasDateRange ? messages.kpiRegistrationsRange : messages.kpiRegistrations)}
+          value={formatCount(summaryQuery.isError ? null : (hasDateRange ? summary?.newRegistrationsInRange : summary?.newRegistrationsThisMonth))}
           delta={hasDateRange ? undefined : (summary?.newRegistrationsDeltaPct ?? undefined)}
           isLoading={summaryQuery.isLoading}
           info={intl.formatMessage(messages.infoRegistrations)}
-          badge={allTimeBadge}
         />
       </div>
 

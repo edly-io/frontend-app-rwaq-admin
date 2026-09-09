@@ -22,12 +22,16 @@ export interface AnalyticsSummary {
   /** null when courseware table isn't reachable from the API host (CMS context). */
   activeEnrollments: number | null;
   activePrograms: number;
+  /** null in all-time mode; populated only when a date range is selected. */
+  newRegistrationsInRange: number | null;
   generatedAt: string;
 }
 
 /** GET /api/v1/admin/analytics/trends/ */
 export interface AnalyticsTrends {
   months: number;
+  /** 'month' for windows ≥ 30 days; 'day' for shorter ranges. */
+  granularity: 'month' | 'day';
   enrollments: TrendPoint[];
   /** null when the certificates table isn't reachable from the API host. */
   certificates: TrendPoint[] | null;
