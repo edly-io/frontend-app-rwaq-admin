@@ -114,7 +114,6 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
     name: Yup.string()
       .max(MAX_NAME, intl.formatMessage(messages.tooLong))
       .required(intl.formatMessage(messages.requiredField)),
-    job: Yup.string().max(MAX_NAME, intl.formatMessage(messages.tooLong)),
     biography: Yup.string().max(MAX_BIO, intl.formatMessage(messages.tooLong)),
   });
 

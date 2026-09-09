@@ -94,6 +94,7 @@ const DashboardPage = () => {
 
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
 
   // ── Date range — internal state only, never written to the URL ───────────────
   const [startDate, setStartDate] = useState<string | undefined>(undefined);
@@ -128,6 +129,7 @@ const DashboardPage = () => {
   // cache so all three queries update atomically in a single re-render.
   const handleRefresh = async () => {
     setIsRefreshing(true);
+    setRefreshError(null);
     try {
       const forceParams = { forceRefresh: true };
       const [freshSummary, freshTrends, freshBreakdowns] = await Promise.all([
@@ -138,6 +140,8 @@ const DashboardPage = () => {
       queryClient.setQueryData(analyticsQueryKeys.summary(params), freshSummary);
       queryClient.setQueryData(analyticsQueryKeys.trends(trendsParams), freshTrends);
       queryClient.setQueryData(analyticsQueryKeys.breakdowns(params), freshBreakdowns);
+    } catch {
+      setRefreshError(intl.formatMessage(messages.errorTitle));
     } finally {
       setIsRefreshing(false);
     }
@@ -199,6 +203,20 @@ const DashboardPage = () => {
 
   // All-time badge: shown on snapshot metrics when a date range is active.
   const allTimeBadge = hasDateRange ? intl.formatMessage(messages.allTimeBadge) : undefined;
+
+  // Subtitle for point-in-time snapshot cards (lifecycle donut) — shows the
+  // end date of the range as the "as of" reference. Distinct from trendSubtitle
+  // so future changes to trend wording don't affect snapshot labels.
+  const snapshotSubtitle = hasDateRange
+    ? intl.formatMessage(messages.trendDateRange, {
+      start: startDate
+        ? new Date(`${startDate}T12:00:00`).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })
+        : '—',
+      end: endDate
+        ? new Date(`${endDate}T12:00:00`).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })
+        : intl.formatMessage(messages.today),
+    })
+    : undefined;
 
   // A dashboard with no readable numbers at all is an error page, not an empty
   // one — retrying is the only useful action.
@@ -359,11 +377,11 @@ const DashboardPage = () => {
     );
   };
 
-  const renderBreakdowns = (data: AnalyticsBreakdowns) => (
+  /** Number stat tiles from breakdowns — rendered above charts. */
+  const renderStatTiles = (data: AnalyticsBreakdowns) => (
     <>
-      {/* Certificates: coverage and issuance are separate facts here, because
-          certificates are optional per course. */}
-      <div className="rwaq-dash-grid rwaq-dash-grid--thirds">
+      {/* Row 1: certificate coverage + issuance rate */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card">
           <StatTile
             label={intl.formatMessage(messages.certCoverage)}
@@ -386,6 +404,10 @@ const DashboardPage = () => {
             info={intl.formatMessage(messages.infoCertIssuance)}
           />
         </div>
+      </div>
+
+      {/* Row 2: program completion + legacy registration */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card">
           <StatTile
             label={intl.formatMessage(messages.programCompletion)}
@@ -398,9 +420,6 @@ const DashboardPage = () => {
             info={intl.formatMessage(messages.infoProgramCompletion)}
           />
         </div>
-      </div>
-
-      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card">
           <StatTile
             label={intl.formatMessage(messages.legacyTitle)}
@@ -413,6 +432,28 @@ const DashboardPage = () => {
             badge={allTimeBadge}
             info={intl.formatMessage(messages.infoLegacyMigration)}
           />
+        </div>
+      </div>
+    </>
+  );
+
+  /** Table breakdowns — rendered after all charts. */
+  const renderTables = (data: AnalyticsBreakdowns) => (
+    <>
+      {/* Row 1: course lifecycle donut + enrollment modes */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
+        <div className="rwaq-card rwaq-dash-card">
+          <div className="rwaq-dash-card__head">
+            <InfoTooltip text={intl.formatMessage(messages.infoCourseLifecycle)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.lifecycleTitle)}
+              </h3>
+            </InfoTooltip>
+            {snapshotSubtitle && (
+              <span className="rwaq-dash-card__sub">{snapshotSubtitle}</span>
+            )}
+          </div>
+          {renderLifecycle()}
         </div>
 
         <div className="rwaq-card rwaq-dash-card">
@@ -449,44 +490,10 @@ const DashboardPage = () => {
             </p>
           )}
         </div>
-
       </div>
 
+      {/* Row 2: top 10 courses + top 10 organizations */}
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">
-        <div className="rwaq-card rwaq-dash-card">
-          <div className="rwaq-dash-card__head">
-            <InfoTooltip text={intl.formatMessage(messages.infoOrgsLeaderboard)}>
-              <h3 className="rwaq-section-title mb-0">
-                {intl.formatMessage(messages.orgsTitle)}
-              </h3>
-            </InfoTooltip>
-          </div>
-          <MiniTable<OrganizationRow>
-            caption={intl.formatMessage(messages.orgsTitle)}
-            rows={data.organizations}
-            rowKey={(row) => row.shortName}
-            maxHeight={280}
-            columns={[
-              { label: intl.formatMessage(messages.orgColName), render: (row) => row.name },
-              {
-                label: intl.formatMessage(messages.orgColCourses),
-                render: (row) => formatCount(row.courses),
-                isNumeric: true,
-              },
-              {
-                label: intl.formatMessage(messages.orgColEnrollments),
-                render: (row) => formatCount(row.enrollments),
-                isNumeric: true,
-              },
-              {
-                label: intl.formatMessage(messages.orgColAdmins),
-                render: (row) => formatCount(row.admins),
-                isNumeric: true,
-              },
-            ]}
-          />
-        </div>
-
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
             <InfoTooltip text={intl.formatMessage(messages.infoBusiestCourses)}>
@@ -525,11 +532,50 @@ const DashboardPage = () => {
             ]}
           />
         </div>
+
+        <div className="rwaq-card rwaq-dash-card">
+          <div className="rwaq-dash-card__head">
+            <InfoTooltip text={intl.formatMessage(messages.infoOrgsLeaderboard)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.orgsTitle)}
+              </h3>
+            </InfoTooltip>
+          </div>
+          <MiniTable<OrganizationRow>
+            caption={intl.formatMessage(messages.orgsTitle)}
+            rows={data.organizations}
+            rowKey={(row) => row.shortName}
+            maxHeight={280}
+            columns={[
+              { label: intl.formatMessage(messages.orgColName), render: (row) => row.name },
+              {
+                label: intl.formatMessage(messages.orgColCourses),
+                render: (row) => formatCount(row.courses),
+                isNumeric: true,
+              },
+              {
+                label: intl.formatMessage(messages.orgColEnrollments),
+                render: (row) => formatCount(row.enrollments),
+                isNumeric: true,
+              },
+              {
+                label: intl.formatMessage(messages.orgColAdmins),
+                render: (row) => formatCount(row.admins),
+                isNumeric: true,
+              },
+            ]}
+          />
+        </div>
       </div>
     </>
   );
 
   const generatedAt = summary?.generatedAt ?? trends?.generatedAt ?? breakdowns?.generatedAt;
+
+  const registrationKpiRaw = hasDateRange
+    ? summary?.newRegistrationsInRange
+    : summary?.newRegistrationsThisMonth;
+  const registrationKpiValue = summaryQuery.isError ? null : registrationKpiRaw;
 
   return (
     <div className="rwaq-page">
@@ -578,15 +624,19 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Above the row, not below it: under five em dashes the reason has to
-          come first, or the failure reads as "the platform has no data". */}
+      {/* ── 1. Numbers ──────────────────────────────────────────────────────── */}
+
+      {refreshError && (
+        <Alert variant="danger">{refreshError}</Alert>
+      )}
+
       {summaryQuery.isError && (
         <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>
       )}
 
-      {/* KPI row — first to paint, since it is the cheapest query. */}
+      {/* KPI tiles — first to paint, cheapest query. */}
       <div className="rwaq-dash-grid rwaq-dash-grid--kpi">
-        {/* KPI row: learners, enrollments, runningCourses respond to the date range.
+        {/* learners, enrollments, runningCourses all respond to the date range now.
             activePrograms has no date dimension and remains all-time; its badge says so. */}
         <KpiCard
           label={intl.formatMessage(hasDateRange ? messages.kpiLearnersRange : messages.kpiLearners)}
@@ -605,7 +655,6 @@ const DashboardPage = () => {
           value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
           isLoading={summaryQuery.isLoading}
           info={intl.formatMessage(messages.infoCoursesRunning)}
-          badge={allTimeBadge}
           sparkline={summary ? (
             <span className="rwaq-kpi-context">
               {intl.formatMessage(messages.kpiOfTotal, { total: formatCount(summary.totalCourses) })}
@@ -623,16 +672,25 @@ const DashboardPage = () => {
             otherwise shows the current month with a month-over-month delta. */}
         <KpiCard
           label={intl.formatMessage(hasDateRange ? messages.kpiRegistrationsRange : messages.kpiRegistrations)}
-          value={formatCount(summaryQuery.isError ? null : (hasDateRange ? summary?.newRegistrationsInRange : summary?.newRegistrationsThisMonth))}
+          value={formatCount(registrationKpiValue)}
           delta={hasDateRange ? undefined : (summary?.newRegistrationsDeltaPct ?? undefined)}
           isLoading={summaryQuery.isLoading}
           info={intl.formatMessage(messages.infoRegistrations)}
         />
       </div>
 
-      {/* Trends. Certificates are omitted entirely rather than drawn as a flat
-          zero line when the backend reports them as unreadable. */}
-      <div className="rwaq-dash-grid rwaq-dash-grid--split">
+      {/* Breakdown stat tiles (cert %, program %, legacy %) — numbers before charts. */}
+      {breakdownsQuery.isLoading && (
+        <div className="rwaq-card rwaq-dash-card__loading">
+          <Spinner animation="border" screenReaderText={intl.formatMessage(messages.title)} />
+        </div>
+      )}
+      {breakdowns && renderStatTiles(breakdowns)}
+
+      {/* ── 2. Graphs (max 2 per row) ───────────────────────────────────────── */}
+
+      {/* Row A: enrollment trend + certificate trend */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         {renderChartCard(
           intl.formatMessage(messages.enrollmentTrend),
           trendSubtitle,
@@ -642,21 +700,11 @@ const DashboardPage = () => {
           'bar',
           intl.formatMessage(messages.infoEnrollmentTrend),
         )}
-
-        <div className="rwaq-card rwaq-dash-card">
-          <div className="rwaq-dash-card__head">
-            <InfoTooltip text={intl.formatMessage(messages.infoCourseLifecycle)}>
-              <h3 className="rwaq-section-title mb-0">
-                {intl.formatMessage(messages.lifecycleTitle)}
-              </h3>
-            </InfoTooltip>
-            {allTimeBadge && <span className="rwaq-dash-card__sub">{allTimeBadge}</span>}
-          </div>
-          {renderLifecycle()}
-        </div>
+        {renderCertificateTrend()}
       </div>
 
-      <div className="rwaq-dash-grid rwaq-dash-grid--thirds">
+      {/* Row B: registration trend + legacy registration trend */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         {renderChartCard(
           intl.formatMessage(messages.registrationTrend),
           trendSubtitle,
@@ -666,7 +714,6 @@ const DashboardPage = () => {
           'line',
           intl.formatMessage(messages.infoRegistrations),
         )}
-
         {renderChartCard(
           intl.formatMessage(messages.legacyRegistrationTrend),
           trendSubtitle,
@@ -676,21 +723,15 @@ const DashboardPage = () => {
           'line',
           intl.formatMessage(messages.infoLegacyMigration),
         )}
-
-        {renderCertificateTrend()}
       </div>
 
       {trendsQuery.isError && (
         <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>
       )}
 
-      {breakdownsQuery.isLoading && (
-        <div className="rwaq-card rwaq-dash-card__loading">
-          <Spinner animation="border" screenReaderText={intl.formatMessage(messages.title)} />
-        </div>
-      )}
+      {/* ── 3. Tables ───────────────────────────────────────────────────────── */}
 
-      {breakdowns && renderBreakdowns(breakdowns)}
+      {breakdowns && renderTables(breakdowns)}
 
       {breakdownsQuery.isError && (
         <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>

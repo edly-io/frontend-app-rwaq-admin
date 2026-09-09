@@ -134,7 +134,7 @@ const messages = defineMessages({
   },
   infoCoursesRunning: {
     id: 'rwaq.admin.dashboard.info.coursesRunning',
-    defaultMessage: 'Courses currently live (start date passed, end date not yet reached).',
+    defaultMessage: 'Courses live at the selected end date (or now if no date is set): start date passed, end date not yet reached at that point.',
   },
   infoProgramsActive: {
     id: 'rwaq.admin.dashboard.info.programsActive',
@@ -150,11 +150,11 @@ const messages = defineMessages({
   },
   infoCertIssuance: {
     id: 'rwaq.admin.dashboard.info.certIssuance',
-    defaultMessage: 'Among certificate enabled courses, the share of enrollments that earned a certificate.',
+    defaultMessage: 'Among certificate-enabled courses, the share of enrolled learners who earned a certificate. When a date range is selected, the numerator counts certificates issued in that period; the denominator counts enrollments created on or before the end date, so the rate is stable and can never exceed 100%.',
   },
   infoProgramCompletion: {
     id: 'rwaq.admin.dashboard.info.programCompletion',
-    defaultMessage: 'Share of program enrollments that reached a completion date.',
+    defaultMessage: 'Share of program enrollments that reached a completion date. When a date range is selected, only enrollments whose enrollment date falls in that period are counted.',
   },
   infoLegacyMigration: {
     id: 'rwaq.admin.dashboard.info.legacyMigration',
@@ -170,19 +170,19 @@ const messages = defineMessages({
   },
   infoCourseLifecycle: {
     id: 'rwaq.admin.dashboard.info.courseLifecycle',
-    defaultMessage: 'All courses grouped by current status: Running, Upcoming, Ended, or No dates set. Always all-time.',
+    defaultMessage: 'All courses grouped by their status at the selected end date (or now if no date is set): Running, Upcoming, Ended, or No dates set. This is a point-in-time snapshot, not a period count.',
   },
   infoEnrollmentModes: {
     id: 'rwaq.admin.dashboard.info.enrollmentModes',
-    defaultMessage: 'Enrollment breakdown by course mode (honor, audit).',
+    defaultMessage: 'Enrollment breakdown by course mode (honor, audit). When a date range is selected, shows modes for enrollments created in that period.',
   },
   infoOrgsLeaderboard: {
     id: 'rwaq.admin.dashboard.info.orgsLeaderboard',
-    defaultMessage: 'Top 10 organizations ranked by enrollment count. Course and admin counts are always all-time.',
+    defaultMessage: 'Top 10 organizations ranked by enrollment count. When a date range is selected, course and enrollment counts reflect activity created in that period; admin count is always all-time (role grants have no creation timestamp).',
   },
   infoBusiestCourses: {
     id: 'rwaq.admin.dashboard.info.busiestCourses',
-    defaultMessage: 'Top 10 courses by enrollment count and their combined share of all enrollments.',
+    defaultMessage: 'Top 10 courses by enrollment count and their combined share of total enrollments. When a date range is selected, only enrollments created in that period are counted.',
   },
 
   // ── Date range picker ──────────────────────────────────────────────────────
