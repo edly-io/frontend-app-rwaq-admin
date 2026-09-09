@@ -10,6 +10,19 @@ const messages = defineMessages({
   errorTitle: { id: 'rwaq.admin.categories.error.title', defaultMessage: 'Could not load categories' },
   searchPlaceholder: { id: 'rwaq.admin.categories.search.placeholder', defaultMessage: 'Search by name…' },
 
+  // ── Filters / sort / chips ─────────────────────────────────────────────────
+  filterGroupLabel: { id: 'rwaq.admin.categories.filter.label', defaultMessage: 'Filter by' },
+  filterAll: { id: 'rwaq.admin.categories.filter.all', defaultMessage: 'All categories' },
+  filterActive: { id: 'rwaq.admin.categories.filter.active', defaultMessage: 'Active' },
+  filterInactive: { id: 'rwaq.admin.categories.filter.inactive', defaultMessage: 'Inactive' },
+  sortLabel: { id: 'rwaq.admin.categories.sort.label', defaultMessage: 'Sort by' },
+  sortNameAsc: { id: 'rwaq.admin.categories.sort.nameAsc', defaultMessage: 'Name (A–Z)' },
+  sortNameDesc: { id: 'rwaq.admin.categories.sort.nameDesc', defaultMessage: 'Name (Z–A)' },
+  sortNewest: { id: 'rwaq.admin.categories.sort.newest', defaultMessage: 'Newest first' },
+  chipSearch: { id: 'rwaq.admin.categories.chip.search', defaultMessage: 'Search: {term}' },
+  chipFilter: { id: 'rwaq.admin.categories.chip.filter', defaultMessage: 'Filter: {label}' },
+  chipSort: { id: 'rwaq.admin.categories.chip.sort', defaultMessage: 'Sorted by: {label}' },
+
   // ── Columns ────────────────────────────────────────────────────────────────
   colName: { id: 'rwaq.admin.categories.col.name', defaultMessage: 'Category' },
   colArabicName: { id: 'rwaq.admin.categories.col.arabicName', defaultMessage: 'Arabic name' },
