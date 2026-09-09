@@ -23,8 +23,6 @@ export interface AnalyticsSummary {
   activeEnrollments: number | null;
   activePrograms: number;
   generatedAt: string;
-  dateRangeStart: string | null;
-  dateRangeEnd: string | null;
 }
 
 /** GET /api/v1/admin/analytics/trends/ */
@@ -37,8 +35,6 @@ export interface AnalyticsTrends {
   /** null when the field is absent from a cached/older response. */
   legacyRegistrations: TrendPoint[] | null;
   generatedAt: string;
-  dateRangeStart: string | null;
-  dateRangeEnd: string | null;
 }
 
 /** Mutually exclusive course-run states. There is deliberately no Draft bucket. */
@@ -111,9 +107,6 @@ export interface AnalyticsBreakdowns {
   organizations: OrganizationRow[];
   catalogConcentration: CatalogConcentration;
   generatedAt: string;
-  /** Null when no explicit date range was requested. */
-  dateRangeStart: string | null;
-  dateRangeEnd: string | null;
 }
 
 /** Shared query params. Every endpoint accepts an optional org scope. */

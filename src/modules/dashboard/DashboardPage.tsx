@@ -109,7 +109,11 @@ const DashboardPage = () => {
   // analyticsQueryKeys include the full params object, so adding startDate/endDate
   // automatically busts the cache and triggers a refetch — no manual calls needed.
   const params: AnalyticsParams = { startDate, endDate };
-  const trendsParams: AnalyticsParams = { ...params, months: TREND_MONTHS };
+  // Trends use a month-count window, not a calendar date range — the backend
+  // intentionally ignores start_date/end_date on the trends endpoint. Keeping
+  // these params out of trendsParams also prevents React Query from creating
+  // a new cache slot for every unique date-range combination.
+  const trendsParams: AnalyticsParams = { months: TREND_MONTHS };
 
   const summaryQuery = useAnalyticsSummary(params);
   const trendsQuery = useAnalyticsTrends(trendsParams);
@@ -174,13 +178,9 @@ const DashboardPage = () => {
     query.isError ? getErrorStatus(query.error) : undefined
   );
 
-  // Trend subtitle: date range overrides the default "Last N months" label.
-  const trendSubtitle = hasDateRange
-    ? intl.formatMessage(messages.trendDateRange, {
-      start: startDate ? new Date(`${startDate}T12:00:00`).toLocaleDateString() : '—',
-      end: endDate ? new Date(`${endDate}T12:00:00`).toLocaleDateString() : intl.formatMessage(messages.today),
-    })
-    : intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS });
+  // Trend subtitle always shows the month-count window — trends are not
+  // date-range-filtered (the backend ignores start_date/end_date on /trends/).
+  const trendSubtitle = intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS });
 
   // All-time badge: shown on snapshot metrics when a date range is active.
   const allTimeBadge = hasDateRange ? intl.formatMessage(messages.allTimeBadge) : undefined;
@@ -603,15 +603,16 @@ const DashboardPage = () => {
           info={intl.formatMessage(messages.infoProgramsActive)}
           badge={allTimeBadge}
         />
-        {/* Registrations: label and delta adapt to whether a date range is active. */}
+        {/* Registrations: always shows the current month's figure — the backend does
+            not filter registrations by date range, so the label stays constant and
+            the allTimeBadge signals to the user that this tile is not date-scoped. */}
         <KpiCard
-          label={hasDateRange
-            ? intl.formatMessage(messages.kpiRegistrationsRange)
-            : intl.formatMessage(messages.kpiRegistrations)}
+          label={intl.formatMessage(messages.kpiRegistrations)}
           value={formatCount(summaryQuery.isError ? null : summary?.newRegistrationsThisMonth)}
           delta={hasDateRange ? undefined : (summary?.newRegistrationsDeltaPct ?? undefined)}
           isLoading={summaryQuery.isLoading}
           info={intl.formatMessage(messages.infoRegistrations)}
+          badge={allTimeBadge}
         />
       </div>
 
