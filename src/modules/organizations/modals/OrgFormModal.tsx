@@ -6,7 +6,7 @@
  * organization, so changing it would orphan existing courses, and the backend
  * treats both as read-only on PATCH.
  */
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -120,26 +120,27 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     },
   });
 
-  const handleClose = () => {
-    formik.resetForm();
-    createMutation.reset();
-    updateMutation.reset();
-    setLogoFile(null);
-    setLogoTypeError(null);
-    setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
-    onClose();
-  };
+  // Paragon keeps modal children mounted for animations, so Formik's values
+  // persist after close. Reset whenever the modal closes so reopening it is
+  // always a blank slate (create) or the latest server values (edit).
+  useEffect(() => {
+    if (!isOpen) {
+      formik.resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
-  const ALLOWED_IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif'];
+  const fieldError = (field: keyof FormValues) => (
+    formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''
+  );
+
+  const currentLogoSrc: string | null = logoPreview ?? organization?.logo ?? null;
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    // eslint-disable-next-line no-param-reassign
-    event.target.value = '';
+    const file = event.target.files?.[0] ?? null;
     if (!file) { return; }
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-    if (!ALLOWED_IMAGE_EXTS.includes(ext)) {
-      setLogoTypeError(intl.formatMessage(messages.fieldLogoTypeError));
+    if (!file.type.startsWith('image/')) {
+      setLogoTypeError(intl.formatMessage(messages.logoTypeError));
       return;
     }
     setLogoTypeError(null);
@@ -150,17 +151,11 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     });
   };
 
-  const currentLogoSrc = logoPreview ?? organization?.logo ?? null;
-
-  const fieldError = (field: keyof FormValues) => (
-    formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''
-  );
-
   return (
     <FormModal
       title={intl.formatMessage(isEdit ? messages.editTitle : messages.createTitle)}
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={onClose}
       onSubmit={formik.handleSubmit}
       submitLabel={intl.formatMessage(isEdit ? messages.save : messages.create)}
       cancelLabel={intl.formatMessage(messages.cancel)}

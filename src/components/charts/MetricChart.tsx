@@ -24,20 +24,8 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-
-const messages = defineMessages({
-  fallbackTableCaption: {
-    id: 'rwaq.admin.metricChart.fallbackTable.caption',
-    defaultMessage: 'Chart data',
-    description: 'Caption for the screen-reader-only data table that mirrors a chart',
-  },
-  fallbackTableLabelColumn: {
-    id: 'rwaq.admin.metricChart.fallbackTable.labelColumn',
-    defaultMessage: 'Label',
-    description: 'Header for the row-label column in the screen-reader-only chart data table',
-  },
-});
+import { useIntl } from '@edx/frontend-platform/i18n';
+import messages from './messages';
 
 // ── Paragon token resolver ────────────────────────────────────────────────────
 
@@ -180,7 +168,7 @@ const ChartLegend = ({ payload = [] }: { payload?: { value: string; color: strin
           flexShrink: 0,
         }}
         />
-        <span style={{ color: resolveParagonToken('--pgn-color-gray-700', '#3b3b3b') }}>{entry.value}</span>
+        <span style={{ color: resolveParagonToken('--rwaq-text', '#1f2937') }}>{entry.value}</span>
       </span>
     ))}
   </div>
@@ -216,6 +204,21 @@ const MetricChart = ({
   };
   const ruleColor = resolveParagonToken('--rwaq-border', '#e6e8ec');
 
+  // Compute explicit integer Y-axis ticks from the data so the grid lines
+  // land on the exact same values as the axis labels. syncWithTicks alone
+  // isn't reliable when Recharts auto-calculates the domain — an explicit
+  // ticks array forces both axis and grid to use the same set of points.
+  const yTicks = (() => {
+    if (compact || type === 'donut') { return undefined; }
+    const max = Math.max(0, ...data.flatMap(
+      (d) => series.map((k) => Number((d as Record<string, number>)[k] ?? 0)),
+    ));
+    if (max === 0) { return [0, 1, 2, 3, 4]; }
+    const TICK_COUNT = 5;
+    const step = Math.ceil(max / (TICK_COUNT - 1));
+    return Array.from({ length: TICK_COUNT }, (_, i) => i * step);
+  })();
+
   const axisProps = compact
     ? {}
     : {
@@ -234,11 +237,10 @@ const MetricChart = ({
           tick={mutedTick}
           axisLine={false}
           tickLine={false}
-          // These series are counts. Without this Recharts invents fractional
-          // ticks (0, 0.75, 1.5…) for small integer data, which reads as a
-          // measurement error rather than a tally.
           allowDecimals={false}
           width={36}
+          ticks={yTicks}
+          domain={yTicks ? [0, yTicks[yTicks.length - 1]] : [0, 'auto']}
         />
       ),
       grid: (
@@ -246,6 +248,7 @@ const MetricChart = ({
           horizontal
           vertical={false}
           stroke={ruleColor}
+          syncWithTicks
         />
       ),
     };
@@ -258,10 +261,14 @@ const MetricChart = ({
       borderRadius: '0.5rem',
       boxShadow: '0 4px 12px rgba(16, 24, 40, 0.1)',
       fontSize: '0.8125rem',
+      color: resolveParagonToken('--rwaq-text', '#1f2937'),
     },
     labelStyle: {
       color: resolveParagonToken('--rwaq-muted', '#6b7280'),
       marginBottom: '0.25rem',
+    },
+    itemStyle: {
+      color: resolveParagonToken('--rwaq-text', '#1f2937'),
     },
     cursor: { fill: resolveParagonToken('--rwaq-row-hover', 'rgba(0,0,0,0.04)') },
   };

@@ -6,25 +6,9 @@
  */
 import { ReactNode } from 'react';
 import { Card } from '@openedx/paragon';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-
-const messages = defineMessages({
-  deltaIncrease: {
-    id: 'rwaq.admin.kpiCard.deltaIncrease',
-    defaultMessage: 'Increased by {delta}%',
-    description: 'Screen reader text for an upward delta on a KPI card',
-  },
-  deltaDecrease: {
-    id: 'rwaq.admin.kpiCard.deltaDecrease',
-    defaultMessage: 'Decreased by {delta}%',
-    description: 'Screen reader text for a downward delta on a KPI card',
-  },
-  deltaNoChange: {
-    id: 'rwaq.admin.kpiCard.deltaNoChange',
-    defaultMessage: 'No change',
-    description: 'Screen reader text when a KPI has not changed',
-  },
-});
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { kpiMessages as messages } from './messages';
+import InfoTooltip from './InfoTooltip';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -36,6 +20,10 @@ export interface KpiCardProps {
   /** Optional Recharts sparkline or any React node rendered below the value. */
   sparkline?: ReactNode;
   isLoading?: boolean;
+  /** Small muted label shown in the top-right corner of the card (e.g. "All time"). */
+  badge?: string;
+  /** Tooltip explanation shown on hover/click of the ⓘ icon next to the label. */
+  info?: string;
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -98,6 +86,8 @@ const KpiCard = ({
   delta,
   sparkline,
   isLoading = false,
+  badge,
+  info,
 }: KpiCardProps) => (
   <Card
     className="h-100"
@@ -105,16 +95,43 @@ const KpiCard = ({
   >
     <Card.Body className="d-flex flex-column justify-content-between p-3">
       <div>
-        <p
-          className="small text-uppercase mb-1"
-          style={{
-            color: 'var(--rwaq-muted, #6B757F)',
-            letterSpacing: '0.04em',
-            fontWeight: 600,
-          }}
-        >
-          {label}
-        </p>
+        <InfoTooltip text={info ?? ''} disabled={!info}>
+          <p
+            className="small text-uppercase mb-1"
+            style={{
+              color: 'var(--rwaq-muted, #6B757F)',
+              letterSpacing: '0.04em',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              cursor: info ? 'help' : undefined,
+            }}
+          >
+            {label}
+            {badge && (
+              <span
+                style={{
+                  marginLeft: 'auto',
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
+                  padding: '0.1rem 0.375rem',
+                  fontSize: '0.55rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                  color: 'var(--rwaq-muted, #6B757F)',
+                  background: 'var(--pgn-color-gray-100, #f0f0ef)',
+                  border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
+                  borderRadius: '999px',
+                  lineHeight: 1.4,
+                }}
+              >
+                {badge}
+              </span>
+            )}
+          </p>
+        </InfoTooltip>
 
         {isLoading ? (
           <div
@@ -133,7 +150,7 @@ const KpiCard = ({
             <p
               className="mb-0"
               style={{
-                fontSize: '2rem',
+                fontSize: '1.625rem',
                 fontWeight: 700,
                 lineHeight: 1.1,
                 color: 'var(--rwaq-heading, #273F58)',

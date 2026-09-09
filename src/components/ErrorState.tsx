@@ -1,30 +1,8 @@
 import { ReactNode } from 'react';
 import { Container, Button } from '@openedx/paragon';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import { CustomErrors, ERROR_STATUS } from '@src/constants';
-
-const messages = defineMessages({
-  defaultTitle: {
-    id: 'rwaq.admin.errorState.defaultTitle',
-    defaultMessage: 'Something went wrong',
-  },
-  defaultBody: {
-    id: 'rwaq.admin.errorState.defaultBody',
-    defaultMessage: 'An error occurred while loading the data. Please try again.',
-  },
-  noAccess: {
-    id: 'rwaq.admin.errorState.noAccess',
-    defaultMessage: 'You do not have permission to view this page.',
-  },
-  notFound: {
-    id: 'rwaq.admin.errorState.notFound',
-    defaultMessage: 'The requested resource was not found.',
-  },
-  retry: {
-    id: 'rwaq.admin.errorState.retry',
-    defaultMessage: 'Try again',
-  },
-});
+import { errorStateMessages as messages } from './messages';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

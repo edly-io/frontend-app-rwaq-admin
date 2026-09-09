@@ -62,10 +62,10 @@ const EnrollUserModal = ({
   }, [availableModes.join(',')]);
 
   const userError = hasTriedSubmit && !user
-    ? `${intl.formatMessage(messages.enrollModalUserLabel)} is required`
+    ? intl.formatMessage(messages.enrollModalUserRequired)
     : undefined;
   const reasonError = hasTriedSubmit && !hasReason(reason)
-    ? 'A reason is required'
+    ? intl.formatMessage(messages.enrollModalReasonRequired)
     : undefined;
 
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
@@ -88,7 +88,7 @@ const EnrollUserModal = ({
         return;
       }
       logError(error);
-      showToast(getErrorReason(error) ?? intl.formatMessage(messages.enrollModalError));
+      setConflictMessage(getErrorReason(error) ?? intl.formatMessage(messages.enrollModalError));
     }
   };
 

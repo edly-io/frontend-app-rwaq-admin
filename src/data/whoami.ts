@@ -76,5 +76,5 @@ export const useAdminCapabilities = () => useQuery({
   queryKey: [appId, 'whoami'],
   queryFn: getAdminCapabilities,
   retry: false,
-  staleTime: Infinity,
+  staleTime: 30 * 60 * 1000, // 30 minutes — matches JWT refresh cycle; ensures superuser downgrade is reflected
 });

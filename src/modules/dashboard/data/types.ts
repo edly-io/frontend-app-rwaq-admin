@@ -28,6 +28,8 @@ export interface AnalyticsSummary {
 /** GET /api/v1/admin/analytics/trends/ */
 export interface AnalyticsTrends {
   months: number;
+  /** 'month' for windows ≥ 30 days; 'day' for shorter ranges. */
+  granularity: 'month' | 'day';
   enrollments: TrendPoint[];
   /** null when the certificates table isn't reachable from the API host. */
   certificates: TrendPoint[] | null;
@@ -113,6 +115,10 @@ export interface AnalyticsBreakdowns {
 export interface AnalyticsParams {
   org?: string;
   months?: number;
+  /** ISO date string: "2025-01-01". Sent as start_date on the wire via snakeCaseObject. */
+  startDate?: string;
+  /** ISO date string: "2025-12-31". Sent as end_date on the wire via snakeCaseObject. */
+  endDate?: string;
   /** When true the backend skips its cache and recomputes fresh data. */
   forceRefresh?: boolean;
 }

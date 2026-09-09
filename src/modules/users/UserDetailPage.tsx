@@ -83,7 +83,7 @@ const UserDetailPage = () => {
           {` / ${displayName}`}
         </div>
 
-        <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mt-2">
+        <div className="d-flex justify-content-between align-items-start flex-wrap rwaq-gap-md mt-2">
           <div className="rwaq-detail-header min-width-0">
             <ProfileAvatar src={user.image} name={displayName} size="lg" />
             <div className="min-width-0">
@@ -126,7 +126,6 @@ const UserDetailPage = () => {
           className="rwaq-detail-block"
           title={intl.formatMessage(messages.sectionProfileDetails)}
           items={[
-            { label: intl.formatMessage(messages.detailJob), value: user.job || dash },
             {
               label: intl.formatMessage(messages.detailCountry),
               // The API stores the ISO code; a reader wants the country.

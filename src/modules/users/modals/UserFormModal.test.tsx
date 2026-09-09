@@ -33,7 +33,6 @@ const mockUser: UserDetail = {
   name: 'Fatima Al-Rashidi',
   email: 'fatima@rwaq.org',
   username: 'fatima',
-  job: 'Course Instructor',
   country: 'SA',
   biography: 'Educator with 15 years of experience.',
   profileVisibility: 'public',
@@ -64,11 +63,6 @@ describe('UserFormModal — Bug 2 regression: edit mode pre-populates all fields
   it('pre-populates the name field', () => {
     renderWrapper(<UserFormModal isOpen onClose={jest.fn()} user={mockUser} />);
     expect(screen.getByDisplayValue('Fatima Al-Rashidi')).toBeInTheDocument();
-  });
-
-  it('pre-populates the job title field', () => {
-    renderWrapper(<UserFormModal isOpen onClose={jest.fn()} user={mockUser} />);
-    expect(screen.getByDisplayValue('Course Instructor')).toBeInTheDocument();
   });
 
   it('pre-populates the biography field', () => {

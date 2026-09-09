@@ -140,10 +140,11 @@ const CategoryFormModal = ({ isOpen, onClose, category }: CategoryFormModalProps
         <Form.Group className="mb-0" controlId="category-form-is-active">
           <Form.Checkbox
             name="isActive"
-            label={intl.formatMessage(messages.fieldIsActive)}
             checked={formik.values.isActive}
             onChange={formik.handleChange}
-          />
+          >
+            {intl.formatMessage(messages.fieldIsActive)}
+          </Form.Checkbox>
           <Form.Text muted>{intl.formatMessage(messages.fieldIsActiveHelp)}</Form.Text>
         </Form.Group>
       </section>

@@ -16,18 +16,18 @@
  *   - Every figure is stamped with the backend's generatedAt, because these
  *     numbers are cached and pretending otherwise would be dishonest.
  */
-import {
-  useEffect, useMemo, useRef, useState,
-} from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Icon, Spinner } from '@openedx/paragon';
 import { Refresh } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
+import InfoTooltip from '@src/components/InfoTooltip';
 import KpiCard from '@src/components/KpiCard';
 import MetricChart from '@src/components/charts/MetricChart';
 import type { ChartDataPoint, ChartType } from '@src/components/charts/MetricChart';
+import DateRangePicker from './components/DateRangePicker';
 import MiniTable from './components/MiniTable';
 import StatTile from './components/StatTile';
 import {
@@ -42,7 +42,7 @@ import {
   getAnalyticsTrends,
 } from './data/api';
 import type {
-  AnalyticsBreakdowns, OrganizationRow, TopCourse, TrendPoint,
+  AnalyticsBreakdowns, AnalyticsParams, OrganizationRow, TopCourse, TrendPoint,
 } from './data/types';
 import messages from './messages';
 
@@ -50,28 +50,35 @@ const TREND_MONTHS = 12;
 const CHART_HEIGHT = 190;
 
 /** "2026-08-28T09:14:00Z" → "Just now" / "3 min ago" / "1 hr ago" */
-const formatRelativeTime = (isoString: string): string => {
+const formatRelativeTime = (isoString: string, intl: ReturnType<typeof useIntl>): string => {
   const diffMs = Date.now() - new Date(isoString).getTime();
   const diffMin = Math.floor(diffMs / 60_000);
-  if (diffMin < 1) { return 'Just now'; }
-  if (diffMin < 60) { return `${diffMin} min ago`; }
-  return `${Math.floor(diffMin / 60)} hr ago`;
+  if (diffMin < 1) { return intl.formatMessage(messages.relativeJustNow); }
+  if (diffMin < 60) { return intl.formatMessage(messages.relativeMinutes, { count: diffMin }); }
+  return intl.formatMessage(messages.relativeHours, { count: Math.floor(diffMin / 60) });
 };
 
-/** "2026-08" → "Aug" (or its locale equivalent) for compact bar-chart axis labels. */
-const formatPeriod = (period: string, locale: string): string => {
-  const [year, month] = period.split('-');
-  const date = new Date(Number(year), Number(month) - 1, 1);
+/** "2026-08" → "Aug" or "2026-08-15" → "Aug 15" for compact bar-chart axis labels. */
+const formatPeriod = (period: string, locale: string, granularity: 'month' | 'day' = 'month'): string => {
+  const parts = period.split('-').map(Number);
+  if (granularity === 'day') {
+    const date = new Date(parts[0], parts[1] - 1, parts[2]);
+    return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+  }
+  const date = new Date(parts[0], parts[1] - 1, 1);
   return date.toLocaleDateString(locale, { month: 'short' });
 };
 
 /** Reshape a series for MetricChart, which keys on `name` plus a series key. */
-const toChartData = (points: TrendPoint[], seriesKey: string, locale: string): ChartDataPoint[] => points.map(
-  (point) => ({
-    name: formatPeriod(point.period, locale),
-    [seriesKey]: point.value,
-  }),
-);
+const toChartData = (
+  points: TrendPoint[],
+  seriesKey: string,
+  locale: string,
+  granularity: 'month' | 'day' = 'month',
+): ChartDataPoint[] => points.map((point) => ({
+  name: formatPeriod(point.period, locale, granularity),
+  [seriesKey]: point.value,
+}));
 
 /** Thousands separators, so a five-figure count is legible at a glance. */
 const formatCount = (value: number | null | undefined): string => (
@@ -87,35 +94,54 @@ const DashboardPage = () => {
 
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
+
+  // ── Date range — internal state only, never written to the URL ───────────────
+  const [startDate, setStartDate] = useState<string | undefined>(undefined);
+  const [endDate, setEndDate] = useState<string | undefined>(undefined);
+  const hasDateRange = Boolean(startDate || endDate);
+
+  const handleDateChange = (newStart: string | undefined, newEnd: string | undefined) => {
+    setStartDate(newStart);
+    setEndDate(newEnd);
+  };
+
   // Tick every minute so the relative timestamp ("3 min ago") stays accurate.
   const [, setTick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 60_000);
     return () => clearInterval(id);
   }, []);
-  // Track the params for each query so we can write back to the same key.
-  const summaryParams = useRef({});
-  const trendsParams = useRef({ months: TREND_MONTHS });
-  const breakdownsParams = useRef({});
 
-  const summaryQuery = useAnalyticsSummary(summaryParams.current);
-  const trendsQuery = useAnalyticsTrends(trendsParams.current);
-  const breakdownsQuery = useAnalyticsBreakdowns(breakdownsParams.current);
+  // ── Queries ───────────────────────────────────────────────────────────────────
+  // analyticsQueryKeys include the full params object, so adding startDate/endDate
+  // automatically busts the cache and triggers a refetch — no manual calls needed.
+  const params: AnalyticsParams = { startDate, endDate };
+  // Trends now honour the date range: the backend uses start_date/end_date to
+  // scope the series and picks daily vs monthly granularity automatically.
+  const trendsParams: AnalyticsParams = { startDate, endDate, months: TREND_MONTHS };
+
+  const summaryQuery = useAnalyticsSummary(params);
+  const trendsQuery = useAnalyticsTrends(trendsParams);
+  const breakdownsQuery = useAnalyticsBreakdowns(params);
 
   // Bypass the backend cache and inject fresh data directly into React Query's
   // cache so all three queries update atomically in a single re-render.
   const handleRefresh = async () => {
     setIsRefreshing(true);
+    setRefreshError(null);
     try {
       const forceParams = { forceRefresh: true };
       const [freshSummary, freshTrends, freshBreakdowns] = await Promise.all([
-        getAnalyticsSummary({ ...summaryParams.current, ...forceParams }),
-        getAnalyticsTrends({ ...trendsParams.current, ...forceParams }),
-        getAnalyticsBreakdowns({ ...breakdownsParams.current, ...forceParams }),
+        getAnalyticsSummary({ ...params, ...forceParams }),
+        getAnalyticsTrends({ ...trendsParams, ...forceParams }),
+        getAnalyticsBreakdowns({ ...params, ...forceParams }),
       ]);
-      queryClient.setQueryData(analyticsQueryKeys.summary(summaryParams.current), freshSummary);
-      queryClient.setQueryData(analyticsQueryKeys.trends(trendsParams.current), freshTrends);
-      queryClient.setQueryData(analyticsQueryKeys.breakdowns(breakdownsParams.current), freshBreakdowns);
+      queryClient.setQueryData(analyticsQueryKeys.summary(params), freshSummary);
+      queryClient.setQueryData(analyticsQueryKeys.trends(trendsParams), freshTrends);
+      queryClient.setQueryData(analyticsQueryKeys.breakdowns(params), freshBreakdowns);
+    } catch {
+      setRefreshError(intl.formatMessage(messages.errorTitle));
     } finally {
       setIsRefreshing(false);
     }
@@ -128,22 +154,23 @@ const DashboardPage = () => {
   // Derived once per payload rather than on every render — these map over up to
   // 12 points each and the page re-renders on any query settling.
   const { locale } = intl;
+  const granularity = trends?.granularity ?? 'month';
 
   const enrollmentSeries = useMemo(
-    () => (trends ? toChartData(trends.enrollments, 'enrollments', locale) : []),
-    [trends, locale],
+    () => (trends ? toChartData(trends.enrollments, 'enrollments', locale, granularity) : []),
+    [trends, locale, granularity],
   );
   const certificateSeries = useMemo(
-    () => (trends?.certificates ? toChartData(trends.certificates, 'certificates', locale) : []),
-    [trends, locale],
+    () => (trends?.certificates ? toChartData(trends.certificates, 'certificates', locale, granularity) : []),
+    [trends, locale, granularity],
   );
   const registrationSeries = useMemo(
-    () => (trends ? toChartData(trends.registrations, 'registrations', locale) : []),
-    [trends, locale],
+    () => (trends ? toChartData(trends.registrations, 'registrations', locale, granularity) : []),
+    [trends, locale, granularity],
   );
   const legacyRegistrationSeries = useMemo(
-    () => (trends?.legacyRegistrations ? toChartData(trends.legacyRegistrations, 'legacyRegistrations', locale) : []),
-    [trends, locale],
+    () => (trends?.legacyRegistrations ? toChartData(trends.legacyRegistrations, 'legacyRegistrations', locale, granularity) : []),
+    [trends, locale, granularity],
   );
 
   const lifecycleSlices = useMemo(() => {
@@ -161,13 +188,46 @@ const DashboardPage = () => {
     query.isError ? getErrorStatus(query.error) : undefined
   );
 
+  // Trend subtitle reflects the actual data window: the selected date range
+  // when one is active, or the rolling month-count window otherwise.
+  const trendSubtitle = hasDateRange
+    ? intl.formatMessage(messages.trendDateRange, {
+      start: startDate
+        ? new Date(`${startDate}T12:00:00`).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })
+        : '—',
+      end: endDate
+        ? new Date(`${endDate}T12:00:00`).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })
+        : intl.formatMessage(messages.today),
+    })
+    : intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS });
+
+  // All-time badge: shown on snapshot metrics when a date range is active.
+  const allTimeBadge = hasDateRange ? intl.formatMessage(messages.allTimeBadge) : undefined;
+
+  // Subtitle for point-in-time snapshot cards (lifecycle donut) — shows the
+  // end date of the range as the "as of" reference. Distinct from trendSubtitle
+  // so future changes to trend wording don't affect snapshot labels.
+  const snapshotSubtitle = hasDateRange
+    ? intl.formatMessage(messages.trendDateRange, {
+      start: startDate
+        ? new Date(`${startDate}T12:00:00`).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })
+        : '—',
+      end: endDate
+        ? new Date(`${endDate}T12:00:00`).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })
+        : intl.formatMessage(messages.today),
+    })
+    : undefined;
+
   // A dashboard with no readable numbers at all is an error page, not an empty
   // one — retrying is the only useful action.
   if (summaryQuery.isError && trendsQuery.isError && breakdownsQuery.isError) {
     return (
       <div className="rwaq-page">
         <div className="rwaq-page-header">
-          <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h1 className="rwaq-page-title mb-0">{intl.formatMessage(messages.title)}</h1>
+            <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
+          </div>
         </div>
         <div className="rwaq-card">
           <ErrorState
@@ -211,7 +271,10 @@ const DashboardPage = () => {
     if (data.length === 0 || data.every((point) => point[seriesKey] === 0)) {
       return (
         <div className="rwaq-dash-card__empty">
-          {intl.formatMessage(messages.emptySeries, { months: trends?.months ?? TREND_MONTHS })}
+          {intl.formatMessage(
+            hasDateRange ? messages.emptySeriesRange : messages.emptySeries,
+            { months: trends?.months ?? TREND_MONTHS },
+          )}
         </div>
       );
     }
@@ -236,10 +299,17 @@ const DashboardPage = () => {
     seriesKey: string,
     seriesLabel: string,
     type: ChartType,
+    infoText?: string,
   ) => (
     <div className="rwaq-card rwaq-dash-card">
       <div className="rwaq-dash-card__head">
-        <h3 className="rwaq-section-title mb-0">{title}</h3>
+        {infoText ? (
+          <InfoTooltip text={infoText}>
+            <h3 className="rwaq-section-title mb-0">{title}</h3>
+          </InfoTooltip>
+        ) : (
+          <h3 className="rwaq-section-title mb-0">{title}</h3>
+        )}
         <span className="rwaq-dash-card__sub">{subtitle}</span>
       </div>
       {renderChartBody(data, seriesKey, seriesLabel, type, title)}
@@ -256,9 +326,11 @@ const DashboardPage = () => {
       return (
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">
-              {intl.formatMessage(messages.certificateTrend)}
-            </h3>
+            <InfoTooltip text={intl.formatMessage(messages.infoCertTrend)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.certificateTrend)}
+              </h3>
+            </InfoTooltip>
           </div>
           <p className="text-muted mb-0">{intl.formatMessage(messages.certificatesUnreadable)}</p>
         </div>
@@ -266,11 +338,12 @@ const DashboardPage = () => {
     }
     return renderChartCard(
       intl.formatMessage(messages.certificateTrend),
-      intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+      trendSubtitle,
       certificateSeries,
       'certificates',
       intl.formatMessage(messages.seriesCertificates),
       'line',
+      intl.formatMessage(messages.infoCertTrend),
     );
   };
 
@@ -304,11 +377,11 @@ const DashboardPage = () => {
     );
   };
 
-  const renderBreakdowns = (data: AnalyticsBreakdowns) => (
+  /** Number stat tiles from breakdowns — rendered above charts. */
+  const renderStatTiles = (data: AnalyticsBreakdowns) => (
     <>
-      {/* Certificates: coverage and issuance are separate facts here, because
-          certificates are optional per course. */}
-      <div className="rwaq-dash-grid rwaq-dash-grid--thirds">
+      {/* Row 1: certificate coverage + issuance rate */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card">
           <StatTile
             label={intl.formatMessage(messages.certCoverage)}
@@ -318,6 +391,8 @@ const DashboardPage = () => {
               total: data.certificates.totalCourses,
             })}
             unavailableHint={intl.formatMessage(messages.noCoursesYet)}
+            badge={allTimeBadge}
+            info={intl.formatMessage(messages.infoCertCoverage)}
           />
         </div>
         <div className="rwaq-card">
@@ -326,8 +401,13 @@ const DashboardPage = () => {
             value={formatPercent(data.certificates.issuancePct)}
             hint={intl.formatMessage(messages.certIssuanceHint)}
             unavailableHint={intl.formatMessage(messages.certificatesUnreadable)}
+            info={intl.formatMessage(messages.infoCertIssuance)}
           />
         </div>
+      </div>
+
+      {/* Row 2: program completion + legacy registration */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card">
           <StatTile
             label={intl.formatMessage(messages.programCompletion)}
@@ -337,11 +417,9 @@ const DashboardPage = () => {
               enrollments: data.programs.enrollments,
             })}
             unavailableHint={intl.formatMessage(messages.noProgramEnrollments)}
+            info={intl.formatMessage(messages.infoProgramCompletion)}
           />
         </div>
-      </div>
-
-      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card">
           <StatTile
             label={intl.formatMessage(messages.legacyTitle)}
@@ -351,12 +429,40 @@ const DashboardPage = () => {
               total: data.legacyMigration.legacyAccounts,
             })}
             unavailableHint={intl.formatMessage(messages.legacyNone)}
+            badge={allTimeBadge}
+            info={intl.formatMessage(messages.infoLegacyMigration)}
           />
+        </div>
+      </div>
+    </>
+  );
+
+  /** Table breakdowns — rendered after all charts. */
+  const renderTables = (data: AnalyticsBreakdowns) => (
+    <>
+      {/* Row 1: course lifecycle donut + enrollment modes */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
+        <div className="rwaq-card rwaq-dash-card">
+          <div className="rwaq-dash-card__head">
+            <InfoTooltip text={intl.formatMessage(messages.infoCourseLifecycle)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.lifecycleTitle)}
+              </h3>
+            </InfoTooltip>
+            {snapshotSubtitle && (
+              <span className="rwaq-dash-card__sub">{snapshotSubtitle}</span>
+            )}
+          </div>
+          {renderLifecycle()}
         </div>
 
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.modesTitle)}</h3>
+            <InfoTooltip text={intl.formatMessage(messages.infoEnrollmentModes)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.modesTitle)}
+              </h3>
+            </InfoTooltip>
             <span className="rwaq-dash-card__sub">{intl.formatMessage(messages.modesHint)}</span>
           </div>
           {data.enrollmentModes.length > 0 ? (
@@ -386,40 +492,15 @@ const DashboardPage = () => {
         </div>
       </div>
 
+      {/* Row 2: top 10 courses + top 10 organizations */}
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.orgsTitle)}</h3>
-          </div>
-          <MiniTable<OrganizationRow>
-            caption={intl.formatMessage(messages.orgsTitle)}
-            rows={data.organizations}
-            rowKey={(row) => row.shortName}
-            maxHeight={280}
-            columns={[
-              { label: intl.formatMessage(messages.orgColName), render: (row) => row.name },
-              {
-                label: intl.formatMessage(messages.orgColCourses),
-                render: (row) => formatCount(row.courses),
-                isNumeric: true,
-              },
-              {
-                label: intl.formatMessage(messages.orgColEnrollments),
-                render: (row) => formatCount(row.enrollments),
-                isNumeric: true,
-              },
-              {
-                label: intl.formatMessage(messages.orgColAdmins),
-                render: (row) => formatCount(row.admins),
-                isNumeric: true,
-              },
-            ]}
-          />
-        </div>
-
-        <div className="rwaq-card rwaq-dash-card">
-          <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">{intl.formatMessage(messages.topCoursesTitle)}</h3>
+            <InfoTooltip text={intl.formatMessage(messages.infoBusiestCourses)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.topCoursesTitle)}
+              </h3>
+            </InfoTooltip>
             {data.catalogConcentration.topSharePct !== null && (
               <span className="rwaq-dash-card__sub">
                 {intl.formatMessage(messages.topCoursesHint, {
@@ -451,79 +532,130 @@ const DashboardPage = () => {
             ]}
           />
         </div>
+
+        <div className="rwaq-card rwaq-dash-card">
+          <div className="rwaq-dash-card__head">
+            <InfoTooltip text={intl.formatMessage(messages.infoOrgsLeaderboard)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.orgsTitle)}
+              </h3>
+            </InfoTooltip>
+          </div>
+          <MiniTable<OrganizationRow>
+            caption={intl.formatMessage(messages.orgsTitle)}
+            rows={data.organizations}
+            rowKey={(row) => row.shortName}
+            maxHeight={280}
+            columns={[
+              { label: intl.formatMessage(messages.orgColName), render: (row) => row.name },
+              {
+                label: intl.formatMessage(messages.orgColCourses),
+                render: (row) => formatCount(row.courses),
+                isNumeric: true,
+              },
+              {
+                label: intl.formatMessage(messages.orgColEnrollments),
+                render: (row) => formatCount(row.enrollments),
+                isNumeric: true,
+              },
+              {
+                label: intl.formatMessage(messages.orgColAdmins),
+                render: (row) => formatCount(row.admins),
+                isNumeric: true,
+              },
+            ]}
+          />
+        </div>
       </div>
     </>
   );
 
   const generatedAt = summary?.generatedAt ?? trends?.generatedAt ?? breakdowns?.generatedAt;
 
+  // The backend returns new_registrations_this_month in both all-time and date-range
+  // mode: in all-time mode it is the current calendar month count; in date-range mode
+  // the service reuses this key to carry the in-range count.
+  const registrationKpiRaw = summary?.newRegistrationsThisMonth;
+  const registrationKpiValue = summaryQuery.isError ? null : registrationKpiRaw;
+
   return (
     <div className="rwaq-page">
       <div className="rwaq-page-header">
-        <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {generatedAt && (
-            <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
-              {intl.formatMessage(messages.lastUpdated, { time: formatRelativeTime(generatedAt) })}
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            aria-label={intl.formatMessage(messages.refreshAriaLabel)}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              cursor: isRefreshing ? 'default' : 'pointer',
-              color: 'var(--rwaq-muted, #6B757F)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '0.25rem',
-            }}
-          >
-            {isRefreshing ? (
-              <Spinner
-                animation="border"
-                size="sm"
-                screenReaderText={intl.formatMessage(messages.refreshAriaLabel)}
-                style={{
-                  width: '1.125rem',
-                  height: '1.125rem',
-                  color: 'var(--pgn-color-primary-base, #449cc2)',
-                  borderWidth: '0.15em',
-                }}
-              />
-            ) : (
-              <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <h1 className="rwaq-page-title mb-0">{intl.formatMessage(messages.title)}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            {generatedAt && (
+              <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
+                {intl.formatMessage(messages.lastUpdated, { time: formatRelativeTime(generatedAt, intl) })}
+              </span>
             )}
-          </button>
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              aria-label={intl.formatMessage(messages.refreshAriaLabel)}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                padding: '0.25rem',
+                cursor: isRefreshing ? 'default' : 'pointer',
+                color: 'var(--rwaq-muted, #6B757F)',
+                display: 'inline-flex',
+                alignItems: 'center',
+              }}
+            >
+              {isRefreshing ? (
+                <Spinner
+                  animation="border"
+                  size="sm"
+                  screenReaderText={intl.formatMessage(messages.refreshAriaLabel)}
+                  style={{
+                    width: '1.125rem',
+                    height: '1.125rem',
+                    color: 'var(--pgn-color-primary-base, #449cc2)',
+                    borderWidth: '0.15em',
+                  }}
+                />
+              ) : (
+                <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
+              )}
+            </button>
+            <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
+          </div>
         </div>
       </div>
 
-      {/* Above the row, not below it: under five em dashes the reason has to
-          come first, or the failure reads as "the platform has no data". */}
+      {/* ── 1. Numbers ──────────────────────────────────────────────────────── */}
+
+      {refreshError && (
+        <Alert variant="danger">{refreshError}</Alert>
+      )}
+
       {summaryQuery.isError && (
         <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>
       )}
 
-      {/* KPI row — first to paint, since it is the cheapest query. */}
+      {/* KPI tiles — first to paint, cheapest query. */}
       <div className="rwaq-dash-grid rwaq-dash-grid--kpi">
+        {/* learners, enrollments, runningCourses all respond to the date range now.
+            activePrograms has no date dimension and remains all-time; its badge says so. */}
         <KpiCard
-          label={intl.formatMessage(messages.kpiLearners)}
+          label={intl.formatMessage(hasDateRange ? messages.kpiLearnersRange : messages.kpiLearners)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoLearners)}
         />
         <KpiCard
-          label={intl.formatMessage(messages.kpiEnrollments)}
+          label={intl.formatMessage(hasDateRange ? messages.kpiEnrollmentsRange : messages.kpiEnrollments)}
           value={formatCount(summaryQuery.isError ? null : summary?.activeEnrollments)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoEnrollments)}
         />
         <KpiCard
           label={intl.formatMessage(messages.kpiCoursesRunning)}
           value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
           isLoading={summaryQuery.isLoading}
-          // A running count means little without the catalog it is drawn from.
+          info={intl.formatMessage(messages.infoCoursesRunning)}
           sparkline={summary ? (
             <span className="rwaq-kpi-context">
               {intl.formatMessage(messages.kpiOfTotal, { total: formatCount(summary.totalCourses) })}
@@ -534,72 +666,73 @@ const DashboardPage = () => {
           label={intl.formatMessage(messages.kpiProgramsActive)}
           value={formatCount(summaryQuery.isError ? null : summary?.activePrograms)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoProgramsActive)}
+          badge={allTimeBadge}
         />
+        {/* Registrations: shows date-range count when a range is selected,
+            otherwise shows the current month with a month-over-month delta. */}
         <KpiCard
-          label={intl.formatMessage(messages.kpiRegistrations)}
-          value={formatCount(summaryQuery.isError ? null : summary?.newRegistrationsThisMonth)}
-          // Omitted rather than zeroed when there is no previous month to
-          // compare against — KpiCard hides the badge when delta is undefined.
-          delta={summary?.newRegistrationsDeltaPct ?? undefined}
+          label={intl.formatMessage(hasDateRange ? messages.kpiRegistrationsRange : messages.kpiRegistrations)}
+          value={formatCount(registrationKpiValue)}
+          delta={hasDateRange ? undefined : (summary?.newRegistrationsDeltaPct ?? undefined)}
           isLoading={summaryQuery.isLoading}
+          info={intl.formatMessage(messages.infoRegistrations)}
         />
       </div>
 
-      {/* Trends. Certificates are omitted entirely rather than drawn as a flat
-          zero line when the backend reports them as unreadable. */}
-      <div className="rwaq-dash-grid rwaq-dash-grid--split">
+      {/* Breakdown stat tiles (cert %, program %, legacy %) — numbers before charts. */}
+      {breakdownsQuery.isLoading && (
+        <div className="rwaq-card rwaq-dash-card__loading">
+          <Spinner animation="border" screenReaderText={intl.formatMessage(messages.title)} />
+        </div>
+      )}
+      {breakdowns && renderStatTiles(breakdowns)}
+
+      {/* ── 2. Graphs (max 2 per row) ───────────────────────────────────────── */}
+
+      {/* Row A: enrollment trend + certificate trend */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         {renderChartCard(
           intl.formatMessage(messages.enrollmentTrend),
-          intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+          trendSubtitle,
           enrollmentSeries,
           'enrollments',
           intl.formatMessage(messages.seriesEnrollments),
           'bar',
+          intl.formatMessage(messages.infoEnrollmentTrend),
         )}
-
-        <div className="rwaq-card rwaq-dash-card">
-          <div className="rwaq-dash-card__head">
-            <h3 className="rwaq-section-title mb-0">
-              {intl.formatMessage(messages.lifecycleTitle)}
-            </h3>
-          </div>
-          {renderLifecycle()}
-        </div>
+        {renderCertificateTrend()}
       </div>
 
-      <div className="rwaq-dash-grid rwaq-dash-grid--thirds">
+      {/* Row B: registration trend + legacy registration trend */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
         {renderChartCard(
           intl.formatMessage(messages.registrationTrend),
-          intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+          trendSubtitle,
           registrationSeries,
           'registrations',
           intl.formatMessage(messages.seriesRegistrations),
           'line',
+          intl.formatMessage(messages.infoRegistrations),
         )}
-
         {renderChartCard(
           intl.formatMessage(messages.legacyRegistrationTrend),
-          intl.formatMessage(messages.trendMonths, { months: trends?.months ?? TREND_MONTHS }),
+          trendSubtitle,
           legacyRegistrationSeries,
           'legacyRegistrations',
           intl.formatMessage(messages.seriesLegacyRegistrations),
           'line',
+          intl.formatMessage(messages.infoLegacyMigration),
         )}
-
-        {renderCertificateTrend()}
       </div>
 
       {trendsQuery.isError && (
         <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>
       )}
 
-      {breakdownsQuery.isLoading && (
-        <div className="rwaq-card rwaq-dash-card__loading">
-          <Spinner animation="border" screenReaderText={intl.formatMessage(messages.title)} />
-        </div>
-      )}
+      {/* ── 3. Tables ───────────────────────────────────────────────────────── */}
 
-      {breakdowns && renderBreakdowns(breakdowns)}
+      {breakdowns && renderTables(breakdowns)}
 
       {breakdownsQuery.isError && (
         <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>

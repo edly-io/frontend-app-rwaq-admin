@@ -19,20 +19,8 @@ import {
   Button, Chip, Form, Icon, IconButton,
 } from '@openedx/paragon';
 import { Close, FilterList, Search } from '@openedx/paragon/icons';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-
-const messages = defineMessages({
-  // The input and the submit button must not share an accessible name, or a
-  // screen reader announces two different controls identically.
-  searchInputLabel: { id: 'rwaq.admin.searchFilter.searchInputLabel', defaultMessage: 'Search term' },
-  searchSubmitLabel: { id: 'rwaq.admin.searchFilter.searchSubmitLabel', defaultMessage: 'Search' },
-  searchClearLabel: { id: 'rwaq.admin.searchFilter.searchClearLabel', defaultMessage: 'Clear search term' },
-  scopeLabel: { id: 'rwaq.admin.searchFilter.scopeLabel', defaultMessage: 'Search by' },
-  filtersButton: { id: 'rwaq.admin.searchFilter.filters', defaultMessage: 'Filters' },
-  appliedTitle: { id: 'rwaq.admin.searchFilter.appliedTitle', defaultMessage: 'Applied filters' },
-  clearAll: { id: 'rwaq.admin.searchFilter.clearAll', defaultMessage: 'Clear all' },
-  removeChip: { id: 'rwaq.admin.searchFilter.removeChip', defaultMessage: 'Remove {label}' },
-});
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { searchFilterBarMessages as messages } from './messages';
 
 export interface SelectOption {
   value: string;
