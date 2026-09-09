@@ -12,7 +12,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  Alert, Button, Chip, Spinner,
+  ActionRow, Alert, AlertModal, Button, Chip, Spinner,
 } from '@openedx/paragon';
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -34,6 +34,7 @@ const CategoryDetailPage = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
+  const [pendingUnlink, setPendingUnlink] = useState<CategoryCourse | null>(null);
 
   const { data: category, isLoading, isError } = useCategory(categoryId);
   const {
@@ -44,13 +45,16 @@ const CategoryDetailPage = () => {
 
   const unlinkMutation = useUnlinkCourse(categoryId);
 
-  const handleUnlink = async (course: CategoryCourse) => {
+  const confirmUnlink = async () => {
+    if (!pendingUnlink) { return; }
     try {
-      await unlinkMutation.mutateAsync(course.courseKey);
+      await unlinkMutation.mutateAsync(pendingUnlink.courseKey);
       showToast(intl.formatMessage(messages.toastUnlinked));
+      setPendingUnlink(null);
     } catch (err) {
       logError(err);
       showToast(intl.formatMessage(messages.toastUnlinkError));
+      setPendingUnlink(null);
     }
   };
 
@@ -98,14 +102,16 @@ const CategoryDetailPage = () => {
       headerClassName: 'rwaq-th--actions',
       key: 'actions',
       renderCell: (_value, row) => (
-        <Button
-          variant="outline-danger"
-          size="sm"
-          onClick={() => handleUnlink(row as unknown as CategoryCourse)}
-          disabled={unlinkMutation.isPending}
-        >
-          {intl.formatMessage(messages.unlinkCourse)}
-        </Button>
+        <div className="rwaq-row-actions">
+          <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={() => setPendingUnlink(row as unknown as CategoryCourse)}
+            aria-label={`${intl.formatMessage(messages.unlinkCourse)} ${row.displayName as string}`}
+          >
+            {intl.formatMessage(messages.unlinkCourse)}
+          </Button>
+        </div>
       ),
     },
   ];
@@ -125,9 +131,11 @@ const CategoryDetailPage = () => {
             {category.arabicName && (
               <div className="rwaq-bidi text-muted mb-2" dir="auto">{category.arabicName}</div>
             )}
-            <Chip className={`rwaq-chip rwaq-chip--${category.isActive ? 'success' : 'light'}`}>
-              {intl.formatMessage(category.isActive ? messages.statusActive : messages.statusInactive)}
-            </Chip>
+            <div className="d-flex align-items-center flex-wrap rwaq-chip-list">
+              <Chip className={`rwaq-chip rwaq-chip--${category.isActive ? 'success' : 'light'}`}>
+                {intl.formatMessage(category.isActive ? messages.statusActive : messages.statusInactive)}
+              </Chip>
+            </div>
           </div>
 
           <div className="rwaq-header-actions">
@@ -199,6 +207,31 @@ const CategoryDetailPage = () => {
           />
         )}
       </div>
+
+      {/* Unlink confirmation */}
+      <AlertModal
+        title={intl.formatMessage(messages.unlinkConfirmTitle)}
+        isOpen={pendingUnlink !== null}
+        onClose={() => setPendingUnlink(null)}
+        footerNode={(
+          <ActionRow>
+            <Button variant="tertiary" onClick={() => setPendingUnlink(null)}>
+              {intl.formatMessage(messages.cancel)}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmUnlink}
+              disabled={unlinkMutation.isPending}
+            >
+              {intl.formatMessage(messages.unlinkConfirm)}
+            </Button>
+          </ActionRow>
+        )}
+      >
+        <p>
+          {intl.formatMessage(messages.unlinkConfirmBody, { name: pendingUnlink?.displayName ?? '' })}
+        </p>
+      </AlertModal>
 
       {/* Modals */}
       <CategoryFormModal

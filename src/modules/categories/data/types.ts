@@ -53,9 +53,14 @@ export interface CategoryPatch {
   isActive?: boolean;
 }
 
+export type CategoryFilter = 'all' | 'active' | 'inactive';
+export type CategoryOrdering = 'name' | '-name' | '-created';
+
 /** Query params for the category list endpoint */
 export interface CategoryListParams {
   search?: string;
   page?: number;
   pageSize?: number;
+  filter?: CategoryFilter;
+  ordering?: CategoryOrdering;
 }
