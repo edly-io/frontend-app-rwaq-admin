@@ -123,10 +123,25 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
   const activePreset = deriveActivePreset(startDate, endDate);
   const isCustom = activePreset === 'custom' || customMode;
 
-  // Active label shown on the toggle button
-  const activeLabelKey = isCustom
-    ? 'presetCustom'
-    : (PRESETS.find((p) => p.key === activePreset)?.labelKey ?? 'presetAllTime');
+  // Format an ISO date string (YYYY-MM-DD) as a compact locale-aware label.
+  const formatDateLabel = (iso: string): string => {
+    const [year, month, day] = iso.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    return d.toLocaleDateString(intl.locale, { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  // Toggle button label: for a fully-applied custom range show the dates;
+  // while the user is mid-entry (customMode but dates not yet applied) show "Custom".
+  const activeLabel = (() => {
+    if (isCustom) {
+      if (startDate && endDate && activePreset === 'custom') {
+        return `${formatDateLabel(startDate)} – ${formatDateLabel(endDate)}`;
+      }
+      return intl.formatMessage(messages.presetCustom);
+    }
+    const preset = PRESETS.find((p) => p.key === activePreset);
+    return intl.formatMessage(messages[preset?.labelKey ?? 'presetAllTime']);
+  })();
 
   // Close the panel on outside click or Escape key
   useEffect(() => {
@@ -203,7 +218,7 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
           aria-haspopup="menu"
           style={{ whiteSpace: 'nowrap' }}
         >
-          {intl.formatMessage(messages[activeLabelKey])}
+          {activeLabel}
           <span aria-hidden="true" style={{ marginInlineStart: '0.375rem', opacity: 0.6 }}>▾</span>
         </Button>
       </div>
