@@ -10,7 +10,9 @@
  * Pending values are kept in local state; the parent's applied values
  * (startDate/endDate props) only update when both inputs are complete.
  */
-import { useEffect, useRef, useState, useCallback } from 'react';
+import {
+  useEffect, useRef, useState, useCallback,
+} from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Button } from '@openedx/paragon';
 import messages from '../messages';
@@ -18,7 +20,12 @@ import messages from '../messages';
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
 const today = (): Date => new Date();
-const isoDate = (d: Date): string => d.toISOString().slice(0, 10);
+
+// Use local date components rather than toISOString(): toISOString() reprojects
+// to UTC before slicing, so in UTC+3 at 01:30 local time the UTC date is still
+// the previous day and the wrong date gets sent to the backend.
+const isoDate = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 const daysAgo = (n: number): string => {
   const d = today();
@@ -28,7 +35,15 @@ const daysAgo = (n: number): string => {
 
 const monthsAgo = (n: number): string => {
   const d = today();
+  const originalDay = d.getDate();
+  // Move to the 1st before subtracting months: setMonth on the 31st of a
+  // month whose target is shorter overflows into the following month
+  // (Mar 31 − 1 month = Mar 3 instead of Feb 28).
+  d.setDate(1);
   d.setMonth(d.getMonth() - n);
+  // Clamp to the last day of the target month.
+  const maxDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(originalDay, maxDay));
   return isoDate(d);
 };
 
@@ -90,10 +105,19 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
   const [pendingStart, setPendingStart] = useState<string>(startDate ?? '');
   const [pendingEnd, setPendingEnd] = useState<string>(endDate ?? '');
 
+  // Refs give the change handlers the latest sibling value without needing to
+  // re-create both callbacks whenever one pending value changes (stale-closure
+  // fix: if the user fills "From" then "To" quickly, the "To" handler could
+  // read a stale pendingStart captured at creation time and silently skip onChange).
+  const pendingStartRef = useRef(pendingStart);
+  const pendingEndRef = useRef(pendingEnd);
+
   // Sync pending when the applied range changes externally (preset selected, reset).
   useEffect(() => {
     setPendingStart(startDate ?? '');
     setPendingEnd(endDate ?? '');
+    pendingStartRef.current = startDate ?? '';
+    pendingEndRef.current = endDate ?? '';
   }, [startDate, endDate]);
 
   const activePreset = deriveActivePreset(startDate, endDate);
@@ -142,25 +166,30 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
   };
 
   // Fire onChange only once BOTH start and end are filled.
+  // Reads the sibling value from a ref rather than from the closure so that
+  // typing both fields quickly cannot pick up a stale sibling and silently
+  // skip onChange while both inputs appear filled.
   const handleStartChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
+    pendingStartRef.current = val;
     setPendingStart(val);
-    if (val && pendingEnd) {
+    if (val && pendingEndRef.current) {
       setCustomMode(false);
       setIsOpen(false);
-      onChange(val, pendingEnd);
+      onChange(val, pendingEndRef.current);
     }
-  }, [pendingEnd, onChange]);
+  }, [onChange]);
 
   const handleEndChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
+    pendingEndRef.current = val;
     setPendingEnd(val);
-    if (pendingStart && val) {
+    if (pendingStartRef.current && val) {
       setCustomMode(false);
       setIsOpen(false);
-      onChange(pendingStart, val);
+      onChange(pendingStartRef.current, val);
     }
-  }, [pendingStart, onChange]);
+  }, [onChange]);
 
   return (
     <div ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
