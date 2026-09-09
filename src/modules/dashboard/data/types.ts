@@ -22,8 +22,6 @@ export interface AnalyticsSummary {
   /** null when courseware table isn't reachable from the API host (CMS context). */
   activeEnrollments: number | null;
   activePrograms: number;
-  /** null in all-time mode; populated only when a date range is selected. */
-  newRegistrationsInRange: number | null;
   generatedAt: string;
 }
 

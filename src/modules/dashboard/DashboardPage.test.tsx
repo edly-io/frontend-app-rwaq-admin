@@ -197,6 +197,33 @@ describe('DashboardPage — data state', () => {
   });
 });
 
+describe('DashboardPage — registrations KPI in date-range mode', () => {
+  it('shows newRegistrationsThisMonth as the registrations KPI when a date range is active', () => {
+    // Regression: the page previously read summary?.newRegistrationsInRange which
+    // does not exist on the wire — the backend always uses new_registrations_this_month
+    // (camelCase: newRegistrationsThisMonth) for both all-time and date-range modes.
+    // In date-range mode the backend populates it with the in-range count.
+    // If the wrong field is read, the KPI shows '—' instead of the actual number.
+    const summaryWithRange = {
+      ...mockSummary,
+      newRegistrationsThisMonth: 42, // in-range count in date-range mode
+    };
+    (hooks.useAnalyticsSummary as jest.Mock).mockReturnValue({
+      isLoading: false, isError: false, data: summaryWithRange, error: null, refetch: jest.fn(),
+    });
+    (hooks.useAnalyticsTrends as jest.Mock).mockReturnValue({
+      isLoading: false, isError: false, data: mockTrends, error: null, refetch: jest.fn(),
+    });
+    (hooks.useAnalyticsBreakdowns as jest.Mock).mockReturnValue({
+      isLoading: false, isError: false, data: mockBreakdowns, error: null, refetch: jest.fn(),
+    });
+
+    renderWrapper(<DashboardPage />);
+    // The registrations KPI must show 42, not '—'
+    expect(screen.getByText('42')).toBeInTheDocument();
+  });
+});
+
 describe('DashboardPage — handleRefresh', () => {
   it('calls all three API functions with forceRefresh: true when Refresh is clicked', async () => {
     setDataState();

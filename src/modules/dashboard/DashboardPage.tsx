@@ -572,9 +572,10 @@ const DashboardPage = () => {
 
   const generatedAt = summary?.generatedAt ?? trends?.generatedAt ?? breakdowns?.generatedAt;
 
-  const registrationKpiRaw = hasDateRange
-    ? summary?.newRegistrationsInRange
-    : summary?.newRegistrationsThisMonth;
+  // The backend returns new_registrations_this_month in both all-time and date-range
+  // mode: in all-time mode it is the current calendar month count; in date-range mode
+  // the service reuses this key to carry the in-range count.
+  const registrationKpiRaw = summary?.newRegistrationsThisMonth;
   const registrationKpiValue = summaryQuery.isError ? null : registrationKpiRaw;
 
   return (

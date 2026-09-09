@@ -154,12 +154,19 @@ describe('DateRangePicker', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('toggle button label reflects the active preset', () => {
+  it('toggle button label shows date range when a custom range is applied (not "Custom")', () => {
+    // TL feedback: once both start and end dates are applied, the button must show
+    // the dates in compact format ("Mar 15, 2024 – Jun 20, 2024"), not the static
+    // "Custom" label.  The "Custom" label is only shown while the user is mid-entry.
     renderWrapper(
       <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={noop} />,
     );
-    // Arbitrary date pair → Custom
-    expect(screen.getByRole('button', { name: /custom/i })).toBeInTheDocument();
+    // The button name is the formatted date range, not "Custom".
+    const btn = screen.getByRole('button');
+    // Must NOT show the word "Custom".
+    expect(btn).not.toHaveAccessibleName(/custom/i);
+    // Must show both date strings somewhere in the label.
+    expect(btn.textContent).toMatch(/2024/);
   });
 
   // ── Outside-click and Escape key (AUDIT-014, AUDIT-019, AUDIT-020) ──────────
