@@ -345,7 +345,7 @@ const DashboardPage = () => {
    * were issued, which is a different claim.
    */
   const renderCertificateTrend = () => {
-    if (!trendsQuery.isError && trends && trends.certificates === null) {
+    if (!trendsLoading && !trendsQuery.isError && trends && trends.certificates === null) {
       return (
         <div className="rwaq-card rwaq-dash-card">
           <div className="rwaq-dash-card__head">
@@ -699,7 +699,14 @@ const DashboardPage = () => {
                 alignItems: 'center',
               }}
             >
-              <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
+              <Icon
+                src={Refresh}
+                style={{
+                  width: '1.125rem',
+                  height: '1.125rem',
+                  animation: isRefreshing ? 'rwaq-spin 0.8s linear infinite' : 'none',
+                }}
+              />
             </button>
             <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
           </div>

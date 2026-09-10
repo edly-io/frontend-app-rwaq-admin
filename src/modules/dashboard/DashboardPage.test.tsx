@@ -233,6 +233,38 @@ describe('DashboardPage — registrations KPI in date-range mode', () => {
   });
 });
 
+describe('DashboardPage — date-range transition skeletons', () => {
+  it('shows loading skeletons when isFetching and isPlaceholderData are true (keepPreviousData transition)', () => {
+    // Simulate the state React Query enters during a date-range change:
+    // keepPreviousData keeps status='success' and isLoading=false, but
+    // isFetching=true and isPlaceholderData=true while the new fetch runs.
+    // The page must show skeletons rather than stale data in this state.
+    const placeholderQuery = {
+      isLoading: false,
+      isError: false,
+      isFetching: true,
+      isPlaceholderData: true,
+      data: mockSummary,
+      error: null,
+      refetch: jest.fn(),
+    };
+    (hooks.useAnalyticsSummary as jest.Mock).mockReturnValue(placeholderQuery);
+    (hooks.useAnalyticsTrends as jest.Mock).mockReturnValue({
+      ...placeholderQuery, data: mockTrends,
+    });
+    (hooks.useAnalyticsBreakdowns as jest.Mock).mockReturnValue({
+      ...placeholderQuery, data: mockBreakdowns,
+    });
+
+    renderWrapper(<DashboardPage />);
+    // KpiCards render aria-busy="true" wrappers when their loading prop is true
+    const busyElements = document.querySelectorAll('[aria-busy="true"]');
+    expect(busyElements.length).toBeGreaterThan(0);
+    // The stale KPI value must NOT be shown while transitioning
+    expect(screen.queryByText('1,234')).not.toBeInTheDocument();
+  });
+});
+
 describe('DashboardPage — handleRefresh', () => {
   it('calls all three API functions with forceRefresh: true when Refresh is clicked', async () => {
     setDataState();

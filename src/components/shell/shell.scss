@@ -1739,3 +1739,8 @@ html[data-paragon-theme-variant='dark'] {
 [dir='rtl'] .react-loading-skeleton {
   --animation-direction: reverse;
 }
+
+@keyframes rwaq-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
