@@ -18,7 +18,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Alert, Icon, Spinner } from '@openedx/paragon';
+import { Alert, Icon, Skeleton, Spinner } from '@openedx/paragon';
 import { Refresh } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
@@ -254,8 +254,8 @@ const DashboardPage = () => {
   ) => {
     if (trendsQuery.isLoading) {
       return (
-        <div className="rwaq-dash-card__loading">
-          <Spinner animation="border" screenReaderText={title} />
+        <div style={{ padding: '0 1rem 1rem' }}>
+          <Skeleton height={CHART_HEIGHT} style={{ display: 'block' }} />
         </div>
       );
     }
@@ -351,8 +351,8 @@ const DashboardPage = () => {
   const renderLifecycle = () => {
     if (breakdownsQuery.isLoading) {
       return (
-        <div className="rwaq-dash-card__loading">
-          <Spinner animation="border" screenReaderText={intl.formatMessage(messages.lifecycleTitle)} />
+        <div className="rwaq-chart" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Skeleton circle width={CHART_HEIGHT} height={CHART_HEIGHT} />
         </div>
       );
     }
@@ -376,6 +376,69 @@ const DashboardPage = () => {
       </div>
     );
   };
+
+  /** Skeleton placeholder for the 2×2 stat-tile grid shown while breakdowns load. */
+  const renderStatTileSkeletons = () => (
+    <>
+      {[0, 1].map((row) => (
+        <div key={row} className="rwaq-dash-grid rwaq-dash-grid--halves">
+          {[0, 1].map((col) => (
+            <div key={col} className="rwaq-card">
+              <div className="rwaq-stat-tile">
+                <Skeleton height="0.75rem" width="50%" style={{ marginBottom: '0.5rem' }} />
+                <Skeleton height="1.5rem" width="40%" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </>
+  );
+
+  /** Skeleton placeholder for the tables section shown while breakdowns load. */
+  const renderTableSkeletons = () => (
+    <>
+      {/* Row 1: lifecycle donut + enrollment modes */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
+        <div className="rwaq-card rwaq-dash-card">
+          <div className="rwaq-dash-card__head">
+            <Skeleton height="1.25rem" width="60%" />
+          </div>
+          <div className="rwaq-chart" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: CHART_HEIGHT }}>
+            <Skeleton circle width={CHART_HEIGHT} height={CHART_HEIGHT} />
+          </div>
+        </div>
+        <div className="rwaq-card rwaq-dash-card">
+          <div className="rwaq-dash-card__head">
+            <Skeleton height="1.25rem" width="60%" />
+          </div>
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} style={{ display: 'flex', gap: '0.5rem', padding: '0.375rem 0' }}>
+              <Skeleton height="0.875rem" style={{ flex: 2 }} />
+              <Skeleton height="0.875rem" style={{ flex: 1 }} />
+              <Skeleton height="0.875rem" style={{ flex: 1 }} />
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Row 2: top courses + orgs */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
+        {[0, 1].map((i) => (
+          <div key={i} className="rwaq-card rwaq-dash-card">
+            <div className="rwaq-dash-card__head">
+              <Skeleton height="1.25rem" width="60%" />
+            </div>
+            {[0, 1, 2, 3].map((j) => (
+              <div key={j} style={{ display: 'flex', gap: '0.5rem', padding: '0.375rem 0' }}>
+                <Skeleton height="0.875rem" style={{ flex: 2 }} />
+                <Skeleton height="0.875rem" style={{ flex: 1 }} />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </>
+  );
 
   /** Number stat tiles from breakdowns — rendered above charts. */
   const renderStatTiles = (data: AnalyticsBreakdowns) => (
@@ -681,12 +744,7 @@ const DashboardPage = () => {
       </div>
 
       {/* Breakdown stat tiles (cert %, program %, legacy %) — numbers before charts. */}
-      {breakdownsQuery.isLoading && (
-        <div className="rwaq-card rwaq-dash-card__loading">
-          <Spinner animation="border" screenReaderText={intl.formatMessage(messages.title)} />
-        </div>
-      )}
-      {breakdowns && renderStatTiles(breakdowns)}
+      {breakdownsQuery.isLoading ? renderStatTileSkeletons() : (breakdowns && renderStatTiles(breakdowns))}
 
       {/* ── 2. Graphs (max 2 per row) ───────────────────────────────────────── */}
 
@@ -732,7 +790,7 @@ const DashboardPage = () => {
 
       {/* ── 3. Tables ───────────────────────────────────────────────────────── */}
 
-      {breakdowns && renderTables(breakdowns)}
+      {breakdownsQuery.isLoading ? renderTableSkeletons() : (breakdowns && renderTables(breakdowns))}
 
       {breakdownsQuery.isError && (
         <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>

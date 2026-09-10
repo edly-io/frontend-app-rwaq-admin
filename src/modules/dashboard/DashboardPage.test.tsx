@@ -140,13 +140,12 @@ beforeEach(() => {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('DashboardPage — loading state', () => {
-  it('shows loading spinner for the breakdowns band', () => {
+  it('shows loading skeletons while data is loading', () => {
     setLoadingState();
     renderWrapper(<DashboardPage />);
-    // KPI cards show a spinner when isLoading is true
-    const spinners = screen.queryAllByRole('status');
-    // At least one spinner visible during loading
-    expect(spinners.length).toBeGreaterThan(0);
+    // KpiCards render aria-busy="true" wrappers around their skeleton values
+    const busyElements = document.querySelectorAll('[aria-busy="true"]');
+    expect(busyElements.length).toBeGreaterThan(0);
   });
 
   it('renders the page title regardless of loading state', () => {

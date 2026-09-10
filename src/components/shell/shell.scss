@@ -1723,3 +1723,19 @@ body {
   gap: var(--rwaq-space-3);
   margin-bottom: var(--rwaq-space-4);
 }
+
+// ── Loading skeletons ─────────────────────────────────────────────────────────
+// react-loading-skeleton default colors are light grays that are invisible on
+// the dark card surface. Override via its own CSS custom properties so no JS
+// SkeletonTheme wrapper is needed and the override applies everywhere at once.
+html[data-paragon-theme-variant='dark'] {
+  .react-loading-skeleton {
+    --base-color: #21252b;
+    --highlight-color: #2e333b;
+  }
+}
+
+// Shimmer sweeps left-to-right by default. Reverse it for Arabic RTL layouts.
+[dir='rtl'] .react-loading-skeleton {
+  --animation-direction: reverse;
+}
