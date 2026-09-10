@@ -183,6 +183,18 @@ describe('DateRangePicker', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
+  it('pressing Escape after filling custom dates does not call onChange', () => {
+    const onChange = jest.fn();
+    renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />);
+    openDropdown();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-04-01' } });
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-07-31' } });
+    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
   // ── Untested presets (AUDIT-020) ─────────────────────────────────────────────
 
   it('clicking "Last 3 months" calls onChange with valid ISO dates and closes the panel', () => {
@@ -246,7 +258,7 @@ describe('DateRangePicker', () => {
     fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-03-01' } });
     fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
     expect(onChange).not.toHaveBeenCalled();
-    expect(screen.getByRole('alert')).toHaveTextContent(/end date must be after start date/i);
+    expect(screen.getByRole('alert')).toHaveTextContent(/end date must be on or after start date/i);
     // Panel stays open so the user can correct the input
     expect(screen.getByRole('menu')).toBeInTheDocument();
   });

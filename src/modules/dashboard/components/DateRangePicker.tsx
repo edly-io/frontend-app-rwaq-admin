@@ -10,6 +10,9 @@
  * month-navigation clicks never close the panel or trigger a query.
  * Pending values are kept in local state; the parent's applied values
  * (startDate/endDate props) only update when Apply is clicked.
+ *
+ * No refs are needed for the Apply handler: it closes the panel on an
+ * explicit user click, so React's state is always current by the time it runs.
  */
 import {
   useEffect, useRef, useState, useCallback,
@@ -103,23 +106,14 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
   const [customMode, setCustomMode] = useState(false);
   const [rangeError, setRangeError] = useState(false);
 
-  // Pending values for the custom date inputs — local only until both are filled.
+  // Pending values for the custom date inputs — local only until Apply is clicked.
   const [pendingStart, setPendingStart] = useState<string>(startDate ?? '');
   const [pendingEnd, setPendingEnd] = useState<string>(endDate ?? '');
 
-  // Refs give the change handlers the latest sibling value without needing to
-  // re-create both callbacks whenever one pending value changes (stale-closure
-  // fix: if the user fills "From" then "To" quickly, the "To" handler could
-  // read a stale pendingStart captured at creation time and silently skip onChange).
-  const pendingStartRef = useRef(pendingStart);
-  const pendingEndRef = useRef(pendingEnd);
-
-  // Sync pending when the applied range changes externally (preset selected, reset).
+  // Sync pending inputs when the applied range changes externally (preset or reset).
   useEffect(() => {
     setPendingStart(startDate ?? '');
     setPendingEnd(endDate ?? '');
-    pendingStartRef.current = startDate ?? '';
-    pendingEndRef.current = endDate ?? '';
   }, [startDate, endDate]);
 
   const activePreset = deriveActivePreset(startDate, endDate);
@@ -182,39 +176,37 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
     const [s, e] = preset.getRange();
     onChange(s, e);
     setIsOpen(false);
+    toggleRef.current?.querySelector('button')?.focus();
   };
 
   // Input handlers only update local pending state — they never close the panel
   // or call onChange. This is what allows the native date picker's month-navigation
   // arrows to work freely without collapsing the dropdown mid-selection.
   const handleStartChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    pendingStartRef.current = val;
-    setPendingStart(val);
+    setPendingStart(e.target.value);
     setRangeError(false);
   }, []);
 
   const handleEndChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    pendingEndRef.current = val;
-    setPendingEnd(val);
+    setPendingEnd(e.target.value);
     setRangeError(false);
   }, []);
 
   // Apply is the only path that validates and commits the range to the parent.
+  // Reads directly from state — safe here because Apply fires on an explicit click,
+  // so React's state is always current by the time this callback runs.
   const handleApply = useCallback(() => {
-    const s = pendingStartRef.current;
-    const e = pendingEndRef.current;
-    if (!s || !e) { return; }
-    if (s > e) {
+    if (!pendingStart || !pendingEnd) { return; }
+    if (pendingStart > pendingEnd) {
       setRangeError(true);
       return;
     }
     setRangeError(false);
     setCustomMode(false);
     setIsOpen(false);
-    onChange(s, e);
-  }, [onChange]);
+    toggleRef.current?.querySelector('button')?.focus();
+    onChange(pendingStart, pendingEnd);
+  }, [onChange, pendingStart, pendingEnd]);
 
   return (
     <div ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
