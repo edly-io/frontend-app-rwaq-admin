@@ -5,7 +5,7 @@
  * Colors come exclusively from Paragon CSS custom properties; no hardcoded hex.
  */
 import { ReactNode } from 'react';
-import { Card } from '@openedx/paragon';
+import { Card, Skeleton } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { kpiMessages as messages } from './messages';
 import InfoTooltip from './InfoTooltip';
@@ -134,17 +134,9 @@ const KpiCard = ({
         </InfoTooltip>
 
         {isLoading ? (
-          <div
-            style={{
-              width: '60%',
-              height: '2rem',
-              borderRadius: 4,
-              background: 'var(--pgn-color-gray-100, #f0f0ef)',
-              animation: 'pulse 1.5s infinite',
-            }}
-            aria-busy="true"
-            aria-label="Loading"
-          />
+          <div aria-busy="true" aria-label="Loading">
+            <Skeleton height="2rem" width="60%" />
+          </div>
         ) : (
           <>
             <p

@@ -1,5 +1,9 @@
 @use "@openedx/paragon/styles/css/core/custom-media-breakpoints" as paragonCustomMediaBreakpoints;
 
+// Skeleton loading — must come before Paragon token imports so Paragon's
+// z-index: unset override (which ships inside Paragon's own scss barrel) wins.
+@import "~react-loading-skeleton/dist/skeleton.css";
+
 // Paragon's design tokens, bundled into the app stylesheet.
 //
 // Why this is here rather than loaded at runtime: PARAGON_THEME_URLS is `{}`,

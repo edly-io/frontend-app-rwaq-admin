@@ -7,6 +7,7 @@
  * "Not available" with the reason underneath.
  */
 import { ReactNode } from 'react';
+import { Skeleton } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import InfoTooltip from '@src/components/InfoTooltip';
 import messages from '../messages';
@@ -22,10 +23,11 @@ export interface StatTileProps {
   badge?: string;
   /** Tooltip explanation shown on hover/click of the ⓘ icon next to the label. */
   info?: string;
+  isLoading?: boolean;
 }
 
 const StatTile = ({
-  label, value, hint, unavailableHint, badge, info,
+  label, value, hint, unavailableHint, badge, info, isLoading = false,
 }: StatTileProps) => {
   const intl = useIntl();
   const isUnavailable = value === null || value === undefined;
@@ -66,10 +68,10 @@ const StatTile = ({
           )}
         </span>
       </InfoTooltip>
-      <span className={`rwaq-stat-tile__value${isUnavailable ? ' rwaq-stat-tile__value--muted' : ''}`}>
-        {isUnavailable ? intl.formatMessage(messages.unavailable) : value}
+      <span className={`rwaq-stat-tile__value${isUnavailable && !isLoading ? ' rwaq-stat-tile__value--muted' : ''}`}>
+        {isLoading ? <Skeleton height="1.5rem" width="45%" /> : (isUnavailable ? intl.formatMessage(messages.unavailable) : value)}
       </span>
-      {(isUnavailable ? unavailableHint : hint) && (
+      {!isLoading && (isUnavailable ? unavailableHint : hint) && (
         <span className="rwaq-stat-tile__hint">
           {isUnavailable ? unavailableHint : hint}
         </span>
