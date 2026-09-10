@@ -98,27 +98,21 @@ describe('DateRangePicker', () => {
     expect(screen.getByLabelText('To')).toBeInTheDocument();
   });
 
-  it('calls onChange when the start date changes and end is already filled', () => {
+  it('does not call onChange when dates change — only Apply commits the range', () => {
     const onChange = jest.fn();
     renderWrapper(
       <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={onChange} />,
     );
     openDropdown();
+    // Changing either input alone must never fire onChange (month-navigation safety)
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-04-01' } });
-    expect(onChange).toHaveBeenCalledWith('2024-04-01', '2024-06-20');
-  });
-
-  it('calls onChange when the end date changes and start is already filled', () => {
-    const onChange = jest.fn();
-    renderWrapper(
-      <DateRangePicker startDate="2024-03-15" endDate="2024-06-20" onChange={onChange} />,
-    );
-    openDropdown();
     fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-07-31' } });
-    expect(onChange).toHaveBeenCalledWith('2024-03-15', '2024-07-31');
+    expect(onChange).not.toHaveBeenCalled();
+    // Panel stays open
+    expect(screen.getByRole('menu')).toBeInTheDocument();
   });
 
-  it('does not call onChange when only start is filled and end is empty', () => {
+  it('Apply button commits the range, closes the panel, and calls onChange', () => {
     const onChange = jest.fn();
     renderWrapper(
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
@@ -126,22 +120,24 @@ describe('DateRangePicker', () => {
     openDropdown();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-04-01' } });
-    expect(onChange).not.toHaveBeenCalled();
-  });
-
-  it('calls onChange when end is filled after start, completing the range', () => {
-    const onChange = jest.fn();
-    renderWrapper(
-      <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
-    );
-    openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
-    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-04-01' } });
-    expect(onChange).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-07-31' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
     expect(onChange).toHaveBeenCalledWith('2024-04-01', '2024-07-31');
-    // Dropdown closes after both dates are set
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('Apply button is disabled until both dates are filled', () => {
+    renderWrapper(
+      <DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />,
+    );
+    openDropdown();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
+    const applyBtn = screen.getByRole('button', { name: 'Apply' });
+    expect(applyBtn).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-04-01' } });
+    expect(applyBtn).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-07-31' } });
+    expect(applyBtn).not.toBeDisabled();
   });
 
   it('does not call onChange when a date input is cleared', () => {
@@ -234,6 +230,43 @@ describe('DateRangePicker', () => {
     const [start, end] = onChange.mock.calls[0];
     expect(start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(end).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  // ── Inverted range validation ────────────────────────────────────────────────
+
+  it('shows an error and does not call onChange when Apply is clicked with end before start', () => {
+    const onChange = jest.fn();
+    renderWrapper(
+      <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
+    );
+    openDropdown();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-09-01' } });
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-03-01' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent(/end date must be after start date/i);
+    // Panel stays open so the user can correct the input
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+  });
+
+  it('clears the error and applies the range when the user corrects the inverted end date', () => {
+    const onChange = jest.fn();
+    renderWrapper(
+      <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
+    );
+    openDropdown();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-09-01' } });
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-03-01' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    // Correct the end date and apply again
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-12-31' } });
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    expect(onChange).toHaveBeenCalledWith('2024-09-01', '2024-12-31');
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
