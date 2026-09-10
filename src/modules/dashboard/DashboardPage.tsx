@@ -93,6 +93,7 @@ const DashboardPage = () => {
   const intl = useIntl();
 
   const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
   // ── Date range — internal state only, never written to the URL ───────────────
@@ -124,15 +125,11 @@ const DashboardPage = () => {
   const trendsQuery = useAnalyticsTrends(trendsParams);
   const breakdownsQuery = useAnalyticsBreakdowns(params);
 
-  // Bypass the backend cache and inject fresh data directly into React Query's
-  // cache so all three queries update atomically in a single re-render.
+  // Show skeletons during refresh by tracking it in local state, then inject
+  // the fresh data atomically into the cache so all three widgets update together.
   const handleRefresh = async () => {
+    setIsRefreshing(true);
     setRefreshError(null);
-    // Clear cached data so isLoading becomes true on all three queries,
-    // which triggers the skeleton layout immediately while fresh data loads.
-    queryClient.removeQueries({ queryKey: analyticsQueryKeys.summary(params) });
-    queryClient.removeQueries({ queryKey: analyticsQueryKeys.trends(trendsParams) });
-    queryClient.removeQueries({ queryKey: analyticsQueryKeys.breakdowns(params) });
     try {
       const forceParams = { forceRefresh: true };
       const [freshSummary, freshTrends, freshBreakdowns] = await Promise.all([
@@ -145,6 +142,8 @@ const DashboardPage = () => {
       queryClient.setQueryData(analyticsQueryKeys.breakdowns(params), freshBreakdowns);
     } catch {
       setRefreshError(intl.formatMessage(messages.errorTitle));
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -253,7 +252,7 @@ const DashboardPage = () => {
     type: ChartType,
     title: string,
   ) => {
-    if (trendsQuery.isLoading) {
+    if (trendsQuery.isLoading || isRefreshing) {
       return (
         <div style={{ padding: '0 1rem 1rem' }}>
           <Skeleton height={CHART_HEIGHT} style={{ display: 'block' }} />
@@ -350,7 +349,7 @@ const DashboardPage = () => {
 
   /** Loading, populated and empty are three distinct states, not a ternary chain. */
   const renderLifecycle = () => {
-    if (breakdownsQuery.isLoading) {
+    if (breakdownsQuery.isLoading || isRefreshing) {
       return (
         <div className="rwaq-chart" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Skeleton circle width={CHART_HEIGHT} height={CHART_HEIGHT} />
@@ -691,19 +690,19 @@ const DashboardPage = () => {
         <KpiCard
           label={intl.formatMessage(hasDateRange ? messages.kpiLearnersRange : messages.kpiLearners)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
-          isLoading={summaryQuery.isLoading}
+          isLoading={summaryQuery.isLoading || isRefreshing}
           info={intl.formatMessage(messages.infoLearners)}
         />
         <KpiCard
           label={intl.formatMessage(hasDateRange ? messages.kpiEnrollmentsRange : messages.kpiEnrollments)}
           value={formatCount(summaryQuery.isError ? null : summary?.activeEnrollments)}
-          isLoading={summaryQuery.isLoading}
+          isLoading={summaryQuery.isLoading || isRefreshing}
           info={intl.formatMessage(messages.infoEnrollments)}
         />
         <KpiCard
           label={intl.formatMessage(messages.kpiCoursesRunning)}
           value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
-          isLoading={summaryQuery.isLoading}
+          isLoading={summaryQuery.isLoading || isRefreshing}
           info={intl.formatMessage(messages.infoCoursesRunning)}
           sparkline={summary ? (
             <span className="rwaq-kpi-context">
@@ -714,7 +713,7 @@ const DashboardPage = () => {
         <KpiCard
           label={intl.formatMessage(messages.kpiProgramsActive)}
           value={formatCount(summaryQuery.isError ? null : summary?.activePrograms)}
-          isLoading={summaryQuery.isLoading}
+          isLoading={summaryQuery.isLoading || isRefreshing}
           info={intl.formatMessage(messages.infoProgramsActive)}
           badge={allTimeBadge}
         />
@@ -724,13 +723,13 @@ const DashboardPage = () => {
           label={intl.formatMessage(hasDateRange ? messages.kpiRegistrationsRange : messages.kpiRegistrations)}
           value={formatCount(registrationKpiValue)}
           delta={hasDateRange ? undefined : (summary?.newRegistrationsDeltaPct ?? undefined)}
-          isLoading={summaryQuery.isLoading}
+          isLoading={summaryQuery.isLoading || isRefreshing}
           info={intl.formatMessage(messages.infoRegistrations)}
         />
       </div>
 
       {/* Breakdown stat tiles (cert %, program %, legacy %) — numbers before charts. */}
-      {breakdownsQuery.isLoading ? renderStatTileSkeletons() : (breakdowns && renderStatTiles(breakdowns))}
+      {(breakdownsQuery.isLoading || isRefreshing) ? renderStatTileSkeletons() : (breakdowns && renderStatTiles(breakdowns))}
 
       {/* ── 2. Graphs (max 2 per row) ───────────────────────────────────────── */}
 
@@ -776,7 +775,7 @@ const DashboardPage = () => {
 
       {/* ── 3. Tables ───────────────────────────────────────────────────────── */}
 
-      {breakdownsQuery.isLoading ? renderTableSkeletons() : (breakdowns && renderTables(breakdowns))}
+      {(breakdownsQuery.isLoading || isRefreshing) ? renderTableSkeletons() : (breakdowns && renderTables(breakdowns))}
 
       {breakdownsQuery.isError && (
         <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>
