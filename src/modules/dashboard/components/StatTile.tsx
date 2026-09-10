@@ -32,6 +32,16 @@ const StatTile = ({
   const intl = useIntl();
   const isUnavailable = value === null || value === undefined;
 
+  // Avoid nested ternary: resolve the value display to one of three states.
+  let tileValue: ReactNode;
+  if (isLoading) {
+    tileValue = <Skeleton height="1.5rem" width="45%" />;
+  } else if (isUnavailable) {
+    tileValue = intl.formatMessage(messages.unavailable);
+  } else {
+    tileValue = value;
+  }
+
   return (
     <div className="rwaq-stat-tile">
       <InfoTooltip text={info ?? ''} disabled={!info}>
@@ -46,30 +56,30 @@ const StatTile = ({
         >
           {label}
           {badge && (
-          <span
-            style={{
-              marginLeft: 'auto',
-              flexShrink: 0,
-              whiteSpace: 'nowrap',
-              padding: '0.1rem 0.375rem',
-              fontSize: '0.55rem',
-              fontWeight: 600,
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-              color: 'var(--rwaq-muted, #6B757F)',
-              background: 'var(--pgn-color-gray-100, #f0f0ef)',
-              border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
-              borderRadius: '999px',
-              lineHeight: 1.4,
-            }}
-          >
-            {badge}
+            <span
+              style={{
+                marginLeft: 'auto',
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
+                padding: '0.1rem 0.375rem',
+                fontSize: '0.55rem',
+                fontWeight: 600,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                color: 'var(--rwaq-muted, #6B757F)',
+                background: 'var(--pgn-color-gray-100, #f0f0ef)',
+                border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
+                borderRadius: '999px',
+                lineHeight: 1.4,
+              }}
+            >
+              {badge}
             </span>
           )}
         </span>
       </InfoTooltip>
       <span className={`rwaq-stat-tile__value${isUnavailable && !isLoading ? ' rwaq-stat-tile__value--muted' : ''}`}>
-        {isLoading ? <Skeleton height="1.5rem" width="45%" /> : (isUnavailable ? intl.formatMessage(messages.unavailable) : value)}
+        {tileValue}
       </span>
       {!isLoading && (isUnavailable ? unavailableHint : hint) && (
         <span className="rwaq-stat-tile__hint">
