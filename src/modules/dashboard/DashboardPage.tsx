@@ -147,6 +147,14 @@ const DashboardPage = () => {
     }
   };
 
+  // isLoading is true only on the very first fetch (no cache at all).
+  // When keepPreviousData kicks in (date range changed), the query status
+  // becomes 'success' with placeholder data — isLoading stays false, only
+  // isFetching and isPlaceholderData are true. Gate skeletons on both cases.
+  const summaryLoading = summaryQuery.isLoading || isRefreshing || (summaryQuery.isFetching && summaryQuery.isPlaceholderData);
+  const trendsLoading = trendsQuery.isLoading || isRefreshing || (trendsQuery.isFetching && trendsQuery.isPlaceholderData);
+  const breakdownsLoading = breakdownsQuery.isLoading || isRefreshing || (breakdownsQuery.isFetching && breakdownsQuery.isPlaceholderData);
+
   const summary = summaryQuery.data;
   const trends = trendsQuery.data;
   const breakdowns = breakdownsQuery.data;
@@ -252,7 +260,7 @@ const DashboardPage = () => {
     type: ChartType,
     title: string,
   ) => {
-    if (trendsQuery.isLoading || isRefreshing) {
+    if (trendsLoading) {
       return (
         <div style={{ padding: '0 1rem 1rem' }}>
           <Skeleton height={CHART_HEIGHT} style={{ display: 'block' }} />
@@ -349,7 +357,7 @@ const DashboardPage = () => {
 
   /** Loading, populated and empty are three distinct states, not a ternary chain. */
   const renderLifecycle = () => {
-    if (breakdownsQuery.isLoading || isRefreshing) {
+    if (breakdownsLoading) {
       return (
         <div className="rwaq-chart" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Skeleton circle width={CHART_HEIGHT} height={CHART_HEIGHT} />
@@ -690,19 +698,19 @@ const DashboardPage = () => {
         <KpiCard
           label={intl.formatMessage(hasDateRange ? messages.kpiLearnersRange : messages.kpiLearners)}
           value={formatCount(summaryQuery.isError ? null : summary?.totalLearners)}
-          isLoading={summaryQuery.isLoading || isRefreshing}
+          isLoading={summaryLoading}
           info={intl.formatMessage(messages.infoLearners)}
         />
         <KpiCard
           label={intl.formatMessage(hasDateRange ? messages.kpiEnrollmentsRange : messages.kpiEnrollments)}
           value={formatCount(summaryQuery.isError ? null : summary?.activeEnrollments)}
-          isLoading={summaryQuery.isLoading || isRefreshing}
+          isLoading={summaryLoading}
           info={intl.formatMessage(messages.infoEnrollments)}
         />
         <KpiCard
           label={intl.formatMessage(messages.kpiCoursesRunning)}
           value={formatCount(summaryQuery.isError ? null : summary?.runningCourses)}
-          isLoading={summaryQuery.isLoading || isRefreshing}
+          isLoading={summaryLoading}
           info={intl.formatMessage(messages.infoCoursesRunning)}
           sparkline={summary ? (
             <span className="rwaq-kpi-context">
@@ -713,7 +721,7 @@ const DashboardPage = () => {
         <KpiCard
           label={intl.formatMessage(messages.kpiProgramsActive)}
           value={formatCount(summaryQuery.isError ? null : summary?.activePrograms)}
-          isLoading={summaryQuery.isLoading || isRefreshing}
+          isLoading={summaryLoading}
           info={intl.formatMessage(messages.infoProgramsActive)}
           badge={allTimeBadge}
         />
@@ -723,13 +731,13 @@ const DashboardPage = () => {
           label={intl.formatMessage(hasDateRange ? messages.kpiRegistrationsRange : messages.kpiRegistrations)}
           value={formatCount(registrationKpiValue)}
           delta={hasDateRange ? undefined : (summary?.newRegistrationsDeltaPct ?? undefined)}
-          isLoading={summaryQuery.isLoading || isRefreshing}
+          isLoading={summaryLoading}
           info={intl.formatMessage(messages.infoRegistrations)}
         />
       </div>
 
       {/* Breakdown stat tiles (cert %, program %, legacy %) — numbers before charts. */}
-      {(breakdownsQuery.isLoading || isRefreshing) ? renderStatTileSkeletons() : (breakdowns && renderStatTiles(breakdowns))}
+      {breakdownsLoading ? renderStatTileSkeletons() : (breakdowns && renderStatTiles(breakdowns))}
 
       {/* ── 2. Graphs (max 2 per row) ───────────────────────────────────────── */}
 
@@ -775,7 +783,7 @@ const DashboardPage = () => {
 
       {/* ── 3. Tables ───────────────────────────────────────────────────────── */}
 
-      {(breakdownsQuery.isLoading || isRefreshing) ? renderTableSkeletons() : (breakdowns && renderTables(breakdowns))}
+      {breakdownsLoading ? renderTableSkeletons() : (breakdowns && renderTables(breakdowns))}
 
       {breakdownsQuery.isError && (
         <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>
