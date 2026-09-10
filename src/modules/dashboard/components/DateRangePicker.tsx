@@ -5,10 +5,14 @@
  * selecting one closes the panel and fires onChange. Selecting "Custom"
  * keeps the panel open and reveals inline date inputs below the list.
  *
- * For custom dates, onChange is only fired once BOTH start and end are
- * filled — the filter doesn't activate on a half-complete range.
+ * For custom dates, onChange fires only when the user clicks "Apply" —
+ * never on individual field changes. This means the native date picker's
+ * month-navigation clicks never close the panel or trigger a query.
  * Pending values are kept in local state; the parent's applied values
- * (startDate/endDate props) only update when both inputs are complete.
+ * (startDate/endDate props) only update when Apply is clicked.
+ *
+ * No refs are needed for the Apply handler: it closes the panel on an
+ * explicit user click, so React's state is always current by the time it runs.
  */
 import {
   useEffect, useRef, useState, useCallback,
@@ -100,24 +104,16 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
 
   const [isOpen, setIsOpen] = useState(false);
   const [customMode, setCustomMode] = useState(false);
+  const [rangeError, setRangeError] = useState(false);
 
-  // Pending values for the custom date inputs — local only until both are filled.
+  // Pending values for the custom date inputs — local only until Apply is clicked.
   const [pendingStart, setPendingStart] = useState<string>(startDate ?? '');
   const [pendingEnd, setPendingEnd] = useState<string>(endDate ?? '');
 
-  // Refs give the change handlers the latest sibling value without needing to
-  // re-create both callbacks whenever one pending value changes (stale-closure
-  // fix: if the user fills "From" then "To" quickly, the "To" handler could
-  // read a stale pendingStart captured at creation time and silently skip onChange).
-  const pendingStartRef = useRef(pendingStart);
-  const pendingEndRef = useRef(pendingEnd);
-
-  // Sync pending when the applied range changes externally (preset selected, reset).
+  // Sync pending inputs when the applied range changes externally (preset or reset).
   useEffect(() => {
     setPendingStart(startDate ?? '');
     setPendingEnd(endDate ?? '');
-    pendingStartRef.current = startDate ?? '';
-    pendingEndRef.current = endDate ?? '';
   }, [startDate, endDate]);
 
   const activePreset = deriveActivePreset(startDate, endDate);
@@ -168,6 +164,7 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
   const handlePresetClick = (preset: Preset) => {
     if (preset.key === 'custom') {
       setCustomMode(true);
+      setRangeError(false);
       // Seed the inputs with whatever is currently applied so the user
       // sees a coherent starting point when editing a custom range.
       setPendingStart(startDate ?? '');
@@ -175,36 +172,41 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
       return; // keep panel open so user can enter dates
     }
     setCustomMode(false);
+    setRangeError(false);
     const [s, e] = preset.getRange();
     onChange(s, e);
     setIsOpen(false);
+    toggleRef.current?.querySelector('button')?.focus();
   };
 
-  // Fire onChange only once BOTH start and end are filled.
-  // Reads the sibling value from a ref rather than from the closure so that
-  // typing both fields quickly cannot pick up a stale sibling and silently
-  // skip onChange while both inputs appear filled.
+  // Input handlers only update local pending state — they never close the panel
+  // or call onChange. This is what allows the native date picker's month-navigation
+  // arrows to work freely without collapsing the dropdown mid-selection.
   const handleStartChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    pendingStartRef.current = val;
-    setPendingStart(val);
-    if (val && pendingEndRef.current) {
-      setCustomMode(false);
-      setIsOpen(false);
-      onChange(val, pendingEndRef.current);
-    }
-  }, [onChange]);
+    setPendingStart(e.target.value);
+    setRangeError(false);
+  }, []);
 
   const handleEndChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    pendingEndRef.current = val;
-    setPendingEnd(val);
-    if (pendingStartRef.current && val) {
-      setCustomMode(false);
-      setIsOpen(false);
-      onChange(pendingStartRef.current, val);
+    setPendingEnd(e.target.value);
+    setRangeError(false);
+  }, []);
+
+  // Apply is the only path that validates and commits the range to the parent.
+  // Reads directly from state — safe here because Apply fires on an explicit click,
+  // so React's state is always current by the time this callback runs.
+  const handleApply = useCallback(() => {
+    if (!pendingStart || !pendingEnd) { return; }
+    if (pendingStart > pendingEnd) {
+      setRangeError(true);
+      return;
     }
-  }, [onChange]);
+    setRangeError(false);
+    setCustomMode(false);
+    setIsOpen(false);
+    toggleRef.current?.querySelector('button')?.focus();
+    onChange(pendingStart, pendingEnd);
+  }, [onChange, pendingStart, pendingEnd]);
 
   return (
     <div ref={containerRef} style={{ position: 'relative', display: 'inline-block' }}>
@@ -285,8 +287,7 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
               style={{
                 borderTop: '1px solid var(--rwaq-card-border, #e6e8ec)',
                 marginTop: '0.25rem',
-                paddingTop: '0.625rem',
-                padding: '0.625rem 0.75rem 0.25rem',
+                padding: '0.625rem 0.75rem 0.5rem',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0.5rem',
@@ -313,7 +314,6 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
                   className="form-control form-control-sm"
                   value={pendingStart}
                   onChange={handleStartChange}
-                  max={pendingEnd || undefined}
                 />
               </div>
               <div>
@@ -337,9 +337,28 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
                   className="form-control form-control-sm"
                   value={pendingEnd}
                   onChange={handleEndChange}
-                  min={pendingStart || undefined}
                 />
               </div>
+              {rangeError && (
+                <div
+                  role="alert"
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--pgn-color-danger-500, #c32d3a)',
+                  }}
+                >
+                  {intl.formatMessage(messages.dateRangeError)}
+                </div>
+              )}
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleApply}
+                disabled={!pendingStart || !pendingEnd}
+                style={{ width: '100%', marginTop: '0.125rem' }}
+              >
+                {intl.formatMessage(messages.dateRangeApply)}
+              </Button>
             </div>
           )}
         </div>

@@ -1,10 +1,10 @@
-export { useCourses } from '@src/modules/courses/data/hooks';
-export type { CourseSummary } from '@src/modules/courses/data/types';
-
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { PermissionValidationRequest, PermissionValidationResponse } from '@src/types';
 import { appId } from '@src/constants';
 import { validateUserPermissions } from './api';
+
+export { useCourses } from '@src/modules/courses/data/hooks';
+export type { CourseSummary } from '@src/modules/courses/data/types';
 
 const adminConsoleQueryKeys = {
   all: [appId] as const,
