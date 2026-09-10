@@ -18,7 +18,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Alert, Icon, Skeleton, Spinner } from '@openedx/paragon';
+import { Alert, Icon, Skeleton } from '@openedx/paragon';
 import { Refresh } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
@@ -93,7 +93,6 @@ const DashboardPage = () => {
   const intl = useIntl();
 
   const queryClient = useQueryClient();
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
   // ── Date range — internal state only, never written to the URL ───────────────
@@ -128,8 +127,12 @@ const DashboardPage = () => {
   // Bypass the backend cache and inject fresh data directly into React Query's
   // cache so all three queries update atomically in a single re-render.
   const handleRefresh = async () => {
-    setIsRefreshing(true);
     setRefreshError(null);
+    // Clear cached data so isLoading becomes true on all three queries,
+    // which triggers the skeleton layout immediately while fresh data loads.
+    queryClient.removeQueries({ queryKey: analyticsQueryKeys.summary(params) });
+    queryClient.removeQueries({ queryKey: analyticsQueryKeys.trends(trendsParams) });
+    queryClient.removeQueries({ queryKey: analyticsQueryKeys.breakdowns(params) });
     try {
       const forceParams = { forceRefresh: true };
       const [freshSummary, freshTrends, freshBreakdowns] = await Promise.all([
@@ -142,8 +145,6 @@ const DashboardPage = () => {
       queryClient.setQueryData(analyticsQueryKeys.breakdowns(params), freshBreakdowns);
     } catch {
       setRefreshError(intl.formatMessage(messages.errorTitle));
-    } finally {
-      setIsRefreshing(false);
     }
   };
 
@@ -655,33 +656,18 @@ const DashboardPage = () => {
             <button
               type="button"
               onClick={handleRefresh}
-              disabled={isRefreshing}
               aria-label={intl.formatMessage(messages.refreshAriaLabel)}
               style={{
                 border: 'none',
                 background: 'transparent',
                 padding: '0.25rem',
-                cursor: isRefreshing ? 'default' : 'pointer',
+                cursor: 'pointer',
                 color: 'var(--rwaq-muted, #6B757F)',
                 display: 'inline-flex',
                 alignItems: 'center',
               }}
             >
-              {isRefreshing ? (
-                <Spinner
-                  animation="border"
-                  size="sm"
-                  screenReaderText={intl.formatMessage(messages.refreshAriaLabel)}
-                  style={{
-                    width: '1.125rem',
-                    height: '1.125rem',
-                    color: 'var(--pgn-color-primary-base, #449cc2)',
-                    borderWidth: '0.15em',
-                  }}
-                />
-              ) : (
-                <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
-              )}
+              <Icon src={Refresh} style={{ width: '1.125rem', height: '1.125rem' }} />
             </button>
             <DateRangePicker startDate={startDate} endDate={endDate} onChange={handleDateChange} />
           </div>
