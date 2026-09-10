@@ -20,12 +20,14 @@ import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { getApiUrl } from '@src/data/utils';
 import type {
   CategoryCreatePayload,
+  CategoryCourse,
+  CategoryCourseListParams,
+  CategoryCourseListResponse,
   CategoryDetail,
   CategoryListParams,
   CategoryListResponse,
   CategoryPatch,
   CategorySummary,
-  CategoryCourse,
 } from './types';
 
 const getCategoriesBaseUrl = () => getApiUrl('/rwaq/api/categories');
@@ -71,11 +73,15 @@ export const updateCategory = async (id: number, patch: CategoryPatch): Promise<
 // ── Category courses ──────────────────────────────────────────────────────────
 
 /** GET /rwaq/api/categories/<id>/courses/ */
-export const getCategoryCourses = async (categoryId: number): Promise<CategoryCourse[]> => {
+export const getCategoryCourses = async (
+  categoryId: number,
+  params: CategoryCourseListParams = {},
+): Promise<CategoryCourseListResponse> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getCategoriesBaseUrl()}/${categoryId}/courses/`,
+    { params: snakeCaseObject(params) },
   );
-  return camelCaseObject(data) as CategoryCourse[];
+  return camelCaseObject(data) as CategoryCourseListResponse;
 };
 
 /** POST /rwaq/api/categories/<id>/courses/ — body: { course_id } */

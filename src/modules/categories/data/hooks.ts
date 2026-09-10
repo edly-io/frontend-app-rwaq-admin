@@ -14,6 +14,7 @@ import {
   updateCategory,
 } from './api';
 import type {
+  CategoryCourseListParams,
   CategoryCreatePayload,
   CategoryListParams,
   CategoryPatch,
@@ -27,7 +28,9 @@ const categoryQueryKeys = {
   list: (params: CategoryListParams) => [...categoryQueryKeys.lists(), params] as const,
   details: () => [...categoryQueryKeys.all, 'detail'] as const,
   detail: (id: number) => [...categoryQueryKeys.details(), id] as const,
-  courses: (id: number) => [...categoryQueryKeys.detail(id), 'courses'] as const,
+  // coursesAll is the prefix used for invalidation — invalidates every page at once.
+  coursesAll: (id: number) => [...categoryQueryKeys.detail(id), 'courses'] as const,
+  courses: (id: number, params: CategoryCourseListParams) => [...categoryQueryKeys.coursesAll(id), params] as const,
 };
 
 // ── Queries ───────────────────────────────────────────────────────────────────
@@ -45,11 +48,11 @@ export const useCategory = (id: number) => useQuery({
   enabled: id > 0,
 });
 
-/** Courses linked to a category — fetched separately so the detail and the
- *  courses list can be invalidated independently. */
-export const useCategoryCourses = (categoryId: number) => useQuery({
-  queryKey: categoryQueryKeys.courses(categoryId),
-  queryFn: () => getCategoryCourses(categoryId),
+/** Courses linked to a category — paginated, fetched separately so the detail
+ *  and the courses list can be invalidated independently. */
+export const useCategoryCourses = (categoryId: number, params: CategoryCourseListParams = {}) => useQuery({
+  queryKey: categoryQueryKeys.courses(categoryId, params),
+  queryFn: () => getCategoryCourses(categoryId, params),
   enabled: categoryId > 0,
 });
 
@@ -87,7 +90,7 @@ export const useLinkCourse = (categoryId: number) => {
   return useMutation({
     mutationFn: (courseId: string) => linkCourseToCategory(categoryId, courseId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: categoryQueryKeys.courses(categoryId) });
+      queryClient.invalidateQueries({ queryKey: categoryQueryKeys.coursesAll(categoryId) });
       queryClient.invalidateQueries({ queryKey: categoryQueryKeys.detail(categoryId) });
     },
   });
@@ -100,7 +103,7 @@ export const useUnlinkCourse = (categoryId: number) => {
   return useMutation({
     mutationFn: (courseId: string) => unlinkCourseFromCategory(categoryId, courseId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: categoryQueryKeys.courses(categoryId) });
+      queryClient.invalidateQueries({ queryKey: categoryQueryKeys.coursesAll(categoryId) });
       queryClient.invalidateQueries({ queryKey: categoryQueryKeys.detail(categoryId) });
     },
   });

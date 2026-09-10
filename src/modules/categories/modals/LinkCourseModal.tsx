@@ -20,12 +20,13 @@ import messages from '../messages';
 interface LinkCourseModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
   categoryId: number;
   categoryName: string;
 }
 
 const LinkCourseModal = ({
-  isOpen, onClose, categoryId, categoryName,
+  isOpen, onClose, onSuccess, categoryId, categoryName,
 }: LinkCourseModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
@@ -41,6 +42,7 @@ const LinkCourseModal = ({
         await linkMutation.mutateAsync(values.courseKey.trim());
         showToast(intl.formatMessage(messages.toastLinked));
         helpers.resetForm();
+        onSuccess?.();
         onClose();
       } catch (error) {
         logError(error);

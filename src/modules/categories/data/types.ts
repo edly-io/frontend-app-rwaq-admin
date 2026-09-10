@@ -39,6 +39,18 @@ export interface CategoryListResponse {
   pagination: CategoryPagination;
 }
 
+/** Paginated response from GET /rwaq/api/categories/<id>/courses/ */
+export interface CategoryCourseListResponse {
+  results: CategoryCourse[];
+  pagination: CategoryPagination;
+}
+
+/** Query params for the category courses endpoint */
+export interface CategoryCourseListParams {
+  page?: number;
+  pageSize?: number;
+}
+
 /** POST /rwaq/api/categories/ body */
 export interface CategoryCreatePayload {
   name: string;

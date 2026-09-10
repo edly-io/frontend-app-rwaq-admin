@@ -35,13 +35,16 @@ const CategoryDetailPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
   const [pendingUnlink, setPendingUnlink] = useState<CategoryCourse | null>(null);
+  const [coursePage, setCoursePage] = useState(1);
+
+  const COURSE_PAGE_SIZE = 10;
 
   const { data: category, isLoading, isError } = useCategory(categoryId);
   const {
-    data: courses,
+    data: coursesData,
     isLoading: isLoadingCourses,
     isError: isCoursesError,
-  } = useCategoryCourses(categoryId);
+  } = useCategoryCourses(categoryId, { page: coursePage, pageSize: COURSE_PAGE_SIZE });
 
   const unlinkMutation = useUnlinkCourse(categoryId);
 
@@ -51,6 +54,7 @@ const CategoryDetailPage = () => {
       await unlinkMutation.mutateAsync(pendingUnlink.courseKey);
       showToast(intl.formatMessage(messages.toastUnlinked));
       setPendingUnlink(null);
+      setCoursePage(1);
     } catch (err) {
       logError(err);
       showToast(intl.formatMessage(messages.toastUnlinkError));
@@ -76,7 +80,8 @@ const CategoryDetailPage = () => {
     );
   }
 
-  const courseRows = courses ?? [];
+  const courseRows = coursesData?.results ?? [];
+  const coursePagination = coursesData?.pagination;
 
   const courseColumns: ColumnDef<CategoryCourse>[] = [
     {
@@ -126,17 +131,7 @@ const CategoryDetailPage = () => {
         </div>
 
         <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mt-2">
-          <div className="min-width-0">
-            <h1 className="rwaq-page-title mb-2">{category.name}</h1>
-            {category.arabicName && (
-              <div className="rwaq-bidi text-muted mb-2" dir="auto">{category.arabicName}</div>
-            )}
-            <div className="d-flex align-items-center flex-wrap rwaq-chip-list">
-              <Chip className={`rwaq-chip rwaq-chip--${category.isActive ? 'success' : 'light'}`}>
-                {intl.formatMessage(category.isActive ? messages.statusActive : messages.statusInactive)}
-              </Chip>
-            </div>
-          </div>
+          <h1 className="rwaq-page-title">{category.name}</h1>
 
           <div className="rwaq-header-actions">
             <Button variant="outline-primary" onClick={() => setIsEditing(true)}>
@@ -171,7 +166,7 @@ const CategoryDetailPage = () => {
             },
             {
               label: intl.formatMessage(messages.detailCourseCount),
-              value: courseRows.length,
+              value: coursePagination?.count ?? courseRows.length,
             },
           ]}
         />
@@ -179,14 +174,9 @@ const CategoryDetailPage = () => {
 
       {/* Linked courses card */}
       <div className="rwaq-card">
-        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-          <h2 className="rwaq-section-title mb-0">
-            {intl.formatMessage(messages.coursesTitle)}
-          </h2>
-          <Button variant="primary" size="sm" onClick={() => setIsLinking(true)}>
-            {intl.formatMessage(messages.linkCourse)}
-          </Button>
-        </div>
+        <h2 className="rwaq-section-title mb-4">
+          {intl.formatMessage(messages.coursesTitle)}
+        </h2>
 
         {isCoursesError && (
           <Alert variant="warning">{intl.formatMessage(messages.coursesError)}</Alert>
@@ -204,6 +194,13 @@ const CategoryDetailPage = () => {
             data={courseRows}
             isLoading={isLoadingCourses}
             caption={intl.formatMessage(messages.coursesTitle)}
+            pagination={coursePagination && coursePagination.count > COURSE_PAGE_SIZE ? {
+              currentPage: coursePage,
+              pageCount: coursePagination.numPages || 1,
+              itemCount: coursePagination.count,
+              pageSize: COURSE_PAGE_SIZE,
+              onPageChange: setCoursePage,
+            } : undefined}
           />
         )}
       </div>
@@ -243,6 +240,7 @@ const CategoryDetailPage = () => {
       <LinkCourseModal
         isOpen={isLinking}
         onClose={() => setIsLinking(false)}
+        onSuccess={() => setCoursePage(1)}
         categoryId={categoryId}
         categoryName={category.name}
       />
