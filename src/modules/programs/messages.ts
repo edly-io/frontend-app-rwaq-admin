@@ -114,7 +114,7 @@ const messages = defineMessages({
   colLearnerEmail: { id: 'rwaq.admin.programs.learners.col.email', defaultMessage: 'Email' },
   colLearnerEnrolled: { id: 'rwaq.admin.programs.learners.col.enrolled', defaultMessage: 'Enrolled' },
   colLearnerCompleted: { id: 'rwaq.admin.programs.learners.col.completed', defaultMessage: 'Completed' },
-  colLearnerActive: { id: 'rwaq.admin.programs.learners.col.active', defaultMessage: 'Active' },
+  colLearnerActive: { id: 'rwaq.admin.programs.learners.col.active', defaultMessage: 'Enrollment' },
 
   // ── Shared ─────────────────────────────────────────────────────────────────
   yes: { id: 'rwaq.admin.programs.yes', defaultMessage: 'Yes' },
