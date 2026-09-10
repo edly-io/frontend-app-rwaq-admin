@@ -16,7 +16,9 @@
  *   - Every figure is stamped with the backend's generatedAt, because these
  *     numbers are cached and pretending otherwise would be dishonest.
  */
-import { useEffect, useMemo, useState } from 'react';
+import {
+  useEffect, useMemo, useRef, useState,
+} from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Icon, Skeleton } from '@openedx/paragon';
 import { Refresh } from '@openedx/paragon/icons';
@@ -94,6 +96,10 @@ const DashboardPage = () => {
 
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  // Ref guard: React state updates are asynchronous, so a second click that
+  // arrives before the first re-render still sees isRefreshing===false.
+  // The ref is synchronously up-to-date and prevents a double-fetch.
+  const refreshInFlight = useRef(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
   // ── Date range — internal state only, never written to the URL ───────────────
@@ -128,6 +134,8 @@ const DashboardPage = () => {
   // Show skeletons during refresh by tracking it in local state, then inject
   // the fresh data atomically into the cache so all three widgets update together.
   const handleRefresh = async () => {
+    if (refreshInFlight.current) { return; }
+    refreshInFlight.current = true;
     setIsRefreshing(true);
     setRefreshError(null);
     try {
@@ -143,6 +151,7 @@ const DashboardPage = () => {
     } catch {
       setRefreshError(intl.formatMessage(messages.errorTitle));
     } finally {
+      refreshInFlight.current = false;
       setIsRefreshing(false);
     }
   };
@@ -151,9 +160,15 @@ const DashboardPage = () => {
   // When keepPreviousData kicks in (date range changed), the query status
   // becomes 'success' with placeholder data — isLoading stays false, only
   // isFetching and isPlaceholderData are true. Gate skeletons on both cases.
-  const summaryLoading = summaryQuery.isLoading || isRefreshing || (summaryQuery.isFetching && summaryQuery.isPlaceholderData);
-  const trendsLoading = trendsQuery.isLoading || isRefreshing || (trendsQuery.isFetching && trendsQuery.isPlaceholderData);
-  const breakdownsLoading = breakdownsQuery.isLoading || isRefreshing || (breakdownsQuery.isFetching && breakdownsQuery.isPlaceholderData);
+  const summaryLoading = summaryQuery.isLoading
+    || isRefreshing
+    || (summaryQuery.isFetching && summaryQuery.isPlaceholderData);
+  const trendsLoading = trendsQuery.isLoading
+    || isRefreshing
+    || (trendsQuery.isFetching && trendsQuery.isPlaceholderData);
+  const breakdownsLoading = breakdownsQuery.isLoading
+    || isRefreshing
+    || (breakdownsQuery.isFetching && breakdownsQuery.isPlaceholderData);
 
   const summary = summaryQuery.data;
   const trends = trendsQuery.data;
@@ -412,7 +427,15 @@ const DashboardPage = () => {
           <div className="rwaq-dash-card__head">
             <Skeleton height="1.25rem" width="60%" />
           </div>
-          <div className="rwaq-chart" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: CHART_HEIGHT }}>
+          <div
+            className="rwaq-chart"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: CHART_HEIGHT,
+            }}
+          >
             <Skeleton circle width={CHART_HEIGHT} height={CHART_HEIGHT} />
           </div>
         </div>
@@ -663,12 +686,14 @@ const DashboardPage = () => {
             <button
               type="button"
               onClick={handleRefresh}
+              disabled={isRefreshing}
               aria-label={intl.formatMessage(messages.refreshAriaLabel)}
               style={{
                 border: 'none',
                 background: 'transparent',
                 padding: '0.25rem',
-                cursor: 'pointer',
+                cursor: isRefreshing ? 'not-allowed' : 'pointer',
+                opacity: isRefreshing ? 0.5 : 1,
                 color: 'var(--rwaq-muted, #6B757F)',
                 display: 'inline-flex',
                 alignItems: 'center',

@@ -73,7 +73,9 @@ const mockTrends = {
 };
 
 const mockBreakdowns = {
-  courseLifecycle: { noDates: 0, upcoming: 5, running: 30, ended: 65 },
+  courseLifecycle: {
+    noDates: 0, upcoming: 5, running: 30, ended: 65,
+  },
   certificates: {
     totalCourses: 100,
     coursesWithCertificate: 60,
@@ -95,16 +97,24 @@ const mockBreakdowns = {
     signedInAtLeastOnce: 150,
     progressPct: 75,
   },
-  enrollmentModes: [{ mode: 'honor', count: 5000, sharePct: 88 }],
+  enrollmentModes: [{
+    mode: 'honor', count: 5000, sharePct: 88,
+  }],
   organizations: [],
-  catalogConcentration: { totalEnrollments: 5678, topSharePct: 30, courses: [] },
+  catalogConcentration: {
+    totalEnrollments: 5678, topSharePct: 30, courses: [],
+  },
   generatedAt: new Date().toISOString(),
   dateRangeStart: null,
   dateRangeEnd: null,
 };
 
-const loadingQuery = { isLoading: true, isError: false, data: undefined, error: undefined, refetch: jest.fn() };
-const errorQuery = { isLoading: false, isError: true, data: undefined, error: new Error('API error'), refetch: jest.fn() };
+const loadingQuery = {
+  isLoading: true, isError: false, data: undefined, error: undefined, refetch: jest.fn(),
+};
+const errorQuery = {
+  isLoading: false, isError: true, data: undefined, error: new Error('API error'), refetch: jest.fn(),
+};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -261,5 +271,56 @@ describe('DashboardPage — handleRefresh', () => {
     await waitFor(() => {
       expect(mockSetQueryData).toHaveBeenCalledTimes(3);
     });
+  });
+
+  it('shows a danger alert when the refresh API call fails', async () => {
+    setDataState();
+    (api.getAnalyticsSummary as jest.Mock).mockRejectedValue(new Error('network error'));
+    (api.getAnalyticsTrends as jest.Mock).mockResolvedValue(mockTrends);
+    (api.getAnalyticsBreakdowns as jest.Mock).mockResolvedValue(mockBreakdowns);
+
+    renderWrapper(<DashboardPage />);
+    fireEvent.click(screen.getByRole('button', { name: /refresh dashboard/i }));
+
+    // After the Promise.all rejects, the error banner must appear
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+    // setQueryData must NOT have been called on a failed refresh
+    expect(mockSetQueryData).not.toHaveBeenCalled();
+  });
+
+  it('disables the refresh button while a refresh is in flight', async () => {
+    setDataState();
+    // Use a never-resolving promise so we can inspect the in-flight state
+    (api.getAnalyticsSummary as jest.Mock).mockReturnValue(new Promise(() => {}));
+    (api.getAnalyticsTrends as jest.Mock).mockReturnValue(new Promise(() => {}));
+    (api.getAnalyticsBreakdowns as jest.Mock).mockReturnValue(new Promise(() => {}));
+
+    renderWrapper(<DashboardPage />);
+    const btn = screen.getByRole('button', { name: /refresh dashboard/i });
+    fireEvent.click(btn);
+
+    await waitFor(() => {
+      expect(btn).toBeDisabled();
+    });
+  });
+
+  it('does not make a second API call when the refresh button is double-clicked', async () => {
+    setDataState();
+    // Slow promise — stays pending long enough for both clicks to fire
+    (api.getAnalyticsSummary as jest.Mock).mockReturnValue(new Promise(() => {}));
+    (api.getAnalyticsTrends as jest.Mock).mockReturnValue(new Promise(() => {}));
+    (api.getAnalyticsBreakdowns as jest.Mock).mockReturnValue(new Promise(() => {}));
+
+    renderWrapper(<DashboardPage />);
+    const btn = screen.getByRole('button', { name: /refresh dashboard/i });
+    fireEvent.click(btn);
+    fireEvent.click(btn);
+
+    // Only one call per endpoint despite two button clicks
+    expect(api.getAnalyticsSummary).toHaveBeenCalledTimes(1);
+    expect(api.getAnalyticsTrends).toHaveBeenCalledTimes(1);
+    expect(api.getAnalyticsBreakdowns).toHaveBeenCalledTimes(1);
   });
 });
