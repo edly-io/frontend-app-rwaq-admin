@@ -18,7 +18,7 @@ import {
   Suspense, useEffect, useRef, useState,
 } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { Container, Spinner } from '@openedx/paragon';
+import { Container, Skeleton } from '@openedx/paragon';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { useAdminCapabilities } from '@src/data/whoami';
@@ -131,10 +131,26 @@ const OverlaySidebar = ({ open, onClose }: OverlaySidebarProps) => {
 
 // ── Main AdminShell ───────────────────────────────────────────────────────────
 
-/** Fills the content area while a route's chunk loads, so nothing resizes. */
+/** Fills the content area while a route's chunk loads. */
 const ContentLoading = () => (
   <div className="rwaq-content-loading">
-    <Spinner animation="border" variant="primary" screenReaderText="Loading" />
+    <Skeleton height="2rem" width="35%" style={{ marginBottom: '1.5rem' }} />
+    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div key={i} style={{ flex: 1 }}>
+          <Skeleton height="0.75rem" width="60%" style={{ marginBottom: '0.5rem' }} />
+          <Skeleton height="2rem" width="50%" />
+        </div>
+      ))}
+    </div>
+    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+      <Skeleton height="200px" style={{ flex: 1 }} />
+      <Skeleton height="200px" style={{ flex: 1 }} />
+    </div>
+    <div style={{ display: 'flex', gap: '1rem' }}>
+      <Skeleton height="200px" style={{ flex: 1 }} />
+      <Skeleton height="200px" style={{ flex: 1 }} />
+    </div>
   </div>
 );
 
