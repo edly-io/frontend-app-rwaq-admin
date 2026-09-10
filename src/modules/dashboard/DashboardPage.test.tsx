@@ -32,10 +32,9 @@ jest.mock('./data/api', () => ({
 }));
 
 const mockSetQueryData = jest.fn();
-const mockRemoveQueries = jest.fn();
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
-  useQueryClient: () => ({ setQueryData: mockSetQueryData, removeQueries: mockRemoveQueries }),
+  useQueryClient: () => ({ setQueryData: mockSetQueryData }),
 }));
 
 // Stub MetricChart — recharts needs matchMedia which jsdom does not provide
@@ -136,7 +135,6 @@ const setDataState = () => {
 beforeEach(() => {
   jest.clearAllMocks();
   mockSetQueryData.mockClear();
-  mockRemoveQueries.mockClear();
 });
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
