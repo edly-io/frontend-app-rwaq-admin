@@ -47,6 +47,7 @@ export interface OrgMember {
 /** Full org detail — from GET /rwaq/api/organizations/<short_name>/ */
 export interface OrgDetail extends OrgSummary {
   featuredVideo: string;
+  showLogoOnProgramCertificate: boolean;
   logo: string | null;
   organizationLogo: string | null;
   members: OrgMember[];
@@ -65,6 +66,7 @@ export interface OrgCreatePayload {
 export interface OrgProfilePatch {
   arabicName?: string;
   featuredVideo?: string;
+  showLogoOnProgramCertificate?: boolean;
 }
 
 /** Sortable columns supported by the backend's OrderingFilter. */

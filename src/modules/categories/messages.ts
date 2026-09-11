@@ -42,7 +42,7 @@ const messages = defineMessages({
   fieldIsActive: { id: 'rwaq.admin.categories.form.isActive', defaultMessage: 'Active' },
   fieldIsActiveHelp: {
     id: 'rwaq.admin.categories.form.isActiveHelp',
-    defaultMessage: 'Inactive categories are hidden from the public site.',
+    defaultMessage: 'Inactive categories will be hidden from the course catalog page\'s filters.',
   },
   save: { id: 'rwaq.admin.categories.form.save', defaultMessage: 'Save changes' },
   create: { id: 'rwaq.admin.categories.form.create', defaultMessage: 'Create category' },

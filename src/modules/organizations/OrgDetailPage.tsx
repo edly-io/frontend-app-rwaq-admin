@@ -203,6 +203,10 @@ const OrgDetailPage = () => {
                 )
                 : dash,
             },
+            {
+              label: intl.formatMessage(messages.detailShowLogoOnProgramCertificate),
+              value: organization.showLogoOnProgramCertificate ? '✓ Enabled' : '—',
+            },
           ]}
         />
       </div>
