@@ -65,8 +65,17 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.form.logoTypeError',
     defaultMessage: 'Only JPG, PNG and GIF files are allowed.',
   },
+  fieldShowLogoOnProgramCertificate: {
+    id: 'rwaq.admin.orgs.form.showLogoOnProgramCertificate',
+    defaultMessage: 'Show org logo on program certificates',
+  },
+  fieldShowLogoOnProgramCertificateHelp: {
+    id: 'rwaq.admin.orgs.form.showLogoOnProgramCertificateHelp',
+    defaultMessage: 'When enabled, the organisation\'s logo replaces the default badge on program certificates. Requires a logo to be uploaded.',
+  },
   sectionProfile: { id: 'rwaq.admin.orgs.form.sectionProfile', defaultMessage: 'Identity' },
   sectionPublic: { id: 'rwaq.admin.orgs.form.sectionPublic', defaultMessage: 'Public profile' },
+  sectionCertificates: { id: 'rwaq.admin.orgs.form.sectionCertificates', defaultMessage: 'Certificates' },
   save: { id: 'rwaq.admin.orgs.form.save', defaultMessage: 'Save changes' },
   create: { id: 'rwaq.admin.orgs.form.create', defaultMessage: 'Create organization' },
   cancel: { id: 'rwaq.admin.orgs.form.cancel', defaultMessage: 'Cancel' },
@@ -88,6 +97,10 @@ const messages = defineMessages({
   detailCourses: { id: 'rwaq.admin.orgs.detail.courses', defaultMessage: 'Courses' },
   detailAdmins: { id: 'rwaq.admin.orgs.detail.admins', defaultMessage: 'Organization Admins' },
   detailFeaturedVideo: { id: 'rwaq.admin.orgs.detail.featuredVideo', defaultMessage: 'Featured video' },
+  detailShowLogoOnProgramCertificate: {
+    id: 'rwaq.admin.orgs.detail.showLogoOnProgramCertificate',
+    defaultMessage: 'Logo on program certificates',
+  },
   detailNone: { id: 'rwaq.admin.orgs.detail.none', defaultMessage: '—' },
   editOrg: { id: 'rwaq.admin.orgs.detail.editOrg', defaultMessage: 'Edit organization' },
   notFound: { id: 'rwaq.admin.orgs.detail.notFound', defaultMessage: 'Organization not found' },

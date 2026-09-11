@@ -30,6 +30,7 @@ interface FormValues {
   shortName: string;
   arabicName: string;
   featuredVideo: string;
+  showLogoOnProgramCertificate: boolean;
 }
 
 const emptyValues: FormValues = {
@@ -37,6 +38,7 @@ const emptyValues: FormValues = {
   shortName: '',
   arabicName: '',
   featuredVideo: '',
+  showLogoOnProgramCertificate: false,
 };
 
 const toFormValues = (organization: OrgDetail | null): FormValues => (organization
@@ -45,6 +47,7 @@ const toFormValues = (organization: OrgDetail | null): FormValues => (organizati
     shortName: organization.shortName,
     arabicName: organization.arabicName ?? '',
     featuredVideo: organization.featuredVideo ?? '',
+    showLogoOnProgramCertificate: organization.showLogoOnProgramCertificate ?? false,
   }
   : emptyValues);
 
@@ -92,6 +95,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
           const patch: OrgProfilePatch = {
             arabicName: values.arabicName,
             featuredVideo: values.featuredVideo,
+            showLogoOnProgramCertificate: values.showLogoOnProgramCertificate,
           };
           await updateMutation.mutateAsync({ patch, logoFile });
           showToast(intl.formatMessage(messages.toastUpdated, { name: values.name }));
@@ -291,6 +295,20 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
           />
+        </Form.Group>
+      </section>
+
+      <section className="rwaq-form-section">
+        <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionCertificates)}</h3>
+
+        <Form.Group className="mb-0" controlId="org-form-show-logo-on-program-certificate">
+          <Form.Checkbox
+            name="showLogoOnProgramCertificate"
+            label={intl.formatMessage(messages.fieldShowLogoOnProgramCertificate)}
+            checked={formik.values.showLogoOnProgramCertificate}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => formik.setFieldValue('showLogoOnProgramCertificate', e.target.checked)}
+          />
+          <Form.Text muted>{intl.formatMessage(messages.fieldShowLogoOnProgramCertificateHelp)}</Form.Text>
         </Form.Group>
       </section>
 
