@@ -133,9 +133,9 @@ const OverlaySidebar = ({ open, onClose }: OverlaySidebarProps) => {
 
 /** Fills the content area while a route's chunk loads. */
 const ContentLoading = () => (
-  <div className="rwaq-content-loading">
+  <div className="rwaq-content-loading" aria-busy="true" aria-label="Loading page">
     <Skeleton height="2rem" width="35%" style={{ marginBottom: '1.5rem' }} />
-    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', width: '100%' }}>
       {[0, 1, 2, 3, 4].map((i) => (
         <div key={i} style={{ flex: 1 }}>
           <Skeleton height="0.75rem" width="60%" style={{ marginBottom: '0.5rem' }} />
@@ -143,13 +143,13 @@ const ContentLoading = () => (
         </div>
       ))}
     </div>
-    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-      <Skeleton height="200px" style={{ flex: 1 }} />
-      <Skeleton height="200px" style={{ flex: 1 }} />
+    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', width: '100%' }}>
+      <Skeleton height="var(--rwaq-dash-chart-height, 11.875rem)" style={{ flex: 1 }} />
+      <Skeleton height="var(--rwaq-dash-chart-height, 11.875rem)" style={{ flex: 1 }} />
     </div>
-    <div style={{ display: 'flex', gap: '1rem' }}>
-      <Skeleton height="200px" style={{ flex: 1 }} />
-      <Skeleton height="200px" style={{ flex: 1 }} />
+    <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
+      <Skeleton height="var(--rwaq-dash-chart-height, 11.875rem)" style={{ flex: 1 }} />
+      <Skeleton height="var(--rwaq-dash-chart-height, 11.875rem)" style={{ flex: 1 }} />
     </div>
   </div>
 );
