@@ -6,6 +6,7 @@
  * roster. That split is why the form that used to sit here is gone.
  */
 import { useState } from 'react';
+import DOMPurify from 'dompurify';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Alert, Button, Chip, Spinner,
@@ -210,6 +211,17 @@ const OrgDetailPage = () => {
           ]}
         />
       </div>
+
+      {organization.description && (
+        <div className="rwaq-card">
+          <h2 className="rwaq-section-title mb-3">{intl.formatMessage(messages.detailDescription)}</h2>
+          <div
+            className="rwaq-org-description"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(organization.description) }}
+          />
+        </div>
+      )}
 
       <div className="rwaq-card">
         <h2 className="rwaq-section-title mb-4">

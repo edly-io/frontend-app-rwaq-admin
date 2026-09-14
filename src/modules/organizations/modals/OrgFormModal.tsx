@@ -15,6 +15,7 @@ import {
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
+import RichTextEditor from '@src/components/RichTextEditor';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorReason } from '@src/data/httpError';
 import { useCreateOrganization, useUpdateOrganization } from '../data/hooks';
@@ -29,6 +30,7 @@ interface FormValues {
   name: string;
   shortName: string;
   arabicName: string;
+  description: string;
   featuredVideo: string;
   showLogoOnProgramCertificate: boolean;
 }
@@ -37,6 +39,7 @@ const emptyValues: FormValues = {
   name: '',
   shortName: '',
   arabicName: '',
+  description: '',
   featuredVideo: '',
   showLogoOnProgramCertificate: false,
 };
@@ -46,6 +49,7 @@ const toFormValues = (organization: OrgDetail | null): FormValues => (organizati
     name: organization.name,
     shortName: organization.shortName,
     arabicName: organization.arabicName ?? '',
+    description: organization.description ?? '',
     featuredVideo: organization.featuredVideo ?? '',
     showLogoOnProgramCertificate: organization.showLogoOnProgramCertificate ?? false,
   }
@@ -62,6 +66,10 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
   const isEdit = organization !== null;
+  // Changes when the modal opens/closes to force TinyMCE to remount and pick
+  // up fresh initialValue — TinyMCE 5 is uncontrolled, so we can't update its
+  // content any other way without re-mounting the editor.
+  const editorKey = `${isOpen ? 'open' : 'closed'}-${organization?.shortName ?? 'new'}`;
   // Guidance for filling the field in, so it appears on focus and leaves on
   // blur rather than standing permanently under the input.
   const [isShortNameFocused, setIsShortNameFocused] = useState(false);
@@ -94,6 +102,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
         if (isEdit) {
           const patch: OrgProfilePatch = {
             arabicName: values.arabicName,
+            description: values.description,
             featuredVideo: values.featuredVideo,
             showLogoOnProgramCertificate: values.showLogoOnProgramCertificate,
           };
@@ -104,6 +113,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             name: values.name,
             shortName: values.shortName,
             arabicName: values.arabicName,
+            description: values.description,
             featuredVideo: values.featuredVideo,
           };
           const created = await createMutation.mutateAsync(payload);
@@ -285,6 +295,15 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
 
       <section className="rwaq-form-section">
         <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionPublic)}</h3>
+
+        <Form.Group className="mb-4" controlId="org-form-description">
+          <Form.Label>{intl.formatMessage(messages.fieldDescription)}</Form.Label>
+          <RichTextEditor
+            value={formik.values.description}
+            onChange={(val) => formik.setFieldValue('description', val)}
+            editorKey={editorKey}
+          />
+        </Form.Group>
 
         <Form.Group className="mb-0" controlId="org-form-featured-video">
           <Form.Label>{intl.formatMessage(messages.fieldFeaturedVideo)}</Form.Label>

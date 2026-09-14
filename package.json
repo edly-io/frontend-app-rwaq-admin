@@ -43,6 +43,8 @@
     "@openedx/frontend-plugin-framework": "^1.7.0",
     "@openedx/paragon": "^23.15.1",
     "@tanstack/react-query": "5.89.0",
+    "@tinymce/tinymce-react": "^6.3.0",
+    "dompurify": "3.2.6",
     "formik": "^2.4.9",
     "lodash.debounce": "^4.0.8",
     "react": "^18.3.1",
@@ -51,6 +53,7 @@
     "react-loading-skeleton": "^3.5.0",
     "react-router-dom": "^6.0.0",
     "recharts": "^2.15.3",
+    "tinymce": "^5.10.9",
     "yup": "^1.7.1"
   },
   "devDependencies": {
@@ -62,6 +65,7 @@
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
+    "@types/dompurify": "3.0.5",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "ts-jest": "^29.4.5"

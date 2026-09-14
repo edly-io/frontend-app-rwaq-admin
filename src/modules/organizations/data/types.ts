@@ -46,6 +46,7 @@ export interface OrgMember {
 
 /** Full org detail — from GET /rwaq/api/organizations/<short_name>/ */
 export interface OrgDetail extends OrgSummary {
+  description: string;
   featuredVideo: string;
   showLogoOnProgramCertificate: boolean;
   logo: string | null;
@@ -58,12 +59,14 @@ export interface OrgCreatePayload {
   name: string;
   /** Becomes the org prefix of every course key here; immutable afterwards. */
   shortName: string;
+  description?: string;
   arabicName?: string;
   featuredVideo?: string;
 }
 
 /** Fields PATCH /rwaq/api/organizations/<short_name>/ accepts */
 export interface OrgProfilePatch {
+  description?: string;
   arabicName?: string;
   featuredVideo?: string;
   showLogoOnProgramCertificate?: boolean;
