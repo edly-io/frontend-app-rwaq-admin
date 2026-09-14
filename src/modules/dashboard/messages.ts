@@ -158,7 +158,7 @@ const messages = defineMessages({
   },
   infoLegacyMigration: {
     id: 'rwaq.admin.dashboard.info.legacyMigration',
-    defaultMessage: 'Share of all legacy accounts (imported from the old platform) that have set their password and signed in at least once. Always all-time — not affected by the date range filter.',
+    defaultMessage: 'Share of legacy accounts (imported from the old platform) that have set their password and signed in at least once. Scoped to accounts whose registration date falls within the selected period.',
   },
   infoEnrollmentTrend: {
     id: 'rwaq.admin.dashboard.info.enrollmentTrend',
