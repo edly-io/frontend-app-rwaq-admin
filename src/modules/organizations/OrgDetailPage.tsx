@@ -208,20 +208,15 @@ const OrgDetailPage = () => {
               label: intl.formatMessage(messages.detailShowLogoOnProgramCertificate),
               value: organization.showLogoOnProgramCertificate ? '✓ Enabled' : '—',
             },
+            ...(organization.description ? [{
+              label: intl.formatMessage(messages.detailDescription),
+              // eslint-disable-next-line react/no-danger
+              value: <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(organization.description) }} />,
+              isWide: true,
+            }] : []),
           ]}
         />
       </div>
-
-      {organization.description && (
-        <div className="rwaq-card">
-          <h2 className="rwaq-section-title mb-3">{intl.formatMessage(messages.detailDescription)}</h2>
-          <div
-            className="rwaq-org-description"
-            // eslint-disable-next-line react/no-danger
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(organization.description) }}
-          />
-        </div>
-      )}
 
       <div className="rwaq-card">
         <h2 className="rwaq-section-title mb-4">
