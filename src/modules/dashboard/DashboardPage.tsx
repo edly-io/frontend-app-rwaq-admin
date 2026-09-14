@@ -523,7 +523,6 @@ const DashboardPage = () => {
               total: data.legacyMigration.legacyAccounts,
             })}
             unavailableHint={intl.formatMessage(messages.legacyNone)}
-            badge={allTimeBadge}
             info={intl.formatMessage(messages.infoLegacyMigration)}
           />
         </div>
