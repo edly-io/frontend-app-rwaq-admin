@@ -157,9 +157,9 @@ const DashboardPage = () => {
   };
 
   // isLoading is true only on the very first fetch (no cache at all).
-  // When keepPreviousData kicks in (date range changed), the query status
-  // becomes 'success' with placeholder data — isLoading stays false, only
-  // isFetching and isPlaceholderData are true. Gate skeletons on both cases.
+  // When the hook's placeholderData: keepPreviousData option is active (TanStack
+  // Query v5) and a date range changes, the query stays 'success' but sets
+  // isFetching=true and isPlaceholderData=true. Gate skeletons on both cases.
   const summaryLoading = summaryQuery.isLoading
     || isRefreshing
     || (summaryQuery.isFetching && summaryQuery.isPlaceholderData);
@@ -523,7 +523,6 @@ const DashboardPage = () => {
               total: data.legacyMigration.legacyAccounts,
             })}
             unavailableHint={intl.formatMessage(messages.legacyNone)}
-            badge={allTimeBadge}
             info={intl.formatMessage(messages.infoLegacyMigration)}
           />
         </div>

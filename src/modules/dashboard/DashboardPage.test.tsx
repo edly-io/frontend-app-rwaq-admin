@@ -324,10 +324,13 @@ describe('DashboardPage — handleRefresh', () => {
 
   it('disables the refresh button while a refresh is in flight', async () => {
     setDataState();
-    // Use a never-resolving promise so we can inspect the in-flight state
-    (api.getAnalyticsSummary as jest.Mock).mockReturnValue(new Promise(() => {}));
-    (api.getAnalyticsTrends as jest.Mock).mockReturnValue(new Promise(() => {}));
-    (api.getAnalyticsBreakdowns as jest.Mock).mockReturnValue(new Promise(() => {}));
+    // Use a controlled deferred so we can resolve it at teardown and avoid
+    // act() warnings from unmounting while state updates are still pending.
+    let resolvePending!: (v: unknown) => void;
+    const pending = new Promise((res) => { resolvePending = res; });
+    (api.getAnalyticsSummary as jest.Mock).mockReturnValue(pending);
+    (api.getAnalyticsTrends as jest.Mock).mockReturnValue(pending);
+    (api.getAnalyticsBreakdowns as jest.Mock).mockReturnValue(pending);
 
     renderWrapper(<DashboardPage />);
     const btn = screen.getByRole('button', { name: /refresh dashboard/i });
@@ -336,14 +339,19 @@ describe('DashboardPage — handleRefresh', () => {
     await waitFor(() => {
       expect(btn).toBeDisabled();
     });
+
+    // Flush the pending promise so the component can settle before unmount.
+    resolvePending(mockSummary);
   });
 
   it('does not make a second API call when the refresh button is double-clicked', async () => {
     setDataState();
-    // Slow promise — stays pending long enough for both clicks to fire
-    (api.getAnalyticsSummary as jest.Mock).mockReturnValue(new Promise(() => {}));
-    (api.getAnalyticsTrends as jest.Mock).mockReturnValue(new Promise(() => {}));
-    (api.getAnalyticsBreakdowns as jest.Mock).mockReturnValue(new Promise(() => {}));
+    // Controlled deferred — resolves cleanly at teardown.
+    let resolvePending!: (v: unknown) => void;
+    const pending = new Promise((res) => { resolvePending = res; });
+    (api.getAnalyticsSummary as jest.Mock).mockReturnValue(pending);
+    (api.getAnalyticsTrends as jest.Mock).mockReturnValue(pending);
+    (api.getAnalyticsBreakdowns as jest.Mock).mockReturnValue(pending);
 
     renderWrapper(<DashboardPage />);
     const btn = screen.getByRole('button', { name: /refresh dashboard/i });
@@ -354,5 +362,7 @@ describe('DashboardPage — handleRefresh', () => {
     expect(api.getAnalyticsSummary).toHaveBeenCalledTimes(1);
     expect(api.getAnalyticsTrends).toHaveBeenCalledTimes(1);
     expect(api.getAnalyticsBreakdowns).toHaveBeenCalledTimes(1);
+
+    resolvePending(mockSummary);
   });
 });

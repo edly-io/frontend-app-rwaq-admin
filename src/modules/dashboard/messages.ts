@@ -70,7 +70,7 @@ const messages = defineMessages({
   },
   legacyNone: {
     id: 'rwaq.admin.dashboard.legacy.none',
-    defaultMessage: 'No imported accounts on this platform.',
+    defaultMessage: 'No imported accounts registered in this period.',
   },
   modesTitle: { id: 'rwaq.admin.dashboard.modes.title', defaultMessage: 'Enrollment modes' },
   modeColMode: { id: 'rwaq.admin.dashboard.modes.colMode', defaultMessage: 'Mode' },
@@ -158,7 +158,7 @@ const messages = defineMessages({
   },
   infoLegacyMigration: {
     id: 'rwaq.admin.dashboard.info.legacyMigration',
-    defaultMessage: 'Legacy accounts imported from the old platform that have signed in at least once. Always all-time.',
+    defaultMessage: 'Share of legacy accounts (imported from the old platform) that have set their password and signed in at least once. Scoped to accounts whose registration date falls within the selected period.',
   },
   infoEnrollmentTrend: {
     id: 'rwaq.admin.dashboard.info.enrollmentTrend',
