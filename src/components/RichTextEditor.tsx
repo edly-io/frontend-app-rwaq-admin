@@ -24,7 +24,14 @@ const injectAuxPointerFix = () => {
   style.id = STYLE_ID;
   // `.tox.tox-tinymce-aux` beats bare `[data-focus-on-hidden]` in specificity;
   // both need !important to beat InteractivityDisabler's own !important rule.
-  style.textContent = '.tox.tox-tinymce-aux[data-focus-on-hidden] { pointer-events: auto !important; }';
+  // Target both the floating aux container (colour pickers, dropdowns) and the
+  // main editor wrapper (toolbar). The modal portal can cause hideOthers() to
+  // mark either with data-focus-on-hidden → pointer-events:none, disabling
+  // all toolbar buttons including undo/redo.
+  style.textContent = [
+    '.tox-tinymce-aux[data-focus-on-hidden]',
+    '.tox-tinymce[data-focus-on-hidden]',
+  ].join(',') + ' { pointer-events: auto !important; }';
   document.head.appendChild(style);
 };
 const removeAuxPointerFix = () => {
