@@ -739,24 +739,9 @@ const DashboardPage = () => {
         />
       </div>
 
-      {/* ── 2. Stats + Registration chart ──────────────────────────────────── */}
-      {/* Left column: 4 stat tiles stacked. Right column: registration trend
-          filling the same height so the two columns align top and bottom. */}
-      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
-        {breakdownsLoading ? (
-          <div className="rwaq-stat-stack">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="rwaq-card">
-                <div className="rwaq-stat-tile">
-                  <Skeleton height="0.75rem" width="50%" style={{ marginBottom: '0.5rem' }} />
-                  <Skeleton height="1.5rem" width="40%" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          breakdowns && renderStatStack(breakdowns)
-        )}
+      {/* ── 2. Registration chart + Stats ──────────────────────────────────── */}
+      {/* Left column (2fr): registration trend. Right column (1fr): 4 stat tiles. */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--split">
         <div className="rwaq-card rwaq-dash-card rwaq-dash-card--fill">
           <div className="rwaq-dash-card__head">
             <InfoTooltip text={intl.formatMessage(messages.infoRegistrations)}>
@@ -775,6 +760,20 @@ const DashboardPage = () => {
             true,
           )}
         </div>
+        {breakdownsLoading ? (
+          <div className="rwaq-stat-stack">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="rwaq-card">
+                <div className="rwaq-stat-tile">
+                  <Skeleton height="0.75rem" width="50%" style={{ marginBottom: '0.5rem' }} />
+                  <Skeleton height="1.5rem" width="40%" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          breakdowns && renderStatStack(breakdowns)
+        )}
       </div>
 
       {/* ── 3. Graphs (max 2 per row) ───────────────────────────────────────── */}
