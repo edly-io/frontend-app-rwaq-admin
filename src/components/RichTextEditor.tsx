@@ -8,10 +8,7 @@ import 'tinymce/icons/default';
 import 'tinymce/plugins/lists';
 import 'tinymce/plugins/link';
 import 'tinymce/plugins/code';
-import 'tinymce/plugins/autoresize';
 import 'tinymce/plugins/hr';
-import 'tinymce/plugins/charmap';
-import 'tinymce/plugins/table';
 
 import { Editor } from '@tinymce/tinymce-react';
 
@@ -29,38 +26,42 @@ const TOOLBAR = [
   'alignleft aligncenter alignright alignjustify',
   'bullist numlist outdent indent',
   'link unlink blockquote',
-  'table charmap hr',
-  'removeformat html-source',
+  'hr removeformat html-source',
 ].join(' | ');
 
+// Inline mode renders the editor directly in the DOM (no iframe), which avoids
+// Paragon's react-focus-on modal trap blocking keyboard input to the editor.
+// fixed_toolbar_container pins the floating toolbar inside the wrapper div so
+// it doesn't escape the modal and render behind the backdrop.
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editorKey }) => (
-  <Editor
-    key={editorKey}
-    initialValue={value}
-    onEditorChange={onChange}
-    init={{
-      plugins: 'lists link code autoresize hr charmap table',
-      toolbar: TOOLBAR,
-      menubar: false,
-      branding: false,
-      statusbar: false,
-      toolbar_mode: 'wrap' as const,
-      toolbar_sticky: true,
-      toolbar_sticky_offset: 0,
-      autoresize_bottom_margin: 50,
-      min_height: 250,
-      relative_urls: true,
-      convert_urls: false,
-      block_formats: 'Header 2=h2;Header 3=h3;Paragraph=p;Preformatted=pre',
-      setup: (editor) => {
-        editor.ui.registry.addButton('html-source', {
-          text: 'HTML',
-          tooltip: 'Source code',
-          onAction: () => editor.execCommand('mceCodeEditor'),
-        });
-      },
-    }}
-  />
+  <div className="rwaq-rich-text-editor">
+    <div className="rwaq-rich-text-editor__toolbar" />
+    <Editor
+      key={editorKey}
+      initialValue={value}
+      inline
+      onEditorChange={onChange}
+      init={{
+        plugins: 'lists link code hr',
+        toolbar: TOOLBAR,
+        menubar: false,
+        branding: false,
+        statusbar: false,
+        toolbar_mode: 'wrap' as const,
+        toolbar_sticky: false,
+        fixed_toolbar_container: '.rwaq-rich-text-editor__toolbar',
+        relative_urls: true,
+        convert_urls: false,
+        setup: (editor) => {
+          editor.ui.registry.addButton('html-source', {
+            text: 'HTML',
+            tooltip: 'Source code',
+            onAction: () => editor.execCommand('mceCodeEditor'),
+          });
+        },
+      }}
+    />
+  </div>
 );
 
 export default RichTextEditor;
