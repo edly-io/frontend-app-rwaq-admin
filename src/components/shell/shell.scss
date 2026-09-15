@@ -1444,9 +1444,41 @@ body {
 .rwaq-dash-grid > .rwaq-dash-card {
   padding: 1.125rem 1.25rem;
   margin: 0;
-  // Fill the row's shared height, so every card in a band lines up top and
-  // bottom regardless of how much content it holds.
   height: 100%;
+}
+
+// Stat-stack column fills the grid row like a card but has no own padding —
+// its inner cards carry their own 1.125rem 1.25rem padding individually.
+.rwaq-dash-grid > .rwaq-stat-stack {
+  margin: 0;
+  height: 100%;
+}
+
+// Four stat tiles stacked in a flex column, sharing the grid row height evenly.
+.rwaq-stat-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  > .rwaq-card {
+    flex: 1;
+    padding: 1.125rem 1.25rem;
+    margin: 0;
+  }
+}
+
+// Chart card that fills available column height (used beside the stat stack).
+.rwaq-dash-card--fill {
+  display: flex;
+  flex-direction: column;
+
+  .rwaq-chart--fill {
+    flex: 1;
+    min-height: 0;
+
+    // ResponsiveContainer requires a parent with a definite (non-auto) height.
+    > * { height: 100%; }
+  }
 }
 
 .rwaq-dash-card {
