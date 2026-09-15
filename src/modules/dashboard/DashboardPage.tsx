@@ -271,10 +271,11 @@ const DashboardPage = () => {
     title: string,
     fillHeight = false,
   ) => {
+    const fillStyle = fillHeight ? { flex: 1 as const } : undefined;
     if (trendsLoading) {
       return (
-        <div style={{ padding: '0 1rem 1rem', flex: fillHeight ? 1 : undefined }}>
-          <Skeleton height={CHART_HEIGHT} style={{ display: 'block' }} />
+        <div style={{ padding: '0 1rem 1rem', ...fillStyle }}>
+          <Skeleton height={fillHeight ? '100%' : CHART_HEIGHT} style={{ display: 'block' }} />
         </div>
       );
     }
@@ -282,14 +283,14 @@ const DashboardPage = () => {
     // activity. A failed fetch has to say so instead.
     if (trendsQuery.isError) {
       return (
-        <div className="rwaq-dash-card__empty">
+        <div className="rwaq-dash-card__empty" style={fillStyle}>
           {intl.formatMessage(messages.trendUnavailable)}
         </div>
       );
     }
     if (data.length === 0 || data.every((point) => point[seriesKey] === 0)) {
       return (
-        <div className="rwaq-dash-card__empty">
+        <div className="rwaq-dash-card__empty" style={fillStyle}>
           {intl.formatMessage(
             hasDateRange ? messages.emptySeriesRange : messages.emptySeries,
             { months: trends?.months ?? TREND_MONTHS },

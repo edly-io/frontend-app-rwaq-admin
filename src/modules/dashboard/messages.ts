@@ -5,11 +5,9 @@ import { defineMessages } from '@edx/frontend-platform/i18n';
 
 const messages = defineMessages({
   title: { id: 'rwaq.admin.dashboard.title', defaultMessage: 'Dashboard' },
-  asOf: { id: 'rwaq.admin.dashboard.asOf', defaultMessage: 'Figures as of {time}' },
   lastUpdated: { id: 'rwaq.admin.dashboard.lastUpdated', defaultMessage: 'updated {time}' },
   refreshAriaLabel: { id: 'rwaq.admin.dashboard.refresh', defaultMessage: 'Refresh dashboard' },
   errorTitle: { id: 'rwaq.admin.dashboard.error.title', defaultMessage: 'Could not load analytics' },
-  retry: { id: 'rwaq.admin.dashboard.retry', defaultMessage: 'Try again' },
   unavailable: { id: 'rwaq.admin.dashboard.unavailable', defaultMessage: 'Not available' },
   none: { id: 'rwaq.admin.dashboard.none', defaultMessage: '—' },
 
@@ -114,12 +112,6 @@ const messages = defineMessages({
     id: 'rwaq.admin.dashboard.emptySeriesRange',
     defaultMessage: 'No activity in the selected period.',
   },
-
-  // ── Section headings, which group the bands ────────────────────────────────
-  sectionGrowth: { id: 'rwaq.admin.dashboard.section.growth', defaultMessage: 'Growth' },
-  sectionOutcomes: { id: 'rwaq.admin.dashboard.section.outcomes', defaultMessage: 'Outcomes' },
-  sectionPlatform: { id: 'rwaq.admin.dashboard.section.platform', defaultMessage: 'Platform health' },
-  sectionCatalog: { id: 'rwaq.admin.dashboard.section.catalog', defaultMessage: 'Catalog' },
 
   // ── Info tooltips ──────────────────────────────────────────────────────────
   infoLearners: {
