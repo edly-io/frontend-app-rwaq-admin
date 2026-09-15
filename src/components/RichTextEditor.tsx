@@ -86,12 +86,15 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
           if (editor.iframeElement) {
             editor.iframeElement.setAttribute('data-focus-lock-disabled', 'true');
           }
-          // dir="auto" on the iframe body lets the browser detect direction
-          // per paragraph: RTL for Arabic, LTR for English/Latin.
-          editor.getBody().setAttribute('dir', 'auto');
-          // Stop mousedown from bubbling to document so react-focus-on's
-          // onClickOutside handler doesn't treat clicks in TinyMCE floating
-          // UI (.tox-tinymce-aux) as "clicked outside the modal".
+          // dir="auto" — browser auto-detects direction per paragraph.
+          const body = editor.getBody();
+          body.setAttribute('dir', 'auto');
+          // Mirror the page's dark theme into the iframe. The iframe has its
+          // own document so it doesn't inherit the host page's CSS variables.
+          if (document.documentElement.getAttribute('data-paragon-theme-variant') === 'dark') {
+            body.style.backgroundColor = '#1e2126';
+            body.style.color = '#dee1e6';
+          }
           document.querySelector('.tox-tinymce-aux')
             ?.addEventListener('mousedown', (e) => e.stopPropagation());
         },

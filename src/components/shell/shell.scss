@@ -1741,6 +1741,69 @@ html[data-paragon-theme-variant='dark'] {
   --animation-direction: reverse;
 }
 
+// ── TinyMCE dark mode ─────────────────────────────────────────────────────────
+// The toolbar/UI lives in the host page DOM (not the iframe), so it must be
+// styled here. oxide skin colors taken from tinymce/skins/ui/oxide-dark/skin.css.
+html[data-paragon-theme-variant='dark'] {
+  // Editor shell border
+  .tox.tox-tinymce { border-color: #000; }
+
+  // Toolbar background
+  .tox .tox-toolbar-overlord,
+  .tox-toolbar-overlord { background-color: #222f3e; }
+
+  .tox .tox-toolbar,
+  .tox .tox-toolbar__primary,
+  .tox .tox-toolbar__overflow {
+    background-color: #222f3e;
+    background-image: none;
+    border-bottom: 1px solid #000;
+  }
+
+  // Toolbar dividers
+  .tox .tox-toolbar__group { border-color: #000 !important; }
+
+  // Toolbar buttons
+  .tox .tox-tbtn { color: #dee1e6; }
+  .tox .tox-tbtn svg { fill: #dee1e6; }
+  .tox .tox-tbtn:hover,
+  .tox .tox-tbtn:focus { background: #3d546f; color: #fff; }
+  .tox .tox-tbtn:hover svg,
+  .tox .tox-tbtn:focus svg { fill: #fff; }
+  .tox .tox-tbtn--enabled,
+  .tox .tox-tbtn--enabled:hover { background: #34485f; color: #fff; }
+  .tox .tox-tbtn--enabled svg { fill: #fff; }
+  .tox .tox-tbtn--disabled,
+  .tox .tox-tbtn--disabled:hover { opacity: 0.5; background: transparent; }
+
+  // Format/paragraph select dropdown button
+  .tox .tox-listboxfield .tox-listbox--select,
+  .tox .tox-listbox--select {
+    background-color: #2b3b4e;
+    color: #dee1e6;
+    border-color: #000;
+  }
+
+  // Split buttons (forecolor / backcolor)
+  .tox .tox-split-button { color: #dee1e6; }
+  .tox .tox-split-button:hover { background: #3d546f; }
+  .tox .tox-split-button__chevron svg { fill: #dee1e6; }
+
+  // Floating aux container — dropdowns, colour pickers, tooltips
+  .tox-tinymce-aux {
+    .tox-menu,
+    .tox-toolbar__overflow { background-color: #222f3e; border-color: #000; }
+    .tox-collection__item { color: #dee1e6; }
+    .tox-collection__item--active,
+    .tox-collection__item:hover { background-color: #3d546f !important; }
+    .tox-collection__item-label { color: #dee1e6; }
+    .tox-swatches-menu { background-color: #222f3e; border-color: #000; }
+    .tox-tooltip__body { background-color: #2b3b4e; color: #dee1e6; }
+    .tox-pop,
+    .tox-pop__dialog { background-color: #222f3e; border-color: #000; }
+  }
+}
+
 @keyframes rwaq-spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
