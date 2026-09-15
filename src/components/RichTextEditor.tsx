@@ -6,7 +6,7 @@ import 'tinymce/themes/silver';
 import 'tinymce/skins/ui/oxide/skin.css';
 import 'tinymce/icons/default';
 import 'tinymce/plugins/lists';
-import 'tinymce/plugins/code';
+import 'tinymce/plugins/autoresize';
 import 'tinymce/plugins/hr';
 
 import { Editor } from '@tinymce/tinymce-react';
@@ -24,42 +24,38 @@ const TOOLBAR = [
   'bold italic underline forecolor backcolor',
   'alignleft aligncenter alignright alignjustify',
   'bullist numlist outdent indent',
-  'hr removeformat html-source',
+  'hr removeformat',
 ].join(' | ');
 
-// Inline mode renders the editor directly in the DOM (no iframe), which avoids
-// Paragon's react-focus-on modal trap blocking keyboard input to the editor.
-// fixed_toolbar_container pins the floating toolbar inside the wrapper div so
-// it doesn't escape the modal and render behind the backdrop.
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editorKey }) => (
-  <div className="rwaq-rich-text-editor">
-    <div className="rwaq-rich-text-editor__toolbar" />
-    <Editor
-      key={editorKey}
-      initialValue={value}
-      inline
-      onEditorChange={onChange}
-      init={{
-        plugins: 'lists code hr',
-        toolbar: TOOLBAR,
-        menubar: false,
-        branding: false,
-        statusbar: false,
-        toolbar_mode: 'wrap' as const,
-        toolbar_sticky: false,
-        fixed_toolbar_container: '.rwaq-rich-text-editor__toolbar',
-        relative_urls: true,
-        convert_urls: false,
-        setup: (editor) => {
-          editor.ui.registry.addButton('html-source', {
-            text: 'HTML',
-            tooltip: 'Source code',
-            onAction: () => editor.execCommand('mceCodeEditor'),
-          });
-        },
-      }}
-    />
-  </div>
+  <Editor
+    key={editorKey}
+    initialValue={value}
+    onEditorChange={onChange}
+    init={{
+      plugins: 'lists autoresize hr',
+      toolbar: TOOLBAR,
+      menubar: false,
+      branding: false,
+      statusbar: false,
+      toolbar_mode: 'wrap' as const,
+      toolbar_sticky: true,
+      toolbar_sticky_offset: 0,
+      autoresize_bottom_margin: 50,
+      min_height: 250,
+      relative_urls: true,
+      convert_urls: false,
+      // Paragon modals use react-focus-on / react-focus-lock, which re-traps
+      // focus whenever it leaves the host document — including into TinyMCE's
+      // iframe. Setting data-focus-lock-disabled on the iframe tells
+      // react-focus-lock to leave it alone, so typing inside the editor works.
+      init_instance_callback: (editor) => {
+        if (editor.iframeElement) {
+          editor.iframeElement.setAttribute('data-focus-lock-disabled', 'true');
+        }
+      },
+    }}
+  />
 );
 
 export default RichTextEditor;
