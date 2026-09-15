@@ -6,7 +6,6 @@ import 'tinymce/themes/silver';
 import 'tinymce/skins/ui/oxide/skin.css';
 import 'tinymce/icons/default';
 import 'tinymce/plugins/lists';
-import 'tinymce/plugins/link';
 import 'tinymce/plugins/code';
 import 'tinymce/plugins/hr';
 
@@ -25,7 +24,6 @@ const TOOLBAR = [
   'bold italic underline forecolor backcolor',
   'alignleft aligncenter alignright alignjustify',
   'bullist numlist outdent indent',
-  'link unlink',
   'hr removeformat html-source',
 ].join(' | ');
 
@@ -42,7 +40,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
       inline
       onEditorChange={onChange}
       init={{
-        plugins: 'lists link code hr',
+        plugins: 'lists code hr',
         toolbar: TOOLBAR,
         menubar: false,
         branding: false,
