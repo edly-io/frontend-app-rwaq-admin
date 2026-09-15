@@ -191,11 +191,6 @@ const DashboardPage = () => {
     () => (trends ? toChartData(trends.registrations, 'registrations', locale, granularity) : []),
     [trends, locale, granularity],
   );
-  const legacyRegistrationSeries = useMemo(
-    () => (trends?.legacyRegistrations ? toChartData(trends.legacyRegistrations, 'legacyRegistrations', locale, granularity) : []),
-    [trends, locale, granularity],
-  );
-
   const lifecycleSlices = useMemo(() => {
     if (!breakdowns) { return []; }
     const { courseLifecycle } = breakdowns;
@@ -523,6 +518,7 @@ const DashboardPage = () => {
               total: data.legacyMigration.legacyAccounts,
             })}
             unavailableHint={intl.formatMessage(messages.legacyNone)}
+            badge={intl.formatMessage(messages.allTimeBadge)}
             info={intl.formatMessage(messages.infoLegacyMigration)}
           />
         </div>
@@ -786,27 +782,16 @@ const DashboardPage = () => {
         {renderCertificateTrend()}
       </div>
 
-      {/* Row B: registration trend + legacy registration trend */}
-      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
-        {renderChartCard(
-          intl.formatMessage(messages.registrationTrend),
-          trendSubtitle,
-          registrationSeries,
-          'registrations',
-          intl.formatMessage(messages.seriesRegistrations),
-          'line',
-          intl.formatMessage(messages.infoRegistrations),
-        )}
-        {renderChartCard(
-          intl.formatMessage(messages.legacyRegistrationTrend),
-          trendSubtitle,
-          legacyRegistrationSeries,
-          'legacyRegistrations',
-          intl.formatMessage(messages.seriesLegacyRegistrations),
-          'line',
-          intl.formatMessage(messages.infoLegacyMigration),
-        )}
-      </div>
+      {/* Row B: registration trend */}
+      {renderChartCard(
+        intl.formatMessage(messages.registrationTrend),
+        trendSubtitle,
+        registrationSeries,
+        'registrations',
+        intl.formatMessage(messages.seriesRegistrations),
+        'line',
+        intl.formatMessage(messages.infoRegistrations),
+      )}
 
       {trendsQuery.isError && (
         <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>

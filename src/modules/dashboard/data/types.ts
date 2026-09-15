@@ -34,8 +34,6 @@ export interface AnalyticsTrends {
   /** null when the certificates table isn't reachable from the API host. */
   certificates: TrendPoint[] | null;
   registrations: TrendPoint[];
-  /** null when the field is absent from a cached/older response. */
-  legacyRegistrations: TrendPoint[] | null;
   generatedAt: string;
 }
 

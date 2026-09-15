@@ -66,7 +66,6 @@ const mockTrends = {
   enrollments: [],
   certificates: null,
   registrations: [],
-  legacyRegistrations: null,
   generatedAt: new Date().toISOString(),
   dateRangeStart: null,
   dateRangeEnd: null,
