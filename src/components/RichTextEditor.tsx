@@ -43,12 +43,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
       min_height: 250,
       relative_urls: true,
       convert_urls: false,
-      // Paragon modals use react-focus-on / react-focus-lock. Two elements
-      // need data-focus-lock-disabled so they're not intercepted:
-      // 1. The TinyMCE iframe — so keyboard input reaches the editor.
-      // 2. The .tox-tinymce-aux div (appended to <body>) — TinyMCE renders
-      //    toolbar dropdowns and dialogs there, outside the modal DOM, so
-      //    react-focus-on closes them on click without this flag.
       init_instance_callback: (editor) => {
         if (editor.iframeElement) {
           editor.iframeElement.setAttribute('data-focus-lock-disabled', 'true');
@@ -56,6 +50,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
         const auxEl = document.querySelector('.tox-tinymce-aux');
         if (auxEl) {
           auxEl.setAttribute('data-focus-lock-disabled', 'true');
+          auxEl.addEventListener('mousedown', (e) => e.stopPropagation());
         }
       },
     }}
