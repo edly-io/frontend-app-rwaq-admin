@@ -86,6 +86,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
           if (editor.iframeElement) {
             editor.iframeElement.setAttribute('data-focus-lock-disabled', 'true');
           }
+          // dir="auto" on the iframe body lets the browser detect direction
+          // per paragraph: RTL for Arabic, LTR for English/Latin.
+          editor.getBody().setAttribute('dir', 'auto');
           // Stop mousedown from bubbling to document so react-focus-on's
           // onClickOutside handler doesn't treat clicks in TinyMCE floating
           // UI (.tox-tinymce-aux) as "clicked outside the modal".
