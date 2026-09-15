@@ -66,12 +66,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
   const isEdit = organization !== null;
-  // Changes when the modal opens/closes to force TinyMCE to remount and pick
-  // up fresh initialValue — TinyMCE 5 is uncontrolled, so we can't update its
-  // content any other way without re-mounting the editor.
   const editorKey = `${isOpen ? 'open' : 'closed'}-${organization?.shortName ?? 'new'}`;
-  // Guidance for filling the field in, so it appears on focus and leaves on
-  // blur rather than standing permanently under the input.
   const [isShortNameFocused, setIsShortNameFocused] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -128,15 +123,10 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
         onClose();
       } catch (error) {
         logError(error);
-        // Left to the in-modal Alert below rather than a toast: the admin has
-        // a form full of input in front of them and needs to correct it.
       }
     },
   });
 
-  // Paragon keeps modal children mounted for animations, so Formik's values
-  // persist after close. Reset whenever the modal closes so reopening it is
-  // always a blank slate (create) or the latest server values (edit).
   useEffect(() => {
     if (!isOpen) {
       formik.resetForm();
@@ -161,7 +151,6 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
       return;
     }
     setLogoTypeError(null);
-    setLogoError(null);
     setLogoFile(file);
     setLogoPreview((prev) => {
       if (prev) { URL.revokeObjectURL(prev); }
@@ -294,7 +283,6 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             <Form.Control.Feedback type="invalid">{fieldError('arabicName')}</Form.Control.Feedback>
           )}
         </Form.Group>
-
       </section>
 
       <section className="rwaq-form-section">
