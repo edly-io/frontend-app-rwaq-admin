@@ -76,6 +76,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoTypeError, setLogoTypeError] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   const createMutation = useCreateOrganization();
@@ -98,6 +99,10 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     enableReinitialize: true,
     validationSchema,
     onSubmit: async (values) => {
+      if (values.showLogoOnProgramCertificate && !logoPreview && !organization?.logo) {
+        setLogoError(intl.formatMessage(messages.fieldLogoRequired));
+        return;
+      }
       try {
         if (isEdit) {
           const patch: OrgProfilePatch = {
@@ -124,6 +129,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
         }
         setLogoFile(null);
         setLogoTypeError(null);
+        setLogoError(null);
         setLogoPreview(null);
         onClose();
       } catch (error) {
@@ -140,6 +146,10 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
   useEffect(() => {
     if (!isOpen) {
       formik.resetForm();
+      setLogoFile(null);
+      setLogoPreview(null);
+      setLogoTypeError(null);
+      setLogoError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -158,6 +168,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
       return;
     }
     setLogoTypeError(null);
+    setLogoError(null);
     setLogoFile(file);
     setLogoPreview((prev) => {
       if (prev) { URL.revokeObjectURL(prev); }
@@ -187,7 +198,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
               width: 72,
               height: 72,
               borderRadius: '50%',
-              border: '2px dashed var(--pgn-color-border, #d2d2d2)',
+              border: logoError ? '2px solid #c32d3a' : '2px dashed var(--pgn-color-border, #d2d2d2)',
               overflow: 'hidden',
               cursor: 'pointer',
               background: 'var(--rwaq-surface-sunken, #f5f5f5)',
@@ -225,6 +236,9 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             <div className="small text-muted mt-1">{intl.formatMessage(messages.fieldLogoHelp)}</div>
             {logoTypeError && (
               <div className="small text-danger mt-1">{logoTypeError}</div>
+            )}
+            {logoError && (
+              <div className="small text-danger mt-1">{logoError}</div>
             )}
           </div>
           <input
@@ -321,7 +335,10 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             name="showLogoOnProgramCertificate"
             description={intl.formatMessage(messages.fieldShowLogoOnProgramCertificateHelp)}
             checked={formik.values.showLogoOnProgramCertificate}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => formik.setFieldValue('showLogoOnProgramCertificate', e.target.checked)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              formik.setFieldValue('showLogoOnProgramCertificate', e.target.checked);
+              if (!e.target.checked) { setLogoError(null); }
+            }}
           >
             {intl.formatMessage(messages.fieldShowLogoOnProgramCertificate)}
           </Form.Checkbox>

@@ -66,6 +66,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.form.logoTypeError',
     defaultMessage: 'Only JPG, PNG and GIF files are allowed.',
   },
+  fieldLogoRequired: {
+    id: 'rwaq.admin.orgs.form.logoRequired',
+    defaultMessage: 'A logo is required when "Show org logo on program certificates" is enabled.',
+  },
   fieldShowLogoOnProgramCertificate: {
     id: 'rwaq.admin.orgs.form.showLogoOnProgramCertificate',
     defaultMessage: 'Show org logo on program certificates',
