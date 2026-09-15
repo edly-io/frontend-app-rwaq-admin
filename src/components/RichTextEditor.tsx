@@ -23,7 +23,6 @@ const TOOLBAR = [
   'bold italic underline forecolor backcolor',
   'alignleft aligncenter alignright alignjustify',
   'bullist numlist outdent indent',
-  'removeformat',
 ].join(' | ');
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editorKey }) => (
