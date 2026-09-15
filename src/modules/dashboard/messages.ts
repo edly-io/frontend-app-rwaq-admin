@@ -27,8 +27,6 @@ const messages = defineMessages({
   enrollmentTrend: { id: 'rwaq.admin.dashboard.enrollmentTrend', defaultMessage: 'Active Enrolment trend' },
   certificateTrend: { id: 'rwaq.admin.dashboard.certificateTrend', defaultMessage: 'Certificates issued' },
   registrationTrend: { id: 'rwaq.admin.dashboard.registrationTrend', defaultMessage: 'New Registration' },
-  legacyRegistrationTrend: { id: 'rwaq.admin.dashboard.legacyRegistrationTrend', defaultMessage: 'Legacy Registration' },
-  seriesLegacyRegistrations: { id: 'rwaq.admin.dashboard.series.legacyRegistrations', defaultMessage: 'Legacy registrations' },
   trendMonths: { id: 'rwaq.admin.dashboard.trendMonths', defaultMessage: 'Last {months} months' },
   seriesEnrollments: { id: 'rwaq.admin.dashboard.series.enrollments', defaultMessage: 'Enrollments' },
   seriesCertificates: { id: 'rwaq.admin.dashboard.series.certificates', defaultMessage: 'Certificates' },
