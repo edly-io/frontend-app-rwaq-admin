@@ -5,6 +5,7 @@
  *   GET|POST         /rwaq/api/categories/
  *   GET|PATCH        /rwaq/api/categories/<id>/
  *   GET|POST|DELETE  /rwaq/api/categories/<id>/courses/
+ *   GET              /rwaq/api/categories/<id>/available-courses/
  *
  * Host: **LMS**, matching where these endpoints are mounted in rwaq-features.
  *
@@ -19,6 +20,8 @@ import { camelCaseObject, snakeCaseObject } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { getApiUrl } from '@src/data/utils';
 import type {
+  CategoryAvailableCourseListResponse,
+  CategoryAvailableCourseParams,
   CategoryCreatePayload,
   CategoryCourse,
   CategoryCourseListParams,
@@ -109,6 +112,22 @@ export const unlinkCourseFromCategory = async (
     `${getCategoriesBaseUrl()}/${categoryId}/courses/`,
     { params: { course_id: courseId } },
   );
+};
+
+/**
+ * GET /rwaq/api/categories/<id>/available-courses/?search=&page=&page_size=
+ *
+ * Courses not yet linked to this category — backs the Link Course picker.
+ */
+export const getAvailableCoursesForCategory = async (
+  categoryId: number,
+  params: CategoryAvailableCourseParams = {},
+): Promise<CategoryAvailableCourseListResponse> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getCategoriesBaseUrl()}/${categoryId}/available-courses/`,
+    { params: snakeCaseObject(params) },
+  );
+  return camelCaseObject(data) as CategoryAvailableCourseListResponse;
 };
 
 // ── Reverse lookup (course → categories) ─────────────────────────────────────

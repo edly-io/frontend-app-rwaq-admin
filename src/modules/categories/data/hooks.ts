@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { appId } from '@src/constants';
 import {
   createCategory,
+  getAvailableCoursesForCategory,
   getCategories,
   getCategory,
   getCategoryCourses,
@@ -14,6 +15,7 @@ import {
   updateCategory,
 } from './api';
 import type {
+  CategoryAvailableCourseParams,
   CategoryCourseListParams,
   CategoryCreatePayload,
   CategoryListParams,
@@ -31,6 +33,9 @@ const categoryQueryKeys = {
   // coursesAll is the prefix used for invalidation — invalidates every page at once.
   coursesAll: (id: number) => [...categoryQueryKeys.detail(id), 'courses'] as const,
   courses: (id: number, params: CategoryCourseListParams) => [...categoryQueryKeys.coursesAll(id), params] as const,
+  availableCourses: (id: number, params: CategoryAvailableCourseParams) => (
+    [...categoryQueryKeys.detail(id), 'available-courses', params] as const
+  ),
 };
 
 // ── Queries ───────────────────────────────────────────────────────────────────
@@ -54,6 +59,20 @@ export const useCategoryCourses = (categoryId: number, params: CategoryCourseLis
   queryKey: categoryQueryKeys.courses(categoryId, params),
   queryFn: () => getCategoryCourses(categoryId, params),
   enabled: categoryId > 0,
+});
+
+/**
+ * Courses not yet linked to this category — the Link Course modal's picker.
+ * `enabled` lets the modal skip fetching once a course has been chosen.
+ */
+export const useAvailableCoursesForCategory = (
+  categoryId: number,
+  params: CategoryAvailableCourseParams = {},
+  enabled = true,
+) => useQuery({
+  queryKey: categoryQueryKeys.availableCourses(categoryId, params),
+  queryFn: () => getAvailableCoursesForCategory(categoryId, params),
+  enabled: enabled && categoryId > 0,
 });
 
 // ── Mutations ─────────────────────────────────────────────────────────────────

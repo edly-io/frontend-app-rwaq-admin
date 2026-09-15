@@ -87,14 +87,30 @@ const messages = defineMessages({
 
   // ── Link course modal ──────────────────────────────────────────────────────
   linkCourseTitle: { id: 'rwaq.admin.categories.linkCourse.title', defaultMessage: 'Link course to category' },
-  fieldCourseKey: { id: 'rwaq.admin.categories.linkCourse.courseKey', defaultMessage: 'Course key' },
-  fieldCourseKeyHelp: {
-    id: 'rwaq.admin.categories.linkCourse.courseKeyHelp',
-    defaultMessage: 'e.g. course-v1:Org+CourseName+Run',
-  },
+  fieldCourse: { id: 'rwaq.admin.categories.linkCourse.course', defaultMessage: 'Course' },
   linkCourseSubmit: { id: 'rwaq.admin.categories.linkCourse.submit', defaultMessage: 'Link course' },
   linkCourseCancel: { id: 'rwaq.admin.categories.linkCourse.cancel', defaultMessage: 'Cancel' },
-  linkCourseRequired: { id: 'rwaq.admin.categories.linkCourse.required', defaultMessage: 'Course key is required.' },
+  linkCourseRequired: { id: 'rwaq.admin.categories.linkCourse.required', defaultMessage: 'Please select a course.' },
+
+  // ── Course picker (Link course modal) ──────────────────────────────────────
+  coursePickerSearchPlaceholder: {
+    id: 'rwaq.admin.categories.coursePicker.searchPlaceholder',
+    defaultMessage: 'Search courses…',
+  },
+  coursePickerSearching: { id: 'rwaq.admin.categories.coursePicker.searching', defaultMessage: 'Searching' },
+  coursePickerClear: { id: 'rwaq.admin.categories.coursePicker.clear', defaultMessage: 'Change' },
+  coursePickerError: {
+    id: 'rwaq.admin.categories.coursePicker.error',
+    defaultMessage: 'Could not load courses. Please try again.',
+  },
+  coursePickerNoResults: {
+    id: 'rwaq.admin.categories.coursePicker.noResults',
+    defaultMessage: 'No courses match "{query}".',
+  },
+  coursePickerNoneAvailable: {
+    id: 'rwaq.admin.categories.coursePicker.noneAvailable',
+    defaultMessage: 'No unlinked courses available.',
+  },
 });
 
 export default messages;

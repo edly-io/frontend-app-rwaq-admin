@@ -51,6 +51,19 @@ export interface CategoryCourseListParams {
   pageSize?: number;
 }
 
+/** Query params for the "courses not yet linked to this category" picker endpoint */
+export interface CategoryAvailableCourseParams {
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+/** Paginated response from GET /rwaq/api/categories/<id>/available-courses/ */
+export interface CategoryAvailableCourseListResponse {
+  results: CategoryCourse[];
+  pagination: CategoryPagination;
+}
+
 /** POST /rwaq/api/categories/ body */
 export interface CategoryCreatePayload {
   name: string;
