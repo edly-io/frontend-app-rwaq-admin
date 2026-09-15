@@ -1636,6 +1636,13 @@ body {
   background: var(--rwaq-card-bg);
 }
 
+// The next-page spinner appended after the last option while scrolling.
+.rwaq-course-picker__loading-more {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+
 .rwaq-course-picker__option {
   display: block;
   width: 100%;

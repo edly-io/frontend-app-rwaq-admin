@@ -3,10 +3,14 @@
  *
  * Unlike the users module's CoursePicker (which requires a query before
  * searching, because it matches against the whole catalogue), this one
- * shows the first page of not-yet-linked courses as soon as the modal
- * opens — the point of this component is to let an admin browse and pick
- * from a dropdown instead of having to already know the course key. Typing
- * narrows the same list via the backend's search param.
+ * shows not-yet-linked courses as soon as the modal opens — the point of
+ * this component is to let an admin browse and pick from a dropdown
+ * instead of having to already know the course key. Typing narrows the
+ * same list via the backend's search param.
+ *
+ * The list is paginated server-side (20 per page), so it loads more pages
+ * as the admin scrolls the results near the bottom, rather than silently
+ * capping the dropdown at page 1 — see useAvailableCoursesForCategory.
  */
 import { useEffect, useState } from 'react';
 import {
@@ -21,6 +25,8 @@ import messages from '../messages';
 /** Long enough that typing a course name is one request, short enough to feel live. */
 const DEBOUNCE_MS = 300;
 const PAGE_SIZE = 20;
+/** Fetch the next page once the list is scrolled to within this many px of the bottom. */
+const LOAD_MORE_THRESHOLD_PX = 48;
 
 interface CoursePickerProps {
   categoryId: number;
@@ -41,11 +47,22 @@ const CoursePicker = ({
     return () => clearTimeout(timer);
   }, [query]);
 
-  const { data, isFetching, isError } = useAvailableCoursesForCategory(
+  const {
+    data, isFetching, isFetchingNextPage, hasNextPage, fetchNextPage, isError,
+  } = useAvailableCoursesForCategory(
     categoryId,
     { search: debounced, pageSize: PAGE_SIZE },
     selected === null,
   );
+
+  const handleResultsScroll = (event: React.UIEvent<HTMLUListElement>) => {
+    if (!hasNextPage || isFetchingNextPage) { return; }
+    const el = event.currentTarget;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (distanceFromBottom <= LOAD_MORE_THRESHOLD_PX) {
+      fetchNextPage();
+    }
+  };
 
   if (selected) {
     return (
@@ -73,7 +90,11 @@ const CoursePicker = ({
     );
   }
 
-  const results = data?.results ?? [];
+  const results = data?.pages.flatMap((page) => page.results) ?? [];
+  // isFetching is also true while fetchNextPage is in flight — that case gets
+  // its own inline spinner at the bottom of the list, so the search box's
+  // trailing icon should only reflect the initial/search fetch.
+  const isSearching = isFetching && !isFetchingNextPage;
 
   return (
     <Form.Group isInvalid={Boolean(error)}>
@@ -82,7 +103,7 @@ const CoursePicker = ({
         value={query}
         onChange={(event: React.ChangeEvent<HTMLInputElement>) => setQuery(event.target.value)}
         placeholder={intl.formatMessage(messages.coursePickerSearchPlaceholder)}
-        trailingElement={isFetching
+        trailingElement={isSearching
           ? <Spinner animation="border" size="sm" screenReaderText={intl.formatMessage(messages.coursePickerSearching)} />
           : <Icon src={Search} />}
         autoComplete="off"
@@ -95,7 +116,7 @@ const CoursePicker = ({
         </Alert>
       )}
 
-      {!isError && !isFetching && results.length === 0 && (
+      {!isError && !isSearching && results.length === 0 && (
         <p className="text-muted small mt-2 mb-0">
           {debounced
             ? intl.formatMessage(messages.coursePickerNoResults, { query: debounced })
@@ -104,7 +125,7 @@ const CoursePicker = ({
       )}
 
       {results.length > 0 && (
-        <ul className="rwaq-course-picker__results">
+        <ul className="rwaq-course-picker__results" onScroll={handleResultsScroll}>
           {results.map((course) => (
             <li key={course.courseKey}>
               <button
@@ -117,6 +138,15 @@ const CoursePicker = ({
               </button>
             </li>
           ))}
+          {isFetchingNextPage && (
+            <li className="rwaq-course-picker__loading-more">
+              <Spinner
+                animation="border"
+                size="sm"
+                screenReaderText={intl.formatMessage(messages.coursePickerSearching)}
+              />
+            </li>
+          )}
         </ul>
       )}
     </Form.Group>

@@ -2,7 +2,9 @@
  * Categories TanStack Query hooks.
  * Components import from this file only — never from api.ts directly.
  */
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery, useMutation, useQuery, useQueryClient,
+} from '@tanstack/react-query';
 import { appId } from '@src/constants';
 import {
   createCategory,
@@ -64,14 +66,23 @@ export const useCategoryCourses = (categoryId: number, params: CategoryCourseLis
 /**
  * Courses not yet linked to this category — the Link Course modal's picker.
  * `enabled` lets the modal skip fetching once a course has been chosen.
+ *
+ * Infinite, not a single page: the catalog easily exceeds one page (20
+ * courses) per org, so the picker loads more as the admin scrolls rather
+ * than silently capping the list at whatever page 1 happens to contain.
  */
 export const useAvailableCoursesForCategory = (
   categoryId: number,
-  params: CategoryAvailableCourseParams = {},
+  params: Omit<CategoryAvailableCourseParams, 'page'> = {},
   enabled = true,
-) => useQuery({
+) => useInfiniteQuery({
   queryKey: categoryQueryKeys.availableCourses(categoryId, params),
-  queryFn: () => getAvailableCoursesForCategory(categoryId, params),
+  queryFn: ({ pageParam }) => getAvailableCoursesForCategory(categoryId, { ...params, page: pageParam }),
+  initialPageParam: 1,
+  // DRF's pagination.next is non-null iff another page exists — pages are
+  // fetched strictly in order here, so "how many pages so far" is the next
+  // page number.
+  getNextPageParam: (lastPage, allPages) => (lastPage.pagination?.next ? allPages.length + 1 : undefined),
   enabled: enabled && categoryId > 0,
 });
 
