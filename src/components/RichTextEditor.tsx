@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 import 'tinymce/tinymce';
 import 'tinymce/themes/silver';
@@ -59,11 +59,18 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
     return removeAuxPointerFix;
   }, []);
 
+  // Freeze the initial value at the moment the editor mounts (when editorKey
+  // changes). @tinymce/tinymce-react v6 calls editor.undoManager.clear()
+  // whenever the initialValue prop changes — passing the live Formik value
+  // would wipe the undo stack on every keystroke.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const stableInitialValue = useMemo(() => value, [editorKey]);
+
   return (
     <Editor
-    key={editorKey}
-    initialValue={value}
-    onEditorChange={onChange}
+      key={editorKey}
+      initialValue={stableInitialValue}
+      onEditorChange={onChange}
       init={{
         plugins: 'lists autoresize',
         toolbar: TOOLBAR,
@@ -78,14 +85,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
         relative_urls: true,
         convert_urls: false,
         init_instance_callback: (editor) => {
-          // Mark the iframe so react-focus-lock doesn't re-trap focus away from it.
           if (editor.iframeElement) {
             editor.iframeElement.setAttribute('data-focus-lock-disabled', 'true');
           }
           // Stop mousedown from bubbling to document so react-focus-on's
-          // onClickOutside handler doesn't fire when the user clicks inside
-          // .tox-tinymce-aux (colour picker, format dropdown, etc.).
-          // TinyMCE creates .tox-tinymce-aux during init, so it exists here.
+          // onClickOutside handler doesn't treat clicks in TinyMCE floating
+          // UI (.tox-tinymce-aux) as "clicked outside the modal".
           document.querySelector('.tox-tinymce-aux')
             ?.addEventListener('mousedown', (e) => e.stopPropagation());
         },
