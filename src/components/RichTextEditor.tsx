@@ -18,9 +18,11 @@ import { Editor } from '@tinymce/tinymce-react';
 // to <body> (outside the modal), so colour pickers and format dropdowns become
 // unclickable.  We override that with a more-specific rule while mounted.
 const STYLE_ID = 'rwaq-tinymce-aux-fix';
+let auxFixRefCount = 0;
 
 const injectAuxPointerFix = () => {
-  if (document.getElementById(STYLE_ID)) { return; }
+  auxFixRefCount += 1;
+  if (auxFixRefCount > 1) { return; }
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = [
@@ -30,7 +32,11 @@ const injectAuxPointerFix = () => {
   document.head.appendChild(style);
 };
 
-const removeAuxPointerFix = () => { document.getElementById(STYLE_ID)?.remove(); };
+const removeAuxPointerFix = () => {
+  auxFixRefCount -= 1;
+  if (auxFixRefCount > 0) { return; }
+  document.getElementById(STYLE_ID)?.remove();
+};
 
 // ── Theme helpers ──────────────────────────────────────────────────────────────
 
@@ -74,6 +80,8 @@ interface RichTextEditorProps {
   onChange: (value: string) => void;
   /** Change this key to remount the editor (e.g. when the modal opens with new data). */
   editorKey?: string | number;
+  /** Applied as aria-label on the iframe so screen readers announce the field name. */
+  ariaLabel?: string;
 }
 
 const TOOLBAR = [
@@ -84,7 +92,9 @@ const TOOLBAR = [
   'bullist numlist outdent indent',
 ].join(' | ');
 
-const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editorKey }) => {
+const RichTextEditor: React.FC<RichTextEditorProps> = ({
+  value, onChange, editorKey, ariaLabel,
+}) => {
   // ── Focus-lock: restore pointer-events on the aux container ─────────────────
   useEffect(() => {
     injectAuxPointerFix();
@@ -124,6 +134,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
           // ── Focus lock: tell react-focus-lock to ignore TinyMCE's iframe ───
           if (editor.iframeElement) {
             editor.iframeElement.setAttribute('data-focus-lock-disabled', 'true');
+            if (ariaLabel) {
+              editor.iframeElement.setAttribute('aria-label', ariaLabel);
+            }
           }
 
           // ── Iframe content: direction + initial theme ────────────────────
@@ -132,13 +145,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
           syncIframeBody(body);
 
           // ── Iframe content: keep theme in sync with live Paragon changes ──
-          const bodyObserver = new MutationObserver((mutations) => {
-            mutations.forEach((m) => {
-              if (m.attributeName === 'data-paragon-theme-variant') {
-                syncIframeBody(body);
-              }
-            });
-          });
+          // attributeFilter already limits delivery to data-paragon-theme-variant only.
+          const bodyObserver = new MutationObserver(() => syncIframeBody(body));
           bodyObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-paragon-theme-variant'] });
           editor.on('remove', () => bodyObserver.disconnect());
 

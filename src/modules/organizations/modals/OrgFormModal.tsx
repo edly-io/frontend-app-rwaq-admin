@@ -131,7 +131,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     if (!isOpen) {
       formik.resetForm();
       setLogoFile(null);
-      setLogoPreview(null);
+      setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
       setLogoTypeError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -292,6 +292,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             value={formik.values.description}
             onChange={(val) => formik.setFieldValue('description', val)}
             editorKey={editorKey}
+            ariaLabel={intl.formatMessage(messages.fieldDescription)}
           />
         </Form.Group>
 
