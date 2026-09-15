@@ -7,7 +7,6 @@ import 'tinymce/skins/ui/oxide/skin.css';
 import 'tinymce/icons/default';
 import 'tinymce/plugins/lists';
 import 'tinymce/plugins/autoresize';
-import 'tinymce/plugins/hr';
 
 import { Editor } from '@tinymce/tinymce-react';
 
@@ -24,7 +23,7 @@ const TOOLBAR = [
   'bold italic underline forecolor backcolor',
   'alignleft aligncenter alignright alignjustify',
   'bullist numlist outdent indent',
-  'hr removeformat',
+  'removeformat',
 ].join(' | ');
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editorKey }) => (
@@ -33,7 +32,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
     initialValue={value}
     onEditorChange={onChange}
     init={{
-      plugins: 'lists autoresize hr',
+      plugins: 'lists autoresize',
       toolbar: TOOLBAR,
       menubar: false,
       branding: false,
@@ -45,13 +44,19 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
       min_height: 250,
       relative_urls: true,
       convert_urls: false,
-      // Paragon modals use react-focus-on / react-focus-lock, which re-traps
-      // focus whenever it leaves the host document — including into TinyMCE's
-      // iframe. Setting data-focus-lock-disabled on the iframe tells
-      // react-focus-lock to leave it alone, so typing inside the editor works.
+      // Paragon modals use react-focus-on / react-focus-lock. Two elements
+      // need data-focus-lock-disabled so they're not intercepted:
+      // 1. The TinyMCE iframe — so keyboard input reaches the editor.
+      // 2. The .tox-tinymce-aux div (appended to <body>) — TinyMCE renders
+      //    toolbar dropdowns and dialogs there, outside the modal DOM, so
+      //    react-focus-on closes them on click without this flag.
       init_instance_callback: (editor) => {
         if (editor.iframeElement) {
           editor.iframeElement.setAttribute('data-focus-lock-disabled', 'true');
+        }
+        const auxEl = document.querySelector('.tox-tinymce-aux');
+        if (auxEl) {
+          auxEl.setAttribute('data-focus-lock-disabled', 'true');
         }
       },
     }}
