@@ -1748,32 +1748,3 @@ html[data-paragon-theme-variant='dark'] {
   to   { transform: rotate(360deg); }
 }
 
-// ── Inline TinyMCE rich-text editor ──────────────────────────────────────────
-// TinyMCE runs in inline mode inside modals to avoid Paragon's react-focus-on
-// focus trap blocking keyboard input to the iframe-based editor.
-// fixed_toolbar_container pins the toolbar into __toolbar so it never escapes
-// the modal and renders behind the backdrop.
-.rwaq-rich-text-editor {
-  border: 1px solid var(--pgn-color-border, #d2d2d2);
-  border-radius: 0.375rem;
-  background: var(--pgn-color-white, #fff);
-  overflow: hidden;
-
-  &__toolbar {
-    // TinyMCE injects the toolbar bar here; min-height prevents collapse
-    // before TinyMCE initialises.
-    min-height: 2px;
-    border-bottom: 1px solid var(--pgn-color-border, #d2d2d2);
-  }
-
-  // The mce-content-body div is TinyMCE's inline editable area.
-  .mce-content-body {
-    min-height: 160px;
-    padding: 0.75rem;
-    outline: none;
-    cursor: text;
-
-    p { margin: 0 0 0.75rem; }
-    p:last-child { margin-bottom: 0; }
-  }
-}

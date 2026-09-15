@@ -25,7 +25,7 @@ const TOOLBAR = [
   'bold italic underline forecolor backcolor',
   'alignleft aligncenter alignright alignjustify',
   'bullist numlist outdent indent',
-  'link unlink blockquote',
+  'link unlink',
   'hr removeformat html-source',
 ].join(' | ');
 
