@@ -1810,9 +1810,35 @@ html[data-paragon-theme-variant='dark'] {
   }
 
   .tox .tox-tbtn--enabled,
-  .tox .tox-tbtn--enabled:hover {
+  .tox .tox-tbtn--enabled:hover,
+  .tox .tox-tbtn--active,
+  .tox .tox-tbtn--active:hover {
     background: #35475e;
     color: #dee1e6;
+  }
+
+  // Split buttons (forecolor / backcolor): the container and both halves
+  // go dark when the picker is open (.tox-tbtn--active on the chevron half).
+  .tox .tox-split-button,
+  .tox .tox-split-button:hover {
+    background: transparent;
+  }
+
+  .tox .tox-split-button .tox-tbtn,
+  .tox .tox-split-button .tox-tbtn:hover {
+    background: transparent;
+    color: #dee1e6;
+  }
+
+  .tox .tox-split-button .tox-tbtn--active,
+  .tox .tox-split-button .tox-tbtn--active:hover,
+  .tox .tox-split-button.tox-tbtn--enabled,
+  .tox .tox-split-button:focus-within {
+    background: #35475e;
+  }
+
+  .tox .tox-split-button .tox-tbtn svg {
+    fill: #dee1e6;
   }
 
   // Format/paragraph select button
