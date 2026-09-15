@@ -1756,14 +1756,140 @@ html[data-paragon-theme-variant='dark'] {
   left: 0 !important;
 }
 
-// ── TinyMCE dark mode — handled via oxide-dark skin injection in JS ───────────
-// RichTextEditor.tsx injects tinymce/skins/ui/oxide-dark/skin.css as a lazy
-// <style> element (via style-loader) when data-paragon-theme-variant="dark" is
-// set, and removes it in light mode.  A MutationObserver in the component
-// responds to live theme switches without remounting the editor.
-// Nothing needs to be added here: oxide-dark overrides every .tox selector
-// that oxide (the base bundled skin) defines, and it appears later in the
-// document head so higher-specificity-free cascade wins.
+// ── TinyMCE dark mode ─────────────────────────────────────────────────────────
+// TinyMCE loads skin.css via a runtime <link> tag which always lands in <head>
+// after our own injected styles, so any same-specificity override loses.
+// Prefixing with html[data-paragon-theme-variant='dark'] adds one attribute
+// specificity level — enough to beat TinyMCE's plain .tox selectors — and the
+// browser re-evaluates these rules instantly whenever the attribute changes, so
+// theme switching is live without any JavaScript.
+html[data-paragon-theme-variant='dark'] {
+  // Outer editor chrome + toolbar strip
+  .tox.tox-tinymce {
+    border-color: #516a80;
+  }
+
+  .tox .tox-toolbar__primary,
+  .tox .tox-toolbar,
+  .tox .tox-toolbar__overflow {
+    background: #222f3e;
+    border-bottom-color: #516a80;
+  }
+
+  .tox .tox-toolbar__group {
+    border-color: #516a80;
+  }
+
+  // Toolbar buttons — default, hover, active, enabled
+  .tox .tox-tbtn {
+    color: #dee1e6;
+  }
+
+  .tox .tox-tbtn svg {
+    fill: #dee1e6;
+  }
+
+  .tox .tox-tbtn:hover,
+  .tox .tox-tbtn:focus {
+    background: #35475e;
+    color: #dee1e6;
+  }
+
+  .tox .tox-tbtn--enabled,
+  .tox .tox-tbtn--enabled:hover {
+    background: #35475e;
+    color: #dee1e6;
+  }
+
+  // Format/paragraph select button
+  .tox .tox-tbtn--select {
+    color: #dee1e6;
+  }
+
+  .tox .tox-tbtn--select:hover {
+    background: #35475e;
+  }
+
+  // Status bar at the bottom
+  .tox .tox-statusbar {
+    background: #222f3e;
+    border-top-color: #516a80;
+    color: #9db5cc;
+  }
+
+  .tox .tox-statusbar a,
+  .tox .tox-statusbar__path-item,
+  .tox .tox-statusbar__wordcount {
+    color: #9db5cc;
+  }
+
+  // Edit area border (the iframe wrapper)
+  .tox .tox-edit-area {
+    border-color: #516a80;
+  }
+
+  .tox .tox-edit-area__iframe {
+    background: #1e2126;
+  }
+
+  // Floating popups: format dropdown, colour picker, link dialog
+  .tox .tox-pop__dialog,
+  .tox .tox-menu,
+  .tox .tox-dialog,
+  .tox .tox-dialog__body {
+    background: #2d3b4a;
+    border-color: #516a80;
+    color: #dee1e6;
+  }
+
+  .tox .tox-collection__item {
+    color: #dee1e6;
+  }
+
+  .tox .tox-collection__item--active,
+  .tox .tox-collection__item:hover {
+    background: #35475e;
+    color: #dee1e6;
+  }
+
+  .tox .tox-collection__item-label {
+    color: #dee1e6;
+  }
+
+  // Colour picker / swatches
+  .tox .tox-swatches-menu {
+    background: #2d3b4a;
+  }
+
+  // Select / listbox inside dropdowns
+  .tox .tox-listboxfield .tox-listbox--select,
+  .tox .tox-textarea,
+  .tox .tox-textfield,
+  .tox input.tox-textfield {
+    background: #1e2126;
+    border-color: #516a80;
+    color: #dee1e6;
+  }
+
+  // Dialog headers/footers
+  .tox .tox-dialog__header,
+  .tox .tox-dialog__footer {
+    background: #222f3e;
+    border-color: #516a80;
+    color: #dee1e6;
+  }
+
+  .tox .tox-label,
+  .tox .tox-toolbar-label {
+    color: #dee1e6;
+  }
+
+  // The floating toolbar (tox-pop) arrow
+  .tox .tox-pop.tox-pop--bottom::before,
+  .tox .tox-pop.tox-pop--bottom::after {
+    border-top-color: #516a80;
+  }
+}
 
 // ── Checkbox — dark mode checkmark ───────────────────────────────────────────
 // Paragon's default checked SVG uses a dark stroke, invisible on the blue

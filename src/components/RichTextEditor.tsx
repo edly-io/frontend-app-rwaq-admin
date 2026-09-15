@@ -9,13 +9,6 @@ import 'tinymce/icons/default';
 import 'tinymce/plugins/lists';
 import 'tinymce/plugins/autoresize';
 
-// Dark skin CSS — imported via css-loader only (no style-loader) so webpack
-// bundles the text but does NOT inject a <style> tag automatically.
-// We inject / remove a <style> tag manually at runtime based on the active theme.
-// '!!' bypasses all configured loaders so only css-loader runs.
-// @ts-ignore — no TS declarations for inline webpack loader imports
-import oxideDarkCssModule from '!!css-loader!tinymce/skins/ui/oxide-dark/skin.css';
-
 import { Editor } from '@tinymce/tinymce-react';
 
 // ── Focus-lock fix ─────────────────────────────────────────────────────────────
@@ -45,25 +38,6 @@ const isDarkTheme = () => (
   document.documentElement.getAttribute('data-paragon-theme-variant') === 'dark'
 );
 
-const DARK_SKIN_ID = 'rwaq-tinymce-oxide-dark';
-
-/** Inject the oxide-dark skin <style> tag if not already present. */
-const injectDarkSkin = () => {
-  if (document.getElementById(DARK_SKIN_ID)) { return; }
-  const style = document.createElement('style');
-  style.id = DARK_SKIN_ID;
-  // css-loader bundles the CSS as a module object; toString() gives the raw CSS text.
-  style.textContent = (oxideDarkCssModule as { toString: () => string }).toString();
-  document.head.appendChild(style);
-};
-
-/** Remove the oxide-dark <style> tag, falling back to the bundled oxide (light) skin. */
-const removeDarkSkin = () => { document.getElementById(DARK_SKIN_ID)?.remove(); };
-
-/** Apply or remove the oxide-dark skin based on the current Paragon theme. */
-const syncEditorSkin = () => {
-  if (isDarkTheme()) { injectDarkSkin(); } else { removeDarkSkin(); }
-};
 
 /** Set iframe body colours to match the active theme. */
 const syncIframeBody = (body: HTMLElement) => {
@@ -94,25 +68,6 @@ const TOOLBAR = [
 ].join(' | ');
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editorKey }) => {
-  // ── Skin: inject oxide-dark when dark mode is active, remove otherwise ──────
-  useEffect(() => {
-    syncEditorSkin();
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((m) => {
-        if (m.attributeName === 'data-paragon-theme-variant') {
-          syncEditorSkin();
-        }
-      });
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-paragon-theme-variant'] });
-
-    return () => {
-      observer.disconnect();
-      removeDarkSkin();
-    };
-  }, []);
-
   // ── Focus-lock: restore pointer-events on the aux container ─────────────────
   useEffect(() => {
     injectAuxPointerFix();
@@ -131,6 +86,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
       initialValue={stableInitialValue}
       onEditorChange={onChange}
       init={{
+        // Disable TinyMCE's runtime skin/content-css URL loading: the skin CSS is
+        // already bundled via the webpack import at the top of this file, and dark
+        // overrides live in shell.scss under html[data-paragon-theme-variant='dark'].
+        // Without skin:false TinyMCE appends a <link> to the bundled skin URL which
+        // lands after our shell.scss rules and re-applies the light theme on top.
+        skin: false,
+        content_css: false,
         plugins: 'lists autoresize',
         toolbar: TOOLBAR,
         menubar: false,
