@@ -78,8 +78,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
         branding: false,
         statusbar: false,
         toolbar_mode: 'wrap' as const,
-        toolbar_sticky: true,
-        toolbar_sticky_offset: 0,
         autoresize_bottom_margin: 50,
         min_height: 250,
         relative_urls: true,
