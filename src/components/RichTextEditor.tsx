@@ -39,6 +39,23 @@ const isDarkTheme = () => (
 );
 
 
+/**
+ * Find the nearest scrollable ancestor of an element.
+ * TinyMCE sums scrollTop of every ancestor when positioning popups — this
+ * finds the container whose scrollTop we need to counteract.
+ */
+const getScrollParent = (el: HTMLElement): HTMLElement | null => {
+  let current = el.parentElement;
+  while (current && current !== document.body) {
+    const { overflow, overflowY } = getComputedStyle(current);
+    if (/auto|scroll/.test(overflow) || /auto|scroll/.test(overflowY)) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return null;
+};
+
 /** Set iframe body colours to match the active theme. */
 const syncIframeBody = (body: HTMLElement) => {
   if (isDarkTheme()) {
@@ -128,8 +145,25 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
           // ── Click-outside: stop .tox-tinymce-aux mouse events bubbling ───
           // Without this, clicking a colour swatch reaches document mousedown
           // which triggers react-focus-on's onClickOutside → closes the modal.
-          document.querySelector('.tox-tinymce-aux')
-            ?.addEventListener('mousedown', (e) => e.stopPropagation());
+          const auxEl = document.querySelector('.tox-tinymce-aux') as HTMLElement | null;
+          auxEl?.addEventListener('mousedown', (e) => e.stopPropagation());
+
+          // ── Popup position: cancel the modal-body scrollTop that TinyMCE adds ──
+          // TinyMCE computes popup top = viewportY + sum(ancestor.scrollTop).
+          // .tox-tinymce-aux is position:fixed so viewportY is correct, but
+          // TinyMCE still adds the modal body's scrollTop, pushing popups down.
+          // Applying translateY(-scrollTop) on the aux container cancels it.
+          const scrollParent = getScrollParent(editor.getContainer() as HTMLElement);
+          if (scrollParent && auxEl) {
+            const syncAuxTransform = () => {
+              auxEl.style.transform = `translateY(-${scrollParent.scrollTop}px)`;
+            };
+            scrollParent.addEventListener('scroll', syncAuxTransform, { passive: true });
+            editor.on('remove', () => {
+              scrollParent.removeEventListener('scroll', syncAuxTransform);
+              auxEl.style.transform = '';
+            });
+          }
         },
       }}
     />

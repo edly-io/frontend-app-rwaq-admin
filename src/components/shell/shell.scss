@@ -1742,18 +1742,32 @@ html[data-paragon-theme-variant='dark'] {
 }
 
 // ── TinyMCE popup position fix ────────────────────────────────────────────────
-// TinyMCE appends .tox-tinymce-aux to <body> and positions its floating
-// children (format dropdowns, colour pickers, tooltips) using inline top/left
-// values calculated via getBoundingClientRect() + window.scrollY.  When the
-// editor sits inside a scrollable modal, the *modal* scrolls while window.scrollY
-// stays 0, so the popup appears at the wrong document offset.  Making the aux
-// container position:fixed (anchored to the viewport at 0,0) means its
-// absolutely-positioned children render at exactly the viewport coordinates
-// TinyMCE intended, regardless of how far the modal has been scrolled.
+// TinyMCE appends .tox-tinymce-aux to <body> and positions floating children
+// (format dropdowns, colour pickers) using:
+//   top = button.getBoundingClientRect().bottom + sumOf(ancestor.scrollTop)
+// The html/body overflow:hidden means window.scrollY = 0, but TinyMCE still
+// sums the *modal body's* scrollTop into the calculation.
+//
+// Fix (two-part):
+//   1. position:fixed + top:0 + left:0 on .tox-tinymce-aux so its children's
+//      top/left values are in viewport coordinates.
+//   2. RichTextEditor.tsx attaches a scroll listener on the nearest scrollable
+//      ancestor and applies transform:translateY(-scrollTop) to .tox-tinymce-aux,
+//      cancelling the excess offset TinyMCE baked in.
 .tox-tinymce-aux {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
+}
+
+// ── TinyMCE format-select dropdown — prevent heading labels from wrapping ─────
+// H1/H2/H3 labels render at their actual heading size; without nowrap the large
+// glyphs overflow the narrow dropdown and break mid-word.
+.tox .tox-collection--list .tox-collection__item-label,
+.tox .tox-collection__item-label * {
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 // ── TinyMCE dark mode ─────────────────────────────────────────────────────────
