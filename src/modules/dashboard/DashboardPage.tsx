@@ -191,11 +191,6 @@ const DashboardPage = () => {
     () => (trends ? toChartData(trends.registrations, 'registrations', locale, granularity) : []),
     [trends, locale, granularity],
   );
-  const legacyRegistrationSeries = useMemo(
-    () => (trends?.legacyRegistrations ? toChartData(trends.legacyRegistrations, 'legacyRegistrations', locale, granularity) : []),
-    [trends, locale, granularity],
-  );
-
   const lifecycleSlices = useMemo(() => {
     if (!breakdowns) { return []; }
     const { courseLifecycle } = breakdowns;
@@ -274,11 +269,13 @@ const DashboardPage = () => {
     seriesLabel: string,
     type: ChartType,
     title: string,
+    fillHeight = false,
   ) => {
+    const fillStyle = fillHeight ? { flex: 1 as const } : undefined;
     if (trendsLoading) {
       return (
-        <div style={{ padding: '0 1rem 1rem' }}>
-          <Skeleton height={CHART_HEIGHT} style={{ display: 'block' }} />
+        <div style={{ padding: '0 1rem 1rem', ...fillStyle }}>
+          <Skeleton height={fillHeight ? '100%' : CHART_HEIGHT} style={{ display: 'block' }} />
         </div>
       );
     }
@@ -286,14 +283,14 @@ const DashboardPage = () => {
     // activity. A failed fetch has to say so instead.
     if (trendsQuery.isError) {
       return (
-        <div className="rwaq-dash-card__empty">
+        <div className="rwaq-dash-card__empty" style={fillStyle}>
           {intl.formatMessage(messages.trendUnavailable)}
         </div>
       );
     }
     if (data.length === 0 || data.every((point) => point[seriesKey] === 0)) {
       return (
-        <div className="rwaq-dash-card__empty">
+        <div className="rwaq-dash-card__empty" style={fillStyle}>
           {intl.formatMessage(
             hasDateRange ? messages.emptySeriesRange : messages.emptySeries,
             { months: trends?.months ?? TREND_MONTHS },
@@ -302,13 +299,13 @@ const DashboardPage = () => {
       );
     }
     return (
-      <div className="rwaq-chart">
+      <div className={fillHeight ? 'rwaq-chart rwaq-chart--fill' : 'rwaq-chart'}>
         <MetricChart
           type={type}
           data={data}
           series={[seriesKey]}
           ariaLabel={`${title}. ${seriesLabel}.`}
-          height={CHART_HEIGHT}
+          height={fillHeight ? '100%' : CHART_HEIGHT}
           hideLegend
         />
       </div>
@@ -400,24 +397,6 @@ const DashboardPage = () => {
     );
   };
 
-  /** Skeleton placeholder for the 2×2 stat-tile grid shown while breakdowns load. */
-  const renderStatTileSkeletons = () => (
-    <>
-      {[0, 1].map((row) => (
-        <div key={row} className="rwaq-dash-grid rwaq-dash-grid--halves">
-          {[0, 1].map((col) => (
-            <div key={col} className="rwaq-card">
-              <div className="rwaq-stat-tile">
-                <Skeleton height="0.75rem" width="50%" style={{ marginBottom: '0.5rem' }} />
-                <Skeleton height="1.5rem" width="40%" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ))}
-    </>
-  );
-
   /** Skeleton placeholder for the tables section shown while breakdowns load. */
   const renderTableSkeletons = () => (
     <>
@@ -471,63 +450,57 @@ const DashboardPage = () => {
     </>
   );
 
-  /** Number stat tiles from breakdowns — rendered above charts. */
-  const renderStatTiles = (data: AnalyticsBreakdowns) => (
-    <>
-      {/* Row 1: certificate coverage + issuance rate */}
-      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
-        <div className="rwaq-card">
-          <StatTile
-            label={intl.formatMessage(messages.certCoverage)}
-            value={formatPercent(data.certificates.coveragePct)}
-            hint={intl.formatMessage(messages.certCoverageHint, {
-              withCert: data.certificates.coursesWithCertificate,
-              total: data.certificates.totalCourses,
-            })}
-            unavailableHint={intl.formatMessage(messages.noCoursesYet)}
-            badge={allTimeBadge}
-            info={intl.formatMessage(messages.infoCertCoverage)}
-          />
-        </div>
-        <div className="rwaq-card">
-          <StatTile
-            label={intl.formatMessage(messages.certIssuance)}
-            value={formatPercent(data.certificates.issuancePct)}
-            hint={intl.formatMessage(messages.certIssuanceHint)}
-            unavailableHint={intl.formatMessage(messages.certificatesUnreadable)}
-            info={intl.formatMessage(messages.infoCertIssuance)}
-          />
-        </div>
+  /** Four stat tiles stacked vertically — rendered as the left column beside the chart. */
+  const renderStatStack = (data: AnalyticsBreakdowns) => (
+    <div className="rwaq-stat-stack">
+      <div className="rwaq-card">
+        <StatTile
+          label={intl.formatMessage(messages.certCoverage)}
+          value={formatPercent(data.certificates.coveragePct)}
+          hint={intl.formatMessage(messages.certCoverageHint, {
+            withCert: data.certificates.coursesWithCertificate,
+            total: data.certificates.totalCourses,
+          })}
+          unavailableHint={intl.formatMessage(messages.noCoursesYet)}
+          badge={allTimeBadge}
+          info={intl.formatMessage(messages.infoCertCoverage)}
+        />
       </div>
-
-      {/* Row 2: program completion + legacy registration */}
-      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
-        <div className="rwaq-card">
-          <StatTile
-            label={intl.formatMessage(messages.programCompletion)}
-            value={formatPercent(data.programs.completionPct)}
-            hint={intl.formatMessage(messages.programCompletionHint, {
-              completions: data.programs.completions,
-              enrollments: data.programs.enrollments,
-            })}
-            unavailableHint={intl.formatMessage(messages.noProgramEnrollments)}
-            info={intl.formatMessage(messages.infoProgramCompletion)}
-          />
-        </div>
-        <div className="rwaq-card">
-          <StatTile
-            label={intl.formatMessage(messages.legacyTitle)}
-            value={formatPercent(data.legacyMigration.progressPct)}
-            hint={intl.formatMessage(messages.legacyHint, {
-              signedIn: data.legacyMigration.signedInAtLeastOnce,
-              total: data.legacyMigration.legacyAccounts,
-            })}
-            unavailableHint={intl.formatMessage(messages.legacyNone)}
-            info={intl.formatMessage(messages.infoLegacyMigration)}
-          />
-        </div>
+      <div className="rwaq-card">
+        <StatTile
+          label={intl.formatMessage(messages.certIssuance)}
+          value={formatPercent(data.certificates.issuancePct)}
+          hint={intl.formatMessage(messages.certIssuanceHint)}
+          unavailableHint={intl.formatMessage(messages.certificatesUnreadable)}
+          info={intl.formatMessage(messages.infoCertIssuance)}
+        />
       </div>
-    </>
+      <div className="rwaq-card">
+        <StatTile
+          label={intl.formatMessage(messages.programCompletion)}
+          value={formatPercent(data.programs.completionPct)}
+          hint={intl.formatMessage(messages.programCompletionHint, {
+            completions: data.programs.completions,
+            enrollments: data.programs.enrollments,
+          })}
+          unavailableHint={intl.formatMessage(messages.noProgramEnrollments)}
+          info={intl.formatMessage(messages.infoProgramCompletion)}
+        />
+      </div>
+      <div className="rwaq-card">
+        <StatTile
+          label={intl.formatMessage(messages.legacyTitle)}
+          value={formatPercent(data.legacyMigration.progressPct)}
+          hint={intl.formatMessage(messages.legacyHint, {
+            signedIn: data.legacyMigration.signedInAtLeastOnce,
+            total: data.legacyMigration.legacyAccounts,
+          })}
+          unavailableHint={intl.formatMessage(messages.legacyNone)}
+          badge={intl.formatMessage(messages.allTimeBadge)}
+          info={intl.formatMessage(messages.infoLegacyMigration)}
+        />
+      </div>
+    </div>
   );
 
   /** Table breakdowns — rendered after all charts. */
@@ -767,10 +740,44 @@ const DashboardPage = () => {
         />
       </div>
 
-      {/* Breakdown stat tiles (cert %, program %, legacy %) — numbers before charts. */}
-      {breakdownsLoading ? renderStatTileSkeletons() : (breakdowns && renderStatTiles(breakdowns))}
+      {/* ── 2. Registration chart + Stats ──────────────────────────────────── */}
+      {/* Left column (2fr): registration trend. Right column (1fr): 4 stat tiles. */}
+      <div className="rwaq-dash-grid rwaq-dash-grid--split">
+        <div className="rwaq-card rwaq-dash-card rwaq-dash-card--fill">
+          <div className="rwaq-dash-card__head">
+            <InfoTooltip text={intl.formatMessage(messages.infoRegistrations)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.registrationTrend)}
+              </h3>
+            </InfoTooltip>
+            <span className="rwaq-dash-card__sub">{trendSubtitle}</span>
+          </div>
+          {renderChartBody(
+            registrationSeries,
+            'registrations',
+            intl.formatMessage(messages.seriesRegistrations),
+            'line',
+            intl.formatMessage(messages.registrationTrend),
+            true,
+          )}
+        </div>
+        {breakdownsLoading ? (
+          <div className="rwaq-stat-stack">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="rwaq-card">
+                <div className="rwaq-stat-tile">
+                  <Skeleton height="0.75rem" width="50%" style={{ marginBottom: '0.5rem' }} />
+                  <Skeleton height="1.5rem" width="40%" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          breakdowns && renderStatStack(breakdowns)
+        )}
+      </div>
 
-      {/* ── 2. Graphs (max 2 per row) ───────────────────────────────────────── */}
+      {/* ── 3. Graphs (max 2 per row) ───────────────────────────────────────── */}
 
       {/* Row A: enrollment trend + certificate trend */}
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">
@@ -784,28 +791,6 @@ const DashboardPage = () => {
           intl.formatMessage(messages.infoEnrollmentTrend),
         )}
         {renderCertificateTrend()}
-      </div>
-
-      {/* Row B: registration trend + legacy registration trend */}
-      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
-        {renderChartCard(
-          intl.formatMessage(messages.registrationTrend),
-          trendSubtitle,
-          registrationSeries,
-          'registrations',
-          intl.formatMessage(messages.seriesRegistrations),
-          'line',
-          intl.formatMessage(messages.infoRegistrations),
-        )}
-        {renderChartCard(
-          intl.formatMessage(messages.legacyRegistrationTrend),
-          trendSubtitle,
-          legacyRegistrationSeries,
-          'legacyRegistrations',
-          intl.formatMessage(messages.seriesLegacyRegistrations),
-          'line',
-          intl.formatMessage(messages.infoLegacyMigration),
-        )}
       </div>
 
       {trendsQuery.isError && (

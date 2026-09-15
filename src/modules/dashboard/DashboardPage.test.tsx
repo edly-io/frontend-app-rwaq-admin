@@ -63,10 +63,10 @@ const mockSummary = {
 
 const mockTrends = {
   months: 12,
+  granularity: 'month' as const,
   enrollments: [],
   certificates: null,
   registrations: [],
-  legacyRegistrations: null,
   generatedAt: new Date().toISOString(),
   dateRangeStart: null,
   dateRangeEnd: null,

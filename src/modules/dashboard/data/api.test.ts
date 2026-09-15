@@ -57,7 +57,6 @@ const snakeTrendsResponse = {
   enrollments: [{ period: '2026-01', value: 100 }],
   certificates: null,
   registrations: [],
-  legacy_registrations: null,
   generated_at: '2026-08-01T00:00:00Z',
   date_range_start: null,
   date_range_end: null,
@@ -150,13 +149,6 @@ describe('getAnalyticsTrends', () => {
 
     const [, config] = mockGet.mock.calls[0];
     expect(config.params).toHaveProperty('months', 6);
-  });
-
-  it('returns camelCase keys — legacyRegistrations from legacy_registrations', async () => {
-    mockGet.mockResolvedValue({ data: { ...snakeTrendsResponse, legacy_registrations: [] } });
-    const result = await getAnalyticsTrends();
-
-    expect(result).toHaveProperty('legacyRegistrations');
   });
 
   it('sends forceRefresh as force_refresh on the wire', async () => {
