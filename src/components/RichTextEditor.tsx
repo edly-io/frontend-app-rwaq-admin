@@ -9,12 +9,12 @@ import 'tinymce/icons/default';
 import 'tinymce/plugins/lists';
 import 'tinymce/plugins/autoresize';
 
-// Dark skin — imported via style-loader's lazy-style mechanism so it can be
-// injected/removed at runtime.  The '!!' prefix bypasses all configured loaders
-// so webpack uses only the explicitly named ones; style-loader's lazyStyleTag
-// mode exposes .use() / .unuse() for on-demand injection.
+// Dark skin CSS — imported via css-loader only (no style-loader) so webpack
+// bundles the text but does NOT inject a <style> tag automatically.
+// We inject / remove a <style> tag manually at runtime based on the active theme.
+// '!!' bypasses all configured loaders so only css-loader runs.
 // @ts-ignore — no TS declarations for inline webpack loader imports
-import oxideDarkSkin from '!!style-loader?{"injectType":"lazyStyleTag"}!css-loader!tinymce/skins/ui/oxide-dark/skin.css';
+import oxideDarkCssModule from '!!css-loader!tinymce/skins/ui/oxide-dark/skin.css';
 
 import { Editor } from '@tinymce/tinymce-react';
 
@@ -45,13 +45,24 @@ const isDarkTheme = () => (
   document.documentElement.getAttribute('data-paragon-theme-variant') === 'dark'
 );
 
+const DARK_SKIN_ID = 'rwaq-tinymce-oxide-dark';
+
+/** Inject the oxide-dark skin <style> tag if not already present. */
+const injectDarkSkin = () => {
+  if (document.getElementById(DARK_SKIN_ID)) { return; }
+  const style = document.createElement('style');
+  style.id = DARK_SKIN_ID;
+  // css-loader bundles the CSS as a module object; toString() gives the raw CSS text.
+  style.textContent = (oxideDarkCssModule as { toString: () => string }).toString();
+  document.head.appendChild(style);
+};
+
+/** Remove the oxide-dark <style> tag, falling back to the bundled oxide (light) skin. */
+const removeDarkSkin = () => { document.getElementById(DARK_SKIN_ID)?.remove(); };
+
 /** Apply or remove the oxide-dark skin based on the current Paragon theme. */
 const syncEditorSkin = () => {
-  if (isDarkTheme()) {
-    try { (oxideDarkSkin as { use: () => void }).use(); } catch { /* already used */ }
-  } else {
-    try { (oxideDarkSkin as { unuse: () => void }).unuse(); } catch { /* already unused */ }
-  }
+  if (isDarkTheme()) { injectDarkSkin(); } else { removeDarkSkin(); }
 };
 
 /** Set iframe body colours to match the active theme. */
@@ -98,9 +109,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
 
     return () => {
       observer.disconnect();
-      // Unload the dark skin when the editor unmounts so it doesn't bleed into
-      // other parts of the page.
-      try { (oxideDarkSkin as { unuse: () => void }).unuse(); } catch { /* noop */ }
+      removeDarkSkin();
     };
   }, []);
 
