@@ -319,17 +319,12 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
         <Form.Group className="mb-0" controlId="org-form-show-logo-on-program-certificate">
           <Form.Checkbox
             name="showLogoOnProgramCertificate"
-            label={(
-              <span>
-                {intl.formatMessage(messages.fieldShowLogoOnProgramCertificate)}
-                <span className="d-block small text-muted mt-1">
-                  {intl.formatMessage(messages.fieldShowLogoOnProgramCertificateHelp)}
-                </span>
-              </span>
-            )}
+            description={intl.formatMessage(messages.fieldShowLogoOnProgramCertificateHelp)}
             checked={formik.values.showLogoOnProgramCertificate}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => formik.setFieldValue('showLogoOnProgramCertificate', e.target.checked)}
-          />
+          >
+            {intl.formatMessage(messages.fieldShowLogoOnProgramCertificate)}
+          </Form.Checkbox>
         </Form.Group>
       </section>
 
