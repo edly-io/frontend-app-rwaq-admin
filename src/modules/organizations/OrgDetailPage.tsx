@@ -6,6 +6,7 @@
  * roster. That split is why the form that used to sit here is gone.
  */
 import { useState } from 'react';
+import DOMPurify from 'dompurify';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Alert, Button, Chip, Spinner,
@@ -205,8 +206,14 @@ const OrgDetailPage = () => {
             },
             {
               label: intl.formatMessage(messages.detailShowLogoOnProgramCertificate),
-              value: organization.showLogoOnProgramCertificate ? '✓ Enabled' : '—',
+              value: organization.showLogoOnProgramCertificate ? 'Enabled' : '—',
             },
+            ...(organization.description ? [{
+              label: intl.formatMessage(messages.detailDescription),
+              // eslint-disable-next-line react/no-danger
+              value: <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(organization.description) }} />,
+              isWide: true,
+            }] : []),
           ]}
         />
       </div>

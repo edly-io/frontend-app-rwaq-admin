@@ -973,8 +973,6 @@ html[data-paragon-theme-variant='dark'] {
 
 .rwaq-form-section + .rwaq-form-section {
   margin-top: var(--rwaq-space-5);
-  padding-top: var(--rwaq-space-5);
-  border-top: 1px solid var(--rwaq-border);
 }
 
 .rwaq-form-section__title {
@@ -1743,7 +1741,219 @@ html[data-paragon-theme-variant='dark'] {
   --animation-direction: reverse;
 }
 
+// ── TinyMCE popup position fix ────────────────────────────────────────────────
+// TinyMCE appends .tox-tinymce-aux to <body> and positions floating children
+// (format dropdowns, colour pickers) using:
+//   top = button.getBoundingClientRect().bottom + sumOf(ancestor.scrollTop)
+// The html/body overflow:hidden means window.scrollY = 0, but TinyMCE still
+// sums the *modal body's* scrollTop into the calculation.
+//
+// Fix (two-part):
+//   1. position:fixed + top:0 + left:0 on .tox-tinymce-aux so its children's
+//      top/left values are in viewport coordinates.
+//   2. RichTextEditor.tsx attaches a scroll listener on the nearest scrollable
+//      ancestor and applies transform:translateY(-scrollTop) to .tox-tinymce-aux,
+//      cancelling the excess offset TinyMCE baked in.
+.tox-tinymce-aux {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+
+// ── TinyMCE format-select dropdown — prevent heading labels from wrapping ─────
+// H1/H2/H3 labels render at their actual heading size; without nowrap the large
+// glyphs overflow the narrow dropdown and break mid-word.
+.tox .tox-collection--list .tox-collection__item-label,
+.tox .tox-collection__item-label * {
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── TinyMCE dark mode ─────────────────────────────────────────────────────────
+// TinyMCE loads skin.css via a runtime <link> tag which always lands in <head>
+// after our own injected styles, so any same-specificity override loses.
+// Prefixing with html[data-paragon-theme-variant='dark'] adds one attribute
+// specificity level — enough to beat TinyMCE's plain .tox selectors — and the
+// browser re-evaluates these rules instantly whenever the attribute changes, so
+// theme switching is live without any JavaScript.
+html[data-paragon-theme-variant='dark'] {
+  // Outer editor chrome + toolbar strip
+  .tox.tox-tinymce {
+    border-color: #516a80;
+  }
+
+  .tox .tox-toolbar__primary,
+  .tox .tox-toolbar,
+  .tox .tox-toolbar__overflow {
+    background: #222f3e;
+    border-bottom-color: #516a80;
+  }
+
+  .tox .tox-toolbar__group {
+    border-color: #516a80;
+  }
+
+  // Toolbar buttons — default, hover, active, enabled
+  .tox .tox-tbtn {
+    color: #dee1e6;
+  }
+
+  .tox .tox-tbtn svg {
+    fill: #dee1e6;
+  }
+
+  .tox .tox-tbtn:hover,
+  .tox .tox-tbtn:focus {
+    background: #35475e;
+    color: #dee1e6;
+  }
+
+  .tox .tox-tbtn--enabled,
+  .tox .tox-tbtn--enabled:hover,
+  .tox .tox-tbtn--active,
+  .tox .tox-tbtn--active:hover {
+    background: #35475e;
+    color: #dee1e6;
+  }
+
+  // Split buttons (forecolor / backcolor): the container and both halves
+  // go dark when the picker is open (.tox-tbtn--active on the chevron half).
+  .tox .tox-split-button,
+  .tox .tox-split-button:hover {
+    background: transparent;
+  }
+
+  .tox .tox-split-button .tox-tbtn,
+  .tox .tox-split-button .tox-tbtn:hover {
+    background: transparent;
+    color: #dee1e6;
+  }
+
+  .tox .tox-split-button .tox-tbtn--active,
+  .tox .tox-split-button .tox-tbtn--active:hover,
+  .tox .tox-split-button.tox-tbtn--enabled,
+  .tox .tox-split-button:focus-within {
+    background: #35475e;
+  }
+
+  .tox .tox-split-button .tox-tbtn svg {
+    fill: #dee1e6;
+  }
+
+  // Format/paragraph select button
+  .tox .tox-tbtn--select {
+    color: #dee1e6;
+  }
+
+  .tox .tox-tbtn--select:hover {
+    background: #35475e;
+  }
+
+  // Status bar at the bottom
+  .tox .tox-statusbar {
+    background: #222f3e;
+    border-top-color: #516a80;
+    color: #9db5cc;
+  }
+
+  .tox .tox-statusbar a,
+  .tox .tox-statusbar__path-item,
+  .tox .tox-statusbar__wordcount {
+    color: #9db5cc;
+  }
+
+  // Edit area border (the iframe wrapper)
+  .tox .tox-edit-area {
+    border-color: #516a80;
+  }
+
+  .tox .tox-edit-area__iframe {
+    background: #1e2126;
+  }
+
+  // Floating popups: format dropdown, colour picker, link dialog
+  .tox .tox-pop__dialog,
+  .tox .tox-menu,
+  .tox .tox-dialog,
+  .tox .tox-dialog__body {
+    background: #2d3b4a;
+    border-color: #516a80;
+    color: #dee1e6;
+  }
+
+  .tox .tox-collection__item {
+    background: #2d3b4a !important;
+    color: #dee1e6;
+  }
+
+  // --active   = mouse hover
+  // --state-active = currently selected value (has the checkmark)
+  .tox .tox-collection__item--active,
+  .tox .tox-collection__item:hover,
+  .tox .tox-collection__item--state-active,
+  .tox .tox-collection__item--state-active:hover {
+    background: #35475e !important;
+    color: #dee1e6;
+  }
+
+  .tox .tox-collection__item-label,
+  .tox .tox-collection__item-label * {
+    color: #dee1e6;
+  }
+
+  // Checkmark icon next to the selected item
+  .tox .tox-collection__item-checkmark svg,
+  .tox .tox-collection__item-accessory svg {
+    fill: #dee1e6;
+  }
+
+  // Colour picker / swatches
+  .tox .tox-swatches-menu {
+    background: #2d3b4a;
+  }
+
+  // Select / listbox inside dropdowns
+  .tox .tox-listboxfield .tox-listbox--select,
+  .tox .tox-textarea,
+  .tox .tox-textfield,
+  .tox input.tox-textfield {
+    background: #1e2126;
+    border-color: #516a80;
+    color: #dee1e6;
+  }
+
+  // Dialog headers/footers
+  .tox .tox-dialog__header,
+  .tox .tox-dialog__footer {
+    background: #222f3e;
+    border-color: #516a80;
+    color: #dee1e6;
+  }
+
+  .tox .tox-label,
+  .tox .tox-toolbar-label {
+    color: #dee1e6;
+  }
+
+  // The floating toolbar (tox-pop) arrow
+  .tox .tox-pop.tox-pop--bottom::before,
+  .tox .tox-pop.tox-pop--bottom::after {
+    border-top-color: #516a80;
+  }
+}
+
+// ── Checkbox — dark mode checkmark ───────────────────────────────────────────
+// Paragon's default checked SVG uses a dark stroke, invisible on the blue
+// checked background in dark mode.  Override to white stroke.
+html[data-paragon-theme-variant='dark'] {
+  .pgn__form-checkbox input[type='checkbox']:checked {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e") !important;
+  }
+}
+
 @keyframes rwaq-spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
+

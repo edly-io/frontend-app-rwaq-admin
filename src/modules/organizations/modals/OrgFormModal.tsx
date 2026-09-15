@@ -15,6 +15,7 @@ import {
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
+import RichTextEditor from '@src/components/RichTextEditor';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorReason } from '@src/data/httpError';
 import { useCreateOrganization, useUpdateOrganization } from '../data/hooks';
@@ -29,6 +30,7 @@ interface FormValues {
   name: string;
   shortName: string;
   arabicName: string;
+  description: string;
   featuredVideo: string;
   showLogoOnProgramCertificate: boolean;
 }
@@ -37,6 +39,7 @@ const emptyValues: FormValues = {
   name: '',
   shortName: '',
   arabicName: '',
+  description: '',
   featuredVideo: '',
   showLogoOnProgramCertificate: false,
 };
@@ -46,6 +49,7 @@ const toFormValues = (organization: OrgDetail | null): FormValues => (organizati
     name: organization.name,
     shortName: organization.shortName,
     arabicName: organization.arabicName ?? '',
+    description: organization.description ?? '',
     featuredVideo: organization.featuredVideo ?? '',
     showLogoOnProgramCertificate: organization.showLogoOnProgramCertificate ?? false,
   }
@@ -62,8 +66,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
   const isEdit = organization !== null;
-  // Guidance for filling the field in, so it appears on focus and leaves on
-  // blur rather than standing permanently under the input.
+  const editorKey = `${isOpen ? 'open' : 'closed'}-${organization?.shortName ?? 'new'}`;
   const [isShortNameFocused, setIsShortNameFocused] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -94,6 +97,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
         if (isEdit) {
           const patch: OrgProfilePatch = {
             arabicName: values.arabicName,
+            description: values.description,
             featuredVideo: values.featuredVideo,
             showLogoOnProgramCertificate: values.showLogoOnProgramCertificate,
           };
@@ -104,6 +108,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             name: values.name,
             shortName: values.shortName,
             arabicName: values.arabicName,
+            description: values.description,
             featuredVideo: values.featuredVideo,
           };
           const created = await createMutation.mutateAsync(payload);
@@ -118,18 +123,16 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
         onClose();
       } catch (error) {
         logError(error);
-        // Left to the in-modal Alert below rather than a toast: the admin has
-        // a form full of input in front of them and needs to correct it.
       }
     },
   });
 
-  // Paragon keeps modal children mounted for animations, so Formik's values
-  // persist after close. Reset whenever the modal closes so reopening it is
-  // always a blank slate (create) or the latest server values (edit).
   useEffect(() => {
     if (!isOpen) {
       formik.resetForm();
+      setLogoFile(null);
+      setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
+      setLogoTypeError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -280,11 +283,18 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             <Form.Control.Feedback type="invalid">{fieldError('arabicName')}</Form.Control.Feedback>
           )}
         </Form.Group>
-
       </section>
 
       <section className="rwaq-form-section">
-        <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionPublic)}</h3>
+        <Form.Group className="mb-4" controlId="org-form-description">
+          <Form.Label>{intl.formatMessage(messages.fieldDescription)}</Form.Label>
+          <RichTextEditor
+            value={formik.values.description}
+            onChange={(val) => formik.setFieldValue('description', val)}
+            editorKey={editorKey}
+            ariaLabel={intl.formatMessage(messages.fieldDescription)}
+          />
+        </Form.Group>
 
         <Form.Group className="mb-0" controlId="org-form-featured-video">
           <Form.Label>{intl.formatMessage(messages.fieldFeaturedVideo)}</Form.Label>
@@ -299,16 +309,17 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
       </section>
 
       <section className="rwaq-form-section">
-        <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionCertificates)}</h3>
-
         <Form.Group className="mb-0" controlId="org-form-show-logo-on-program-certificate">
           <Form.Checkbox
             name="showLogoOnProgramCertificate"
-            label={intl.formatMessage(messages.fieldShowLogoOnProgramCertificate)}
+            description={intl.formatMessage(messages.fieldShowLogoOnProgramCertificateHelp)}
             checked={formik.values.showLogoOnProgramCertificate}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => formik.setFieldValue('showLogoOnProgramCertificate', e.target.checked)}
-          />
-          <Form.Text muted>{intl.formatMessage(messages.fieldShowLogoOnProgramCertificateHelp)}</Form.Text>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              formik.setFieldValue('showLogoOnProgramCertificate', e.target.checked);
+            }}
+          >
+            {intl.formatMessage(messages.fieldShowLogoOnProgramCertificate)}
+          </Form.Checkbox>
         </Form.Group>
       </section>
 

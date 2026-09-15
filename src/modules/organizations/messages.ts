@@ -53,6 +53,7 @@ const messages = defineMessages({
     defaultMessage: 'Letters, numbers, hyphens and underscores only. Becomes part of every course key in this organization and cannot be changed later.',
   },
   fieldArabicName: { id: 'rwaq.admin.orgs.form.arabicName', defaultMessage: 'Arabic name' },
+  fieldDescription: { id: 'rwaq.admin.orgs.form.description', defaultMessage: 'Description' },
   fieldFeaturedVideo: { id: 'rwaq.admin.orgs.form.featuredVideo', defaultMessage: 'Featured video URL' },
   fieldLogo: { id: 'rwaq.admin.orgs.form.logo', defaultMessage: 'Organization logo' },
   fieldLogoChange: { id: 'rwaq.admin.orgs.form.logoChange', defaultMessage: 'Change logo' },
@@ -96,6 +97,7 @@ const messages = defineMessages({
   detailArabicName: { id: 'rwaq.admin.orgs.detail.arabicName', defaultMessage: 'Arabic name' },
   detailCourses: { id: 'rwaq.admin.orgs.detail.courses', defaultMessage: 'Courses' },
   detailAdmins: { id: 'rwaq.admin.orgs.detail.admins', defaultMessage: 'Organization Admins' },
+  detailDescription: { id: 'rwaq.admin.orgs.detail.description', defaultMessage: 'Description' },
   detailFeaturedVideo: { id: 'rwaq.admin.orgs.detail.featuredVideo', defaultMessage: 'Featured video' },
   detailShowLogoOnProgramCertificate: {
     id: 'rwaq.admin.orgs.detail.showLogoOnProgramCertificate',
