@@ -294,8 +294,6 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
       </section>
 
       <section className="rwaq-form-section">
-        <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionPublic)}</h3>
-
         <Form.Group className="mb-4" controlId="org-form-description">
           <Form.Label>{intl.formatMessage(messages.fieldDescription)}</Form.Label>
           <RichTextEditor
@@ -318,8 +316,6 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
       </section>
 
       <section className="rwaq-form-section">
-        <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionCertificates)}</h3>
-
         <Form.Group className="mb-0" controlId="org-form-show-logo-on-program-certificate">
           <Form.Checkbox
             name="showLogoOnProgramCertificate"
