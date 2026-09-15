@@ -1789,7 +1789,11 @@ html[data-paragon-theme-variant='dark'] {
   .tox .tox-split-button:hover { background: #3d546f; }
   .tox .tox-split-button__chevron svg { fill: #dee1e6; }
 
-  // Floating aux container — dropdowns, colour pickers, tooltips
+  // Floating aux container — dropdowns, colour pickers, tooltips.
+  // Note: .tox-swatches-menu and .tox-pop/__dialog are deliberately NOT given a
+  // dark background — those host the colour-swatch grid, and forcing #222f3e
+  // bleeds through transparent/gap areas in the grid. The dropdown menus and
+  // toolbar overflow (format dropdown, etc.) are what need dark treatment.
   .tox-tinymce-aux {
     .tox-menu,
     .tox-toolbar__overflow { background-color: #222f3e; border-color: #000; }
@@ -1797,10 +1801,13 @@ html[data-paragon-theme-variant='dark'] {
     .tox-collection__item--active,
     .tox-collection__item:hover { background-color: #3d546f !important; }
     .tox-collection__item-label { color: #dee1e6; }
-    .tox-swatches-menu { background-color: #222f3e; border-color: #000; }
     .tox-tooltip__body { background-color: #2b3b4e; color: #dee1e6; }
-    .tox-pop,
-    .tox-pop__dialog { background-color: #222f3e; border-color: #000; }
+  }
+
+  // Checkbox — Paragon's default checked SVG uses a dark stroke, invisible on
+  // the blue checked background in dark mode. Override to white stroke.
+  .pgn__form-checkbox input[type='checkbox']:checked {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e") !important;
   }
 }
 
