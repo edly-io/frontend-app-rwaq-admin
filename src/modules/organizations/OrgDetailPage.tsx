@@ -206,7 +206,7 @@ const OrgDetailPage = () => {
             },
             {
               label: intl.formatMessage(messages.detailShowLogoOnProgramCertificate),
-              value: organization.showLogoOnProgramCertificate ? '✓ Enabled' : '—',
+              value: organization.showLogoOnProgramCertificate ? 'Enabled' : '—',
             },
             ...(organization.description ? [{
               label: intl.formatMessage(messages.detailDescription),
