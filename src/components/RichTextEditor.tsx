@@ -2,46 +2,75 @@ import React, { useEffect, useMemo } from 'react';
 
 import 'tinymce/tinymce';
 import 'tinymce/themes/silver';
-// @ts-ignore — no type declarations for css side-effect imports in tinymce v5
+// Light skin — always bundled as the base layer.
+// @ts-ignore — no TS declarations for CSS side-effect imports in tinymce v5
 import 'tinymce/skins/ui/oxide/skin.css';
 import 'tinymce/icons/default';
 import 'tinymce/plugins/lists';
 import 'tinymce/plugins/autoresize';
 
+// Dark skin — imported via style-loader's lazy-style mechanism so it can be
+// injected/removed at runtime.  The '!!' prefix bypasses all configured loaders
+// so webpack uses only the explicitly named ones; style-loader's lazyStyleTag
+// mode exposes .use() / .unuse() for on-demand injection.
+// @ts-ignore — no TS declarations for inline webpack loader imports
+import oxideDarkSkin from '!!style-loader?{"injectType":"lazyStyleTag"}!css-loader!tinymce/skins/ui/oxide-dark/skin.css';
+
 import { Editor } from '@tinymce/tinymce-react';
 
-// react-focus-on (used by Paragon ModalLayer) stamps data-focus-on-hidden on
-// every element outside the modal and injects:
-//   [data-focus-on-hidden] { pointer-events: none !important }
-// via InteractivityDisabler. TinyMCE appends .tox-tinymce-aux to <body>
-// (outside the modal), so colour pickers and format dropdowns become
-// unclickable. Override that with a higher-specificity rule while this
-// component is mounted.
+// ── Focus-lock fix ─────────────────────────────────────────────────────────────
+// react-focus-on (Paragon ModalLayer) stamps data-focus-on-hidden on every
+// element outside the modal and injects [data-focus-on-hidden]{pointer-events:none}
+// globally via InteractivityDisabler.  TinyMCE's .tox-tinymce-aux is appended
+// to <body> (outside the modal), so colour pickers and format dropdowns become
+// unclickable.  We override that with a more-specific rule while mounted.
 const STYLE_ID = 'rwaq-tinymce-aux-fix';
+
 const injectAuxPointerFix = () => {
   if (document.getElementById(STYLE_ID)) { return; }
   const style = document.createElement('style');
   style.id = STYLE_ID;
-  // `.tox.tox-tinymce-aux` beats bare `[data-focus-on-hidden]` in specificity;
-  // both need !important to beat InteractivityDisabler's own !important rule.
-  // Target both the floating aux container (colour pickers, dropdowns) and the
-  // main editor wrapper (toolbar). The modal portal can cause hideOthers() to
-  // mark either with data-focus-on-hidden → pointer-events:none, disabling
-  // all toolbar buttons including undo/redo.
   style.textContent = [
     '.tox-tinymce-aux[data-focus-on-hidden]',
     '.tox-tinymce[data-focus-on-hidden]',
   ].join(',') + ' { pointer-events: auto !important; }';
   document.head.appendChild(style);
 };
-const removeAuxPointerFix = () => {
-  document.getElementById(STYLE_ID)?.remove();
+
+const removeAuxPointerFix = () => { document.getElementById(STYLE_ID)?.remove(); };
+
+// ── Theme helpers ──────────────────────────────────────────────────────────────
+
+const isDarkTheme = () => (
+  document.documentElement.getAttribute('data-paragon-theme-variant') === 'dark'
+);
+
+/** Apply or remove the oxide-dark skin based on the current Paragon theme. */
+const syncEditorSkin = () => {
+  if (isDarkTheme()) {
+    try { (oxideDarkSkin as { use: () => void }).use(); } catch { /* already used */ }
+  } else {
+    try { (oxideDarkSkin as { unuse: () => void }).unuse(); } catch { /* already unused */ }
+  }
 };
+
+/** Set iframe body colours to match the active theme. */
+const syncIframeBody = (body: HTMLElement) => {
+  if (isDarkTheme()) {
+    body.style.backgroundColor = '#1e2126';
+    body.style.color = '#dee1e6';
+  } else {
+    body.style.backgroundColor = '';
+    body.style.color = '';
+  }
+};
+
+// ── Component ──────────────────────────────────────────────────────────────────
 
 interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
-  /** Pass a key that changes when you need to remount (e.g. when modal opens with new data). */
+  /** Change this key to remount the editor (e.g. when the modal opens with new data). */
   editorKey?: string | number;
 }
 
@@ -54,15 +83,36 @@ const TOOLBAR = [
 ].join(' | ');
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editorKey }) => {
+  // ── Skin: inject oxide-dark when dark mode is active, remove otherwise ──────
+  useEffect(() => {
+    syncEditorSkin();
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((m) => {
+        if (m.attributeName === 'data-paragon-theme-variant') {
+          syncEditorSkin();
+        }
+      });
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-paragon-theme-variant'] });
+
+    return () => {
+      observer.disconnect();
+      // Unload the dark skin when the editor unmounts so it doesn't bleed into
+      // other parts of the page.
+      try { (oxideDarkSkin as { unuse: () => void }).unuse(); } catch { /* noop */ }
+    };
+  }, []);
+
+  // ── Focus-lock: restore pointer-events on the aux container ─────────────────
   useEffect(() => {
     injectAuxPointerFix();
     return removeAuxPointerFix;
   }, []);
 
-  // Freeze the initial value at the moment the editor mounts (when editorKey
-  // changes). @tinymce/tinymce-react v6 calls editor.undoManager.clear()
-  // whenever the initialValue prop changes — passing the live Formik value
-  // would wipe the undo stack on every keystroke.
+  // Freeze the initial value at mount / key change.  @tinymce/tinymce-react v6
+  // calls editor.undoManager.clear() whenever initialValue changes — passing
+  // the live Formik value wipes the undo stack on every keystroke.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const stableInitialValue = useMemo(() => value, [editorKey]);
 
@@ -83,18 +133,30 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
         relative_urls: true,
         convert_urls: false,
         init_instance_callback: (editor) => {
+          // ── Focus lock: tell react-focus-lock to ignore TinyMCE's iframe ───
           if (editor.iframeElement) {
             editor.iframeElement.setAttribute('data-focus-lock-disabled', 'true');
           }
-          // dir="auto" — browser auto-detects direction per paragraph.
+
+          // ── Iframe content: direction + initial theme ────────────────────
           const body = editor.getBody();
           body.setAttribute('dir', 'auto');
-          // Mirror the page's dark theme into the iframe. The iframe has its
-          // own document so it doesn't inherit the host page's CSS variables.
-          if (document.documentElement.getAttribute('data-paragon-theme-variant') === 'dark') {
-            body.style.backgroundColor = '#1e2126';
-            body.style.color = '#dee1e6';
-          }
+          syncIframeBody(body);
+
+          // ── Iframe content: keep theme in sync with live Paragon changes ──
+          const bodyObserver = new MutationObserver((mutations) => {
+            mutations.forEach((m) => {
+              if (m.attributeName === 'data-paragon-theme-variant') {
+                syncIframeBody(body);
+              }
+            });
+          });
+          bodyObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-paragon-theme-variant'] });
+          editor.on('remove', () => bodyObserver.disconnect());
+
+          // ── Click-outside: stop .tox-tinymce-aux mouse events bubbling ───
+          // Without this, clicking a colour swatch reaches document mousedown
+          // which triggers react-focus-on's onClickOutside → closes the modal.
           document.querySelector('.tox-tinymce-aux')
             ?.addEventListener('mousedown', (e) => e.stopPropagation());
         },

@@ -1741,71 +1741,34 @@ html[data-paragon-theme-variant='dark'] {
   --animation-direction: reverse;
 }
 
-// ── TinyMCE dark mode ─────────────────────────────────────────────────────────
-// The toolbar/UI lives in the host page DOM (not the iframe), so it must be
-// styled here. oxide skin colors taken from tinymce/skins/ui/oxide-dark/skin.css.
+// ── TinyMCE popup position fix ────────────────────────────────────────────────
+// TinyMCE appends .tox-tinymce-aux to <body> and positions its floating
+// children (format dropdowns, colour pickers, tooltips) using inline top/left
+// values calculated via getBoundingClientRect() + window.scrollY.  When the
+// editor sits inside a scrollable modal, the *modal* scrolls while window.scrollY
+// stays 0, so the popup appears at the wrong document offset.  Making the aux
+// container position:fixed (anchored to the viewport at 0,0) means its
+// absolutely-positioned children render at exactly the viewport coordinates
+// TinyMCE intended, regardless of how far the modal has been scrolled.
+.tox-tinymce-aux {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+
+// ── TinyMCE dark mode — handled via oxide-dark skin injection in JS ───────────
+// RichTextEditor.tsx injects tinymce/skins/ui/oxide-dark/skin.css as a lazy
+// <style> element (via style-loader) when data-paragon-theme-variant="dark" is
+// set, and removes it in light mode.  A MutationObserver in the component
+// responds to live theme switches without remounting the editor.
+// Nothing needs to be added here: oxide-dark overrides every .tox selector
+// that oxide (the base bundled skin) defines, and it appears later in the
+// document head so higher-specificity-free cascade wins.
+
+// ── Checkbox — dark mode checkmark ───────────────────────────────────────────
+// Paragon's default checked SVG uses a dark stroke, invisible on the blue
+// checked background in dark mode.  Override to white stroke.
 html[data-paragon-theme-variant='dark'] {
-  // Editor shell border
-  .tox.tox-tinymce { border-color: #000; }
-
-  // Toolbar background
-  .tox .tox-toolbar-overlord,
-  .tox-toolbar-overlord { background-color: #222f3e; }
-
-  .tox .tox-toolbar,
-  .tox .tox-toolbar__primary,
-  .tox .tox-toolbar__overflow {
-    background-color: #222f3e;
-    background-image: none;
-    border-bottom: 1px solid #000;
-  }
-
-  // Toolbar dividers
-  .tox .tox-toolbar__group { border-color: #000 !important; }
-
-  // Toolbar buttons
-  .tox .tox-tbtn { color: #dee1e6; }
-  .tox .tox-tbtn svg { fill: #dee1e6; }
-  .tox .tox-tbtn:hover,
-  .tox .tox-tbtn:focus { background: #3d546f; color: #fff; }
-  .tox .tox-tbtn:hover svg,
-  .tox .tox-tbtn:focus svg { fill: #fff; }
-  .tox .tox-tbtn--enabled,
-  .tox .tox-tbtn--enabled:hover { background: #34485f; color: #fff; }
-  .tox .tox-tbtn--enabled svg { fill: #fff; }
-  .tox .tox-tbtn--disabled,
-  .tox .tox-tbtn--disabled:hover { opacity: 0.5; background: transparent; }
-
-  // Format/paragraph select dropdown button
-  .tox .tox-listboxfield .tox-listbox--select,
-  .tox .tox-listbox--select {
-    background-color: #2b3b4e;
-    color: #dee1e6;
-    border-color: #000;
-  }
-
-  // Split buttons (forecolor / backcolor)
-  .tox .tox-split-button { color: #dee1e6; }
-  .tox .tox-split-button:hover { background: #3d546f; }
-  .tox .tox-split-button__chevron svg { fill: #dee1e6; }
-
-  // Floating aux container — dropdowns, colour pickers, tooltips.
-  // Note: .tox-swatches-menu and .tox-pop/__dialog are deliberately NOT given a
-  // dark background — those host the colour-swatch grid, and forcing #222f3e
-  // bleeds through transparent/gap areas in the grid. The dropdown menus and
-  // toolbar overflow (format dropdown, etc.) are what need dark treatment.
-  .tox-tinymce-aux {
-    .tox-menu,
-    .tox-toolbar__overflow { background-color: #222f3e; border-color: #000; }
-    .tox-collection__item { color: #dee1e6; }
-    .tox-collection__item--active,
-    .tox-collection__item:hover { background-color: #3d546f !important; }
-    .tox-collection__item-label { color: #dee1e6; }
-    .tox-tooltip__body { background-color: #2b3b4e; color: #dee1e6; }
-  }
-
-  // Checkbox — Paragon's default checked SVG uses a dark stroke, invisible on
-  // the blue checked background in dark mode. Override to white stroke.
   .pgn__form-checkbox input[type='checkbox']:checked {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e") !important;
   }
