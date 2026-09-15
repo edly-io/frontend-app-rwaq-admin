@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import 'tinymce/tinymce';
 import 'tinymce/themes/silver';
@@ -9,6 +9,27 @@ import 'tinymce/plugins/lists';
 import 'tinymce/plugins/autoresize';
 
 import { Editor } from '@tinymce/tinymce-react';
+
+// react-focus-on (used by Paragon ModalLayer) stamps data-focus-on-hidden on
+// every element outside the modal and injects:
+//   [data-focus-on-hidden] { pointer-events: none !important }
+// via InteractivityDisabler. TinyMCE appends .tox-tinymce-aux to <body>
+// (outside the modal), so colour pickers and format dropdowns become
+// unclickable. Override that with a higher-specificity rule while this
+// component is mounted.
+const STYLE_ID = 'rwaq-tinymce-aux-fix';
+const injectAuxPointerFix = () => {
+  if (document.getElementById(STYLE_ID)) { return; }
+  const style = document.createElement('style');
+  style.id = STYLE_ID;
+  // `.tox.tox-tinymce-aux` beats bare `[data-focus-on-hidden]` in specificity;
+  // both need !important to beat InteractivityDisabler's own !important rule.
+  style.textContent = '.tox.tox-tinymce-aux[data-focus-on-hidden] { pointer-events: auto !important; }';
+  document.head.appendChild(style);
+};
+const removeAuxPointerFix = () => {
+  document.getElementById(STYLE_ID)?.remove();
+};
 
 interface RichTextEditorProps {
   value: string;
@@ -25,36 +46,39 @@ const TOOLBAR = [
   'bullist numlist outdent indent',
 ].join(' | ');
 
-const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editorKey }) => (
-  <Editor
+const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editorKey }) => {
+  useEffect(() => {
+    injectAuxPointerFix();
+    return removeAuxPointerFix;
+  }, []);
+
+  return (
+    <Editor
     key={editorKey}
     initialValue={value}
     onEditorChange={onChange}
-    init={{
-      plugins: 'lists autoresize',
-      toolbar: TOOLBAR,
-      menubar: false,
-      branding: false,
-      statusbar: false,
-      toolbar_mode: 'wrap' as const,
-      toolbar_sticky: true,
-      toolbar_sticky_offset: 0,
-      autoresize_bottom_margin: 50,
-      min_height: 250,
-      relative_urls: true,
-      convert_urls: false,
-      init_instance_callback: (editor) => {
-        if (editor.iframeElement) {
-          editor.iframeElement.setAttribute('data-focus-lock-disabled', 'true');
-        }
-        const auxEl = document.querySelector('.tox-tinymce-aux');
-        if (auxEl) {
-          auxEl.setAttribute('data-focus-lock-disabled', 'true');
-          auxEl.addEventListener('mousedown', (e) => e.stopPropagation());
-        }
-      },
-    }}
-  />
-);
+      init={{
+        plugins: 'lists autoresize',
+        toolbar: TOOLBAR,
+        menubar: false,
+        branding: false,
+        statusbar: false,
+        toolbar_mode: 'wrap' as const,
+        toolbar_sticky: true,
+        toolbar_sticky_offset: 0,
+        autoresize_bottom_margin: 50,
+        min_height: 250,
+        relative_urls: true,
+        convert_urls: false,
+        init_instance_callback: (editor) => {
+          // Mark the iframe so react-focus-lock doesn't re-trap focus away from it.
+          if (editor.iframeElement) {
+            editor.iframeElement.setAttribute('data-focus-lock-disabled', 'true');
+          }
+        },
+      }}
+    />
+  );
+};
 
 export default RichTextEditor;
