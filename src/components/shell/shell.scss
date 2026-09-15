@@ -1883,17 +1883,29 @@ html[data-paragon-theme-variant='dark'] {
   }
 
   .tox .tox-collection__item {
+    background: transparent;
     color: #dee1e6;
   }
 
+  // --active   = mouse hover
+  // --state-active = currently selected value (has the checkmark)
   .tox .tox-collection__item--active,
-  .tox .tox-collection__item:hover {
-    background: #35475e;
+  .tox .tox-collection__item:hover,
+  .tox .tox-collection__item--state-active,
+  .tox .tox-collection__item--state-active:hover {
+    background: #35475e !important;
     color: #dee1e6;
   }
 
-  .tox .tox-collection__item-label {
+  .tox .tox-collection__item-label,
+  .tox .tox-collection__item-label * {
     color: #dee1e6;
+  }
+
+  // Checkmark icon next to the selected item
+  .tox .tox-collection__item-checkmark svg,
+  .tox .tox-collection__item-accessory svg {
+    fill: #dee1e6;
   }
 
   // Colour picker / swatches
