@@ -75,6 +75,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, editor
           if (editor.iframeElement) {
             editor.iframeElement.setAttribute('data-focus-lock-disabled', 'true');
           }
+          // Stop mousedown from bubbling to document so react-focus-on's
+          // onClickOutside handler doesn't fire when the user clicks inside
+          // .tox-tinymce-aux (colour picker, format dropdown, etc.).
+          // TinyMCE creates .tox-tinymce-aux during init, so it exists here.
+          document.querySelector('.tox-tinymce-aux')
+            ?.addEventListener('mousedown', (e) => e.stopPropagation());
         },
       }}
     />
