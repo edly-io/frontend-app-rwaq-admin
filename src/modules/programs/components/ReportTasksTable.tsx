@@ -1,7 +1,7 @@
 /**
  * ReportTasksTable — paginated history table for ProgramReportTask rows.
  *
- * Displays: Report Type | Status | Generated | Elapsed | Progress | Download
+ * Displays: Report Type | Status | Generated | Elapsed | Download
  * Matches the course reports table styling exactly (same badge colours,
  * same download button, same AdminDataTable wrapper).
  */
@@ -111,16 +111,6 @@ const ReportTasksTable = ({
       renderCell: (value) => (
         <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
           {value != null ? `${value as number}s` : '—'}
-        </span>
-      ),
-    },
-    {
-      key: 'progressCurrent',
-      id: 'progress',
-      label: intl.formatMessage(messages.colProgress),
-      renderCell: (_value, row) => (
-        <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-          {row.progressTotal > 0 ? `${row.progressCurrent} / ${row.progressTotal}` : '—'}
         </span>
       ),
     },
