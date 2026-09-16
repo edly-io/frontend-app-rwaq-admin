@@ -23,7 +23,7 @@ export interface ProgramReportTask {
   progressCurrent: number;
   /** 0 means indeterminate — the frontend renders '—' */
   progressTotal: number;
-  /** Pre-signed S3 URL valid for 1 hour, re-generated on every task-list response.
+  /** URL of the download endpoint. In production this redirects to a presigned S3 URL.
    *  Null when status is not complete. */
   downloadUrl: string | null;
 }
