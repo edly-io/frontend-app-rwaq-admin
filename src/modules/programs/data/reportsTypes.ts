@@ -6,7 +6,7 @@
  */
 
 export type ProgramReportStatus = 'pending' | 'in_progress' | 'complete' | 'failed';
-export type ProgramReportType = 'enrollment_progress' | 'completion_summary';
+export type ProgramReportType = 'enrollment_progress' | 'completion_summary' | 'learner_summary' | 'course_statistics';
 
 export interface ProgramReportTask {
   id: string;

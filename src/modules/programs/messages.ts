@@ -166,6 +166,16 @@ export const programReportsMessages = defineMessages({
     id: 'rwaq.admin.programReports.report.completion.desc',
     defaultMessage: 'Generates a CSV summary of program completion status per learner — enrolled count, completed count, and completion date where applicable.',
   },
+  reportLearnerSummaryLabel: { id: 'rwaq.admin.programReports.report.learnerSummary.label', defaultMessage: 'Learner Summary' },
+  reportLearnerSummaryDesc: {
+    id: 'rwaq.admin.programReports.report.learnerSummary.desc',
+    defaultMessage: 'One row per learner with aggregated stats: courses enrolled, courses passed, average grade, and certificates earned across all program courses.',
+  },
+  reportCourseStatisticsLabel: { id: 'rwaq.admin.programReports.report.courseStatistics.label', defaultMessage: 'Course Statistics' },
+  reportCourseStatisticsDesc: {
+    id: 'rwaq.admin.programReports.report.courseStatistics.desc',
+    defaultMessage: 'One row per course with totals across all program learners: enrollments, passes, pass rate, average grade, and certificates issued.',
+  },
 
   btnGenerate: { id: 'rwaq.admin.programReports.btn.generate', defaultMessage: 'Generate' },
   srGeneratingReport: { id: 'rwaq.admin.programReports.sr.generatingReport', defaultMessage: 'Generating report…' },

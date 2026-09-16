@@ -45,6 +45,16 @@ const useReportDefs = (): ReportDef[] => {
       label: intl.formatMessage(messages.reportCompletionLabel),
       description: intl.formatMessage(messages.reportCompletionDesc),
     },
+    {
+      type: 'learner_summary',
+      label: intl.formatMessage(messages.reportLearnerSummaryLabel),
+      description: intl.formatMessage(messages.reportLearnerSummaryDesc),
+    },
+    {
+      type: 'course_statistics',
+      label: intl.formatMessage(messages.reportCourseStatisticsLabel),
+      description: intl.formatMessage(messages.reportCourseStatisticsDesc),
+    },
   ];
 };
 
