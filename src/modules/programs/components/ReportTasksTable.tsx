@@ -121,8 +121,6 @@ const ReportTasksTable = ({
         row.status === 'complete' && value ? (
           <a
             href={value as string}
-            target="_blank"
-            rel="noreferrer"
             aria-label={`${intl.formatMessage(messages.btnDownload)} — ${row.reportTypeDisplay}`}
             className="btn btn-sm btn-outline-primary d-inline-flex align-items-center"
             style={{ gap: '0.375rem', whiteSpace: 'nowrap' }}

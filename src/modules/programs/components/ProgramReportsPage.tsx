@@ -154,7 +154,7 @@ const ReportTriggerRow = ({ def, uuid, tasks }: ReportTriggerRowProps) => {
     actionWidget = (
       <div className="d-flex flex-column align-items-center" style={{ gap: '0.3rem' }}>
         <a
-          href={trackedTask.downloadUrl}
+          href={trackedTask.downloadUrl ?? undefined}
           className="btn btn-sm btn-primary d-inline-flex align-items-center"
           style={{ gap: '0.3rem', whiteSpace: 'nowrap' }}
           aria-label={`${intl.formatMessage(messages.btnDownload)} — ${def.label}`}
