@@ -5,11 +5,9 @@ import { defineMessages } from '@edx/frontend-platform/i18n';
 
 const messages = defineMessages({
   title: { id: 'rwaq.admin.dashboard.title', defaultMessage: 'Dashboard' },
-  asOf: { id: 'rwaq.admin.dashboard.asOf', defaultMessage: 'Figures as of {time}' },
   lastUpdated: { id: 'rwaq.admin.dashboard.lastUpdated', defaultMessage: 'updated {time}' },
   refreshAriaLabel: { id: 'rwaq.admin.dashboard.refresh', defaultMessage: 'Refresh dashboard' },
   errorTitle: { id: 'rwaq.admin.dashboard.error.title', defaultMessage: 'Could not load analytics' },
-  retry: { id: 'rwaq.admin.dashboard.retry', defaultMessage: 'Try again' },
   unavailable: { id: 'rwaq.admin.dashboard.unavailable', defaultMessage: 'Not available' },
   none: { id: 'rwaq.admin.dashboard.none', defaultMessage: '—' },
 
@@ -27,8 +25,6 @@ const messages = defineMessages({
   enrollmentTrend: { id: 'rwaq.admin.dashboard.enrollmentTrend', defaultMessage: 'Active Enrolment trend' },
   certificateTrend: { id: 'rwaq.admin.dashboard.certificateTrend', defaultMessage: 'Certificates issued' },
   registrationTrend: { id: 'rwaq.admin.dashboard.registrationTrend', defaultMessage: 'New Registration' },
-  legacyRegistrationTrend: { id: 'rwaq.admin.dashboard.legacyRegistrationTrend', defaultMessage: 'Legacy Registration' },
-  seriesLegacyRegistrations: { id: 'rwaq.admin.dashboard.series.legacyRegistrations', defaultMessage: 'Legacy registrations' },
   trendMonths: { id: 'rwaq.admin.dashboard.trendMonths', defaultMessage: 'Last {months} months' },
   seriesEnrollments: { id: 'rwaq.admin.dashboard.series.enrollments', defaultMessage: 'Enrollments' },
   seriesCertificates: { id: 'rwaq.admin.dashboard.series.certificates', defaultMessage: 'Certificates' },
@@ -117,12 +113,6 @@ const messages = defineMessages({
     defaultMessage: 'No activity in the selected period.',
   },
 
-  // ── Section headings, which group the bands ────────────────────────────────
-  sectionGrowth: { id: 'rwaq.admin.dashboard.section.growth', defaultMessage: 'Growth' },
-  sectionOutcomes: { id: 'rwaq.admin.dashboard.section.outcomes', defaultMessage: 'Outcomes' },
-  sectionPlatform: { id: 'rwaq.admin.dashboard.section.platform', defaultMessage: 'Platform health' },
-  sectionCatalog: { id: 'rwaq.admin.dashboard.section.catalog', defaultMessage: 'Catalog' },
-
   // ── Info tooltips ──────────────────────────────────────────────────────────
   infoLearners: {
     id: 'rwaq.admin.dashboard.info.learners',
@@ -158,7 +148,7 @@ const messages = defineMessages({
   },
   infoLegacyMigration: {
     id: 'rwaq.admin.dashboard.info.legacyMigration',
-    defaultMessage: 'Share of legacy accounts (imported from the old platform) that have set their password and signed in at least once. Scoped to accounts whose registration date falls within the selected period.',
+    defaultMessage: 'Share of legacy accounts (imported from the old platform) that have set their password and signed in at least once. Always all-time — not affected by the date range filter.',
   },
   infoEnrollmentTrend: {
     id: 'rwaq.admin.dashboard.info.enrollmentTrend',

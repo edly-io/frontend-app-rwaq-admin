@@ -83,8 +83,8 @@ export interface MetricChartProps {
   series?: string[];
   /** Accessible label for screen readers */
   ariaLabel: string;
-  /** Optional chart height in px; defaults to 300 */
-  height?: number;
+  /** Optional chart height in px or "100%" to fill a flex parent; defaults to 300 */
+  height?: number | string;
   /** Hide axes/grid for sparkline usage */
   compact?: boolean;
   /** Hide legend */
