@@ -7,13 +7,16 @@ import {
 } from '@tanstack/react-query';
 import { appId } from '@src/constants';
 import {
+  bulkEnrollLearners,
   getProgram,
   getProgramCourses,
   getProgramLearners,
   getPrograms,
   updateProgram,
 } from './api';
-import type { ProgramDetail, ProgramListParams, ProgramPatch } from './types';
+import type {
+  BulkEnrollResult, ProgramDetail, ProgramListParams, ProgramPatch,
+} from './types';
 
 // ── Query key factory ────────────────────────────────────────────────────────
 
@@ -75,6 +78,24 @@ export const useUpdateProgram = (uuid: string) => {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: programQueryKeys.detail(uuid) });
       queryClient.invalidateQueries({ queryKey: programQueryKeys.lists() });
+    },
+  });
+};
+
+/**
+ * Bulk enroll learners into a program by email.
+ *
+ * Invalidates the learners list and the program detail on success — the
+ * detail carries totalEnrollments, which the enrolment just moved.
+ */
+export const useBulkEnrollLearners = (uuid: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<BulkEnrollResult, Error, string>({
+    mutationFn: (emails: string) => bulkEnrollLearners(uuid, emails),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: programQueryKeys.learners(uuid) });
+      queryClient.invalidateQueries({ queryKey: programQueryKeys.detail(uuid) });
     },
   });
 };

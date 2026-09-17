@@ -26,6 +26,7 @@ import DetailGrid from '@src/components/DetailGrid';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
 import ProgramStatusChips from './components/ProgramStatusChips';
+import BulkEnrollModal from './modals/BulkEnrollModal';
 import type {
   ProgramCourse, ProgramLearner, ProgramPatch, ProgramStatus,
 } from './data/types';
@@ -175,6 +176,7 @@ const CoursesTab = ({ uuid }: { uuid: string }) => {
 
 const LearnersTab = ({ uuid }: { uuid: string }) => {
   const intl = useIntl();
+  const [isEnrollOpen, setEnrollOpen] = useState(false);
   const dash = intl.formatMessage(messages.detailNone);
   const [page, setPage] = useState(1);
   const { data, isLoading, isError } = useProgramLearners(uuid, page);
@@ -222,19 +224,33 @@ const LearnersTab = ({ uuid }: { uuid: string }) => {
   const numPages = data?.pagination?.numPages ?? Math.ceil(count / PAGE_SIZE);
 
   return (
-    <AdminDataTable
-      columns={columns}
-      data={data?.results ?? []}
-      isLoading={isLoading}
-      caption={intl.formatMessage(messages.tabLearners)}
-      pagination={count > 0 ? {
-        currentPage: page,
-        pageCount: numPages || 1,
-        itemCount: count,
-        pageSize: PAGE_SIZE,
-        onPageChange: setPage,
-      } : undefined}
-    />
+    <>
+      <div className="d-flex justify-content-end mb-3">
+        <Button variant="primary" onClick={() => setEnrollOpen(true)}>
+          {intl.formatMessage(messages.bulkEnrollButton)}
+        </Button>
+      </div>
+
+      <BulkEnrollModal
+        isOpen={isEnrollOpen}
+        onClose={() => setEnrollOpen(false)}
+        uuid={uuid}
+      />
+
+      <AdminDataTable
+        columns={columns}
+        data={data?.results ?? []}
+        isLoading={isLoading}
+        caption={intl.formatMessage(messages.tabLearners)}
+        pagination={count > 0 ? {
+          currentPage: page,
+          pageCount: numPages || 1,
+          itemCount: count,
+          pageSize: PAGE_SIZE,
+          onPageChange: setPage,
+        } : undefined}
+      />
+    </>
   );
 };
 

@@ -122,3 +122,33 @@ export interface ProgramPatch {
   description?: string;
   longDescription?: string;
 }
+
+/** One address the bulk-enroll call could act on. */
+export interface BulkEnrollRow {
+  email: string;
+  username: string;
+}
+
+/** One address it could not, with the reason to show the admin. */
+export interface BulkEnrollFailure {
+  email: string;
+  reason: string;
+}
+
+/** A course a learner was enrolled in the program but not into. */
+export interface BulkEnrollCourseFailure {
+  email: string;
+  courseId: string;
+  reason: string;
+}
+
+/**
+ * Result of a bulk enroll. Always a 200 — a partial success is the normal
+ * outcome, so the caller gets the breakdown rather than an error.
+ */
+export interface BulkEnrollResult {
+  enrolled: BulkEnrollRow[];
+  alreadyEnrolled: BulkEnrollRow[];
+  failed: BulkEnrollFailure[];
+  courseFailures: BulkEnrollCourseFailure[];
+}
