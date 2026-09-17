@@ -26,6 +26,8 @@ const ProgramDetailPage = lazy(() => import('./modules/programs/ProgramDetailPag
 const CoursesListPage = lazy(() => import('./modules/courses/CoursesListPage'));
 const CourseDetailPage = lazy(() => import('./modules/courses/CourseDetailPage'));
 const CourseReportsPage = lazy(() => import('./modules/courses/CourseReportsPage'));
+const CategoryListPage = lazy(() => import('./modules/categories/CategoryListPage'));
+const CategoryDetailPage = lazy(() => import('./modules/categories/CategoryDetailPage'));
 const ComingSoon = lazy(() => import('./components/ComingSoon'));
 
 const queryClient = new QueryClient({
@@ -67,6 +69,10 @@ subscribe(APP_READY, () => {
                   <Route path="courses" element={<CoursesListPage />} />
                   <Route path="courses/:courseId" element={<CourseDetailPage />} />
                   <Route path="courses/:courseId/reports" element={<CourseReportsPage />} />
+
+                  {/* Categories */}
+                  <Route path="categories" element={<CategoryListPage />} />
+                  <Route path="categories/:id" element={<CategoryDetailPage />} />
 
                   {/* Placeholders — the nav marks these "Soon". Enrollment is
                       absent by design: it is managed per learner on the user

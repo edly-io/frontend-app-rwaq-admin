@@ -58,7 +58,6 @@ export interface UserDetail extends UserSummary {
   username: string;
   country: string;
   biography: string;
-  job: string;
   profileVisibility: ProfileVisibility;
   authenticationMethods: string[];
   isLegacy: boolean;
@@ -137,7 +136,6 @@ export interface UserCreatePayload extends UserGrantPayload {
   email: string;
   name: string;
   profileVisibility?: ProfileVisibility;
-  job?: string;
   country?: string;
   biography?: string;
   isActive?: boolean;
@@ -147,7 +145,6 @@ export interface UserCreatePayload extends UserGrantPayload {
 export interface UserPatchPayload extends UserGrantPayload {
   name?: string;
   profileVisibility?: ProfileVisibility;
-  job?: string;
   country?: string;
   biography?: string;
   isActive?: boolean;

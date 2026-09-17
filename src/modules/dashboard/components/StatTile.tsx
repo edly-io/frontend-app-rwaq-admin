@@ -7,7 +7,9 @@
  * "Not available" with the reason underneath.
  */
 import { ReactNode } from 'react';
+import { Skeleton } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import InfoTooltip from '@src/components/InfoTooltip';
 import messages from '../messages';
 
 export interface StatTileProps {
@@ -17,21 +19,69 @@ export interface StatTileProps {
   hint?: ReactNode;
   /** Shown instead of the hint when value is null. */
   unavailableHint?: ReactNode;
+  /** Optional muted chip rendered below the value — use for "All time" on snapshot metrics. */
+  badge?: string;
+  /** Tooltip explanation shown on hover/click of the ⓘ icon next to the label. */
+  info?: string;
+  isLoading?: boolean;
 }
 
 const StatTile = ({
-  label, value, hint, unavailableHint,
+  label, value, hint, unavailableHint, badge, info, isLoading = false,
 }: StatTileProps) => {
   const intl = useIntl();
   const isUnavailable = value === null || value === undefined;
 
+  // Avoid nested ternary: resolve the value display to one of three states.
+  let tileValue: ReactNode;
+  if (isLoading) {
+    tileValue = <Skeleton height="1.5rem" width="45%" />;
+  } else if (isUnavailable) {
+    tileValue = intl.formatMessage(messages.unavailable);
+  } else {
+    tileValue = value;
+  }
+
   return (
     <div className="rwaq-stat-tile">
-      <span className="rwaq-stat-tile__label">{label}</span>
-      <span className={`rwaq-stat-tile__value${isUnavailable ? ' rwaq-stat-tile__value--muted' : ''}`}>
-        {isUnavailable ? intl.formatMessage(messages.unavailable) : value}
+      <InfoTooltip text={info ?? ''} disabled={!info}>
+        <span
+          className="rwaq-stat-tile__label"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.25rem',
+            cursor: info ? 'help' : undefined,
+          }}
+        >
+          {label}
+          {badge && (
+            <span
+              style={{
+                marginLeft: 'auto',
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
+                padding: '0.1rem 0.375rem',
+                fontSize: '0.55rem',
+                fontWeight: 600,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                color: 'var(--rwaq-muted, #6B757F)',
+                background: 'var(--pgn-color-gray-100, #f0f0ef)',
+                border: '1px solid var(--pgn-color-gray-300, #c8c9c0)',
+                borderRadius: '999px',
+                lineHeight: 1.4,
+              }}
+            >
+              {badge}
+            </span>
+          )}
+        </span>
+      </InfoTooltip>
+      <span className={`rwaq-stat-tile__value${isUnavailable && !isLoading ? ' rwaq-stat-tile__value--muted' : ''}`}>
+        {tileValue}
       </span>
-      {(isUnavailable ? unavailableHint : hint) && (
+      {!isLoading && (isUnavailable ? unavailableHint : hint) && (
         <span className="rwaq-stat-tile__hint">
           {isUnavailable ? unavailableHint : hint}
         </span>

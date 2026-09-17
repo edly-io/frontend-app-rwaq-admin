@@ -11,7 +11,7 @@
  * grouped aggregates.
  *
  * Host: Studio (CMS), matching the users and organizations modules.
- * Authentication: Global Staff (IsGlobalStaff on every endpoint).
+ * Authentication: Superuser only (IsSuperAdmin — is_staff=True without is_superuser returns 403).
  * Case: snake_case on the wire, camelCase in the app.
  */
 import { camelCaseObject, snakeCaseObject } from '@edx/frontend-platform';

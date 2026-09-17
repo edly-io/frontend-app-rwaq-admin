@@ -6,7 +6,7 @@
  * organization, so changing it would orphan existing courses, and the backend
  * treats both as read-only on PATCH.
  */
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -15,6 +15,7 @@ import {
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
+import RichTextEditor from '@src/components/RichTextEditor';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorReason } from '@src/data/httpError';
 import { useCreateOrganization, useUpdateOrganization } from '../data/hooks';
@@ -29,14 +30,18 @@ interface FormValues {
   name: string;
   shortName: string;
   arabicName: string;
+  description: string;
   featuredVideo: string;
+  showLogoOnProgramCertificate: boolean;
 }
 
 const emptyValues: FormValues = {
   name: '',
   shortName: '',
   arabicName: '',
+  description: '',
   featuredVideo: '',
+  showLogoOnProgramCertificate: false,
 };
 
 const toFormValues = (organization: OrgDetail | null): FormValues => (organization
@@ -44,7 +49,9 @@ const toFormValues = (organization: OrgDetail | null): FormValues => (organizati
     name: organization.name,
     shortName: organization.shortName,
     arabicName: organization.arabicName ?? '',
+    description: organization.description ?? '',
     featuredVideo: organization.featuredVideo ?? '',
+    showLogoOnProgramCertificate: organization.showLogoOnProgramCertificate ?? false,
   }
   : emptyValues);
 
@@ -59,8 +66,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
   const isEdit = organization !== null;
-  // Guidance for filling the field in, so it appears on focus and leaves on
-  // blur rather than standing permanently under the input.
+  const editorKey = `${isOpen ? 'open' : 'closed'}-${organization?.shortName ?? 'new'}`;
   const [isShortNameFocused, setIsShortNameFocused] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -91,7 +97,9 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
         if (isEdit) {
           const patch: OrgProfilePatch = {
             arabicName: values.arabicName,
+            description: values.description,
             featuredVideo: values.featuredVideo,
+            showLogoOnProgramCertificate: values.showLogoOnProgramCertificate,
           };
           await updateMutation.mutateAsync({ patch, logoFile });
           showToast(intl.formatMessage(messages.toastUpdated, { name: values.name }));
@@ -100,6 +108,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             name: values.name,
             shortName: values.shortName,
             arabicName: values.arabicName,
+            description: values.description,
             featuredVideo: values.featuredVideo,
           };
           const created = await createMutation.mutateAsync(payload);
@@ -114,32 +123,31 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
         onClose();
       } catch (error) {
         logError(error);
-        // Left to the in-modal Alert below rather than a toast: the admin has
-        // a form full of input in front of them and needs to correct it.
       }
     },
   });
 
-  const handleClose = () => {
-    formik.resetForm();
-    createMutation.reset();
-    updateMutation.reset();
-    setLogoFile(null);
-    setLogoTypeError(null);
-    setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
-    onClose();
-  };
+  useEffect(() => {
+    if (!isOpen) {
+      formik.resetForm();
+      setLogoFile(null);
+      setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
+      setLogoTypeError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
-  const ALLOWED_IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif'];
+  const fieldError = (field: keyof FormValues) => (
+    formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''
+  );
+
+  const currentLogoSrc: string | null = logoPreview ?? organization?.logo ?? null;
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    // eslint-disable-next-line no-param-reassign
-    event.target.value = '';
+    const file = event.target.files?.[0] ?? null;
     if (!file) { return; }
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-    if (!ALLOWED_IMAGE_EXTS.includes(ext)) {
-      setLogoTypeError(intl.formatMessage(messages.fieldLogoTypeError));
+    if (!file.type.startsWith('image/')) {
+      setLogoTypeError(intl.formatMessage(messages.logoTypeError));
       return;
     }
     setLogoTypeError(null);
@@ -150,17 +158,11 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
     });
   };
 
-  const currentLogoSrc = logoPreview ?? organization?.logo ?? null;
-
-  const fieldError = (field: keyof FormValues) => (
-    formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''
-  );
-
   return (
     <FormModal
       title={intl.formatMessage(isEdit ? messages.editTitle : messages.createTitle)}
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={onClose}
       onSubmit={formik.handleSubmit}
       submitLabel={intl.formatMessage(isEdit ? messages.save : messages.create)}
       cancelLabel={intl.formatMessage(messages.cancel)}
@@ -281,11 +283,18 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             <Form.Control.Feedback type="invalid">{fieldError('arabicName')}</Form.Control.Feedback>
           )}
         </Form.Group>
-
       </section>
 
       <section className="rwaq-form-section">
-        <h3 className="rwaq-form-section__title">{intl.formatMessage(messages.sectionPublic)}</h3>
+        <Form.Group className="mb-4" controlId="org-form-description">
+          <Form.Label>{intl.formatMessage(messages.fieldDescription)}</Form.Label>
+          <RichTextEditor
+            value={formik.values.description}
+            onChange={(val) => formik.setFieldValue('description', val)}
+            editorKey={editorKey}
+            ariaLabel={intl.formatMessage(messages.fieldDescription)}
+          />
+        </Form.Group>
 
         <Form.Group className="mb-0" controlId="org-form-featured-video">
           <Form.Label>{intl.formatMessage(messages.fieldFeaturedVideo)}</Form.Label>
@@ -296,6 +305,21 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
           />
+        </Form.Group>
+      </section>
+
+      <section className="rwaq-form-section">
+        <Form.Group className="mb-0" controlId="org-form-show-logo-on-program-certificate">
+          <Form.Checkbox
+            name="showLogoOnProgramCertificate"
+            description={intl.formatMessage(messages.fieldShowLogoOnProgramCertificateHelp)}
+            checked={formik.values.showLogoOnProgramCertificate}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              formik.setFieldValue('showLogoOnProgramCertificate', e.target.checked);
+            }}
+          >
+            {intl.formatMessage(messages.fieldShowLogoOnProgramCertificate)}
+          </Form.Checkbox>
         </Form.Group>
       </section>
 

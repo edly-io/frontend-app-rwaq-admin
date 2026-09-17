@@ -1,5 +1,9 @@
 @use "@openedx/paragon/styles/css/core/custom-media-breakpoints" as paragonCustomMediaBreakpoints;
 
+// Skeleton loading — must come before Paragon token imports so Paragon's
+// z-index: unset override (which ships inside Paragon's own scss barrel) wins.
+@import "~react-loading-skeleton/dist/skeleton.css";
+
 // Paragon's design tokens, bundled into the app stylesheet.
 //
 // Why this is here rather than loaded at runtime: PARAGON_THEME_URLS is `{}`,
@@ -18,3 +22,9 @@
 
 @import "~@edx/frontend-component-header/dist/index";
 @import "./components/shell/shell";
+
+// Flexbox gap utilities — Bootstrap 4 does not include these.
+.rwaq-gap-xs { gap: 0.25rem; }  // ~4px
+.rwaq-gap-sm { gap: 0.5rem; }   // ~8px
+.rwaq-gap-md { gap: 1rem; }     // ~16px
+.rwaq-gap-lg { gap: 1.5rem; }   // ~24px

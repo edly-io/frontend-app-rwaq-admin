@@ -114,7 +114,7 @@ const messages = defineMessages({
   colLearnerEmail: { id: 'rwaq.admin.programs.learners.col.email', defaultMessage: 'Email' },
   colLearnerEnrolled: { id: 'rwaq.admin.programs.learners.col.enrolled', defaultMessage: 'Enrolled' },
   colLearnerCompleted: { id: 'rwaq.admin.programs.learners.col.completed', defaultMessage: 'Completed' },
-  colLearnerActive: { id: 'rwaq.admin.programs.learners.col.active', defaultMessage: 'Active' },
+  colLearnerActive: { id: 'rwaq.admin.programs.learners.col.active', defaultMessage: 'Enrollment' },
 
   // ── Shared ─────────────────────────────────────────────────────────────────
   yes: { id: 'rwaq.admin.programs.yes', defaultMessage: 'Yes' },
@@ -122,3 +122,26 @@ const messages = defineMessages({
 });
 
 export default messages;
+
+// ── ProgramReportsPage ────────────────────────────────────────────────────────
+
+export const programReportsMessages = defineMessages({
+  breadcrumbPrograms: { id: 'rwaq.admin.programReports.breadcrumb.programs', defaultMessage: 'Programs' },
+  breadcrumbReports: { id: 'rwaq.admin.programReports.breadcrumb.reports', defaultMessage: '/ Reports' },
+  pageTitle: { id: 'rwaq.admin.programReports.pageTitle', defaultMessage: 'Reports' },
+  sectionTitle: { id: 'rwaq.admin.programReports.section.title', defaultMessage: 'Program Completion' },
+  sectionBody: {
+    id: 'rwaq.admin.programReports.section.body',
+    defaultMessage: 'Based on {numCourses} {courseWord} linked to this program. Learners enrolled in all courses are counted as completed.',
+  },
+  courseWord: { id: 'rwaq.admin.programReports.courseWord', defaultMessage: '{count, plural, one {course} other {courses}}' },
+  errorLoad: { id: 'rwaq.admin.programReports.error.load', defaultMessage: 'Could not load program completion report. Please refresh the page.' },
+  statTotalLearners: { id: 'rwaq.admin.programReports.stat.totalLearners', defaultMessage: 'Total Learners' },
+  statCompleted: { id: 'rwaq.admin.programReports.stat.completed', defaultMessage: 'Completed' },
+  statInProgress: { id: 'rwaq.admin.programReports.stat.inProgress', defaultMessage: 'In Progress' },
+  statNotStarted: { id: 'rwaq.admin.programReports.stat.notStarted', defaultMessage: 'Not Started' },
+  statCompletionRate: { id: 'rwaq.admin.programReports.stat.completionRate', defaultMessage: 'Completion Rate' },
+  completionRateAriaLabel: { id: 'rwaq.admin.programReports.completionRate.ariaLabel', defaultMessage: '{rate}% completion rate' },
+  completionRateCaption: { id: 'rwaq.admin.programReports.completionRate.caption', defaultMessage: '{rate}% completion rate' },
+  loadingReport: { id: 'rwaq.admin.programReports.loading', defaultMessage: 'Loading report' },
+});

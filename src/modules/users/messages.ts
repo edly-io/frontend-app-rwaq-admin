@@ -143,7 +143,6 @@ const messages = defineMessages({
     defaultMessage: 'Only JPG, PNG and GIF files are allowed.',
   },
   fieldName: { id: 'rwaq.admin.users.form.name', defaultMessage: 'Full name' },
-  fieldJob: { id: 'rwaq.admin.users.form.job', defaultMessage: 'Job title' },
   fieldCountry: { id: 'rwaq.admin.users.form.country', defaultMessage: 'Country' },
   fieldCountryNone: { id: 'rwaq.admin.users.form.countryNone', defaultMessage: '— Select a country —' },
   fieldBiography: { id: 'rwaq.admin.users.form.biography', defaultMessage: 'Biography' },
@@ -234,7 +233,6 @@ const messages = defineMessages({
   detailUsername: { id: 'rwaq.admin.users.detail.username', defaultMessage: 'Username' },
   detailUserId: { id: 'rwaq.admin.users.detail.userId', defaultMessage: 'User ID' },
   detailEmail: { id: 'rwaq.admin.users.detail.email', defaultMessage: 'Email' },
-  detailJob: { id: 'rwaq.admin.users.detail.job', defaultMessage: 'Job title' },
   detailCountry: { id: 'rwaq.admin.users.detail.country', defaultMessage: 'Country' },
   detailBiography: { id: 'rwaq.admin.users.detail.biography', defaultMessage: 'Biography' },
   detailVisibility: { id: 'rwaq.admin.users.detail.visibility', defaultMessage: 'Profile visibility' },
@@ -264,7 +262,7 @@ const messages = defineMessages({
   },
   enrollmentCourse: { id: 'rwaq.admin.users.enrollments.course', defaultMessage: 'Course' },
   enrollmentDate: { id: 'rwaq.admin.users.enrollments.date', defaultMessage: 'Enrolled' },
-  enrollmentStatus: { id: 'rwaq.admin.users.enrollments.status', defaultMessage: 'Enrollment Status' },
+  enrollmentStatus: { id: 'rwaq.admin.users.enrollments.status', defaultMessage: 'Enrollment' },
   enrollmentCertificate: { id: 'rwaq.admin.users.enrollments.certificate', defaultMessage: 'Certificate' },
   enrollmentMode: { id: 'rwaq.admin.users.enrollments.mode', defaultMessage: 'Mode' },
   enrollmentCount: {
@@ -275,7 +273,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.enrollments.noCertificate',
     defaultMessage: 'None',
   },
-  enrollmentActive: { id: 'rwaq.admin.users.enrollments.active', defaultMessage: 'Active' },
+  enrollmentActive: { id: 'rwaq.admin.users.enrollments.active', defaultMessage: 'Enrolled' },
   enrollmentInactive: { id: 'rwaq.admin.users.enrollments.inactive', defaultMessage: 'Unenrolled' },
   enrollmentActions: { id: 'rwaq.admin.users.enrollments.actions', defaultMessage: 'Actions' },
   enrollmentLastChangeBy: {
@@ -391,3 +389,28 @@ const messages = defineMessages({
 });
 
 export default messages;
+
+// ── ReasonField — enrollment-change preset reasons ────────────────────────────
+
+export const enrollmentPresetMessages = defineMessages({
+  financialAssistance: {
+    id: 'rwaq.admin.users.reason.preset.financialAssistance',
+    defaultMessage: 'Financial assistance',
+  },
+  supportRequest: {
+    id: 'rwaq.admin.users.reason.preset.supportRequest',
+    defaultMessage: 'Learner support request',
+  },
+  correction: {
+    id: 'rwaq.admin.users.reason.preset.correction',
+    defaultMessage: 'Enrollment correction',
+  },
+  partnerAgreement: {
+    id: 'rwaq.admin.users.reason.preset.partnerAgreement',
+    defaultMessage: 'Partner agreement',
+  },
+  testing: {
+    id: 'rwaq.admin.users.reason.preset.testing',
+    defaultMessage: 'Testing / QA',
+  },
+});

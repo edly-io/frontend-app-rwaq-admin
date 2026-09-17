@@ -53,6 +53,7 @@ const messages = defineMessages({
     defaultMessage: 'Letters, numbers, hyphens and underscores only. Becomes part of every course key in this organization and cannot be changed later.',
   },
   fieldArabicName: { id: 'rwaq.admin.orgs.form.arabicName', defaultMessage: 'Arabic name' },
+  fieldDescription: { id: 'rwaq.admin.orgs.form.description', defaultMessage: 'Description' },
   fieldFeaturedVideo: { id: 'rwaq.admin.orgs.form.featuredVideo', defaultMessage: 'Featured video URL' },
   fieldLogo: { id: 'rwaq.admin.orgs.form.logo', defaultMessage: 'Organization logo' },
   fieldLogoChange: { id: 'rwaq.admin.orgs.form.logoChange', defaultMessage: 'Change logo' },
@@ -65,8 +66,17 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.form.logoTypeError',
     defaultMessage: 'Only JPG, PNG and GIF files are allowed.',
   },
+  fieldShowLogoOnProgramCertificate: {
+    id: 'rwaq.admin.orgs.form.showLogoOnProgramCertificate',
+    defaultMessage: 'Show org logo on program certificates',
+  },
+  fieldShowLogoOnProgramCertificateHelp: {
+    id: 'rwaq.admin.orgs.form.showLogoOnProgramCertificateHelp',
+    defaultMessage: 'When enabled, the organisation\'s logo replaces the default badge on program certificates. Requires a logo to be uploaded.',
+  },
   sectionProfile: { id: 'rwaq.admin.orgs.form.sectionProfile', defaultMessage: 'Identity' },
   sectionPublic: { id: 'rwaq.admin.orgs.form.sectionPublic', defaultMessage: 'Public profile' },
+  sectionCertificates: { id: 'rwaq.admin.orgs.form.sectionCertificates', defaultMessage: 'Certificates' },
   save: { id: 'rwaq.admin.orgs.form.save', defaultMessage: 'Save changes' },
   create: { id: 'rwaq.admin.orgs.form.create', defaultMessage: 'Create organization' },
   cancel: { id: 'rwaq.admin.orgs.form.cancel', defaultMessage: 'Cancel' },
@@ -87,7 +97,12 @@ const messages = defineMessages({
   detailArabicName: { id: 'rwaq.admin.orgs.detail.arabicName', defaultMessage: 'Arabic name' },
   detailCourses: { id: 'rwaq.admin.orgs.detail.courses', defaultMessage: 'Courses' },
   detailAdmins: { id: 'rwaq.admin.orgs.detail.admins', defaultMessage: 'Organization Admins' },
+  detailDescription: { id: 'rwaq.admin.orgs.detail.description', defaultMessage: 'Description' },
   detailFeaturedVideo: { id: 'rwaq.admin.orgs.detail.featuredVideo', defaultMessage: 'Featured video' },
+  detailShowLogoOnProgramCertificate: {
+    id: 'rwaq.admin.orgs.detail.showLogoOnProgramCertificate',
+    defaultMessage: 'Logo on program certificates',
+  },
   detailNone: { id: 'rwaq.admin.orgs.detail.none', defaultMessage: '—' },
   editOrg: { id: 'rwaq.admin.orgs.detail.editOrg', defaultMessage: 'Edit organization' },
   notFound: { id: 'rwaq.admin.orgs.detail.notFound', defaultMessage: 'Organization not found' },
@@ -127,17 +142,14 @@ const messages = defineMessages({
     defaultMessage: 'No account found for that email address. The person must register first.',
   },
 
-  // ── OrgCoursesTable ────────────────────────────────────────────────────────
-  orgCoursesTitle: { id: 'rwaq.admin.orgs.courses.title', defaultMessage: 'Courses' },
-  orgCoursesCaption: { id: 'rwaq.admin.orgs.courses.caption', defaultMessage: 'Courses' },
-  orgCoursesError: { id: 'rwaq.admin.orgs.courses.error', defaultMessage: 'Could not load courses for this organization.' },
+  // ── OrgCoursesTable — FE-C2 (previously raw string literals) ──────────────
   orgCoursesColCourse: { id: 'rwaq.admin.orgs.courses.col.course', defaultMessage: 'Course' },
   orgCoursesColStart: { id: 'rwaq.admin.orgs.courses.col.start', defaultMessage: 'Start' },
   orgCoursesColEnd: { id: 'rwaq.admin.orgs.courses.col.end', defaultMessage: 'End' },
   orgCoursesColEnrollments: { id: 'rwaq.admin.orgs.courses.col.enrollments', defaultMessage: 'Enrollments' },
-  orgCoursesColActions: { id: 'rwaq.admin.orgs.courses.col.actions', defaultMessage: 'Actions' },
-  orgCoursesView: { id: 'rwaq.admin.orgs.courses.action.view', defaultMessage: 'View' },
-  orgCoursesViewAriaLabel: { id: 'rwaq.admin.orgs.courses.action.viewAriaLabel', defaultMessage: 'View {name}' },
+  orgCoursesViewAriaLabel: { id: 'rwaq.admin.orgs.courses.viewAriaLabel', defaultMessage: 'View {name}' },
+  orgCoursesView: { id: 'rwaq.admin.orgs.courses.view', defaultMessage: 'View' },
+  orgCoursesError: { id: 'rwaq.admin.orgs.courses.error', defaultMessage: 'Could not load courses for this organization.' },
 });
 
 export default messages;

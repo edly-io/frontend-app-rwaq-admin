@@ -7,7 +7,7 @@
  * and stamps every payload with generatedAt, so a longer staleTime here would
  * only add a second layer of staleness on top of one we already surface.
  */
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { appId } from '@src/constants';
 import {
   getAnalyticsBreakdowns,
@@ -27,7 +27,10 @@ export const analyticsQueryKeys = {
 // Match the client staleTime to the backend TTL so React Query never fires an
 // extra refetch that the backend will serve from cache anyway. The Refresh
 // button bypasses both layers via ?force_refresh=true.
-const ANALYTICS_QUERY_OPTIONS = { staleTime: 5 * 60 * 1000 } as const;
+const ANALYTICS_QUERY_OPTIONS = {
+  staleTime: 5 * 60 * 1000,
+  placeholderData: keepPreviousData,
+};
 
 /** Headline counts for the KPI row. */
 export const useAnalyticsSummary = (params: AnalyticsParams = {}) => useQuery({

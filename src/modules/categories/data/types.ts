@@ -1,0 +1,91 @@
+// ── Categories API types ──────────────────────────────────────────────────────
+//
+// camelCase throughout: api.ts normalises the snake_case wire format at the
+// boundary, so nothing above it ever sees snake_case keys.
+
+/** Lightweight category row — returned by the list endpoint and the reverse lookup. */
+export interface CategorySummary {
+  id: number;
+  name: string;
+  arabicName: string;
+  isActive: boolean;
+}
+
+/** A course linked to a category — hydrated with CourseOverview data by the backend. */
+export interface CategoryCourse {
+  courseKey: string;
+  displayName: string;
+  org: string;
+  run: string;
+  courseImageUrl: string | null;
+}
+
+/** Full category detail — from GET /rwaq/api/categories/<id>/ */
+export interface CategoryDetail extends CategorySummary {
+  courses: CategoryCourse[];
+}
+
+/** Pagination envelope from GET /rwaq/api/categories/ */
+export interface CategoryPagination {
+  next: string | null;
+  previous: string | null;
+  count: number;
+  numPages: number;
+}
+
+/** Paginated list response from GET /rwaq/api/categories/ */
+export interface CategoryListResponse {
+  results: CategorySummary[];
+  pagination: CategoryPagination;
+}
+
+/** Paginated response from GET /rwaq/api/categories/<id>/courses/ */
+export interface CategoryCourseListResponse {
+  results: CategoryCourse[];
+  pagination: CategoryPagination;
+}
+
+/** Query params for the category courses endpoint */
+export interface CategoryCourseListParams {
+  page?: number;
+  pageSize?: number;
+}
+
+/** Query params for the "courses not yet linked to this category" picker endpoint */
+export interface CategoryAvailableCourseParams {
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+/** Paginated response from GET /rwaq/api/categories/<id>/available-courses/ */
+export interface CategoryAvailableCourseListResponse {
+  results: CategoryCourse[];
+  pagination: CategoryPagination;
+}
+
+/** POST /rwaq/api/categories/ body */
+export interface CategoryCreatePayload {
+  name: string;
+  arabicName?: string;
+  isActive?: boolean;
+}
+
+/** PATCH /rwaq/api/categories/<id>/ body */
+export interface CategoryPatch {
+  name?: string;
+  arabicName?: string;
+  isActive?: boolean;
+}
+
+export type CategoryFilter = 'all' | 'active' | 'inactive';
+export type CategoryOrdering = 'name' | '-name' | '-created';
+
+/** Query params for the category list endpoint */
+export interface CategoryListParams {
+  search?: string;
+  page?: number;
+  pageSize?: number;
+  filter?: CategoryFilter;
+  ordering?: CategoryOrdering;
+}

@@ -5,22 +5,8 @@
 import { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SearchField, Form } from '@openedx/paragon';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-
-const messages = defineMessages({
-  searchLabel: {
-    id: 'rwaq.admin.filterBar.searchLabel',
-    defaultMessage: 'Search',
-  },
-  searchPlaceholder: {
-    id: 'rwaq.admin.filterBar.searchPlaceholder',
-    defaultMessage: 'Enter Org name',
-  },
-  sortLabel: {
-    id: 'rwaq.admin.filterBar.sortLabel',
-    defaultMessage: 'Sort by',
-  },
-});
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { filterBarMessages as messages } from './messages';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -75,7 +61,7 @@ const FilterBar = ({
 
   return (
     <div
-      className="d-flex align-items-center flex-wrap gap-2"
+      className="d-flex align-items-center flex-wrap rwaq-gap-sm"
       style={{ padding: '0.75rem 0', marginBottom: '1rem' }}
     >
       <SearchField

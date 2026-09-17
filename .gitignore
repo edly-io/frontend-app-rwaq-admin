@@ -24,3 +24,4 @@ webpack.dev-tutor.config.js
 # Playwright run artifacts — traces, screenshots, last-run state
 test-results/
 playwright-report/
+Dockerfile

@@ -37,7 +37,6 @@ const BIO_ROWS = 4;
 interface FormValues extends RoleGrantValues {
   email: string;
   name: string;
-  job: string;
   country: string;
   biography: string;
   profileVisibility: ProfileVisibility;
@@ -47,7 +46,6 @@ interface FormValues extends RoleGrantValues {
 const emptyValues: FormValues = {
   email: '',
   name: '',
-  job: '',
   country: '',
   biography: '',
   profileVisibility: 'private',
@@ -60,7 +58,6 @@ const toFormValues = (user: UserDetail | null): FormValues => (user
   ? {
     email: user.email ?? '',
     name: user.name ?? '',
-    job: user.job ?? '',
     country: user.country ?? '',
     biography: user.biography ?? '',
     profileVisibility: user.profileVisibility ?? 'private',
@@ -117,7 +114,6 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
     name: Yup.string()
       .max(MAX_NAME, intl.formatMessage(messages.tooLong))
       .required(intl.formatMessage(messages.requiredField)),
-    job: Yup.string().max(MAX_NAME, intl.formatMessage(messages.tooLong)),
     biography: Yup.string().max(MAX_BIO, intl.formatMessage(messages.tooLong)),
   });
 
@@ -139,7 +135,6 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
           const payload: UserCreatePayload = {
             email: values.email,
             name: values.name,
-            job: values.job,
             country: values.country,
             biography: values.biography,
             profileVisibility: values.profileVisibility,
@@ -320,21 +315,6 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
               />
               {fieldError('name') && (
                 <Form.Control.Feedback type="invalid">{fieldError('name')}</Form.Control.Feedback>
-              )}
-            </Form.Group>
-          </Col>
-
-          <Col xs={12} md={6}>
-            <Form.Group className="mb-4" isInvalid={!!fieldError('job')} controlId="user-form-job">
-              <Form.Label>{intl.formatMessage(messages.fieldJob)}</Form.Label>
-              <Form.Control
-                name="job"
-                value={formik.values.job}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {fieldError('job') && (
-                <Form.Control.Feedback type="invalid">{fieldError('job')}</Form.Control.Feedback>
               )}
             </Form.Group>
           </Col>

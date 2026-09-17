@@ -14,25 +14,14 @@ import {
   Groups,
   MenuBook,
   School,
+  LocalOffer,
   Settings,
   ExpandMore,
   ExpandLess,
 } from '@openedx/paragon/icons';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import { RWAQ_LOGO } from '@src/assets/rwaqLogo';
-
-const messages = defineMessages({
-  logoAlt: { id: 'rwaq.admin.sidenav.logoAlt', defaultMessage: 'Rwaq' },
-  dashboard: { id: 'rwaq.admin.sidenav.dashboard', defaultMessage: 'Dashboard' },
-  users: { id: 'rwaq.admin.sidenav.users', defaultMessage: 'Users' },
-  organizations: { id: 'rwaq.admin.sidenav.organizations', defaultMessage: 'Organizations' },
-  courses: { id: 'rwaq.admin.sidenav.courses', defaultMessage: 'Courses' },
-  programs: { id: 'rwaq.admin.sidenav.programs', defaultMessage: 'Programs' },
-  settings: { id: 'rwaq.admin.sidenav.settings', defaultMessage: 'Settings' },
-  comingSoon: { id: 'rwaq.admin.sidenav.comingSoon', defaultMessage: 'Soon' },
-  navAriaLabel: { id: 'rwaq.admin.sidenav.navAriaLabel', defaultMessage: 'Admin navigation' },
-  settingsToggle: { id: 'rwaq.admin.sidenav.settingsToggle', defaultMessage: 'Toggle settings menu' },
-});
+import { sideNavMessages as messages } from './messages';
 
 // ── Nav item config ───────────────────────────────────────────────────────────
 
@@ -61,6 +50,9 @@ const NAV_ITEMS: NavItemDef[] = [
   },
   {
     to: '/programs', labelId: 'programs', iconSrc: School, isLive: true,
+  },
+  {
+    to: '/categories', labelId: 'categories', iconSrc: LocalOffer, isLive: true,
   },
 ];
 

@@ -12,31 +12,8 @@
  * pipeline, and adding one shouldn't need a backend deploy.
  */
 import { Form } from '@openedx/paragon';
-import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
-import messages from '../messages';
-
-const presetMessages = defineMessages({
-  financialAssistance: {
-    id: 'rwaq.admin.users.reason.preset.financialAssistance',
-    defaultMessage: 'Financial assistance',
-  },
-  supportRequest: {
-    id: 'rwaq.admin.users.reason.preset.supportRequest',
-    defaultMessage: 'Learner support request',
-  },
-  correction: {
-    id: 'rwaq.admin.users.reason.preset.correction',
-    defaultMessage: 'Enrollment correction',
-  },
-  partnerAgreement: {
-    id: 'rwaq.admin.users.reason.preset.partnerAgreement',
-    defaultMessage: 'Partner agreement',
-  },
-  testing: {
-    id: 'rwaq.admin.users.reason.preset.testing',
-    defaultMessage: 'Testing / QA',
-  },
-});
+import { useIntl } from '@edx/frontend-platform/i18n';
+import messages, { enrollmentPresetMessages as presetMessages } from '../messages';
 
 /**
  * The presets, each a stable English value paired with a translated label.

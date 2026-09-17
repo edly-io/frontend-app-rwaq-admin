@@ -3,6 +3,9 @@ import { PermissionValidationRequest, PermissionValidationResponse } from '@src/
 import { appId } from '@src/constants';
 import { validateUserPermissions } from './api';
 
+export { useCourses } from '@src/modules/courses/data/hooks';
+export type { CourseSummary } from '@src/modules/courses/data/types';
+
 const adminConsoleQueryKeys = {
   all: [appId] as const,
   permissions: (permissions: PermissionValidationRequest[]) => [...adminConsoleQueryKeys.all, 'validatePermissions', permissions] as const,

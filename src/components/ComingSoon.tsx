@@ -1,16 +1,6 @@
 import { Container } from '@openedx/paragon';
-import { defineMessages, FormattedMessage, useIntl } from '@edx/frontend-platform/i18n';
-
-const messages = defineMessages({
-  title: {
-    id: 'rwaq.admin.comingSoon.title',
-    defaultMessage: 'Coming Soon',
-  },
-  body: {
-    id: 'rwaq.admin.comingSoon.body',
-    defaultMessage: 'This section is under development. It will be available in an upcoming release.',
-  },
-});
+import { useIntl } from '@edx/frontend-platform/i18n';
+import { comingSoonMessages as messages } from './messages';
 
 const ComingSoon = () => {
   const intl = useIntl();
@@ -39,10 +29,7 @@ const ComingSoon = () => {
         {intl.formatMessage(messages.title)}
       </h2>
       <p className="text-muted" style={{ maxWidth: '32rem' }}>
-        <FormattedMessage
-          id="rwaq.admin.comingSoon.body"
-          defaultMessage="This section is under development. It will be available in an upcoming release."
-        />
+        {intl.formatMessage(messages.body)}
       </p>
     </Container>
   );
