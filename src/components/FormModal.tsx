@@ -26,6 +26,12 @@ export interface FormModalProps {
   submitLabel: string;
   cancelLabel: string;
   isSubmitting?: boolean;
+  /**
+   * Block submission while the form is knowingly invalid. Separate from
+   * isSubmitting: a disabled-because-invalid button is a statement about the
+   * input, not about work in progress, and the two can be true at once.
+   */
+  isSubmitDisabled?: boolean;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   /**
    * Submit button variant. Defaults to primary; 'danger' is for a form whose
@@ -46,6 +52,7 @@ const FormModal = ({
   submitLabel,
   cancelLabel,
   isSubmitting = false,
+  isSubmitDisabled = false,
   size = 'lg',
   submitVariant = 'primary',
   footerNote,
@@ -81,6 +88,7 @@ const FormModal = ({
             state={isSubmitting ? 'pending' : 'default'}
             labels={{ default: submitLabel, pending: submitLabel }}
             disabledStates={['pending']}
+            disabled={isSubmitDisabled}
           />
         </ActionRow>
       </ModalDialog.Footer>
