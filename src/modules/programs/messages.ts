@@ -127,7 +127,6 @@ export default messages;
 
 export const programReportsMessages = defineMessages({
   breadcrumbPrograms: { id: 'rwaq.admin.programReports.breadcrumb.programs', defaultMessage: 'Programs' },
-  breadcrumbReports: { id: 'rwaq.admin.programReports.breadcrumb.reports', defaultMessage: '/ Reports' },
   pageTitle: { id: 'rwaq.admin.programReports.pageTitle', defaultMessage: 'Reports' },
   sectionTitle: { id: 'rwaq.admin.programReports.section.title', defaultMessage: 'Program Completion' },
   sectionBody: {
@@ -144,4 +143,82 @@ export const programReportsMessages = defineMessages({
   completionRateAriaLabel: { id: 'rwaq.admin.programReports.completionRate.ariaLabel', defaultMessage: '{rate}% completion rate' },
   completionRateCaption: { id: 'rwaq.admin.programReports.completionRate.caption', defaultMessage: '{rate}% completion rate' },
   loadingReport: { id: 'rwaq.admin.programReports.loading', defaultMessage: 'Loading report' },
+
+  // ── Report task list page ──────────────────────────────────────────────────
+  btnReports: { id: 'rwaq.admin.programReports.btnReports', defaultMessage: 'View Reports' },
+
+  taskPageTitle: { id: 'rwaq.admin.programReports.taskPage.title', defaultMessage: 'Reports' },
+  taskPageBreadcrumbReports: { id: 'rwaq.admin.programReports.taskPage.breadcrumb.reports', defaultMessage: 'Reports' },
+
+  generateSectionTitle: { id: 'rwaq.admin.programReports.generate.title', defaultMessage: 'Generate Reports' },
+  generateSectionBody: {
+    id: 'rwaq.admin.programReports.generate.body',
+    defaultMessage: 'Click Generate next to a report type to queue an async task. Completed files appear in the Reports Available for Download section below.',
+  },
+
+  reportEnrollmentLabel: { id: 'rwaq.admin.programReports.report.enrollment.label', defaultMessage: 'Enrollment & Progress Report' },
+  reportEnrollmentDesc: {
+    id: 'rwaq.admin.programReports.report.enrollment.desc',
+    defaultMessage: 'Generates a CSV of all program enrollments including learner identity, enrollment dates, per-course enrollment status, grades, and certificate status.',
+  },
+  reportCompletionLabel: { id: 'rwaq.admin.programReports.report.completion.label', defaultMessage: 'Completion Summary' },
+  reportCompletionDesc: {
+    id: 'rwaq.admin.programReports.report.completion.desc',
+    defaultMessage: 'Generates a CSV summary of program completion status per learner — enrolled count, completed count, and completion date where applicable.',
+  },
+  reportLearnerSummaryLabel: { id: 'rwaq.admin.programReports.report.learnerSummary.label', defaultMessage: 'Learner Summary' },
+  reportLearnerSummaryDesc: {
+    id: 'rwaq.admin.programReports.report.learnerSummary.desc',
+    defaultMessage: 'One row per learner with aggregated stats: courses enrolled, courses passed, average grade, and certificates earned across all program courses.',
+  },
+  reportCourseStatisticsLabel: { id: 'rwaq.admin.programReports.report.courseStatistics.label', defaultMessage: 'Course Statistics' },
+  reportCourseStatisticsDesc: {
+    id: 'rwaq.admin.programReports.report.courseStatistics.desc',
+    defaultMessage: 'One row per course with totals across all program learners: enrollments, passes, pass rate, average grade, and certificates issued.',
+  },
+
+  btnGenerate: { id: 'rwaq.admin.programReports.btn.generate', defaultMessage: 'Generate' },
+  srGeneratingReport: { id: 'rwaq.admin.programReports.sr.generatingReport', defaultMessage: 'Generating report…' },
+
+  downloadsSectionTitle: { id: 'rwaq.admin.programReports.downloads.title', defaultMessage: 'Reports Available for Download' },
+  downloadsSectionBody: {
+    id: 'rwaq.admin.programReports.downloads.body',
+    defaultMessage: 'Auto-refreshes every 10s while a report is processing. Download links expire after 1 hour.',
+  },
+
+  btnGenerateEnrollment: { id: 'rwaq.admin.programReports.btn.enrollment', defaultMessage: 'Generate Enrollment & Progress Report' },
+  btnGenerateCompletion: { id: 'rwaq.admin.programReports.btn.completion', defaultMessage: 'Generate Completion Summary' },
+
+  warningDuplicate: {
+    id: 'rwaq.admin.programReports.warning.duplicate',
+    defaultMessage: 'A report of this type is already being generated.',
+  },
+
+  errorTriggerGeneric: {
+    id: 'rwaq.admin.programReports.error.triggerGeneric',
+    defaultMessage: 'Failed to queue report. Please try again.',
+  },
+
+  errorLoadReports: {
+    id: 'rwaq.admin.programReports.error.loadReports',
+    defaultMessage: 'Could not load report history. Please refresh.',
+  },
+
+  colReportType: { id: 'rwaq.admin.programReports.col.reportType', defaultMessage: 'Report Type' },
+  colStatus: { id: 'rwaq.admin.programReports.col.status', defaultMessage: 'Status' },
+  colGenerated: { id: 'rwaq.admin.programReports.col.generated', defaultMessage: 'Generated' },
+  colElapsed: { id: 'rwaq.admin.programReports.col.elapsed', defaultMessage: 'Elapsed' },
+  colProgress: { id: 'rwaq.admin.programReports.col.progress', defaultMessage: 'Progress' },
+  colDownload: { id: 'rwaq.admin.programReports.col.download', defaultMessage: 'Download' },
+
+  statusPending: { id: 'rwaq.admin.programReports.status.pending', defaultMessage: 'Pending' },
+  statusProcessing: { id: 'rwaq.admin.programReports.status.processing', defaultMessage: 'Processing' },
+  statusComplete: { id: 'rwaq.admin.programReports.status.complete', defaultMessage: 'Complete' },
+  statusFailed: { id: 'rwaq.admin.programReports.status.failed', defaultMessage: 'Failed' },
+
+  btnDownload: { id: 'rwaq.admin.programReports.btn.download', defaultMessage: 'Download' },
+
+  emptyReports: { id: 'rwaq.admin.programReports.empty', defaultMessage: 'No reports have been generated yet.' },
+
+  srLoading: { id: 'rwaq.admin.programReports.sr.loading', defaultMessage: 'Loading program…' },
 });

@@ -35,7 +35,7 @@ import {
   useProgramLearners,
   useUpdateProgram,
 } from './data/hooks';
-import messages from './messages';
+import messages, { programReportsMessages } from './messages';
 
 type Tab = 'courses' | 'learners';
 
@@ -343,7 +343,13 @@ const ProgramDetailPage = () => {
               />
             </div>
           </div>
-          <div className="flex-shrink-0" />
+          <div className="flex-shrink-0">
+            <Link to={`/programs/${program.uuid}/reports`}>
+              <Button variant="primary" size="sm">
+                {intl.formatMessage(programReportsMessages.btnReports)}
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 

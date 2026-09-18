@@ -127,11 +127,6 @@ const CoursesListPage = () => {
 
   const formatEnrollments = (row: CourseSummary) => String(row.enrollmentCount);
 
-  const formatPassing = (row: CourseSummary) => {
-    if (row.passingCount === null) { return intl.formatMessage(messages.notAvailable); }
-    return String(row.passingCount);
-  };
-
   // ── Columns ───────────────────────────────────────────────────────────────────
 
   const columns: ColumnDef<CourseSummary>[] = [
@@ -192,11 +187,6 @@ const CoursesListPage = () => {
       label: intl.formatMessage(messages.colEnrollments),
       key: 'enrollmentCount',
       renderCell: (_value, row) => formatEnrollments(row as CourseSummary),
-    },
-    {
-      label: intl.formatMessage(messages.colPassing),
-      key: 'passingCount',
-      renderCell: (_value, row) => formatPassing(row as CourseSummary),
     },
     {
       label: intl.formatMessage(messages.colActions),
