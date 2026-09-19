@@ -142,7 +142,7 @@ const messages = defineMessages({
   },
   infoProgramCompletion: {
     id: 'rwaq.admin.dashboard.info.programCompletion',
-    defaultMessage: 'Of all learners who have ever enrolled in a Program, the share who have finished it. Always all-time — programs span multiple courses and months, so a short date window would produce 0% (nobody finished yet) or impossible values.',
+    defaultMessage: 'Of all learners who have ever enrolled in a Program, the share who finished it. The denominator is always all-time (total ever enrolled). When a date range is selected, only completions that occurred in that period are counted — showing how active program completions were during that window.',
   },
   infoLegacyMigration: {
     id: 'rwaq.admin.dashboard.info.legacyMigration',

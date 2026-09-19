@@ -484,7 +484,6 @@ const DashboardPage = () => {
             enrollments: data.programs.enrollments,
           })}
           unavailableHint={intl.formatMessage(messages.noProgramEnrollments)}
-          badge={intl.formatMessage(messages.allTimeBadge)}
           info={intl.formatMessage(messages.infoProgramCompletion)}
         />
       </div>
