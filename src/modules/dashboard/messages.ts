@@ -114,11 +114,11 @@ const messages = defineMessages({
   // ── Info tooltips ──────────────────────────────────────────────────────────
   infoLearners: {
     id: 'rwaq.admin.dashboard.info.learners',
-    defaultMessage: 'Registered learner accounts - excludes staff and service accounts.',
+    defaultMessage: 'Distinct learners who opened courseware and hold at least one active enrollment — excludes staff and service accounts. When a date range is selected, only learners with courseware activity in that period are counted.',
   },
   infoEnrollments: {
     id: 'rwaq.admin.dashboard.info.enrollments',
-    defaultMessage: 'Active course enrollments, including later-cancelled ones.',
+    defaultMessage: 'Distinct learner–course pairs where the learner has opened courseware and holds an active enrollment. When a date range is selected, only pairs with activity in that period are counted.',
   },
   infoCoursesRunning: {
     id: 'rwaq.admin.dashboard.info.coursesRunning',
@@ -150,7 +150,7 @@ const messages = defineMessages({
   },
   infoEnrollmentTrend: {
     id: 'rwaq.admin.dashboard.info.enrollmentTrend',
-    defaultMessage: 'Monthly course enrollment counts over the selected period or last 12 months.',
+    defaultMessage: 'Distinct learner–course pairs with courseware activity, grouped by calendar month. A learner active in two different months appears in both bars — so the bar sum may exceed the stat card for multi-month ranges where the same pair was active in multiple months.',
   },
   infoCertTrend: {
     id: 'rwaq.admin.dashboard.info.certTrend',
