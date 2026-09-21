@@ -13,9 +13,7 @@ const messages = defineMessages({
 
   // ── KPI row ────────────────────────────────────────────────────────────────
   kpiLearners: { id: 'rwaq.admin.dashboard.kpi.learners', defaultMessage: 'Active Learners' },
-  kpiLearnersRange: { id: 'rwaq.admin.dashboard.kpi.learnersRange', defaultMessage: 'New learners' },
   kpiEnrollments: { id: 'rwaq.admin.dashboard.kpi.enrollments', defaultMessage: 'Active Enrolments' },
-  kpiEnrollmentsRange: { id: 'rwaq.admin.dashboard.kpi.enrollmentsRange', defaultMessage: 'New enrolments' },
   kpiCoursesRunning: { id: 'rwaq.admin.dashboard.kpi.coursesRunning', defaultMessage: 'Courses running' },
   kpiProgramsActive: { id: 'rwaq.admin.dashboard.kpi.programsActive', defaultMessage: 'Active Programs' },
   kpiRegistrations: { id: 'rwaq.admin.dashboard.kpi.registrations', defaultMessage: 'New Registrations this month' },
@@ -116,11 +114,11 @@ const messages = defineMessages({
   // ── Info tooltips ──────────────────────────────────────────────────────────
   infoLearners: {
     id: 'rwaq.admin.dashboard.info.learners',
-    defaultMessage: 'Registered learner accounts - excludes staff and service accounts.',
+    defaultMessage: 'Distinct learners who opened courseware and hold at least one active enrollment — excludes staff and service accounts. When a date range is selected, only learners with courseware activity in that period are counted.',
   },
   infoEnrollments: {
     id: 'rwaq.admin.dashboard.info.enrollments',
-    defaultMessage: 'Active course enrollments, including later-cancelled ones.',
+    defaultMessage: 'Distinct learner–course pairs where the learner has opened courseware and holds an active enrollment. When a date range is selected, only pairs with activity in that period are counted.',
   },
   infoCoursesRunning: {
     id: 'rwaq.admin.dashboard.info.coursesRunning',
@@ -144,7 +142,7 @@ const messages = defineMessages({
   },
   infoProgramCompletion: {
     id: 'rwaq.admin.dashboard.info.programCompletion',
-    defaultMessage: 'Share of program enrollments that reached a completion date. When a date range is selected, only enrollments whose enrollment date falls in that period are counted.',
+    defaultMessage: 'Share of all-time program enrollments that resulted in a completion. When a date range is selected, only completions in that period are counted.',
   },
   infoLegacyMigration: {
     id: 'rwaq.admin.dashboard.info.legacyMigration',
@@ -152,7 +150,7 @@ const messages = defineMessages({
   },
   infoEnrollmentTrend: {
     id: 'rwaq.admin.dashboard.info.enrollmentTrend',
-    defaultMessage: 'Monthly course enrollment counts over the selected period or last 12 months.',
+    defaultMessage: 'Distinct learner–course pairs with courseware activity, grouped by calendar month. A learner active in two different months appears in both bars — so the bar sum may exceed the stat card for multi-month ranges where the same pair was active in multiple months.',
   },
   infoCertTrend: {
     id: 'rwaq.admin.dashboard.info.certTrend',
