@@ -144,10 +144,10 @@ describe('ProgramReportsPage — layout (AC22)', () => {
     expect(screen.getByText(/Generates a CSV summary of program completion/)).toBeInTheDocument();
   });
 
-  it('renders two Generate buttons — one per report type', () => {
+  it('renders four Generate buttons — one per report type', () => {
     renderWrapper(<ProgramReportsPage />);
     const btns = screen.getAllByRole('button', { name: 'Generate' });
-    expect(btns).toHaveLength(2);
+    expect(btns).toHaveLength(4);
   });
 
   it('renders the breadcrumb linking to /programs', () => {
@@ -178,10 +178,10 @@ describe('ProgramReportsPage — duplicate in-flight guard (AC28a)', () => {
     });
     renderWrapper(<ProgramReportsPage />);
     // Enrollment row: spinner present, no Generate button in that row
-    const enrollmentRow = screen.getByText('Enrollment & Progress Report').closest('div[class*="py-4"]')!;
+    const enrollmentRow = screen.getByText('Enrollment & Progress Report').closest('div[class*="py-4"]') as HTMLElement;
     expect(within(enrollmentRow).queryByRole('button', { name: 'Generate' })).not.toBeInTheDocument();
-    // One Generate button still visible for the completion row
-    expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(1);
+    // Three Generate buttons still visible for the other report types
+    expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(3);
   });
 
   it('shows duplicate warning message when in_progress task exists', () => {
@@ -223,7 +223,7 @@ describe('ProgramReportsPage — duplicate in-flight guard (AC28a)', () => {
       isError: false,
     });
     renderWrapper(<ProgramReportsPage />);
-    const completionRow = screen.getByText('Completion Summary').closest('div[class*="py-4"]')!;
+    const completionRow = screen.getByText('Completion Summary').closest('div[class*="py-4"]') as HTMLElement;
     expect(within(completionRow).getByRole('button', { name: 'Generate' })).toBeInTheDocument();
   });
 
@@ -239,8 +239,8 @@ describe('ProgramReportsPage — duplicate in-flight guard (AC28a)', () => {
       isError: false,
     });
     renderWrapper(<ProgramReportsPage />);
-    // Both rows show Generate buttons (no trackedTaskId set, so no inline download widget)
-    expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(2);
+    // All four rows show Generate buttons (no trackedTaskId set, so no inline download widget)
+    expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(4);
   });
 });
 
@@ -266,7 +266,7 @@ describe('ProgramReportsPage — task list error (AC29)', () => {
       isError: true,
     });
     renderWrapper(<ProgramReportsPage />);
-    expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(4);
   });
 });
 
@@ -278,7 +278,7 @@ describe('ProgramReportsPage — onError paths (AC28a)', () => {
       onError({ response: { status: 409 } });
     });
     renderWrapper(<ProgramReportsPage />);
-    const enrollmentRow = screen.getByText('Enrollment & Progress Report').closest('div[class*="py-4"]')!;
+    const enrollmentRow = screen.getByText('Enrollment & Progress Report').closest('div[class*="py-4"]') as HTMLElement;
     fireEvent.click(within(enrollmentRow).getByRole('button', { name: 'Generate' }));
     expect(
       screen.getByText('A report of this type is already being generated.'),
@@ -290,7 +290,7 @@ describe('ProgramReportsPage — onError paths (AC28a)', () => {
       onError({ response: { status: 500, data: {} } });
     });
     renderWrapper(<ProgramReportsPage />);
-    const enrollmentRow = screen.getByText('Enrollment & Progress Report').closest('div[class*="py-4"]')!;
+    const enrollmentRow = screen.getByText('Enrollment & Progress Report').closest('div[class*="py-4"]') as HTMLElement;
     fireEvent.click(within(enrollmentRow).getByRole('button', { name: 'Generate' }));
     expect(
       screen.getByText('Failed to queue report. Please try again.'),
@@ -303,14 +303,14 @@ describe('ProgramReportsPage — onError paths (AC28a)', () => {
 describe('ProgramReportsPage — generate triggers mutation', () => {
   it('calls mutate with enrollment_progress when enrollment Generate is clicked', () => {
     renderWrapper(<ProgramReportsPage />);
-    const enrollmentRow = screen.getByText('Enrollment & Progress Report').closest('div[class*="py-4"]')!;
+    const enrollmentRow = screen.getByText('Enrollment & Progress Report').closest('div[class*="py-4"]') as HTMLElement;
     fireEvent.click(within(enrollmentRow).getByRole('button', { name: 'Generate' }));
     expect(mockMutate).toHaveBeenCalledWith('enrollment_progress', expect.any(Object));
   });
 
   it('calls mutate with completion_summary when completion Generate is clicked', () => {
     renderWrapper(<ProgramReportsPage />);
-    const completionRow = screen.getByText('Completion Summary').closest('div[class*="py-4"]')!;
+    const completionRow = screen.getByText('Completion Summary').closest('div[class*="py-4"]') as HTMLElement;
     fireEvent.click(within(completionRow).getByRole('button', { name: 'Generate' }));
     expect(mockMutate).toHaveBeenCalledWith('completion_summary', expect.any(Object));
   });

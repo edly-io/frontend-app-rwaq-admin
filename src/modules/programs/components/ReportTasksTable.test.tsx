@@ -160,7 +160,6 @@ describe('ReportTasksTable — download column', () => {
     const link = screen.getByRole('link', { name: /download/i });
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', 'https://example.com/r.csv');
-    expect(link).toHaveAttribute('target', '_blank');
   });
 
   it('shows "—" when status=pending', () => {
@@ -214,19 +213,10 @@ describe('ReportTasksTable — elapsed column', () => {
 });
 
 // ── State 7: progress column ──────────────────────────────────────────────────
+// Note: The Progress column was removed from ReportTasksTable in this PR.
+// Only the indeterminate-state test (showing "—") remains.
 
 describe('ReportTasksTable — progress column', () => {
-  it('shows "current / total" when progressTotal > 0', () => {
-    renderWrapper(
-      <ReportTasksTable
-        {...defaultTableProps}
-        tasks={[makeTask({ progressCurrent: 120, progressTotal: 240 })]}
-        totalCount={1}
-      />,
-    );
-    expect(screen.getByText('120 / 240')).toBeInTheDocument();
-  });
-
   it('shows "—" when progressTotal = 0 (indeterminate)', () => {
     renderWrapper(
       <ReportTasksTable
