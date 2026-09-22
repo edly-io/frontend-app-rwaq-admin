@@ -144,7 +144,7 @@ const ReportTriggerRow = ({ def, uuid, tasks }: ReportTriggerRowProps) => {
   } else if (isRunning && !isMutating) {
     statusText = (
       <div className="text-muted small mt-1" role="status" aria-live="polite">
-        {intl.formatMessage(messages.warningDuplicate)}
+        {intl.formatMessage(messages.statusRunning)}
       </div>
     );
   }

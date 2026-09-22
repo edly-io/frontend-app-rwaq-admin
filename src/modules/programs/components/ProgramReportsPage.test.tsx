@@ -184,7 +184,7 @@ describe('ProgramReportsPage — duplicate in-flight guard (AC28a)', () => {
     expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(3);
   });
 
-  it('shows duplicate warning message when in_progress task exists', () => {
+  it('shows running status message below spinner when in_progress task exists', () => {
     (reportsHooks.useProgramReportTasks as jest.Mock).mockReturnValue({
       data: {
         ...emptyTasksPage,
@@ -202,7 +202,7 @@ describe('ProgramReportsPage — duplicate in-flight guard (AC28a)', () => {
     });
     renderWrapper(<ProgramReportsPage />);
     expect(
-      screen.getByText('A report of this type is already being generated.'),
+      screen.getByText('Your report is being generated…'),
     ).toBeInTheDocument();
   });
 

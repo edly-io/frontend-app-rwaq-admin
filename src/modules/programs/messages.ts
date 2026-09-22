@@ -194,6 +194,11 @@ export const programReportsMessages = defineMessages({
     defaultMessage: 'A report of this type is already being generated.',
   },
 
+  statusRunning: {
+    id: 'rwaq.admin.programReports.status.running',
+    defaultMessage: 'Your report is being generated…',
+  },
+
   errorTriggerGeneric: {
     id: 'rwaq.admin.programReports.error.triggerGeneric',
     defaultMessage: 'Failed to queue report. Please try again.',
@@ -208,7 +213,6 @@ export const programReportsMessages = defineMessages({
   colStatus: { id: 'rwaq.admin.programReports.col.status', defaultMessage: 'Status' },
   colGenerated: { id: 'rwaq.admin.programReports.col.generated', defaultMessage: 'Generated' },
   colElapsed: { id: 'rwaq.admin.programReports.col.elapsed', defaultMessage: 'Elapsed' },
-  colProgress: { id: 'rwaq.admin.programReports.col.progress', defaultMessage: 'Progress' },
   colDownload: { id: 'rwaq.admin.programReports.col.download', defaultMessage: 'Download' },
 
   statusPending: { id: 'rwaq.admin.programReports.status.pending', defaultMessage: 'Pending' },
