@@ -119,6 +119,28 @@ const messages = defineMessages({
   // ── Shared ─────────────────────────────────────────────────────────────────
   yes: { id: 'rwaq.admin.programs.yes', defaultMessage: 'Yes' },
   no: { id: 'rwaq.admin.programs.no', defaultMessage: 'No' },
+
+  // ── Bulk enroll ─────────────────────────────────────────────────────────────
+  bulkEnrollButton: { id: 'rwaq.admin.programs.bulkEnroll.button', defaultMessage: 'Bulk enroll' },
+  bulkEnrollTitle: { id: 'rwaq.admin.programs.bulkEnroll.title', defaultMessage: 'Enroll learners' },
+  bulkEnrollHelp: { id: 'rwaq.admin.programs.bulkEnroll.help', defaultMessage: 'Paste email addresses, separated by commas or new lines. Learners are enrolled in the program and all of its courses.' },
+  bulkEnrollLabel: { id: 'rwaq.admin.programs.bulkEnroll.label', defaultMessage: 'Email addresses' },
+  bulkEnrollPlaceholder: { id: 'rwaq.admin.programs.bulkEnroll.placeholder', defaultMessage: 'sara@example.com, omar@example.com' },
+  bulkEnrollCount: { id: 'rwaq.admin.programs.bulkEnroll.count', defaultMessage: '{count} of {max}' },
+  bulkEnrollProgress: { id: 'rwaq.admin.programs.bulkEnroll.progress', defaultMessage: 'Enrolling {done} of {total}…' },
+  bulkEnrollMax: { id: 'rwaq.admin.programs.bulkEnroll.max', defaultMessage: 'Up to {max} at a time' },
+  bulkEnrollInvalid: { id: 'rwaq.admin.programs.bulkEnroll.invalid', defaultMessage: '{count, plural, one {# entry is not an email address} other {# entries are not email addresses}} — remove them to continue:' },
+  bulkEnrollOverMax: { id: 'rwaq.admin.programs.bulkEnroll.overMax', defaultMessage: 'That is {count} addresses. Enroll at most {max} at a time — remove some and run the rest as a second batch.' },
+  bulkEnrollSubmit: { id: 'rwaq.admin.programs.bulkEnroll.submit', defaultMessage: 'Enroll learners' },
+  bulkEnrollSubmitting: { id: 'rwaq.admin.programs.bulkEnroll.submitting', defaultMessage: 'Enrolling…' },
+  bulkEnrollCancel: { id: 'rwaq.admin.programs.bulkEnroll.cancel', defaultMessage: 'Cancel' },
+  bulkEnrollClose: { id: 'rwaq.admin.programs.bulkEnroll.close', defaultMessage: 'Close' },
+  bulkEnrollSuccess: { id: 'rwaq.admin.programs.bulkEnroll.success', defaultMessage: '{count, plural, one {# learner enrolled} other {# learners enrolled}}.' },
+  bulkEnrollAlready: { id: 'rwaq.admin.programs.bulkEnroll.already', defaultMessage: '{count, plural, one {# learner was already enrolled} other {# learners were already enrolled}}.' },
+  bulkEnrollNoneEnrolled: { id: 'rwaq.admin.programs.bulkEnroll.noneEnrolled', defaultMessage: 'No learners were enrolled.' },
+  bulkEnrollFailedTitle: { id: 'rwaq.admin.programs.bulkEnroll.failed.title', defaultMessage: '{count, plural, one {# address could not be enrolled} other {# addresses could not be enrolled}}' },
+  bulkEnrollCourseFailedTitle: { id: 'rwaq.admin.programs.bulkEnroll.courseFailed.title', defaultMessage: 'Enrolled in the program, but not in every course' },
+  bulkEnrollError: { id: 'rwaq.admin.programs.bulkEnroll.error', defaultMessage: 'Could not enroll these learners. Please try again.' },
 });
 
 export default messages;
