@@ -34,7 +34,6 @@ export interface CourseSummary {
   enrollmentCount: number;
   unenrolledCount: number;
   /** Learners with a non-null passed_timestamp. null when served from CMS. */
-  passingCount: number | null;
 }
 
 /** GET /api/v1/admin/courses/ paginated response */

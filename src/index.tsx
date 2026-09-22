@@ -23,6 +23,7 @@ const UsersListPage = lazy(() => import('./modules/users/UsersListPage'));
 const UserDetailPage = lazy(() => import('./modules/users/UserDetailPage'));
 const ProgramListPage = lazy(() => import('./modules/programs/ProgramListPage'));
 const ProgramDetailPage = lazy(() => import('./modules/programs/ProgramDetailPage'));
+const ProgramReportsPage = lazy(() => import('./modules/programs/components/ProgramReportsPage'));
 const CoursesListPage = lazy(() => import('./modules/courses/CoursesListPage'));
 const CourseDetailPage = lazy(() => import('./modules/courses/CourseDetailPage'));
 const CourseReportsPage = lazy(() => import('./modules/courses/CourseReportsPage'));
@@ -64,6 +65,7 @@ subscribe(APP_READY, () => {
                   {/* Programs */}
                   <Route path="programs" element={<ProgramListPage />} />
                   <Route path="programs/:uuid" element={<ProgramDetailPage />} />
+                  <Route path="programs/:uuid/reports" element={<ProgramReportsPage />} />
 
                   {/* Courses */}
                   <Route path="courses" element={<CoursesListPage />} />

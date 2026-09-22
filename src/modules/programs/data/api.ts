@@ -25,6 +25,11 @@ import type {
   ProgramPatch,
   ProgramSubPage,
 } from './types';
+import type {
+  ProgramReportTasksPage,
+  ProgramReportType,
+  TriggerProgramReportResponse,
+} from './reportsTypes';
 
 const getProgramsBaseUrl = () => getStudioApiUrl('/api/v1/admin/programs');
 
@@ -73,4 +78,30 @@ export const getProgramLearners = async (uuid: string, page = 1, search = ''): P
     params: { page, page_size: 10, ...(search ? { search } : {}) },
   });
   return camelCaseObject(data) as ProgramSubPage<ProgramLearner>;
+};
+
+// ── Report tasks ───────────────────────────────────────────────────────────────
+
+/** GET /api/v1/admin/programs/{uuid}/report-tasks/?page=<n> */
+export const fetchProgramReportTasks = async (
+  uuid: string,
+  page = 1,
+): Promise<ProgramReportTasksPage> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getProgramsBaseUrl()}/${uuid}/report-tasks/`,
+    { params: { page, page_size: 10 } },
+  );
+  return camelCaseObject(data) as ProgramReportTasksPage;
+};
+
+/** POST /api/v1/admin/programs/{uuid}/report-tasks/ */
+export const triggerProgramReport = async (
+  uuid: string,
+  reportType: ProgramReportType,
+): Promise<TriggerProgramReportResponse> => {
+  const { data } = await getAuthenticatedHttpClient().post(
+    `${getProgramsBaseUrl()}/${uuid}/report-tasks/`,
+    snakeCaseObject({ reportType }),
+  );
+  return camelCaseObject(data) as TriggerProgramReportResponse;
 };
