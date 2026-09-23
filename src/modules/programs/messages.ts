@@ -119,6 +119,28 @@ const messages = defineMessages({
   // ── Shared ─────────────────────────────────────────────────────────────────
   yes: { id: 'rwaq.admin.programs.yes', defaultMessage: 'Yes' },
   no: { id: 'rwaq.admin.programs.no', defaultMessage: 'No' },
+
+  // ── Bulk enroll ─────────────────────────────────────────────────────────────
+  bulkEnrollButton: { id: 'rwaq.admin.programs.bulkEnroll.button', defaultMessage: 'Bulk enroll' },
+  bulkEnrollTitle: { id: 'rwaq.admin.programs.bulkEnroll.title', defaultMessage: 'Enroll learners' },
+  bulkEnrollHelp: { id: 'rwaq.admin.programs.bulkEnroll.help', defaultMessage: 'Paste email addresses, separated by commas or new lines. Learners are enrolled in the program and all of its courses.' },
+  bulkEnrollLabel: { id: 'rwaq.admin.programs.bulkEnroll.label', defaultMessage: 'Email addresses' },
+  bulkEnrollPlaceholder: { id: 'rwaq.admin.programs.bulkEnroll.placeholder', defaultMessage: 'sara@example.com, omar@example.com' },
+  bulkEnrollCount: { id: 'rwaq.admin.programs.bulkEnroll.count', defaultMessage: '{count} of {max}' },
+  bulkEnrollProgress: { id: 'rwaq.admin.programs.bulkEnroll.progress', defaultMessage: 'Enrolling {done} of {total}…' },
+  bulkEnrollMax: { id: 'rwaq.admin.programs.bulkEnroll.max', defaultMessage: 'Up to {max} at a time' },
+  bulkEnrollInvalid: { id: 'rwaq.admin.programs.bulkEnroll.invalid', defaultMessage: '{count, plural, one {# entry is not an email address} other {# entries are not email addresses}} — remove them to continue:' },
+  bulkEnrollOverMax: { id: 'rwaq.admin.programs.bulkEnroll.overMax', defaultMessage: 'That is {count} addresses. Enroll at most {max} at a time — remove some and run the rest as a second batch.' },
+  bulkEnrollSubmit: { id: 'rwaq.admin.programs.bulkEnroll.submit', defaultMessage: 'Enroll learners' },
+  bulkEnrollSubmitting: { id: 'rwaq.admin.programs.bulkEnroll.submitting', defaultMessage: 'Enrolling…' },
+  bulkEnrollCancel: { id: 'rwaq.admin.programs.bulkEnroll.cancel', defaultMessage: 'Cancel' },
+  bulkEnrollClose: { id: 'rwaq.admin.programs.bulkEnroll.close', defaultMessage: 'Close' },
+  bulkEnrollSuccess: { id: 'rwaq.admin.programs.bulkEnroll.success', defaultMessage: '{count, plural, one {# learner enrolled} other {# learners enrolled}}.' },
+  bulkEnrollAlready: { id: 'rwaq.admin.programs.bulkEnroll.already', defaultMessage: '{count, plural, one {# learner was already enrolled} other {# learners were already enrolled}}.' },
+  bulkEnrollNoneEnrolled: { id: 'rwaq.admin.programs.bulkEnroll.noneEnrolled', defaultMessage: 'No learners were enrolled.' },
+  bulkEnrollFailedTitle: { id: 'rwaq.admin.programs.bulkEnroll.failed.title', defaultMessage: '{count, plural, one {# address could not be enrolled} other {# addresses could not be enrolled}}' },
+  bulkEnrollCourseFailedTitle: { id: 'rwaq.admin.programs.bulkEnroll.courseFailed.title', defaultMessage: 'Enrolled in the program, but not in every course' },
+  bulkEnrollError: { id: 'rwaq.admin.programs.bulkEnroll.error', defaultMessage: 'Could not enroll these learners. Please try again.' },
 });
 
 export default messages;
@@ -127,7 +149,6 @@ export default messages;
 
 export const programReportsMessages = defineMessages({
   breadcrumbPrograms: { id: 'rwaq.admin.programReports.breadcrumb.programs', defaultMessage: 'Programs' },
-  breadcrumbReports: { id: 'rwaq.admin.programReports.breadcrumb.reports', defaultMessage: '/ Reports' },
   pageTitle: { id: 'rwaq.admin.programReports.pageTitle', defaultMessage: 'Reports' },
   sectionTitle: { id: 'rwaq.admin.programReports.section.title', defaultMessage: 'Program Completion' },
   sectionBody: {
@@ -144,4 +165,86 @@ export const programReportsMessages = defineMessages({
   completionRateAriaLabel: { id: 'rwaq.admin.programReports.completionRate.ariaLabel', defaultMessage: '{rate}% completion rate' },
   completionRateCaption: { id: 'rwaq.admin.programReports.completionRate.caption', defaultMessage: '{rate}% completion rate' },
   loadingReport: { id: 'rwaq.admin.programReports.loading', defaultMessage: 'Loading report' },
+
+  // ── Report task list page ──────────────────────────────────────────────────
+  btnReports: { id: 'rwaq.admin.programReports.btnReports', defaultMessage: 'View Reports' },
+
+  taskPageTitle: { id: 'rwaq.admin.programReports.taskPage.title', defaultMessage: 'Reports' },
+  taskPageBreadcrumbReports: { id: 'rwaq.admin.programReports.taskPage.breadcrumb.reports', defaultMessage: 'Reports' },
+
+  generateSectionTitle: { id: 'rwaq.admin.programReports.generate.title', defaultMessage: 'Generate Reports' },
+  generateSectionBody: {
+    id: 'rwaq.admin.programReports.generate.body',
+    defaultMessage: 'Click Generate next to a report type to queue an async task. Completed files appear in the Reports Available for Download section below.',
+  },
+
+  reportEnrollmentLabel: { id: 'rwaq.admin.programReports.report.enrollment.label', defaultMessage: 'Enrollment & Progress Report' },
+  reportEnrollmentDesc: {
+    id: 'rwaq.admin.programReports.report.enrollment.desc',
+    defaultMessage: 'Generates a CSV of all program enrollments including learner identity, enrollment dates, per-course enrollment status, grades, and certificate status.',
+  },
+  reportCompletionLabel: { id: 'rwaq.admin.programReports.report.completion.label', defaultMessage: 'Completion Summary' },
+  reportCompletionDesc: {
+    id: 'rwaq.admin.programReports.report.completion.desc',
+    defaultMessage: 'Generates a CSV summary of program completion status per learner — enrolled count, completed count, and completion date where applicable.',
+  },
+  reportLearnerSummaryLabel: { id: 'rwaq.admin.programReports.report.learnerSummary.label', defaultMessage: 'Learner Summary' },
+  reportLearnerSummaryDesc: {
+    id: 'rwaq.admin.programReports.report.learnerSummary.desc',
+    defaultMessage: 'One row per learner with aggregated stats: courses enrolled, courses passed, average grade, and certificates earned across all program courses.',
+  },
+  reportCourseStatisticsLabel: { id: 'rwaq.admin.programReports.report.courseStatistics.label', defaultMessage: 'Course Statistics' },
+  reportCourseStatisticsDesc: {
+    id: 'rwaq.admin.programReports.report.courseStatistics.desc',
+    defaultMessage: 'One row per course with totals across all program learners: enrollments, passes, pass rate, average grade, and certificates issued.',
+  },
+
+  btnGenerate: { id: 'rwaq.admin.programReports.btn.generate', defaultMessage: 'Generate' },
+  srGeneratingReport: { id: 'rwaq.admin.programReports.sr.generatingReport', defaultMessage: 'Generating report…' },
+
+  downloadsSectionTitle: { id: 'rwaq.admin.programReports.downloads.title', defaultMessage: 'Reports Available for Download' },
+  downloadsSectionBody: {
+    id: 'rwaq.admin.programReports.downloads.body',
+    defaultMessage: 'Auto-refreshes every 10s while a report is processing. Download links expire after 1 hour.',
+  },
+
+  btnGenerateEnrollment: { id: 'rwaq.admin.programReports.btn.enrollment', defaultMessage: 'Generate Enrollment & Progress Report' },
+  btnGenerateCompletion: { id: 'rwaq.admin.programReports.btn.completion', defaultMessage: 'Generate Completion Summary' },
+
+  warningDuplicate: {
+    id: 'rwaq.admin.programReports.warning.duplicate',
+    defaultMessage: 'A report of this type is already being generated.',
+  },
+
+  statusRunning: {
+    id: 'rwaq.admin.programReports.status.running',
+    defaultMessage: 'Your report is being generated…',
+  },
+
+  errorTriggerGeneric: {
+    id: 'rwaq.admin.programReports.error.triggerGeneric',
+    defaultMessage: 'Failed to queue report. Please try again.',
+  },
+
+  errorLoadReports: {
+    id: 'rwaq.admin.programReports.error.loadReports',
+    defaultMessage: 'Could not load report history. Please refresh.',
+  },
+
+  colReportType: { id: 'rwaq.admin.programReports.col.reportType', defaultMessage: 'Report Type' },
+  colStatus: { id: 'rwaq.admin.programReports.col.status', defaultMessage: 'Status' },
+  colGenerated: { id: 'rwaq.admin.programReports.col.generated', defaultMessage: 'Generated' },
+  colElapsed: { id: 'rwaq.admin.programReports.col.elapsed', defaultMessage: 'Elapsed' },
+  colDownload: { id: 'rwaq.admin.programReports.col.download', defaultMessage: 'Download' },
+
+  statusPending: { id: 'rwaq.admin.programReports.status.pending', defaultMessage: 'Pending' },
+  statusProcessing: { id: 'rwaq.admin.programReports.status.processing', defaultMessage: 'Processing' },
+  statusComplete: { id: 'rwaq.admin.programReports.status.complete', defaultMessage: 'Complete' },
+  statusFailed: { id: 'rwaq.admin.programReports.status.failed', defaultMessage: 'Failed' },
+
+  btnDownload: { id: 'rwaq.admin.programReports.btn.download', defaultMessage: 'Download' },
+
+  emptyReports: { id: 'rwaq.admin.programReports.empty', defaultMessage: 'No reports have been generated yet.' },
+
+  srLoading: { id: 'rwaq.admin.programReports.sr.loading', defaultMessage: 'Loading program…' },
 });

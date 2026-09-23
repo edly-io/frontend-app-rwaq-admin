@@ -31,10 +31,6 @@ const messages = defineMessages({
     id: 'rwaq.admin.courses.col.enrollments',
     defaultMessage: 'Enrollments',
   },
-  colPassing: {
-    id: 'rwaq.admin.courses.col.passing',
-    defaultMessage: 'Passing',
-  },
   colActions: {
     id: 'rwaq.admin.courses.col.actions',
     defaultMessage: 'Actions',

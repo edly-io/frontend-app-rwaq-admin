@@ -17,6 +17,7 @@ import { camelCaseObject, snakeCaseObject } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { getStudioApiUrl } from '@src/data/utils';
 import type {
+  BulkEnrollResult,
   ProgramCourse,
   ProgramDetail,
   ProgramLearner,
@@ -25,6 +26,11 @@ import type {
   ProgramPatch,
   ProgramSubPage,
 } from './types';
+import type {
+  ProgramReportTasksPage,
+  ProgramReportType,
+  TriggerProgramReportResponse,
+} from './reportsTypes';
 
 const getProgramsBaseUrl = () => getStudioApiUrl('/api/v1/admin/programs');
 
@@ -68,9 +74,53 @@ export const getProgramCourses = async (uuid: string, page = 1): Promise<Program
 // ── Learners ───────────────────────────────────────────────────────────────────
 
 /** GET /api/v1/admin/programs/{uuid}/learners/?page=<n>&search=<term> */
+/**
+ * Enroll a list of learners into a program by email.
+ *
+ * `emails` is sent as the admin typed it — the backend splits on commas,
+ * semicolons and newlines, lower-cases and de-duplicates, so the textarea
+ * contents go across untouched.
+ */
+export const bulkEnrollLearners = async (
+  uuid: string,
+  emails: string,
+): Promise<BulkEnrollResult> => {
+  const { data } = await getAuthenticatedHttpClient().post(
+    `${getProgramsBaseUrl()}/${uuid}/bulk-enroll/`,
+    { emails },
+  );
+  return camelCaseObject(data) as BulkEnrollResult;
+};
+
 export const getProgramLearners = async (uuid: string, page = 1, search = ''): Promise<ProgramSubPage<ProgramLearner>> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/learners/`, {
     params: { page, page_size: 10, ...(search ? { search } : {}) },
   });
   return camelCaseObject(data) as ProgramSubPage<ProgramLearner>;
+};
+
+// ── Report tasks ───────────────────────────────────────────────────────────────
+
+/** GET /api/v1/admin/programs/{uuid}/report-tasks/?page=<n> */
+export const fetchProgramReportTasks = async (
+  uuid: string,
+  page = 1,
+): Promise<ProgramReportTasksPage> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getProgramsBaseUrl()}/${uuid}/report-tasks/`,
+    { params: { page, page_size: 10 } },
+  );
+  return camelCaseObject(data) as ProgramReportTasksPage;
+};
+
+/** POST /api/v1/admin/programs/{uuid}/report-tasks/ */
+export const triggerProgramReport = async (
+  uuid: string,
+  reportType: ProgramReportType,
+): Promise<TriggerProgramReportResponse> => {
+  const { data } = await getAuthenticatedHttpClient().post(
+    `${getProgramsBaseUrl()}/${uuid}/report-tasks/`,
+    snakeCaseObject({ reportType }),
+  );
+  return camelCaseObject(data) as TriggerProgramReportResponse;
 };
