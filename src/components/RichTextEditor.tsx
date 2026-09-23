@@ -111,6 +111,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     <Editor
       key={editorKey}
       initialValue={stableInitialValue}
+      value={value}
       onEditorChange={onChange}
       init={{
         // Disable TinyMCE's runtime skin/content-css URL loading: the skin CSS is

@@ -93,7 +93,7 @@ const OrgListPage = () => {
     pageSize: PAGE_SIZE,
   });
 
-  const { data: editingOrg } = useOrganization(editingShortName ?? '');
+  const { data: editingOrg, isLoading: isEditingOrgLoading } = useOrganization(editingShortName ?? '');
 
   const statusCode = isError ? getErrorStatus(error) : undefined;
 
@@ -285,7 +285,7 @@ const OrgListPage = () => {
 
       {/* Edit waits for the detail fetch, so the form never opens half-populated. */}
       <OrgFormModal
-        isOpen={editingShortName !== null && !!editingOrg}
+        isOpen={editingShortName !== null && !!editingOrg && !isEditingOrgLoading}
         onClose={() => setEditingShortName(null)}
         organization={editingOrg ?? null}
       />
