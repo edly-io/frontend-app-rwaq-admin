@@ -621,4 +621,82 @@ export const courseRoleMessages = defineMessages({
     id: 'rwaq.admin.courses.role.dataResearcher.desc',
     defaultMessage: 'Data Researcher, read-only access to learner data',
   },
+
+  // ── Pricing ────────────────────────────────────────────────────────────────
+  pricingSectionTitle: {
+    id: 'rwaq.admin.courses.pricing.title',
+    defaultMessage: 'Pricing',
+  },
+  pricingSectionDescription: {
+    id: 'rwaq.admin.courses.pricing.description',
+    defaultMessage: 'Set how this course is sold. Prices are published to the marketing site.',
+  },
+  pricingManagedLabel: {
+    id: 'rwaq.admin.courses.pricing.managed-label',
+    defaultMessage: 'Manage pricing from the admin panel',
+  },
+  pricingManagedHint: {
+    id: 'rwaq.admin.courses.pricing.managed-hint',
+    defaultMessage: 'When enabled, course authors see the pricing fields in Studio but cannot change them.',
+  },
+  pricingCategoryLabel: {
+    id: 'rwaq.admin.courses.pricing.category-label',
+    defaultMessage: 'Pricing type',
+  },
+  pricingFree: {
+    id: 'rwaq.admin.courses.pricing.free',
+    defaultMessage: 'Free',
+  },
+  pricingPaid: {
+    id: 'rwaq.admin.courses.pricing.paid',
+    defaultMessage: 'Paid — sold on its own',
+  },
+  pricingWithinProgram: {
+    id: 'rwaq.admin.courses.pricing.within-program',
+    defaultMessage: 'Part of a paid program',
+  },
+  pricingWithinProgramHint: {
+    id: 'rwaq.admin.courses.pricing.within-program-hint',
+    defaultMessage: 'The program is the sellable unit, so this course carries no price of its own.',
+  },
+  pricingPriceLabel: {
+    id: 'rwaq.admin.courses.pricing.price-label',
+    defaultMessage: 'Price',
+  },
+  pricingDiscountLabel: {
+    id: 'rwaq.admin.courses.pricing.discount-label',
+    defaultMessage: 'Discounted price',
+  },
+  pricingDiscountHint: {
+    id: 'rwaq.admin.courses.pricing.discount-hint',
+    defaultMessage: 'Optional. Leave empty when the course is not on sale.',
+  },
+  pricingSave: {
+    id: 'rwaq.admin.courses.pricing.save',
+    defaultMessage: 'Save pricing',
+  },
+  pricingSaving: {
+    id: 'rwaq.admin.courses.pricing.saving',
+    defaultMessage: 'Saving…',
+  },
+  pricingSaved: {
+    id: 'rwaq.admin.courses.pricing.saved',
+    defaultMessage: 'Pricing saved.',
+  },
+  pricingErrorPriceRequired: {
+    id: 'rwaq.admin.courses.pricing.error-price-required',
+    defaultMessage: 'Enter a price for a paid course.',
+  },
+  pricingErrorDiscountTooHigh: {
+    id: 'rwaq.admin.courses.pricing.error-discount-too-high',
+    defaultMessage: 'The discounted price must not be higher than the regular price.',
+  },
+  pricingErrorNegative: {
+    id: 'rwaq.admin.courses.pricing.error-negative',
+    defaultMessage: 'Prices cannot be negative.',
+  },
+  pricingErrorSaveFailed: {
+    id: 'rwaq.admin.courses.pricing.error-save-failed',
+    defaultMessage: 'Could not save pricing. Please try again.',
+  },
 });
