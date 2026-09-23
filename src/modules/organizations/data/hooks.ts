@@ -49,7 +49,9 @@ export const useCreateOrganization = () => {
 
   return useMutation({
     mutationFn: (payload: OrgCreatePayload) => createOrganization(payload),
-    onSuccess: () => {
+    onSuccess: (created: OrgDetail) => {
+      // Cache the created org's detail so the edit modal can read it immediately
+      queryClient.setQueryData(orgQueryKeys.detail(created.shortName), created);
       queryClient.invalidateQueries({ queryKey: orgQueryKeys.lists() });
     },
   });

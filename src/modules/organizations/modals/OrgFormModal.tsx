@@ -44,16 +44,19 @@ const emptyValues: FormValues = {
   showLogoOnProgramCertificate: false,
 };
 
-const toFormValues = (organization: OrgDetail | null): FormValues => (organization
-  ? {
-    name: organization.name,
-    shortName: organization.shortName,
-    arabicName: organization.arabicName ?? '',
-    description: organization.description ?? '',
-    featuredVideo: organization.featuredVideo ?? '',
-    showLogoOnProgramCertificate: organization.showLogoOnProgramCertificate ?? false,
-  }
-  : emptyValues);
+const toFormValues = (organization: OrgDetail | null): FormValues => {
+  const values = organization
+    ? {
+      name: organization.name,
+      shortName: organization.shortName,
+      arabicName: organization.arabicName ?? '',
+      description: organization.description ?? '',
+      featuredVideo: organization.featuredVideo ?? '',
+      showLogoOnProgramCertificate: organization.showLogoOnProgramCertificate ?? false,
+    }
+    : emptyValues;
+  return values;
+};
 
 interface OrgFormModalProps {
   isOpen: boolean;
@@ -66,7 +69,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
   const isEdit = organization !== null;
-  const editorKey = `${isOpen ? 'open' : 'closed'}-${organization?.shortName ?? 'new'}`;
+  const editorKey = `${isOpen ? 'open' : 'closed'}-${organization?.id || 'new'}`;
   const [isShortNameFocused, setIsShortNameFocused] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -137,9 +140,13 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
       setLogoFile(null);
       setLogoPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
       setLogoTypeError(null);
+    } else if (organization) {
+      // When opening in edit mode, ensure form values are set from the organization data
+      const values = toFormValues(organization);
+      formik.setValues(values);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, organization]);
 
   const fieldError = (field: keyof FormValues) => (
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''
