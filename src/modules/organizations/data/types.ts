@@ -62,6 +62,7 @@ export interface OrgCreatePayload {
   description?: string;
   arabicName?: string;
   featuredVideo?: string;
+  showLogoOnProgramCertificate?: boolean;
 }
 
 /** Fields PATCH /rwaq/api/organizations/<short_name>/ accepts */

@@ -110,6 +110,10 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             arabicName: values.arabicName,
             description: values.description,
             featuredVideo: values.featuredVideo,
+            // The create form shows this checkbox, so it has to be sent here
+            // too — omitting it meant a new org always saved it as false
+            // regardless of what the admin ticked (EDLYCSRWAQ-230).
+            showLogoOnProgramCertificate: values.showLogoOnProgramCertificate,
           };
           const created = await createMutation.mutateAsync(payload);
           if (logoFile) {
