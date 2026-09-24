@@ -10,9 +10,9 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
-import { useCoursePricing, useUpdateCoursePricing } from '../data/hooks';
+import { useCoursePricing, useDeleteCoursePricing, useUpdateCoursePricing } from '../data/hooks';
 import type { CoursePricingCategory } from '../data/types';
-import messages from '../messages';
+import { courseRoleMessages as messages } from '../messages';
 
 interface CoursePricingCardProps {
   courseId: string;
@@ -24,7 +24,9 @@ type UiCategory = 'free' | CoursePricingCategory;
 const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   const intl = useIntl();
   const { data: pricing, isLoading } = useCoursePricing(courseId);
-  const { mutateAsync, isPending } = useUpdateCoursePricing(courseId);
+  const { mutateAsync: updatePricing, isPending: isUpdating } = useUpdateCoursePricing(courseId);
+  const { mutateAsync: deletePricing, isPending: isDeleting } = useDeleteCoursePricing(courseId);
+  const isPending = isUpdating || isDeleting;
 
   const [category, setCategory] = useState<UiCategory>('free');
   const [price, setPrice] = useState('');
@@ -44,6 +46,12 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   // Only a standalone paid course carries its own price: a free course has no
   // pricing row, and a course inside a paid program is sold via the program.
   const showPriceFields = category === 'is_paid';
+  // No pricing row means no place to store the flag, so a free course cannot be locked.
+  const isFree = category === 'free';
+  const currency = pricing?.currency ?? 'SAR';
+  // A course in a paid program is sold through the program, so its pricing is read-only here.
+  const inPaidProgram = !!pricing?.partOfProgram;
+  const isLocked = isLoading || isPending || inPaidProgram;
 
   const validate = (): string => {
     if (!showPriceFields) { return ''; }
@@ -64,16 +72,17 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
     }
     setError('');
     try {
-      await mutateAsync({
-        // 'free' has no backend category; clearing the price is what makes a
-        // course free, so send is_paid with nulls rather than an empty string.
-        pricingCategory: category === 'free' ? 'is_paid' : category,
-        price: category === 'free' || !showPriceFields ? null : price.trim(),
-        discount: category === 'free' || !showPriceFields || discount.trim() === ''
-          ? null
-          : discount.trim(),
-        pricingManagedByAdmin: managedByAdmin,
-      });
+      if (isFree) {
+        // 'free' has no backend category: a free course is one with no row.
+        await deletePricing();
+      } else {
+        await updatePricing({
+          pricingCategory: category,
+          price: showPriceFields ? price.trim() : null,
+          discount: !showPriceFields || discount.trim() === '' ? null : discount.trim(),
+          pricingManagedByAdmin: managedByAdmin,
+        });
+      }
       setSaved(true);
     } catch (err) {
       logError(err);
@@ -99,46 +108,24 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
         </p>
       </div>
 
+      {inPaidProgram && (
+        <Alert variant="info" className="mb-3">
+          {intl.formatMessage(messages.pricingPartOfProgramNotice, {
+            program: pricing?.partOfProgramName ?? pricing?.partOfProgram,
+          })}
+        </Alert>
+      )}
       {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
       {saved && !error && (
         <Alert variant="success" className="mb-3">{intl.formatMessage(messages.pricingSaved)}</Alert>
       )}
 
       <Form.Group>
-        <div className="d-flex align-items-start">
-          <input
-            type="checkbox"
-            id="pricing-managed-by-admin"
-            checked={managedByAdmin}
-            disabled={isLoading || isPending}
-            onChange={(e) => { setManagedByAdmin(e.target.checked); touched(); }}
-            className="mt-1 mr-2"
-            style={{
-              cursor: 'pointer', width: '16px', height: '16px', flexShrink: 0,
-            }}
-          />
-          <div>
-            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-            <label
-              htmlFor="pricing-managed-by-admin"
-              className="mb-0 font-weight-bold"
-              style={{ cursor: 'pointer' }}
-            >
-              {intl.formatMessage(messages.pricingManagedLabel)}
-            </label>
-            <p className="small text-muted mb-0">
-              {intl.formatMessage(messages.pricingManagedHint)}
-            </p>
-          </div>
-        </div>
-      </Form.Group>
-
-      <Form.Group className="mt-4">
         <Form.Label>{intl.formatMessage(messages.pricingCategoryLabel)}</Form.Label>
         <Form.Control
           as="select"
           value={category}
-          disabled={isLoading || isPending}
+          disabled={isLocked}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
             setCategory(e.target.value as UiCategory);
             touched();
@@ -150,7 +137,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
         </Form.Control>
       </Form.Group>
 
-      {category === 'is_within_program' && (
+      {category === 'is_within_program' && !inPaidProgram && (
         <p className="small text-muted">
           {intl.formatMessage(messages.pricingWithinProgramHint)}
         </p>
@@ -159,25 +146,25 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
       {showPriceFields && (
         <>
           <Form.Group>
-            <Form.Label>{intl.formatMessage(messages.pricingPriceLabel)}</Form.Label>
+            <Form.Label>{intl.formatMessage(messages.pricingPriceLabel, { currency })}</Form.Label>
             <Form.Control
               type="number"
               min="0"
               step="0.01"
               value={price}
-              disabled={isLoading || isPending}
+              disabled={isLocked}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setPrice(e.target.value); touched(); }}
             />
           </Form.Group>
 
           <Form.Group>
-            <Form.Label>{intl.formatMessage(messages.pricingDiscountLabel)}</Form.Label>
+            <Form.Label>{intl.formatMessage(messages.pricingDiscountLabel, { currency })}</Form.Label>
             <Form.Control
               type="number"
               min="0"
               step="0.01"
               value={discount}
-              disabled={isLoading || isPending}
+              disabled={isLocked}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setDiscount(e.target.value); touched(); }}
             />
             <Form.Text muted>{intl.formatMessage(messages.pricingDiscountHint)}</Form.Text>
@@ -185,9 +172,23 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
         </>
       )}
 
-      <Button variant="primary" size="sm" onClick={handleSave} disabled={isLoading || isPending}>
-        {intl.formatMessage(isPending ? messages.pricingSaving : messages.pricingSave)}
-      </Button>
+      <Form.Group controlId="pricing-managed-by-admin">
+        <Form.Checkbox
+          name="pricingManagedByAdmin"
+          checked={managedByAdmin && !isFree}
+          disabled={isLocked || isFree}
+          description={intl.formatMessage(isFree ? messages.pricingManagedFreeHint : messages.pricingManagedHint)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setManagedByAdmin(e.target.checked); touched(); }}
+        >
+          {intl.formatMessage(messages.pricingManagedLabel)}
+        </Form.Checkbox>
+      </Form.Group>
+
+      {!inPaidProgram && (
+        <Button variant="primary" size="sm" onClick={handleSave} disabled={isLoading || isPending}>
+          {intl.formatMessage(isPending ? messages.pricingSaving : messages.pricingSave)}
+        </Button>
+      )}
     </div>
   );
 };

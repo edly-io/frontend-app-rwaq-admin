@@ -639,6 +639,10 @@ export const courseRoleMessages = defineMessages({
     id: 'rwaq.admin.courses.pricing.managed-hint',
     defaultMessage: 'When enabled, course authors see the pricing fields in Studio but cannot change them.',
   },
+  pricingManagedFreeHint: {
+    id: 'rwaq.admin.courses.pricing.managed-free-hint',
+    defaultMessage: 'Only a paid course or a course in a paid program can be managed from the admin panel.',
+  },
   pricingCategoryLabel: {
     id: 'rwaq.admin.courses.pricing.category-label',
     defaultMessage: 'Pricing type',
@@ -649,11 +653,15 @@ export const courseRoleMessages = defineMessages({
   },
   pricingPaid: {
     id: 'rwaq.admin.courses.pricing.paid',
-    defaultMessage: 'Paid — sold on its own',
+    defaultMessage: 'Paid, sold on its own',
   },
   pricingWithinProgram: {
     id: 'rwaq.admin.courses.pricing.within-program',
     defaultMessage: 'Part of a paid program',
+  },
+  pricingPartOfProgramNotice: {
+    id: 'rwaq.admin.courses.pricing.part-of-program-notice',
+    defaultMessage: 'This course is part of the paid program {program}. Learners buy the program, so the course has no price of its own. Remove it from the program to price it here.',
   },
   pricingWithinProgramHint: {
     id: 'rwaq.admin.courses.pricing.within-program-hint',
@@ -661,11 +669,11 @@ export const courseRoleMessages = defineMessages({
   },
   pricingPriceLabel: {
     id: 'rwaq.admin.courses.pricing.price-label',
-    defaultMessage: 'Price',
+    defaultMessage: 'Price ({currency})',
   },
   pricingDiscountLabel: {
     id: 'rwaq.admin.courses.pricing.discount-label',
-    defaultMessage: 'Discounted price',
+    defaultMessage: 'Discounted price ({currency})',
   },
   pricingDiscountHint: {
     id: 'rwaq.admin.courses.pricing.discount-hint',

@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-query';
 import { appId } from '@src/constants';
 import type {
+  CoursePricing,
   CoursePricingPatch,
   CourseEnrollmentParams,
   CourseEnrollPayload,
@@ -16,6 +17,7 @@ import type {
 } from './types';
 import {
   addCourseStaff,
+  deleteCoursePricing,
   downloadCourseEnrollmentsCsv,
   enrollUserInCourse,
   getCourse,
@@ -151,6 +153,27 @@ export const useUpdateCoursePricing = (courseId: string) => {
       // Seed the cache from the response rather than refetching: the endpoint
       // returns the full row, so a round trip would tell us nothing new.
       queryClient.setQueryData(courseQueryKeys.pricing(courseId), updated);
+    },
+  });
+};
+
+/** Make the course free by removing its pricing row. */
+export const useDeleteCoursePricing = (courseId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteCoursePricing(courseId),
+    onSuccess: () => {
+      const free: CoursePricing = {
+        pricingCategory: null,
+        price: null,
+        discount: null,
+        currency: null,
+        pricingManagedByAdmin: false,
+        partOfProgram: null,
+        partOfProgramName: null,
+      };
+      queryClient.setQueryData(courseQueryKeys.pricing(courseId), free);
     },
   });
 };

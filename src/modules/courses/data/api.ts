@@ -12,6 +12,7 @@
  *   DELETE  /api/v1/admin/courses/{courseId}/staff/{userId}/
  *   GET     /api/v1/admin/courses/{courseId}/pricing/
  *   PUT     /api/v1/admin/courses/{courseId}/pricing/
+ *   DELETE  /api/v1/admin/courses/{courseId}/pricing/
  *
  * Host: Studio (CMS). Grade/cert stats are null when served from CMS — the
  * backend sends explicit nulls; the frontend surfaces "—" in those cells.
@@ -168,4 +169,16 @@ export const updateCoursePricing = async (
     body,
   );
   return camelCaseObject(data) as CoursePricing;
+};
+
+/**
+ * DELETE /api/v1/admin/courses/{courseId}/pricing/
+ *
+ * Makes the course free. A free course has no pricing row, so this also clears
+ * pricingManagedByAdmin.
+ */
+export const deleteCoursePricing = async (courseId: string): Promise<void> => {
+  await getAuthenticatedHttpClient().delete(
+    `${getCoursesBaseUrl()}/${encodeURIComponent(courseId)}/pricing/`,
+  );
 };

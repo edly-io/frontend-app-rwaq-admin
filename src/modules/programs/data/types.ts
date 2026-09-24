@@ -61,8 +61,18 @@ export interface ProgramDetail extends ProgramSummary {
   longDescription: string;
   introVideoId: string | null;
   introVideoUrl: string | null;
+  /** '' means the program is free. */
+  pricingCategory: ProgramPricingCategory;
+  /** Decimal strings, not numbers, to avoid float rounding on money. */
+  price: string | null;
+  discount: string | null;
+  /** ISO 4217 code of price and discount. */
+  currency: string;
   modified: string;
 }
+
+/** Mirrors rwaq_features.programs.models.Program.PRICING_CATEGORY_CHOICES, plus '' for free. */
+export type ProgramPricingCategory = '' | 'is_paid';
 
 /** One row of GET /api/v1/admin/programs/{uuid}/courses/ */
 export interface ProgramCourse {
@@ -121,6 +131,9 @@ export interface ProgramPatch {
   name?: string;
   description?: string;
   longDescription?: string;
+  pricingCategory?: ProgramPricingCategory;
+  price?: string | null;
+  discount?: string | null;
 }
 
 /** One address the bulk-enroll call could act on. */

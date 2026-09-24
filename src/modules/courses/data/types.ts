@@ -152,11 +152,20 @@ export interface CoursePricing {
   /** Decimal strings, not numbers — avoids float rounding on money. */
   price: string | null;
   discount: string | null;
+  /** ISO 4217 code of price and discount. null when the course is free. */
+  currency: string | null;
   /**
    * When true, Studio renders this course's pricing read-only and the
    * Studio-facing endpoint refuses writes. Settable only from here.
    */
   pricingManagedByAdmin: boolean;
+  /**
+   * program_key of the paid program the course is in, or null. While set, the
+   * program is what learners buy: the course shows as part of it, has no price
+   * of its own, and the endpoint refuses pricing writes.
+   */
+  partOfProgram: string | null;
+  partOfProgramName: string | null;
 }
 
 /** Every field optional — the endpoint accepts a partial update. */
