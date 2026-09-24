@@ -68,6 +68,8 @@ export interface ProgramDetail extends ProgramSummary {
   discount: string | null;
   /** ISO 4217 code of price and discount. */
   currency: string;
+  /** When true, Studio shows this program's pricing read-only. Settable only from here. */
+  pricingManagedByAdmin: boolean;
   modified: string;
 }
 
@@ -134,6 +136,7 @@ export interface ProgramPatch {
   pricingCategory?: ProgramPricingCategory;
   price?: string | null;
   discount?: string | null;
+  pricingManagedByAdmin?: boolean;
 }
 
 /** One address the bulk-enroll call could act on. */

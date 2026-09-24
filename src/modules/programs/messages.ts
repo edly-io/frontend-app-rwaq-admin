@@ -119,6 +119,14 @@ const messages = defineMessages({
     id: 'rwaq.admin.programs.pricing.courses-note',
     defaultMessage: 'Courses in a paid program are not sold separately. The program is what learners buy.',
   },
+  pricingManagedLabel: {
+    id: 'rwaq.admin.programs.pricing.managed-label',
+    defaultMessage: 'Manage pricing from the admin panel',
+  },
+  pricingManagedHint: {
+    id: 'rwaq.admin.programs.pricing.managed-hint',
+    defaultMessage: 'When enabled, program authors see the pricing fields in Studio but cannot change them.',
+  },
   pricingSave: { id: 'rwaq.admin.programs.pricing.save', defaultMessage: 'Save pricing' },
   pricingSaving: { id: 'rwaq.admin.programs.pricing.saving', defaultMessage: 'Saving…' },
   pricingSaved: { id: 'rwaq.admin.programs.pricing.saved', defaultMessage: 'Pricing saved.' },
