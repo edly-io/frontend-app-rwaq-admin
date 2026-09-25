@@ -109,7 +109,7 @@ const messages = defineMessages({
   pricingPriceLabel: { id: 'rwaq.admin.programs.pricing.price-label', defaultMessage: 'Price ({currency})' },
   pricingDiscountLabel: {
     id: 'rwaq.admin.programs.pricing.discount-label',
-    defaultMessage: 'Discounted price ({currency})',
+    defaultMessage: 'Sale price ({currency})',
   },
   pricingDiscountHint: {
     id: 'rwaq.admin.programs.pricing.discount-hint',
@@ -125,7 +125,7 @@ const messages = defineMessages({
   },
   pricingManagedHint: {
     id: 'rwaq.admin.programs.pricing.managed-hint',
-    defaultMessage: 'When enabled, program authors see the pricing fields in Studio but cannot change them.',
+    defaultMessage: 'When enabled, the pricing fields are managed from the admin panel. Org admin can still change them.',
   },
   pricingSave: { id: 'rwaq.admin.programs.pricing.save', defaultMessage: 'Save pricing' },
   pricingSaving: { id: 'rwaq.admin.programs.pricing.saving', defaultMessage: 'Saving…' },
@@ -134,10 +134,14 @@ const messages = defineMessages({
     id: 'rwaq.admin.programs.pricing.error-price-required',
     defaultMessage: 'Enter a price for a paid program.',
   },
+  pricingErrorPriceNotPositive: {
+    id: 'rwaq.admin.programs.pricing.error-price-not-positive',
+    defaultMessage: 'Price must be greater than 0.',
+  },
   pricingErrorNegative: { id: 'rwaq.admin.programs.pricing.error-negative', defaultMessage: 'Prices cannot be negative.' },
-  pricingErrorDiscountTooHigh: {
-    id: 'rwaq.admin.programs.pricing.error-discount-too-high',
-    defaultMessage: 'The discounted price must not be higher than the regular price.',
+  pricingErrorDiscountNotLower: {
+    id: 'rwaq.admin.programs.pricing.error-discount-not-lower',
+    defaultMessage: 'Sale price must be lower than the price.',
   },
   pricingErrorSaveFailed: {
     id: 'rwaq.admin.programs.pricing.error-save-failed',

@@ -625,7 +625,7 @@ export const courseRoleMessages = defineMessages({
   // ── Pricing ────────────────────────────────────────────────────────────────
   pricingSectionTitle: {
     id: 'rwaq.admin.courses.pricing.title',
-    defaultMessage: 'Pricing',
+    defaultMessage: 'Type of course',
   },
   pricingSectionDescription: {
     id: 'rwaq.admin.courses.pricing.description',
@@ -637,35 +637,35 @@ export const courseRoleMessages = defineMessages({
   },
   pricingManagedHint: {
     id: 'rwaq.admin.courses.pricing.managed-hint',
-    defaultMessage: 'When enabled, course authors see the pricing fields in Studio but cannot change them.',
-  },
-  pricingManagedFreeHint: {
-    id: 'rwaq.admin.courses.pricing.managed-free-hint',
-    defaultMessage: 'Only a paid course or a course in a paid program can be managed from the admin panel.',
-  },
-  pricingCategoryLabel: {
-    id: 'rwaq.admin.courses.pricing.category-label',
-    defaultMessage: 'Pricing type',
+    defaultMessage: 'When enabled, course authors see the pricing fields in Studio but cannot change them. Org admin can still change them.',
   },
   pricingFree: {
     id: 'rwaq.admin.courses.pricing.free',
     defaultMessage: 'Free',
   },
+  pricingFreeDescription: {
+    id: 'rwaq.admin.courses.pricing.free-description',
+    defaultMessage: 'Learners enroll at no cost.',
+  },
   pricingPaid: {
     id: 'rwaq.admin.courses.pricing.paid',
-    defaultMessage: 'Paid, sold on its own',
+    defaultMessage: 'Paid',
   },
-  pricingWithinProgram: {
-    id: 'rwaq.admin.courses.pricing.within-program',
-    defaultMessage: 'Part of a paid program',
+  pricingPaidDescription: {
+    id: 'rwaq.admin.courses.pricing.paid-description',
+    defaultMessage: 'Sold on its own at the price set below.',
+  },
+  pricingProgramOnly: {
+    id: 'rwaq.admin.courses.pricing.program-only',
+    defaultMessage: 'Program-only course',
+  },
+  pricingProgramOnlyDescription: {
+    id: 'rwaq.admin.courses.pricing.program-only-description',
+    defaultMessage: 'Offered only through the one program it is added to.',
   },
   pricingPartOfProgramNotice: {
     id: 'rwaq.admin.courses.pricing.part-of-program-notice',
-    defaultMessage: 'This course is part of the paid program {program}. Learners buy the program, so the course has no price of its own. Remove it from the program to price it here.',
-  },
-  pricingWithinProgramHint: {
-    id: 'rwaq.admin.courses.pricing.within-program-hint',
-    defaultMessage: 'The program is the sellable unit, so this course carries no price of its own.',
+    defaultMessage: 'This course is in the program {program}. Its type cannot change while it is in the program.',
   },
   pricingPriceLabel: {
     id: 'rwaq.admin.courses.pricing.price-label',
@@ -673,7 +673,7 @@ export const courseRoleMessages = defineMessages({
   },
   pricingDiscountLabel: {
     id: 'rwaq.admin.courses.pricing.discount-label',
-    defaultMessage: 'Discounted price ({currency})',
+    defaultMessage: 'Sale price ({currency})',
   },
   pricingDiscountHint: {
     id: 'rwaq.admin.courses.pricing.discount-hint',
@@ -695,9 +695,13 @@ export const courseRoleMessages = defineMessages({
     id: 'rwaq.admin.courses.pricing.error-price-required',
     defaultMessage: 'Enter a price for a paid course.',
   },
-  pricingErrorDiscountTooHigh: {
-    id: 'rwaq.admin.courses.pricing.error-discount-too-high',
-    defaultMessage: 'The discounted price must not be higher than the regular price.',
+  pricingErrorPriceNotPositive: {
+    id: 'rwaq.admin.courses.pricing.error-price-not-positive',
+    defaultMessage: 'Price must be greater than 0.',
+  },
+  pricingErrorDiscountNotLower: {
+    id: 'rwaq.admin.courses.pricing.error-discount-not-lower',
+    defaultMessage: 'Sale price must be lower than the price.',
   },
   pricingErrorNegative: {
     id: 'rwaq.admin.courses.pricing.error-negative',

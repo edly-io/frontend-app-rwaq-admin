@@ -144,10 +144,10 @@ export interface CourseStaffRemoveParams {
 }
 
 /** Mirrors rwaq_features.models.CoursePricing.PRICING_CATEGORY_CHOICES. */
-export type CoursePricingCategory = 'is_paid' | 'is_within_program';
+export type CoursePricingCategory = 'is_free' | 'is_paid' | 'is_program_only';
 
 export interface CoursePricing {
-  /** null when the course has no pricing row at all, i.e. it is free. */
+  /** null when no type was chosen yet (a legacy course with no pricing row). It behaves as free. */
   pricingCategory: CoursePricingCategory | null;
   /** Decimal strings, not numbers — avoids float rounding on money. */
   price: string | null;
@@ -160,9 +160,8 @@ export interface CoursePricing {
    */
   pricingManagedByAdmin: boolean;
   /**
-   * program_key of the paid program the course is in, or null. While set, the
-   * program is what learners buy: the course shows as part of it, has no price
-   * of its own, and the endpoint refuses pricing writes.
+   * program_key of the program the course is in, or null. Only a Program-only
+   * course can be in a program, and its type cannot change while it is in one.
    */
   partOfProgram: string | null;
   partOfProgramName: string | null;
