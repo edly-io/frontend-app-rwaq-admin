@@ -33,7 +33,7 @@ const BACKEND_FIELDS: Record<string, PricingField> = {
 
 const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   const intl = useIntl();
-  const { data: pricing, isLoading } = useCoursePricing(courseId);
+  const { data: pricing, isLoading, isError } = useCoursePricing(courseId);
   const { mutateAsync: updatePricing, isPending } = useUpdateCoursePricing(courseId);
 
   // null means no type was chosen yet, so no radio is selected.
@@ -121,16 +121,30 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
     if (field) { setFieldError(field, ''); }
   };
 
+  const header = (
+    <div className="mb-4">
+      <h2 className="rwaq-section-title mb-1">
+        {intl.formatMessage(messages.pricingSectionTitle)}
+      </h2>
+      <p className="text-muted small mb-0">
+        {intl.formatMessage(messages.pricingSectionDescription)}
+      </p>
+    </div>
+  );
+
+  // Without the stored values a save would overwrite them, so show no form.
+  if (isError && !pricing) {
+    return (
+      <div className="rwaq-card">
+        {header}
+        <Alert variant="danger">{intl.formatMessage(messages.pricingErrorLoadFailed)}</Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="rwaq-card">
-      <div className="mb-4">
-        <h2 className="rwaq-section-title mb-1">
-          {intl.formatMessage(messages.pricingSectionTitle)}
-        </h2>
-        <p className="text-muted small mb-0">
-          {intl.formatMessage(messages.pricingSectionDescription)}
-        </p>
-      </div>
+      {header}
 
       {inProgram && (
         <Alert variant="info" className="mb-3">

@@ -707,6 +707,10 @@ export const courseRoleMessages = defineMessages({
     id: 'rwaq.admin.courses.pricing.error-negative',
     defaultMessage: 'Prices cannot be negative.',
   },
+  pricingErrorLoadFailed: {
+    id: 'rwaq.admin.courses.pricing.error-load-failed',
+    defaultMessage: 'Could not load pricing. Please refresh the page.',
+  },
   pricingErrorSaveFailed: {
     id: 'rwaq.admin.courses.pricing.error-save-failed',
     defaultMessage: 'Could not save pricing. Please try again.',

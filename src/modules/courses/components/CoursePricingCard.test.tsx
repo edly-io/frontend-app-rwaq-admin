@@ -57,6 +57,14 @@ describe('CoursePricingCard', () => {
     expect(screen.queryByLabelText('Price (SAR)')).not.toBeInTheDocument();
   });
 
+  it('shows an error and no form when pricing fails to load', () => {
+    (hooks.useCoursePricing as jest.Mock).mockReturnValue({ data: undefined, isLoading: false, isError: true });
+    renderWrapper(<CoursePricingCard courseId={courseId} />);
+    expect(screen.getByText('Could not load pricing. Please refresh the page.')).toBeInTheDocument();
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save pricing' })).not.toBeInTheDocument();
+  });
+
   it('selects no type for a legacy course with no type', () => {
     renderCard({ pricingCategory: null });
     screen.getAllByRole('radio').forEach((radio) => expect(radio).not.toBeChecked());
