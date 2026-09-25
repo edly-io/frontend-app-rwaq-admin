@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-query';
 import { appId } from '@src/constants';
 import type {
+  CoursePricingPatch,
   CourseEnrollmentParams,
   CourseEnrollPayload,
   CourseListParams,
@@ -19,9 +20,11 @@ import {
   enrollUserInCourse,
   getCourse,
   getCourseEnrollments,
+  getCoursePricing,
   getCourses,
   getCourseStaff,
   removeCourseStaff,
+  updateCoursePricing,
 } from './api';
 
 // ── Query key factory ─────────────────────────────────────────────────────────
@@ -36,6 +39,7 @@ export const courseQueryKeys = {
     [...courseQueryKeys.detail(courseId), 'enrollments', params] as const
   ),
   staff: (courseId: string) => [...courseQueryKeys.detail(courseId), 'staff'] as const,
+  pricing: (courseId: string) => [...courseQueryKeys.detail(courseId), 'pricing'] as const,
 };
 
 // ── Queries ───────────────────────────────────────────────────────────────────
@@ -129,3 +133,24 @@ export const useRemoveCourseStaff = (courseId: string) => {
 export const useDownloadCourseEnrollmentsCsv = (courseId: string) => useMutation({
   mutationFn: () => downloadCourseEnrollmentsCsv(courseId),
 });
+
+/** One course's pricing, including who controls it. */
+export const useCoursePricing = (courseId: string) => useQuery({
+  queryKey: courseQueryKeys.pricing(courseId),
+  queryFn: () => getCoursePricing(courseId),
+  enabled: !!courseId,
+});
+
+/** Set pricing and/or hand control between Studio and the admin panel. */
+export const useUpdateCoursePricing = (courseId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (patch: CoursePricingPatch) => updateCoursePricing(courseId, patch),
+    onSuccess: (updated) => {
+      // Seed the cache from the response rather than refetching: the endpoint
+      // returns the full row, so a round trip would tell us nothing new.
+      queryClient.setQueryData(courseQueryKeys.pricing(courseId), updated);
+    },
+  });
+};
