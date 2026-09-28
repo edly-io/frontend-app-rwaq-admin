@@ -109,6 +109,11 @@ export interface ChangeModePayload {
   reason: string;
 }
 
+/** DELETE /api/v1/admin/users/{id}/enrollments/{courseId}/ */
+export interface UnenrollPayload {
+  reason: string;
+}
+
 /** Profile visibility values */
 export type ProfileVisibility = 'private' | 'public';
 

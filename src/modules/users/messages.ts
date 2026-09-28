@@ -343,6 +343,15 @@ const messages = defineMessages({
   },
   modeRequired: { id: 'rwaq.admin.users.modeChange.required', defaultMessage: 'Choose a mode.' },
 
+  unenrollTitle: { id: 'rwaq.admin.users.unenroll.title', defaultMessage: 'Unenroll from course' },
+  unenrollAction: { id: 'rwaq.admin.users.unenroll.action', defaultMessage: 'Unenroll' },
+  unenrollSubmit: { id: 'rwaq.admin.users.unenroll.submit', defaultMessage: 'Unenroll' },
+  unenrollBody: {
+    id: 'rwaq.admin.users.unenroll.body',
+    defaultMessage: 'Unenroll {name} from {course}? Their grades and any certificate stay on '
+      + 'record. They cannot rejoin on their own. An admin can enroll them again.',
+  },
+
   reasonLabel: { id: 'rwaq.admin.users.reason.label', defaultMessage: 'Reason' },
   reasonHelp: {
     id: 'rwaq.admin.users.reason.help',
@@ -366,6 +375,10 @@ const messages = defineMessages({
   modeChangeSuccess: {
     id: 'rwaq.admin.users.modeChange.success',
     defaultMessage: 'Mode changed to {mode}. Grades and certificates update shortly.',
+  },
+  unenrollSuccess: {
+    id: 'rwaq.admin.users.unenroll.success',
+    defaultMessage: 'Unenrolled from {course}.',
   },
   enrollmentConflict: {
     id: 'rwaq.admin.users.enrollments.conflict',

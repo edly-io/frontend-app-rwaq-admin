@@ -27,10 +27,11 @@ interface EnrollmentsTableProps {
   enrollments: UserEnrollment[];
   isLoading?: boolean;
   onChangeMode: (enrollment: UserEnrollment) => void;
+  onUnenroll: (enrollment: UserEnrollment) => void;
 }
 
 const EnrollmentsTable = ({
-  enrollments, isLoading, onChangeMode,
+  enrollments, isLoading, onChangeMode, onUnenroll,
 }: EnrollmentsTableProps) => {
   const intl = useIntl();
   const [page, setPage] = useState(1);
@@ -121,6 +122,15 @@ const EnrollmentsTable = ({
             aria-label={`${intl.formatMessage(messages.modeChangeAction)}, ${row.courseName}`}
           >
             {intl.formatMessage(messages.modeChangeAction)}
+          </Button>
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            disabled={!row.isActive}
+            onClick={() => onUnenroll(row)}
+            aria-label={`${intl.formatMessage(messages.unenrollAction)}, ${row.courseName}`}
+          >
+            {intl.formatMessage(messages.unenrollAction)}
           </Button>
         </div>
       ),

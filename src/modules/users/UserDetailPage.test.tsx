@@ -76,6 +76,7 @@ describe('UserDetailPage — Bug 1 regression: empty fields render "—" not raw
     (hooks.useCreateUser as jest.Mock).mockReturnValue(mockMutation);
     (hooks.useEnrollUser as jest.Mock).mockReturnValue(mockMutation);
     (hooks.useChangeEnrollmentMode as jest.Mock).mockReturnValue(mockMutation);
+    (hooks.useUnenrollUser as jest.Mock).mockReturnValue(mockMutation);
     (hooks.useEnrollableCourses as jest.Mock).mockReturnValue({
       data: [], isLoading: false, isError: false,
     });

@@ -94,6 +94,24 @@ export const bulkEnrollLearners = async (
   return camelCaseObject(data) as BulkEnrollResult;
 };
 
+/**
+ * DELETE {uuid}/learners/{userId}/ — unenrolls the learner from the program and
+ * its courses, and revokes their order so they cannot rejoin on their own.
+ *
+ * The reason travels in the body, like the course unenroll: in the URL it would
+ * land in access logs next to the learner's identity.
+ */
+export const unenrollProgramLearner = async (
+  uuid: string,
+  userId: number,
+  reason: string,
+): Promise<void> => {
+  await getAuthenticatedHttpClient().delete(
+    `${getProgramsBaseUrl()}/${uuid}/learners/${userId}/`,
+    { data: { reason } },
+  );
+};
+
 export const getProgramLearners = async (uuid: string, page = 1, search = ''): Promise<ProgramSubPage<ProgramLearner>> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/learners/`, {
     params: { page, page_size: 10, ...(search ? { search } : {}) },

@@ -166,6 +166,23 @@ const messages = defineMessages({
   colLearnerEnrolled: { id: 'rwaq.admin.programs.learners.col.enrolled', defaultMessage: 'Enrolled' },
   colLearnerCompleted: { id: 'rwaq.admin.programs.learners.col.completed', defaultMessage: 'Completed' },
   colLearnerActive: { id: 'rwaq.admin.programs.learners.col.active', defaultMessage: 'Enrollment' },
+  colLearnerActions: { id: 'rwaq.admin.programs.learners.col.actions', defaultMessage: 'Actions' },
+  unenrollLearnerAction: { id: 'rwaq.admin.programs.learners.unenroll.action', defaultMessage: 'Unenroll' },
+  unenrollLearnerTitle: { id: 'rwaq.admin.programs.learners.unenroll.title', defaultMessage: 'Unenroll from program' },
+  unenrollLearnerBody: {
+    id: 'rwaq.admin.programs.learners.unenroll.body',
+    defaultMessage: 'Unenroll {name} from this program and all its courses? Their grades and any '
+      + 'certificate stay on record. They cannot rejoin on their own. An admin can enroll them again.',
+  },
+  unenrollLearnerSubmit: { id: 'rwaq.admin.programs.learners.unenroll.submit', defaultMessage: 'Unenroll' },
+  unenrollLearnerSuccess: {
+    id: 'rwaq.admin.programs.learners.unenroll.success',
+    defaultMessage: 'Unenrolled {name} from the program.',
+  },
+  unenrollLearnerError: {
+    id: 'rwaq.admin.programs.learners.unenroll.error',
+    defaultMessage: 'Could not unenroll the learner. Try again.',
+  },
 
   // ── Shared ─────────────────────────────────────────────────────────────────
   yes: { id: 'rwaq.admin.programs.yes', defaultMessage: 'Yes' },
