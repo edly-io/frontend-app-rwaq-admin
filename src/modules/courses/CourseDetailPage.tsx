@@ -24,6 +24,7 @@ import ProfileAvatar from '@src/components/ProfileAvatar';
 import ErrorState from '@src/components/ErrorState';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorStatus } from '@src/data/httpError';
+import modeLabel from '@src/modules/users/modeLabel';
 import {
   useCourse,
   useCourseEnrollments,
@@ -181,7 +182,7 @@ const CourseDetailPage = () => {
     {
       label: intl.formatMessage(messages.enrollmentColMode),
       key: 'mode',
-      renderCell: (value) => <span>{value as string}</span>,
+      renderCell: (value) => <span>{modeLabel(intl, value as string)}</span>,
     },
     {
       label: intl.formatMessage(messages.enrollmentColStatus),

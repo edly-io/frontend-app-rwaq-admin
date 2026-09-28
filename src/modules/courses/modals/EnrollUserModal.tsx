@@ -15,6 +15,7 @@ import type { UserSummary } from '@src/modules/users/data/types';
 import ReasonField, {
   ReasonValues, emptyReason, hasReason, resolveReason,
 } from '@src/modules/users/components/ReasonField';
+import modeLabel from '@src/modules/users/modeLabel';
 import UserPicker from '../components/UserPicker';
 import { useEnrollUserInCourse } from '../data/hooks';
 import messages from '../messages';
@@ -117,7 +118,7 @@ const EnrollUserModal = ({
             onChange={(event: React.ChangeEvent<HTMLSelectElement>) => setMode(event.target.value)}
           >
             {availableModes.map((slug) => (
-              <option key={slug} value={slug}>{slug}</option>
+              <option key={slug} value={slug}>{modeLabel(intl, slug)}</option>
             ))}
           </Form.Control>
         </Form.Group>

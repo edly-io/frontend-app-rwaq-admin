@@ -81,7 +81,7 @@ const ChangeModeModal = ({
         newMode,
         reason: resolveReason(reason),
       });
-      showToast(intl.formatMessage(messages.modeChangeSuccess, { mode: newMode }));
+      showToast(intl.formatMessage(messages.modeChangeSuccess, { mode: modeLabel(intl, newMode) }));
       onClose();
     } catch (error) {
       if (getErrorStatus(error) === 409) {
