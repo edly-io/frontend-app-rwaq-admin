@@ -23,6 +23,7 @@ import ReasonField, {
 import { useChangeEnrollmentMode } from '../data/hooks';
 import type { UserEnrollment } from '../data/types';
 import messages from '../messages';
+import modeLabel from '../modeLabel';
 
 interface ChangeModeModalProps {
   isOpen: boolean;
@@ -118,7 +119,7 @@ const ChangeModeModal = ({
         <span className="rwaq-detail-grid__label mb-0">
           {intl.formatMessage(messages.modeCurrent)}
         </span>
-        <span className="rwaq-enrollments__mode">{enrollment.mode}</span>
+        <span className="rwaq-enrollments__mode">{modeLabel(intl, enrollment.mode)}</span>
       </div>
 
       {hasNoTarget
@@ -134,7 +135,7 @@ const ChangeModeModal = ({
               }
             >
               {targetModes.map((slug) => (
-                <option key={slug} value={slug}>{slug}</option>
+                <option key={slug} value={slug}>{modeLabel(intl, slug)}</option>
               ))}
             </Form.Control>
           </Form.Group>

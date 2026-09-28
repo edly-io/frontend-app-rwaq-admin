@@ -84,10 +84,12 @@ export const getProgramCourses = async (uuid: string, page = 1): Promise<Program
 export const bulkEnrollLearners = async (
   uuid: string,
   emails: string,
+  reason = '',
 ): Promise<BulkEnrollResult> => {
+  // reason is kept on the 0-price order recorded for each learner of a paid program.
   const { data } = await getAuthenticatedHttpClient().post(
     `${getProgramsBaseUrl()}/${uuid}/bulk-enroll/`,
-    { emails },
+    { emails, reason },
   );
   return camelCaseObject(data) as BulkEnrollResult;
 };

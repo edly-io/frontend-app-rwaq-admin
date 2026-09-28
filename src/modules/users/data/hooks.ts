@@ -9,7 +9,6 @@ import { appId } from '@src/constants';
 import type {
   ChangeModePayload,
   EnrollPayload,
-  UnenrollPayload,
   UserCreatePayload,
   UserDetail,
   UserListParams,
@@ -23,7 +22,6 @@ import {
   getUser,
   getUserEnrollments,
   getUsers,
-  unenrollUser,
   updateUser,
   uploadUserImage,
 } from './api';
@@ -205,17 +203,5 @@ export const useUploadUserImage = (id: number) => {
       queryClient.invalidateQueries({ queryKey: userQueryKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: userQueryKeys.lists() });
     },
-  });
-};
-
-/** Unenroll — soft, so the row stays visible as inactive. */
-export const useUnenrollUser = (id: number) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (
-      { courseId, ...payload }: UnenrollPayload & { courseId: string },
-    ) => unenrollUser(id, courseId, payload),
-    onSuccess: () => invalidateAfterEnrollmentChange(queryClient, id),
   });
 };

@@ -176,6 +176,14 @@ const messages = defineMessages({
   bulkEnrollTitle: { id: 'rwaq.admin.programs.bulkEnroll.title', defaultMessage: 'Enroll learners' },
   bulkEnrollHelp: { id: 'rwaq.admin.programs.bulkEnroll.help', defaultMessage: 'Paste email addresses, separated by commas or new lines. Learners are enrolled in the program and all of its courses.' },
   bulkEnrollLabel: { id: 'rwaq.admin.programs.bulkEnroll.label', defaultMessage: 'Email addresses' },
+  bulkEnrollReasonLabel: {
+    id: 'rwaq.admin.programs.bulkEnroll.reason.label',
+    defaultMessage: 'Reason (optional)',
+  },
+  bulkEnrollReasonHelp: {
+    id: 'rwaq.admin.programs.bulkEnroll.reason.help',
+    defaultMessage: 'For a paid program, kept with each learner\'s enrollment record.',
+  },
   bulkEnrollPlaceholder: { id: 'rwaq.admin.programs.bulkEnroll.placeholder', defaultMessage: 'sara@example.com, omar@example.com' },
   bulkEnrollCount: { id: 'rwaq.admin.programs.bulkEnroll.count', defaultMessage: '{count} of {max}' },
   bulkEnrollProgress: { id: 'rwaq.admin.programs.bulkEnroll.progress', defaultMessage: 'Enrolling {done} of {total}…' },

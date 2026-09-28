@@ -27,7 +27,6 @@ import type {
   ChangeModePayload,
   EnrollableCourse,
   EnrollPayload,
-  UnenrollPayload,
   UserCreatePayload,
   UserDetail,
   UserEnrollment,
@@ -104,24 +103,6 @@ export const changeEnrollmentMode = async (
     snakeCaseObject(payload),
   );
   return camelCaseObject(data) as UserEnrollment;
-};
-
-/**
- * DELETE enrollments/{courseId}/ — unenrolls, keeping the row.
- *
- * The reason travels in the body rather than the query string: a DELETE with a
- * body is unusual, but a reason in the URL would land in access logs next to
- * the learner's identity.
- */
-export const unenrollUser = async (
-  id: number,
-  courseId: string,
-  payload: UnenrollPayload,
-): Promise<void> => {
-  await getAuthenticatedHttpClient().delete(
-    `${getUsersBaseUrl()}/${id}/enrollments/${encodeURIComponent(courseId)}/`,
-    { data: snakeCaseObject(payload) },
-  );
 };
 
 // ── Create ─────────────────────────────────────────────────────────────────────

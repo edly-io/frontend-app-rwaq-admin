@@ -337,16 +337,11 @@ const messages = defineMessages({
     defaultMessage: 'This course offers only one mode, so there is nothing to change it to.',
   },
   modeLabel: { id: 'rwaq.admin.users.modeChange.label', defaultMessage: 'Mode' },
-  modeRequired: { id: 'rwaq.admin.users.modeChange.required', defaultMessage: 'Choose a mode.' },
-
-  unenrollTitle: { id: 'rwaq.admin.users.unenroll.title', defaultMessage: 'Unenroll from course' },
-  unenrollAction: { id: 'rwaq.admin.users.unenroll.action', defaultMessage: 'Unenroll' },
-  unenrollSubmit: { id: 'rwaq.admin.users.unenroll.submit', defaultMessage: 'Unenroll' },
-  unenrollBody: {
-    id: 'rwaq.admin.users.unenroll.body',
-    defaultMessage: 'Unenroll {name} from {course}? Their grades and any certificate stay on '
-      + 'record, and they can be enrolled again later.',
+  modeNoIdProfessional: {
+    id: 'rwaq.admin.users.mode.noIdProfessional',
+    defaultMessage: 'Professional, no ID verification',
   },
+  modeRequired: { id: 'rwaq.admin.users.modeChange.required', defaultMessage: 'Choose a mode.' },
 
   reasonLabel: { id: 'rwaq.admin.users.reason.label', defaultMessage: 'Reason' },
   reasonHelp: {
@@ -371,10 +366,6 @@ const messages = defineMessages({
   modeChangeSuccess: {
     id: 'rwaq.admin.users.modeChange.success',
     defaultMessage: 'Mode changed to {mode}. Grades and certificates update shortly.',
-  },
-  unenrollSuccess: {
-    id: 'rwaq.admin.users.unenroll.success',
-    defaultMessage: 'Unenrolled from {course}.',
   },
   enrollmentConflict: {
     id: 'rwaq.admin.users.enrollments.conflict',

@@ -26,7 +26,6 @@ import StatusBadges from './components/StatusBadges';
 import EditUserModal from './modals/EditUserModal';
 import EnrollModal from './modals/EnrollModal';
 import ChangeModeModal from './modals/ChangeModeModal';
-import UnenrollModal from './modals/UnenrollModal';
 import { useUser, useUserEnrollments } from './data/hooks';
 import type { UserEnrollment } from './data/types';
 import messages from './messages';
@@ -48,7 +47,6 @@ const UserDetailPage = () => {
   // One row at a time: which row a dialog is about has to be unambiguous, and
   // a boolean plus a separate id can disagree.
   const [modeTarget, setModeTarget] = useState<UserEnrollment | null>(null);
-  const [unenrollTarget, setUnenrollTarget] = useState<UserEnrollment | null>(null);
 
   const dash = intl.formatMessage(messages.detailNone);
 
@@ -209,7 +207,6 @@ const UserDetailPage = () => {
             enrollments={rows}
             isLoading={isLoadingEnrollments}
             onChangeMode={setModeTarget}
-            onUnenroll={setUnenrollTarget}
           />
         )}
       </div>
@@ -232,14 +229,6 @@ const UserDetailPage = () => {
         onClose={() => setModeTarget(null)}
         userId={user.id}
         enrollment={modeTarget}
-      />
-
-      <UnenrollModal
-        isOpen={unenrollTarget !== null}
-        onClose={() => setUnenrollTarget(null)}
-        userId={user.id}
-        userName={displayName}
-        enrollment={unenrollTarget}
       />
     </div>
   );

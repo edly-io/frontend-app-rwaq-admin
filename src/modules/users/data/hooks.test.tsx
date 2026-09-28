@@ -18,7 +18,6 @@ import {
   useEnrollableCourses,
   useEnrollUser,
   useChangeEnrollmentMode,
-  useUnenrollUser,
 } from './hooks';
 
 jest.mock('@edx/frontend-platform/auth', () => ({
@@ -213,10 +212,9 @@ describe('useUpdateUser', () => {
 });
 
 // ── Enrollment writes ─────────────────────────────────────────────────────────
-// These pin the wire contract of the three write endpoints, because each one
-// has a detail that is easy to get wrong and impossible to see from the UI:
-// the course key needs URL-encoding, the mode change has to send old_mode, and
-// the unenroll reason travels in a DELETE body.
+// These pin the wire contract of the write endpoints, because each one has a
+// detail that is easy to get wrong and impossible to see from the UI: the
+// course key needs URL-encoding, and the mode change has to send old_mode.
 
 describe('useEnrollableCourses', () => {
   it('passes the search term through as a query param', async () => {
@@ -303,22 +301,5 @@ describe('useChangeEnrollmentMode', () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-  });
-});
-
-describe('useUnenrollUser', () => {
-  it('sends the reason in the DELETE body, not the query string', async () => {
-    const httpDelete = jest.fn().mockResolvedValue({ data: undefined });
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ delete: httpDelete });
-
-    const { result } = renderHook(() => useUnenrollUser(7), { wrapper: createWrapper() });
-
-    result.current.mutate({ courseId: 'course-v1:X+Y+Z', reason: 'Testing / QA' });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(httpDelete).toHaveBeenCalledWith(
-      'http://studio.local:8001/api/v1/admin/users/7/enrollments/course-v1%3AX%2BY%2BZ/',
-      { data: { reason: 'Testing / QA' } },
-    );
   });
 });
