@@ -36,7 +36,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   const intl = useIntl();
   const { mutateAsync, isPending } = useUpdateProgram(program.uuid);
 
-  const [category, setCategory] = useState<ProgramPricingCategory>('');
+  const [category, setCategory] = useState<ProgramPricingCategory>('is_free');
   const [price, setPrice] = useState('');
   const [discount, setDiscount] = useState('');
   const [managedByAdmin, setManagedByAdmin] = useState(false);
@@ -45,7 +45,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    setCategory(program.pricingCategory ?? '');
+    setCategory(program.pricingCategory || 'is_free');
     setPrice(program.price ?? '');
     setDiscount(program.discount ?? '');
     setManagedByAdmin(program.pricingManagedByAdmin ?? false);
@@ -138,7 +138,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
             touched('pricingCategory');
           }}
         >
-          <option value="">{intl.formatMessage(messages.pricingFree)}</option>
+          <option value="is_free">{intl.formatMessage(messages.pricingFree)}</option>
           <option value="is_paid">{intl.formatMessage(messages.pricingPaid)}</option>
         </Form.Control>
         {fieldErrors.pricingCategory && (

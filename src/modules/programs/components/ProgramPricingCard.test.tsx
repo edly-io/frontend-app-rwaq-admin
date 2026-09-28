@@ -14,7 +14,7 @@ const mockUpdate = jest.fn();
 
 const makeProgram = (overrides: Partial<ProgramDetail> = {}) => ({
   uuid: 'b6f1c2d3-0000-4000-8000-000000000001',
-  pricingCategory: '',
+  pricingCategory: 'is_free',
   price: null,
   discount: null,
   currency: 'SAR',

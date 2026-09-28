@@ -61,7 +61,6 @@ export interface ProgramDetail extends ProgramSummary {
   longDescription: string;
   introVideoId: string | null;
   introVideoUrl: string | null;
-  /** '' means the program is free. */
   pricingCategory: ProgramPricingCategory;
   /** Decimal strings, not numbers, to avoid float rounding on money. */
   price: string | null;
@@ -73,8 +72,8 @@ export interface ProgramDetail extends ProgramSummary {
   modified: string;
 }
 
-/** Mirrors rwaq_features.programs.models.Program.PRICING_CATEGORY_CHOICES, plus '' for free. */
-export type ProgramPricingCategory = '' | 'is_paid';
+/** Mirrors rwaq_features.programs.models.Program.PRICING_CATEGORY_CHOICES. */
+export type ProgramPricingCategory = 'is_free' | 'is_paid';
 
 /** One row of GET /api/v1/admin/programs/{uuid}/courses/ */
 export interface ProgramCourse {
