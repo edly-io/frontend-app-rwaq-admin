@@ -5,6 +5,7 @@
  * - Overview card: key program facts via DetailGrid
  * - Settings card: immediate-save toggles for is_hide / is_featured /
  *   and a status selector
+ * - Pricing card: free or paid, price and sale price, saved with its own button
  * - Courses tab: the courses linked to this program
  * - Learners tab: the learners enrolled in this program
  *
@@ -25,6 +26,7 @@ import type { ColumnDef } from '@src/components/AdminDataTable';
 import DetailGrid from '@src/components/DetailGrid';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
+import ProgramPricingCard from './components/ProgramPricingCard';
 import ProgramStatusChips from './components/ProgramStatusChips';
 import BulkEnrollModal from './modals/BulkEnrollModal';
 import type {
@@ -428,6 +430,9 @@ const ProgramDetailPage = () => {
         isFeatured={program.isFeatured}
         status={program.status}
       />
+
+      {/* Pricing */}
+      <ProgramPricingCard program={program} />
 
       {/* Courses + Learners tabs */}
       <div className="rwaq-card">

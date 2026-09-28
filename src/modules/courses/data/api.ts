@@ -10,6 +10,8 @@
  *   GET     /api/v1/admin/courses/{courseId}/staff/
  *   POST    /api/v1/admin/courses/{courseId}/staff/
  *   DELETE  /api/v1/admin/courses/{courseId}/staff/{userId}/
+ *   GET     /api/v1/admin/courses/{courseId}/pricing/
+ *   PUT     /api/v1/admin/courses/{courseId}/pricing/
  *
  * Host: Studio (CMS). Grade/cert stats are null when served from CMS — the
  * backend sends explicit nulls; the frontend surfaces "—" in those cells.
@@ -27,6 +29,8 @@ import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { getStudioApiUrl } from '@src/data/utils';
 import type {
   CourseDetail,
+  CoursePricing,
+  CoursePricingPatch,
   CourseEnrollmentParams,
   CourseEnrollmentResponse,
   CourseEnrollPayload,
@@ -130,4 +134,38 @@ export const removeCourseStaff = async (
   await getAuthenticatedHttpClient().delete(
     `${getCoursesBaseUrl()}/${encodeURIComponent(courseId)}/staff/${params.userId}/${encodeURIComponent(params.role)}/`,
   );
+};
+
+// ── Pricing ──────────────────────────────────────────────────────────────────
+
+/** GET /api/v1/admin/courses/{courseId}/pricing/ */
+export const getCoursePricing = async (courseId: string): Promise<CoursePricing> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getCoursesBaseUrl()}/${encodeURIComponent(courseId)}/pricing/`,
+  );
+  return camelCaseObject(data) as CoursePricing;
+};
+
+/**
+ * PUT /api/v1/admin/courses/{courseId}/pricing/
+ *
+ * Accepts a partial body, so flipping pricingManagedByAdmin does not require
+ * restating a price the admin is not changing.
+ */
+export const updateCoursePricing = async (
+  courseId: string,
+  patch: CoursePricingPatch,
+): Promise<CoursePricing> => {
+  const body: Record<string, unknown> = {};
+  if (patch.pricingCategory !== undefined) { body.pricing_category = patch.pricingCategory; }
+  if (patch.price !== undefined) { body.price = patch.price; }
+  if (patch.discount !== undefined) { body.discount = patch.discount; }
+  if (patch.pricingManagedByAdmin !== undefined) {
+    body.pricing_managed_by_admin = patch.pricingManagedByAdmin;
+  }
+  const { data } = await getAuthenticatedHttpClient().put(
+    `${getCoursesBaseUrl()}/${encodeURIComponent(courseId)}/pricing/`,
+    body,
+  );
+  return camelCaseObject(data) as CoursePricing;
 };
