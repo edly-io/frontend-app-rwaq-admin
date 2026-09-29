@@ -33,6 +33,7 @@ interface FormValues {
   description: string;
   featuredVideo: string;
   showLogoOnProgramCertificate: boolean;
+  revenueSharePercentage: string;
 }
 
 const emptyValues: FormValues = {
@@ -42,6 +43,7 @@ const emptyValues: FormValues = {
   description: '',
   featuredVideo: '',
   showLogoOnProgramCertificate: false,
+  revenueSharePercentage: '',
 };
 
 const toFormValues = (organization: OrgDetail | null): FormValues => {
@@ -53,6 +55,7 @@ const toFormValues = (organization: OrgDetail | null): FormValues => {
       description: organization.description ?? '',
       featuredVideo: organization.featuredVideo ?? '',
       showLogoOnProgramCertificate: organization.showLogoOnProgramCertificate ?? false,
+      revenueSharePercentage: organization.revenueSharePercentage ?? '',
     }
     : emptyValues;
   return values;
@@ -89,6 +92,11 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
       .max(MAX_NAME, intl.formatMessage(messages.tooLong))
       .required(intl.formatMessage(messages.requiredField)),
     arabicName: Yup.string().max(MAX_NAME, intl.formatMessage(messages.tooLong)),
+    revenueSharePercentage: Yup.number()
+      .transform((value, original) => (original === '' ? undefined : value))
+      .typeError(intl.formatMessage(messages.revenueShareInvalid))
+      .min(0, intl.formatMessage(messages.revenueShareInvalid))
+      .max(100, intl.formatMessage(messages.revenueShareInvalid)),
   });
 
   const formik = useFormik<FormValues>({
@@ -103,6 +111,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             description: values.description,
             featuredVideo: values.featuredVideo,
             showLogoOnProgramCertificate: values.showLogoOnProgramCertificate,
+            revenueSharePercentage: String(values.revenueSharePercentage ?? '').trim(),
           };
           await updateMutation.mutateAsync({ patch, logoFile });
           showToast(intl.formatMessage(messages.toastUpdated, { name: values.name }));
@@ -333,6 +342,34 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
           </Form.Checkbox>
         </Form.Group>
       </section>
+
+      {/* Set after the organization exists: the share is agreed per partner, not at creation. */}
+      {isEdit && (
+        <section className="rwaq-form-section">
+          <Form.Group
+            className="mb-0"
+            isInvalid={!!fieldError('revenueSharePercentage')}
+            controlId="org-form-revenue-share"
+          >
+            <Form.Label>{intl.formatMessage(messages.fieldRevenueShare)}</Form.Label>
+            <Form.Control
+              name="revenueSharePercentage"
+              type="number"
+              min={0}
+              max={100}
+              step="0.01"
+              value={formik.values.revenueSharePercentage}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            {fieldError('revenueSharePercentage') ? (
+              <Form.Control.Feedback type="invalid">{fieldError('revenueSharePercentage')}</Form.Control.Feedback>
+            ) : (
+              <Form.Text muted>{intl.formatMessage(messages.fieldRevenueShareHelp)}</Form.Text>
+            )}
+          </Form.Group>
+        </section>
+      )}
 
       {mutation.isError && (
         <Alert variant="danger" className="mt-4 mb-0">

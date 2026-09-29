@@ -49,6 +49,8 @@ export interface OrgDetail extends OrgSummary {
   description: string;
   featuredVideo: string;
   showLogoOnProgramCertificate: boolean;
+  /** Share of paid course and program revenue, "0.00" to "100.00". null when unset. */
+  revenueSharePercentage: string | null;
   logo: string | null;
   organizationLogo: string | null;
   members: OrgMember[];
@@ -71,6 +73,8 @@ export interface OrgProfilePatch {
   arabicName?: string;
   featuredVideo?: string;
   showLogoOnProgramCertificate?: boolean;
+  /** Empty string clears it. */
+  revenueSharePercentage?: string;
 }
 
 /** Sortable columns supported by the backend's OrderingFilter. */

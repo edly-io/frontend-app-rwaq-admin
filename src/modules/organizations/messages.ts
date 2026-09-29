@@ -74,6 +74,15 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.form.showLogoOnProgramCertificateHelp',
     defaultMessage: 'When enabled, the organisation\'s logo replaces the default badge on program certificates. Requires a logo to be uploaded.',
   },
+  fieldRevenueShare: { id: 'rwaq.admin.orgs.form.revenueShare', defaultMessage: 'Revenue share (%)' },
+  fieldRevenueShareHelp: {
+    id: 'rwaq.admin.orgs.form.revenueShareHelp',
+    defaultMessage: 'Share of paid course and program revenue that goes to this organization. Only Rwaq admins see it.',
+  },
+  revenueShareInvalid: {
+    id: 'rwaq.admin.orgs.form.revenueShareInvalid',
+    defaultMessage: 'Enter a percentage from 0 to 100.',
+  },
   sectionProfile: { id: 'rwaq.admin.orgs.form.sectionProfile', defaultMessage: 'Identity' },
   sectionPublic: { id: 'rwaq.admin.orgs.form.sectionPublic', defaultMessage: 'Public profile' },
   sectionCertificates: { id: 'rwaq.admin.orgs.form.sectionCertificates', defaultMessage: 'Certificates' },
@@ -103,6 +112,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.detail.showLogoOnProgramCertificate',
     defaultMessage: 'Logo on program certificates',
   },
+  detailRevenueShare: { id: 'rwaq.admin.orgs.detail.revenueShare', defaultMessage: 'Revenue share' },
   detailNone: { id: 'rwaq.admin.orgs.detail.none', defaultMessage: '—' },
   editOrg: { id: 'rwaq.admin.orgs.detail.editOrg', defaultMessage: 'Edit organization' },
   notFound: { id: 'rwaq.admin.orgs.detail.notFound', defaultMessage: 'Organization not found' },
