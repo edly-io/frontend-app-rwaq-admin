@@ -6,9 +6,9 @@
  * asking for the reason in a second dialog after the confirmation would make
  * "cancel" ambiguous about what exactly was cancelled.
  *
- * The wording says explicitly that this is reversible and that grades survive,
- * since the platform's unenrollment is a soft delete and an admin who assumes
- * otherwise will avoid a safe action.
+ * The wording says that grades survive, since the platform's unenrollment is a
+ * soft delete, and that the learner cannot rejoin on their own: the backend
+ * revokes their order, so only an admin can enroll them again.
  */
 import { useEffect, useState } from 'react';
 import { logError } from '@edx/frontend-platform/logging';

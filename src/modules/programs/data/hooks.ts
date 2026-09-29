@@ -12,6 +12,7 @@ import {
   getProgramCourses,
   getProgramLearners,
   getPrograms,
+  unenrollProgramLearner,
   updateProgram,
 } from './api';
 import type {
@@ -88,11 +89,24 @@ export const useUpdateProgram = (uuid: string) => {
  * Invalidates the learners list and the program detail on success — the
  * detail carries totalEnrollments, which the enrolment just moved.
  */
+/** Unenroll one learner from the program, with a reason. */
+export const useUnenrollProgramLearner = (uuid: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, { userId: number; reason: string }>({
+    mutationFn: ({ userId, reason }) => unenrollProgramLearner(uuid, userId, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: programQueryKeys.learners(uuid) });
+      queryClient.invalidateQueries({ queryKey: programQueryKeys.detail(uuid) });
+    },
+  });
+};
+
 export const useBulkEnrollLearners = (uuid: string) => {
   const queryClient = useQueryClient();
 
-  return useMutation<BulkEnrollResult, Error, string>({
-    mutationFn: (emails: string) => bulkEnrollLearners(uuid, emails),
+  return useMutation<BulkEnrollResult, Error, { emails: string; reason: string }>({
+    mutationFn: ({ emails, reason }) => bulkEnrollLearners(uuid, emails, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: programQueryKeys.learners(uuid) });
       queryClient.invalidateQueries({ queryKey: programQueryKeys.detail(uuid) });

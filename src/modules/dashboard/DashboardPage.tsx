@@ -29,6 +29,7 @@ import InfoTooltip from '@src/components/InfoTooltip';
 import KpiCard from '@src/components/KpiCard';
 import MetricChart from '@src/components/charts/MetricChart';
 import type { ChartDataPoint, ChartType } from '@src/components/charts/MetricChart';
+import modeLabel from '@src/modules/users/modeLabel';
 import DateRangePicker from './components/DateRangePicker';
 import MiniTable from './components/MiniTable';
 import StatTile from './components/StatTile';
@@ -537,7 +538,7 @@ const DashboardPage = () => {
               rows={data.enrollmentModes}
               rowKey={(row) => row.mode}
               columns={[
-                { label: intl.formatMessage(messages.modeColMode), render: (row) => row.mode },
+                { label: intl.formatMessage(messages.modeColMode), render: (row) => modeLabel(intl, row.mode) },
                 {
                   label: intl.formatMessage(messages.kpiEnrollments),
                   render: (row) => formatCount(row.count),

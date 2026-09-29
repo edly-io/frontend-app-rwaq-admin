@@ -84,12 +84,32 @@ export const getProgramCourses = async (uuid: string, page = 1): Promise<Program
 export const bulkEnrollLearners = async (
   uuid: string,
   emails: string,
+  reason = '',
 ): Promise<BulkEnrollResult> => {
+  // reason is kept on the 0-price order recorded for each learner of a paid program.
   const { data } = await getAuthenticatedHttpClient().post(
     `${getProgramsBaseUrl()}/${uuid}/bulk-enroll/`,
-    { emails },
+    { emails, reason },
   );
   return camelCaseObject(data) as BulkEnrollResult;
+};
+
+/**
+ * DELETE {uuid}/learners/{userId}/ — unenrolls the learner from the program and
+ * its courses, and revokes their order so they cannot rejoin on their own.
+ *
+ * The reason travels in the body, like the course unenroll: in the URL it would
+ * land in access logs next to the learner's identity.
+ */
+export const unenrollProgramLearner = async (
+  uuid: string,
+  userId: number,
+  reason: string,
+): Promise<void> => {
+  await getAuthenticatedHttpClient().delete(
+    `${getProgramsBaseUrl()}/${uuid}/learners/${userId}/`,
+    { data: { reason } },
+  );
 };
 
 export const getProgramLearners = async (uuid: string, page = 1, search = ''): Promise<ProgramSubPage<ProgramLearner>> => {
