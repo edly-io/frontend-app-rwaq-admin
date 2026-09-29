@@ -7,8 +7,8 @@
  * "cancel" ambiguous about what exactly was cancelled.
  *
  * The wording says that grades survive, since the platform's unenrollment is a
- * soft delete, and that the learner cannot rejoin on their own: the backend
- * revokes their order, so only an admin can enroll them again.
+ * soft delete, and who can rejoin on their own: anyone for a free course, only
+ * a learner who bought it on the Rwaq website for a paid one.
  */
 import { useEffect, useState } from 'react';
 import { logError } from '@edx/frontend-platform/logging';

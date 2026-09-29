@@ -3,8 +3,8 @@
  *
  * Same shape as the course UnenrollModal: the reason lands in the audit trail
  * of every course the learner leaves, so it uses the same preset list. The
- * backend also revokes the learner's order for the program, so the wording
- * says they cannot rejoin on their own.
+ * wording says who can come back on their own: anyone for a free program, only
+ * a learner who bought it on the Rwaq website for a paid one.
  */
 import { useEffect, useState } from 'react';
 import { logError } from '@edx/frontend-platform/logging';
