@@ -107,8 +107,8 @@ export const changeEnrollmentMode = async (
 };
 
 /**
- * DELETE enrollments/{courseId}/ — unenrolls, keeping the row, and revokes the
- * learner's order for the course so they cannot rejoin on their own.
+ * DELETE enrollments/{courseId}/ — unenrolls, keeping the row, and marks the
+ * learner's order for the course revoked. A WordPress buyer can still rejoin.
  *
  * The reason travels in the body rather than the query string: a DELETE with a
  * body is unusual, but a reason in the URL would land in access logs next to

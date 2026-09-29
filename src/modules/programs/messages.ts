@@ -172,7 +172,8 @@ const messages = defineMessages({
   unenrollLearnerBody: {
     id: 'rwaq.admin.programs.learners.unenroll.body',
     defaultMessage: 'Unenroll {name} from this program and all its courses? Their grades and any '
-      + 'certificate stay on record. They cannot rejoin on their own. An admin can enroll them again.',
+      + 'certificate stay on record. If they bought it on the Rwaq website, they can rejoin on their '
+      + 'own. Otherwise an admin can enroll them again.',
   },
   unenrollLearnerSubmit: { id: 'rwaq.admin.programs.learners.unenroll.submit', defaultMessage: 'Unenroll' },
   unenrollLearnerSuccess: {

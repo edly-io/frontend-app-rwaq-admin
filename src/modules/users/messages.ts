@@ -349,7 +349,8 @@ const messages = defineMessages({
   unenrollBody: {
     id: 'rwaq.admin.users.unenroll.body',
     defaultMessage: 'Unenroll {name} from {course}? Their grades and any certificate stay on '
-      + 'record. They cannot rejoin on their own. An admin can enroll them again.',
+      + 'record. If they bought it on the Rwaq website, they can rejoin on their own. Otherwise an '
+      + 'admin can enroll them again.',
   },
 
   reasonLabel: { id: 'rwaq.admin.users.reason.label', defaultMessage: 'Reason' },

@@ -96,7 +96,7 @@ export const bulkEnrollLearners = async (
 
 /**
  * DELETE {uuid}/learners/{userId}/ — unenrolls the learner from the program and
- * its courses, and revokes their order so they cannot rejoin on their own.
+ * its courses, and marks their order revoked. A WordPress buyer can still rejoin.
  *
  * The reason travels in the body, like the course unenroll: in the URL it would
  * land in access logs next to the learner's identity.
