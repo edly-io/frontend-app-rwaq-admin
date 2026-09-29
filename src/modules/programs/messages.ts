@@ -172,8 +172,9 @@ const messages = defineMessages({
   unenrollLearnerBody: {
     id: 'rwaq.admin.programs.learners.unenroll.body',
     defaultMessage: 'Unenroll {name} from this program and all its courses? Their grades and any '
-      + 'certificate stay on record. If they bought it on the Rwaq website, they can rejoin on their '
-      + 'own. Otherwise an admin can enroll them again.',
+      + 'certificate stay on record. A free program can be rejoined at any time. A paid program can '
+      + 'only be rejoined by a learner who bought it on the Rwaq website. Otherwise an admin can '
+      + 'enroll them again.',
   },
   unenrollLearnerSubmit: { id: 'rwaq.admin.programs.learners.unenroll.submit', defaultMessage: 'Unenroll' },
   unenrollLearnerSuccess: {
