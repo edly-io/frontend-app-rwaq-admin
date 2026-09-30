@@ -58,34 +58,76 @@ const DEFAULT_PAGE_SIZE = 10;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** A column's heading: hidden from sight, explained on hover, or plain text. */
-const columnHeader = <Row extends object>(col: ColumnDef<Row>) => {
-  if (col.isLabelHidden) {
-    return function HiddenHeader() { return <span className="sr-only">{col.label}</span>; };
+/** What a column definition carries into react-table, so headings and cells can be stable components. */
+interface TableColumnMeta<Row extends object> {
+  label: string;
+  isLabelHidden?: boolean;
+  info?: string;
+  renderCell?: ColumnDef<Row>['renderCell'];
+}
+
+/**
+ * Paragon keys every cell by `${column.Header}${row.id}`. A function Header
+ * stringifies to its source, so headings that share one source collide and
+ * React drops or duplicates cells. Each heading component therefore gets its
+ * own string form (the column id), and is cached per id so it stays the same
+ * component between renders instead of remounting every header each time.
+ */
+const headerCache: Map<string, () => ReactNode> = new Map();
+
+const ColumnHeading = ({ meta }: { meta: TableColumnMeta<object> }) => {
+  if (meta.isLabelHidden) { return <span className="sr-only">{meta.label}</span>; }
+  if (meta.info) {
+    return <InfoTooltip text={meta.info}><span className="rwaq-th-info">{meta.label}</span></InfoTooltip>;
   }
-  if (col.info) {
-    return function InfoHeader() {
-      return <InfoTooltip text={col.info!}><span className="rwaq-th-info">{col.label}</span></InfoTooltip>;
-    };
-  }
-  return col.label;
+  return <span>{meta.label}</span>;
 };
 
+const headerFor = (id: string) => {
+  let header = headerCache.get(id);
+  if (!header) {
+    const Header = ({ column }: { column?: { meta: TableColumnMeta<object> } }) => (
+      column ? <ColumnHeading meta={column.meta} /> : null
+    );
+    Header.toString = () => `header:${id}`;
+    header = Header as () => ReactNode;
+    headerCache.set(id, header);
+  }
+  return header;
+};
+
+/** One cell component for every column: it reads the column's own renderer, so it never remounts. */
+const RenderedCell = ({ value, row, column }: {
+  value: unknown; row: { original: object }; column: { meta: TableColumnMeta<object> };
+}) => {
+  const { renderCell } = column.meta;
+  const content = renderCell ? renderCell(value, row.original) : String(value ?? '');
+  // A fragment is the only way to return arbitrary ReactNode content from a component.
+  // eslint-disable-next-line react/jsx-no-useless-fragment
+  return <>{content}</>;
+};
+
+const ExpanderHeading = () => {
+  const intl = useIntl();
+  return <span className="sr-only">{intl.formatMessage(messages.expandColumn)}</span>;
+};
+ExpanderHeading.toString = () => 'header:expander';
+
 /** Build the column spec format that Paragon DataTable expects */
-const buildTableColumns = <Row extends object>(cols: ColumnDef<Row>[]) => cols.map((col) => ({
-  Header: columnHeader(col),
-  accessor: col.key,
-  id: col.id ?? col.key,
-  headerClassName: col.headerClassName,
-  ...(col.renderCell
-    ? {
-      // eslint-disable-next-line react/no-unstable-nested-components
-      Cell: ({ value, row }: { value: unknown; row: { original: Row } }) => (
-        <>{col.renderCell!(value, row.original)}</>
-      ),
-    }
-    : {}),
-}));
+const buildTableColumns = <Row extends object>(cols: ColumnDef<Row>[]) => cols.map((col) => {
+  const id = col.id ?? col.key;
+  const meta: TableColumnMeta<Row> = {
+    label: col.label, isLabelHidden: col.isLabelHidden, info: col.info, renderCell: col.renderCell,
+  };
+  return {
+    Header: headerFor(id),
+    accessor: col.key,
+    id,
+    headerClassName: col.headerClassName,
+    meta,
+    ...(col.renderCell ? { Cell: RenderedCell } : {}),
+  };
+});
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -108,8 +150,7 @@ const AdminDataTable = <Row extends object>({
     ? [
       {
         id: 'expander',
-        // eslint-disable-next-line react/no-unstable-nested-components
-        Header: () => <span className="sr-only">{intl.formatMessage(messages.expandColumn)}</span>,
+        Header: ExpanderHeading,
         Cell: DataTable.ExpandRow,
       },
       ...buildTableColumns(columns),

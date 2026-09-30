@@ -12,23 +12,58 @@
  * clears it, so nothing stays narrowed out of sight. "View overview" on By
  * partner opens Overview for that partner.
  */
-import { useCallback } from 'react';
+import {
+  Suspense, lazy, useCallback, useEffect, useState,
+} from 'react';
+import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Tab, Tabs } from '@openedx/paragon';
+import { Spinner, Tab, Tabs } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
 import LoadingPage from '@src/components/LoadingPage';
 import { useAdminCapabilities } from '@src/data/whoami';
-import ContentTab from './components/ContentTab';
-import CouponsTab from './components/CouponsTab';
-import LearnersTab from './components/LearnersTab';
-import OrdersTab from './components/OrdersTab';
-import OverviewTab from './components/OverviewTab';
-import PartnersTab from './components/PartnersTab';
 import messages from './messages';
+
+// Each tab is its own chunk, so opening the page loads only Overview and the
+// others download the first time they are opened.
+const OverviewTab = lazy(() => import('./components/OverviewTab'));
+const OrdersTab = lazy(() => import('./components/OrdersTab'));
+const PartnersTab = lazy(() => import('./components/PartnersTab'));
+const ContentTab = lazy(() => import('./components/ContentTab'));
+const LearnersTab = lazy(() => import('./components/LearnersTab'));
+const CouponsTab = lazy(() => import('./components/CouponsTab'));
 
 const TABS = ['overview', 'orders', 'partners', 'content', 'learners', 'coupons'] as const;
 type PaymentsTab = typeof TABS[number];
+
+/**
+ * The tab row switches at once and this pane shows a spinner while its code
+ * loads and while its first render is prepared. Mounting waits one frame so the
+ * spinner paints before the tab's (heavier) first render blocks the page.
+ */
+const TabPanel = ({ children }: { children: ReactNode }) => {
+  const intl = useIntl();
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    // requestAnimationFrame pauses in a hidden window, so a timer backs it up.
+    const show = () => setReady(true);
+    const frame = requestAnimationFrame(show);
+    const timer = setTimeout(show, 100);
+    return () => { cancelAnimationFrame(frame); clearTimeout(timer); };
+  }, []);
+  const loader = (
+    <div
+      className="rwaq-table-shell rwaq-table-state"
+      data-testid="tab-loading"
+      aria-label={intl.formatMessage(messages.loadingTab)}
+    >
+      <Spinner animation="border" variant="primary" role="status">
+        <span className="sr-only">{intl.formatMessage(messages.loadingTab)}</span>
+      </Spinner>
+    </div>
+  );
+  return ready ? <Suspense fallback={loader}>{children}</Suspense> : loader;
+};
 
 const PaymentsDashboard = () => {
   const intl = useIntl();
@@ -82,50 +117,62 @@ const PaymentsDashboard = () => {
           mountOnEnter
         >
           <Tab eventKey="overview" title={intl.formatMessage(messages.tabOverview)}>
-            <OverviewTab org={org} onOrgChange={setOrg} />
+            <TabPanel>
+              <OverviewTab org={org} onOrgChange={setOrg} />
+            </TabPanel>
           </Tab>
           <Tab eventKey="orders" title={intl.formatMessage(messages.tabOrders)}>
-            <OrdersTab
-              org={org}
-              onOrgChange={setOrg}
-              content={content}
-              contentTitle={contentTitle}
-              user={user}
-              userTitle={userTitle}
-              couponCode={couponCode}
-              onFocusClear={clearFocus}
-            />
+            <TabPanel>
+              <OrdersTab
+                org={org}
+                onOrgChange={setOrg}
+                content={content}
+                contentTitle={contentTitle}
+                user={user}
+                userTitle={userTitle}
+                couponCode={couponCode}
+                onFocusClear={clearFocus}
+              />
+            </TabPanel>
           </Tab>
           <Tab eventKey="partners" title={intl.formatMessage(messages.tabPartners)}>
-            <PartnersTab
-              onViewOverview={(short) => updateParams({ tab: undefined, org: short })}
-              onViewOrders={(short) => updateParams({ tab: 'orders', org: short })}
-            />
+            <TabPanel>
+              <PartnersTab
+                onViewOverview={(short) => updateParams({ tab: undefined, org: short })}
+                onViewOrders={(short) => updateParams({ tab: 'orders', org: short })}
+              />
+            </TabPanel>
           </Tab>
           <Tab eventKey="content" title={intl.formatMessage(messages.tabContent)}>
-            <ContentTab
-              org={org}
-              onOrgChange={setOrg}
-              onViewOrders={(key, title) => updateParams({
-                tab: 'orders', org: undefined, content: key, contentTitle: title,
-              })}
-            />
+            <TabPanel>
+              <ContentTab
+                org={org}
+                onOrgChange={setOrg}
+                onViewOrders={(key, title) => updateParams({
+                  tab: 'orders', org: undefined, content: key, contentTitle: title,
+                })}
+              />
+            </TabPanel>
           </Tab>
           <Tab eventKey="learners" title={intl.formatMessage(messages.tabLearners)}>
-            <LearnersTab
-              org={org}
-              onOrgChange={setOrg}
-              onViewOrders={(userId, username) => updateParams({
-                tab: 'orders', org: undefined, user: String(userId), userTitle: username,
-              })}
-            />
+            <TabPanel>
+              <LearnersTab
+                org={org}
+                onOrgChange={setOrg}
+                onViewOrders={(userId, username) => updateParams({
+                  tab: 'orders', org: undefined, user: String(userId), userTitle: username,
+                })}
+              />
+            </TabPanel>
           </Tab>
           <Tab eventKey="coupons" title={intl.formatMessage(messages.tabCoupons)}>
-            <CouponsTab
-              org={org}
-              onOrgChange={setOrg}
-              onViewOrders={(code) => updateParams({ tab: 'orders', org: undefined, couponCode: code })}
-            />
+            <TabPanel>
+              <CouponsTab
+                org={org}
+                onOrgChange={setOrg}
+                onViewOrders={(code) => updateParams({ tab: 'orders', org: undefined, couponCode: code })}
+              />
+            </TabPanel>
           </Tab>
         </Tabs>
       </div>

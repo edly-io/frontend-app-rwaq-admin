@@ -15,6 +15,7 @@ const messages = defineMessages({
   chipPartner: { id: 'rwaq.admin.payments.chip.partner', defaultMessage: 'Partner: {org}' },
 
   // ── Tabs ───────────────────────────────────────────────────────────────────
+  loadingTab: { id: 'rwaq.admin.payments.loadingTab', defaultMessage: 'Loading' },
   tabOverview: { id: 'rwaq.admin.payments.tab.overview', defaultMessage: 'Overview' },
   tabOrders: { id: 'rwaq.admin.payments.tab.orders', defaultMessage: 'Payment history' },
   tabPartners: { id: 'rwaq.admin.payments.tab.partners', defaultMessage: 'By partner' },
