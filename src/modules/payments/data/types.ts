@@ -134,6 +134,8 @@ export interface OrderCoupon {
   courseId: string | null;
   programKey: string | null;
   discountAmount: string;
+  /** The part that fell on the chosen partner's items. null unless the list is narrowed to a partner. */
+  partnerDiscountAmount: string | null;
 }
 
 export interface OrderRow {
@@ -151,6 +153,13 @@ export interface OrderRow {
   actualPrice: string;
   discountTotal: string;
   pricePaid: string;
+  /**
+   * Narrowed to a partner, `items` and `coupons` hold only that partner's part and these are the
+   * totals of it. The three above stay whole-order. null when the list is not narrowed to a partner.
+   */
+  partnerActualPrice: string | null;
+  partnerDiscountAmount: string | null;
+  partnerPricePaid: string | null;
   reason: string;
   items: OrderItem[];
   coupons: OrderCoupon[];
@@ -166,6 +175,8 @@ export interface OrderListParams extends ListParams {
   coupon?: 'with' | 'without';
   /** A course key or a program key: only orders that include it. */
   content?: string;
+  /** Only orders with at least one paid item (price paid above 0), narrowed by org and content. */
+  paid?: boolean;
 }
 
 export interface ContentListParams extends ListParams {

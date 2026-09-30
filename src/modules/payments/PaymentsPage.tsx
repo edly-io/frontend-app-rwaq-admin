@@ -10,7 +10,8 @@
  * The partner is chosen on the tab that uses it (Overview, history, content,
  * learners, coupons) and lives in the URL so a reload keeps it. Switching tabs
  * clears it, so nothing stays narrowed out of sight. "View overview" on By
- * partner opens Overview for that partner.
+ * partner opens Overview for that partner, and "View all" on the other tabs
+ * opens Payment history for the row while keeping the partner.
  *
  * A tab stays mounted once opened, so it keeps its search, sort and page when
  * the user comes back. While hidden it does not query (ActiveTabContext).
@@ -206,7 +207,7 @@ const PaymentsDashboard = () => {
                 org={org}
                 onOrgChange={setOrg}
                 onViewOrders={(key, title) => updateParams({
-                  tab: 'orders', org: undefined, content: key, contentTitle: title,
+                  tab: 'orders', content: key, contentTitle: title,
                 })}
               />
             </TabPanel>
@@ -217,7 +218,7 @@ const PaymentsDashboard = () => {
                 org={org}
                 onOrgChange={setOrg}
                 onViewOrders={(userId, username) => updateParams({
-                  tab: 'orders', org: undefined, user: String(userId), userTitle: username,
+                  tab: 'orders', user: String(userId), userTitle: username,
                 })}
               />
             </TabPanel>
@@ -227,7 +228,7 @@ const PaymentsDashboard = () => {
               <CouponsTab
                 org={org}
                 onOrgChange={setOrg}
-                onViewOrders={(code) => updateParams({ tab: 'orders', org: undefined, couponCode: code })}
+                onViewOrders={(code) => updateParams({ tab: 'orders', couponCode: code })}
               />
             </TabPanel>
           </Tab>

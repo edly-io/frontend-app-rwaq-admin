@@ -82,6 +82,40 @@ describe('payments api', () => {
     expect(page.results[0].wordpressOrderId).toBe('wp-1');
   });
 
+  it('sends paid=1 when only paid orders are wanted, and nothing when it is not set', async () => {
+    get.mockResolvedValue({ data: { pagination: {}, results: [] } });
+
+    await getPaymentOrders({ org: 'TPA', paid: true });
+    await getPaymentOrders({ org: 'TPA', paid: false });
+    await getPaymentOrders({ org: 'TPA' });
+
+    expect(get).toHaveBeenNthCalledWith(1, `${BASE}/orders/`, { params: { org: 'TPA', paid: 1 } });
+    expect(get).toHaveBeenNthCalledWith(2, `${BASE}/orders/`, { params: { org: 'TPA' } });
+    expect(get).toHaveBeenNthCalledWith(3, `${BASE}/orders/`, { params: { org: 'TPA' } });
+  });
+
+  it('camelCases the partner fields of an order and its coupons', async () => {
+    get.mockResolvedValue({
+      data: {
+        pagination: {},
+        results: [{
+          partner_actual_price: '100.00',
+          partner_discount_amount: '6.67',
+          partner_price_paid: '93.33',
+          coupons: [{ code: 'SAVE10', discount_amount: '10.00', partner_discount_amount: '6.67' }],
+          items: [],
+        }],
+      },
+    });
+
+    const page = await getPaymentOrders({ org: 'TPA', paid: true });
+
+    expect(page.results[0].partnerPricePaid).toBe('93.33');
+    expect(page.results[0].partnerActualPrice).toBe('100.00');
+    expect(page.results[0].partnerDiscountAmount).toBe('6.67');
+    expect(page.results[0].coupons[0].partnerDiscountAmount).toBe('6.67');
+  });
+
   it('downloads the CSV with the same filters but no paging, named by the server', async () => {
     const blob = new Blob(['x']);
     get.mockResolvedValue({

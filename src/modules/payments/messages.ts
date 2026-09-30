@@ -161,8 +161,16 @@ const messages = defineMessages({
   colSold: { id: 'rwaq.admin.payments.col.sold', defaultMessage: 'Items sold' },
   colBought: { id: 'rwaq.admin.payments.col.bought', defaultMessage: 'Items bought' },
   colOrderValue: { id: 'rwaq.admin.payments.col.orderValue', defaultMessage: 'Order value (SAR)' },
+  colOrderValuePartner: {
+    id: 'rwaq.admin.payments.col.orderValuePartner',
+    defaultMessage: 'Order value (SAR, this partner)',
+  },
   colDiscounts: { id: 'rwaq.admin.payments.col.discounts', defaultMessage: 'Discounts (SAR)' },
   colCollected: { id: 'rwaq.admin.payments.col.collected', defaultMessage: 'Amount collected (SAR)' },
+  colCollectedPartner: {
+    id: 'rwaq.admin.payments.col.collectedPartner',
+    defaultMessage: 'Amount collected (SAR, this partner)',
+  },
   colPayout: { id: 'rwaq.admin.payments.col.payout', defaultMessage: 'Partner payout (SAR)' },
   colRwaq: { id: 'rwaq.admin.payments.col.rwaq', defaultMessage: 'Rwaq revenue (SAR)' },
   infoColShare: {
@@ -361,6 +369,10 @@ const messages = defineMessages({
   colCourses: { id: 'rwaq.admin.payments.col.courses', defaultMessage: 'Items' },
   colPrice: { id: 'rwaq.admin.payments.col.price', defaultMessage: 'Price (SAR)' },
   colDiscount: { id: 'rwaq.admin.payments.col.discount', defaultMessage: 'Discount (SAR)' },
+  colDiscountPartner: {
+    id: 'rwaq.admin.payments.col.discountPartner',
+    defaultMessage: 'Discount (SAR, this partner)',
+  },
   colPaid: { id: 'rwaq.admin.payments.col.paid', defaultMessage: 'Paid (SAR)' },
   colSource: { id: 'rwaq.admin.payments.col.source', defaultMessage: 'Source' },
   infoColOrder: {
@@ -377,13 +389,25 @@ const messages = defineMessages({
     id: 'rwaq.admin.payments.info.col.orderPrice',
     defaultMessage: 'List price of everything in the order, before coupons.',
   },
+  infoColOrderPricePartner: {
+    id: 'rwaq.admin.payments.info.col.orderPricePartner',
+    defaultMessage: 'List price of this partner\'s items in the order, before coupons. Other partners\' items are left out.',
+  },
   infoColOrderDiscount: {
     id: 'rwaq.admin.payments.info.col.orderDiscount',
     defaultMessage: 'Coupon money taken off this order.',
   },
+  infoColOrderDiscountPartner: {
+    id: 'rwaq.admin.payments.info.col.orderDiscountPartner',
+    defaultMessage: 'Coupon money taken off this partner\'s items. A cart coupon counts only the part that fell on them.',
+  },
   infoColOrderPaid: {
     id: 'rwaq.admin.payments.info.col.orderPaid',
     defaultMessage: 'What the learner paid for the order after coupons.',
+  },
+  infoColOrderPaidPartner: {
+    id: 'rwaq.admin.payments.info.col.orderPaidPartner',
+    defaultMessage: 'What the learner paid for this partner\'s items after coupons. Other partners\' items in the same order are left out.',
   },
   infoColSource: {
     id: 'rwaq.admin.payments.info.col.source',

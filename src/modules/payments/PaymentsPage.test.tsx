@@ -5,7 +5,7 @@
  * QueryClient or network. MetricChart is stubbed for the same reason.
  */
 import {
-  act, fireEvent, screen, waitFor,
+  act, fireEvent, screen, waitFor, within,
 } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as whoami from '@src/data/whoami';
@@ -258,9 +258,20 @@ describe('PaymentsPage', () => {
     actualPrice: '150.00',
     discountTotal: '0.00',
     pricePaid: '150.00',
+    // Set by the backend only when the list is narrowed to a partner.
+    partnerActualPrice: null,
+    partnerDiscountAmount: null,
+    partnerPricePaid: null,
     reason: '',
     coupons: [{
-      code: 'SAVE10', scope: 'cart', discountType: 'amount', value: '10', courseId: null, programKey: null, discountAmount: '10.00',
+      code: 'SAVE10',
+      scope: 'cart',
+      discountType: 'amount',
+      value: '10',
+      courseId: null,
+      programKey: null,
+      discountAmount: '10.00',
+      partnerDiscountAmount: null,
     }],
     items: [
       {
@@ -290,9 +301,18 @@ describe('PaymentsPage', () => {
     ],
   };
 
+  // What the backend returns for the same order when the list is narrowed to TPA: its item and its amounts only.
+  const tpaView = {
+    ...mixedOrder,
+    items: [mixedOrder.items[0]],
+    partnerActualPrice: '100.00',
+    partnerDiscountAmount: '0.00',
+    partnerPricePaid: '100.00',
+  };
+
   it('expands a partner into its orders, counting only that partner\'s items, and View all opens the history', async () => {
     (hooks.usePaymentOrders as jest.Mock).mockReturnValue({
-      data: pageOf([mixedOrder], 12), isLoading: false, isError: false,
+      data: pageOf([tpaView], 12), isLoading: false, isError: false,
     });
     await renderPage();
     await openTab('By partner');
@@ -451,6 +471,96 @@ describe('PaymentsPage', () => {
       expect(params.get('tab')).toBe('coupons');
       expect(params.has('org')).toBe(false);
       expect(params.has('couponCode')).toBe(false);
+    });
+  });
+
+  describe('View all keeps the partner', () => {
+    const revenue = {
+      items: 1, gross: '100.00', discounts: '0.00', netPaid: '100.00', partnerAmount: '70.00', rwaqAmount: '30.00',
+    };
+    const lastOrdersParams = () => {
+      const { calls } = (hooks.usePaymentOrders as jest.Mock).mock;
+      return calls[calls.length - 1][0];
+    };
+    const openFirstRow = async (tabName: string) => {
+      (hooks.usePaymentOrders as jest.Mock).mockReturnValue({
+        data: pageOf([tpaView], 8), isLoading: false, isError: false,
+      });
+      await renderPage();
+      await openTab(tabName);
+      fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
+    };
+
+    it('from a course row: the history is narrowed to the course and still to the partner', async () => {
+      window.history.pushState({}, '', '/?tab=content&org=TPA');
+      (hooks.usePaymentContent as jest.Mock).mockReturnValue({
+        data: pageOf([{
+          type: 'course',
+          key: 'course-v1:TPA+C1+2026',
+          programUuid: null,
+          title: 'Course 1',
+          org: 'TPA',
+          orgName: 'Org A',
+          share: '70.00',
+          ...revenue,
+        }]),
+        isLoading: false,
+        isError: false,
+      });
+      await openFirstRow('By content');
+      fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+      await tabReady();
+
+      expect(lastOrdersParams()).toEqual(expect.objectContaining({
+        org: 'TPA', content: 'course-v1:TPA+C1+2026', pageSize: 10,
+      }));
+      expect(new URLSearchParams(window.location.search).get('org')).toBe('TPA');
+      // Tabs stay mounted, so look only at the one on screen.
+      const history = within(screen.getByRole('tabpanel'));
+      expect(history.getByText('Partner: Org A')).toBeInTheDocument();
+      expect(history.getByText('Course or program: Course 1')).toBeInTheDocument();
+    });
+
+    it('from a learner row: the history is narrowed to the buyer and still to the partner', async () => {
+      window.history.pushState({}, '', '/?tab=learners&org=TPA');
+      (hooks.usePaymentLearners as jest.Mock).mockReturnValue({
+        data: pageOf([{
+          userId: 5, username: 'buyer5', email: 'buyer5@example.com', orders: 8, ...revenue,
+        }]),
+        isLoading: false,
+        isError: false,
+      });
+      await openFirstRow('By learner');
+      fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+      await tabReady();
+
+      expect(lastOrdersParams()).toEqual(expect.objectContaining({ org: 'TPA', user: 5, pageSize: 10 }));
+      const history = within(screen.getByRole('tabpanel'));
+      expect(history.getByText('Partner: Org A')).toBeInTheDocument();
+      expect(history.getByText('Buyer: buyer5')).toBeInTheDocument();
+    });
+
+    it('from a coupon row: the history is narrowed to the code and still to the partner', async () => {
+      window.history.pushState({}, '', '/?tab=coupons&org=TPA');
+      (hooks.usePaymentCoupons as jest.Mock).mockReturnValue({
+        data: pageOf([{
+          code: 'SAVE10', scope: 'cart', discountType: 'amount', orders: 6, discountGiven: '60.00',
+        }]),
+        isLoading: false,
+        isError: false,
+      });
+      await openFirstRow('By coupon');
+      // The expansion asks for the coupon's orders under the partner too.
+      expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({
+        couponCode: 'SAVE10', org: 'TPA', paid: true, pageSize: 5,
+      }));
+      fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+      await tabReady();
+
+      expect(lastOrdersParams()).toEqual(expect.objectContaining({ org: 'TPA', couponCode: 'SAVE10', pageSize: 10 }));
+      const history = within(screen.getByRole('tabpanel'));
+      expect(history.getByText('Partner: Org A')).toBeInTheDocument();
+      expect(history.getByText('Coupon code: SAVE10')).toBeInTheDocument();
     });
   });
 

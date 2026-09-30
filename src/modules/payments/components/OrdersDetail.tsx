@@ -1,13 +1,14 @@
 /**
  * The expanded row of By partner, By content, By learner and By coupon: the
  * orders behind the row, five at a time, with "View all" opening Payment
- * history narrowed the same way. Amounts follow what the row itself counts,
- * so a partner's orders show only that partner's items.
+ * history narrowed the same way. Amounts follow what the row itself counts.
+ * With a partner chosen the backend narrows each order to that partner's items
+ * and totals them (partner* fields), so a partner's orders show only its part.
  */
 import { Link } from 'react-router-dom';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { usePaymentOrders } from '../data/hooks';
-import type { OrderItem, OrderRow, PaymentsParams } from '../data/types';
+import type { OrderRow, PaymentsParams } from '../data/types';
 import messages from '../messages';
 import {
   DetailTable, MoneyTd, ViewAllNote, formatDate,
@@ -20,7 +21,7 @@ export type OrdersFocus =
   | { kind: 'partner'; org: string; orgName: string }
   | { kind: 'content'; key: string }
   | { kind: 'learner'; userId: number; org?: string }
-  | { kind: 'coupon'; code: string };
+  | { kind: 'coupon'; code: string; org?: string };
 
 interface OrdersDetailProps {
   focus: OrdersFocus;
@@ -28,14 +29,10 @@ interface OrdersDetailProps {
   onViewAll: () => void;
 }
 
-const sameOrg = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
-const toAmount = (cents: number) => (Math.round(cents * 100) / 100).toFixed(2);
-const sum = (items: OrderItem[]) => toAmount(items.reduce((total, item) => total + Number(item.pricePaid), 0));
-
-/** The items of an order that count for this row: one partner's, or all of them. */
-const itemsFor = (order: OrderRow, org?: string) => (
-  org ? order.items.filter((item) => sameOrg(item.org, org)) : order.items
-);
+/** Adds decimal strings in whole cents, so a few items never add up to 99.99000000000001. */
+const addAmounts = (amounts: string[]) => (
+  amounts.reduce((total, amount) => total + Math.round(Number(amount) * 100), 0) / 100
+).toFixed(2);
 
 const BuyerCell = ({ order }: { order: OrderRow }) => (
   <td>
@@ -48,8 +45,8 @@ const BuyerCell = ({ order }: { order: OrderRow }) => (
 
 const OrdersDetail = ({ focus, params, onViewAll }: OrdersDetailProps) => {
   const intl = useIntl();
-  const partnerOrg = focus.kind === 'partner' || focus.kind === 'learner' ? focus.org : undefined;
-  const { data, isLoading } = usePaymentOrders({
+  const partnerOrg = focus.kind === 'content' ? undefined : focus.org;
+  const { data, isLoading, isPlaceholderData } = usePaymentOrders({
     startDate: params.startDate,
     endDate: params.endDate,
     org: partnerOrg,
@@ -58,11 +55,15 @@ const OrdersDetail = ({ focus, params, onViewAll }: OrdersDetailProps) => {
     couponCode: focus.kind === 'coupon' ? focus.code : undefined,
     source: 'wordpress',
     status: 'completed',
+    // Count only orders the row counted: the row sums paid items, so a free order is not one of them.
+    paid: true,
     ordering: '-order_date',
     page: 1,
     pageSize: SHOWN,
   });
   const orders = data?.results ?? [];
+  // Kept rows from the previous request must not pass for this one's.
+  const isPending = isLoading || isPlaceholderData;
 
   const titles = {
     partner: messages.partnerOrdersTitle,
@@ -83,31 +84,33 @@ const OrdersDetail = ({ focus, params, onViewAll }: OrdersDetailProps) => {
     intl.formatMessage({
       partner: messages.colPaidForPartner,
       content: messages.colPaidForItem,
-      learner: messages.colCollected,
+      learner: partnerOrg ? messages.colCollectedPartner : messages.colCollected,
       coupon: messages.colCouponDiscount,
     }[focus.kind]),
   ];
 
   const amount = (order: OrderRow) => {
     if (focus.kind === 'content') {
-      return order.items.find((item) => item.key === focus.key)?.pricePaid;
+      // The same course can be in an order more than once.
+      return addAmounts(order.items.filter((item) => item.key === focus.key).map((item) => item.pricePaid));
     }
     if (focus.kind === 'coupon') {
-      return toAmount(order.coupons
+      // A code can have several lines in one order: a cart line and product lines.
+      return addAmounts(order.coupons
         .filter((coupon) => coupon.code === focus.code)
-        .reduce((total, coupon) => total + Number(coupon.discountAmount), 0));
+        .map((coupon) => (partnerOrg ? coupon.partnerDiscountAmount : coupon.discountAmount) ?? '0'));
     }
-    return partnerOrg ? sum(itemsFor(order, partnerOrg)) : order.pricePaid;
+    return partnerOrg ? order.partnerPricePaid : order.pricePaid;
   };
 
   return (
     <DetailTable>
       <h4 className="rwaq-section-title">{title}</h4>
-      {isLoading && <p className="text-muted mb-0">{intl.formatMessage(messages.loadingRows)}</p>}
-      {!isLoading && orders.length === 0 && (
+      {isPending && <p className="text-muted mb-0">{intl.formatMessage(messages.loadingRows)}</p>}
+      {!isPending && orders.length === 0 && (
         <p className="text-muted mb-0">{intl.formatMessage(messages.nothingHere)}</p>
       )}
-      {orders.length > 0 && (
+      {!isPending && orders.length > 0 && (
         <table className="table table-sm mb-0">
           <thead>
             <tr>{headings.map((heading) => <th key={heading}>{heading}</th>)}</tr>
@@ -118,15 +121,16 @@ const OrdersDetail = ({ focus, params, onViewAll }: OrdersDetailProps) => {
                 <td>{order.wordpressOrderId}</td>
                 <td>{formatDate(order.orderDate)}</td>
                 {focus.kind !== 'learner' && <BuyerCell order={order} />}
-                {(focus.kind === 'partner' || focus.kind === 'learner')
-                  && <td>{itemsFor(order, partnerOrg).length}</td>}
+                {(focus.kind === 'partner' || focus.kind === 'learner') && <td>{order.items.length}</td>}
                 <MoneyTd value={amount(order)} />
               </tr>
             ))}
           </tbody>
         </table>
       )}
-      <ViewAllNote shown={orders.length} total={data?.pagination?.count ?? orders.length} onViewAll={onViewAll} />
+      {!isPending && (
+        <ViewAllNote shown={orders.length} total={data?.pagination?.count ?? orders.length} onViewAll={onViewAll} />
+      )}
     </DetailTable>
   );
 };

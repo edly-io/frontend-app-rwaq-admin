@@ -51,7 +51,10 @@ export const getPaymentsSummary = async (params: SummaryParams = {}): Promise<Pa
   return camelCaseObject(data) as PaymentsSummary;
 };
 
-export const getPaymentOrders = (params: OrderListParams) => getList<OrderRow>('orders', params);
+/** `paid` goes out as paid=1 when set, and is left out otherwise. */
+export const getPaymentOrders = ({ paid, ...params }: OrderListParams) => (
+  getList<OrderRow>('orders', { ...params, ...(paid ? { paid: 1 } : {}) })
+);
 export const getPaymentPartners = (params: ListParams) => getList<PartnerRow>('partners', params);
 export const getPaymentContent = (params: ContentListParams) => getList<ContentRow>('content', params);
 export const getPaymentLearners = (params: ListParams) => getList<LearnerRow>('learners', params);

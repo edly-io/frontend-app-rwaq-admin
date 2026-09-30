@@ -177,7 +177,7 @@ const CouponsTab = ({ org, onOrgChange, onViewOrders }: CouponsTabProps) => {
           pagination={tablePagination(data, list.page, list.setPage)}
           renderRowSubComponent={(row) => (
             <OrdersDetail
-              focus={{ kind: 'coupon', code: row.code }}
+              focus={{ kind: 'coupon', code: row.code, org: org || undefined }}
               params={params}
               onViewAll={() => onViewOrders(row.code)}
             />

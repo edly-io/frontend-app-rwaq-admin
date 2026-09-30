@@ -4,6 +4,9 @@
  *
  * Defaults to WordPress purchases, the orders that are payments. The chip says
  * so, and removing it also shows admin grants (free enrollments).
+ *
+ * With a partner chosen, a row shows that partner's part of the order only:
+ * its items, and the amounts the backend sums over them (partner* fields).
  */
 import { Link } from 'react-router-dom';
 import { Badge } from '@openedx/paragon';
@@ -51,6 +54,8 @@ const OrdersTab = ({
     listScope(org, dates.startDate, dates.endDate, content, user, couponCode),
   );
   const partner = usePartnerFilter(params, onOrgChange);
+  // Under a partner the backend narrows each order to that partner's items and totals them separately.
+  const hasPartner = Boolean(params.org);
   const listParams: OrderListParams = {
     ...params,
     source: (list.filters.source || undefined) as OrderSource | undefined,
@@ -177,23 +182,24 @@ const OrdersTab = ({
       renderCell: (_value, row) => row.items.length,
     },
     {
-      label: intl.formatMessage(messages.colOrderValue),
-      info: intl.formatMessage(messages.infoColOrderPrice),
+      label: intl.formatMessage(hasPartner ? messages.colOrderValuePartner : messages.colOrderValue),
+      info: intl.formatMessage(hasPartner ? messages.infoColOrderPricePartner : messages.infoColOrderPrice),
       headerClassName: 'rwaq-th--wrap',
-      key: 'actualPrice',
+      key: hasPartner ? 'partnerActualPrice' : 'actualPrice',
       renderCell: (value) => <MoneyCell value={value as string} />,
     },
     {
-      label: intl.formatMessage(messages.colDiscount),
-      info: intl.formatMessage(messages.infoColOrderDiscount),
-      key: 'discountTotal',
+      label: intl.formatMessage(hasPartner ? messages.colDiscountPartner : messages.colDiscount),
+      info: intl.formatMessage(hasPartner ? messages.infoColOrderDiscountPartner : messages.infoColOrderDiscount),
+      headerClassName: hasPartner ? 'rwaq-th--wrap' : undefined,
+      key: hasPartner ? 'partnerDiscountAmount' : 'discountTotal',
       renderCell: (value) => <MoneyCell value={value as string} />,
     },
     {
-      label: intl.formatMessage(messages.colCollected),
-      info: intl.formatMessage(messages.infoColOrderPaid),
+      label: intl.formatMessage(hasPartner ? messages.colCollectedPartner : messages.colCollected),
+      info: intl.formatMessage(hasPartner ? messages.infoColOrderPaidPartner : messages.infoColOrderPaid),
       headerClassName: 'rwaq-th--wrap',
-      key: 'pricePaid',
+      key: hasPartner ? 'partnerPricePaid' : 'pricePaid',
       renderCell: (value) => <MoneyCell value={value as string} strong />,
     },
     {
@@ -219,10 +225,12 @@ const OrdersTab = ({
           </tr>
         </thead>
         <tbody>
-          {order.items.map((item) => {
+          {order.items.map((item, index) => {
             const path = contentPath(item.type, item.key, item.programUuid);
             return (
-              <tr key={item.key}>
+              // The same course can appear twice in one order, so the key alone is not unique.
+              // eslint-disable-next-line react/no-array-index-key
+              <tr key={`${item.key}-${index}`}>
                 <td>
                   <div className="rwaq-user-cell__name">
                     {path ? <Link to={path}>{item.title}</Link> : item.title}
@@ -262,7 +270,8 @@ const OrdersTab = ({
                   ? `${Number(coupon.value)}%`
                   : formatMoney(intl, coupon.value),
                 target: coupon.courseId ?? coupon.programKey ?? intl.formatMessage(messages.couponCart),
-                amount: formatMoney(intl, coupon.discountAmount),
+                // Under a partner, the part of the coupon that fell on that partner's items.
+                amount: formatMoney(intl, hasPartner ? coupon.partnerDiscountAmount : coupon.discountAmount),
               })}
             </li>
           ))}
