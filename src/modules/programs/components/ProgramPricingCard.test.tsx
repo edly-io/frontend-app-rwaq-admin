@@ -15,8 +15,9 @@ const mockUpdate = jest.fn();
 const makeProgram = (overrides: Partial<ProgramDetail> = {}) => ({
   uuid: 'b6f1c2d3-0000-4000-8000-000000000001',
   pricingCategory: 'is_free',
-  price: null,
-  discount: null,
+  regularPrice: null,
+  salePrice: null,
+  discountPercentage: null,
   currency: 'SAR',
   pricingManagedByAdmin: false,
   ...overrides,
@@ -43,7 +44,7 @@ describe('ProgramPricingCard', () => {
   });
 
   it('validates price and sale price on blur', () => {
-    renderCard({ pricingCategory: 'is_paid', price: '500.00' });
+    renderCard({ pricingCategory: 'is_paid', regularPrice: '500.00' });
     const price = screen.getByLabelText('Price (SAR)');
     fireEvent.change(price, { target: { value: '-5' } });
     fireEvent.blur(price);
@@ -51,17 +52,38 @@ describe('ProgramPricingCard', () => {
 
     fireEvent.change(price, { target: { value: '500' } });
     fireEvent.blur(price);
-    const discount = screen.getByLabelText('Sale price (SAR)');
-    fireEvent.change(discount, { target: { value: '600' } });
-    fireEvent.blur(discount);
+    const salePrice = screen.getByLabelText('Discounted Price / Sale Price (SAR)');
+    fireEvent.change(salePrice, { target: { value: '600' } });
+    fireEvent.blur(salePrice);
     expect(screen.getByText('Sale price must be lower than the price.')).toBeInTheDocument();
   });
 
   it('does not save when a paid price is invalid', () => {
-    renderCard({ pricingCategory: 'is_paid', price: '0' });
+    renderCard({ pricingCategory: 'is_paid', regularPrice: '0' });
     save();
     expect(screen.getByText('Price must be greater than 0.')).toBeInTheDocument();
     expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('computes the discount percentage live from the inputs', () => {
+    renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00' });
+    const price = screen.getByLabelText('Price (SAR)');
+    const sale = screen.getByLabelText('Discounted Price / Sale Price (SAR)');
+    expect(screen.queryByTestId('discount-percentage')).not.toBeInTheDocument();
+    fireEvent.change(price, { target: { value: '200' } });
+    fireEvent.change(sale, { target: { value: '150' } });
+    expect(screen.getByText('25% off')).toBeInTheDocument();
+    expect(mockUpdate).not.toHaveBeenCalled();
+    fireEvent.change(price, { target: { value: '300' } });
+    expect(screen.getByText('50% off')).toBeInTheDocument();
+    fireEvent.change(sale, { target: { value: '300' } });
+    expect(screen.queryByTestId('discount-percentage')).not.toBeInTheDocument();
+    fireEvent.change(sale, { target: { value: '350' } });
+    expect(screen.queryByTestId('discount-percentage')).not.toBeInTheDocument();
+    fireEvent.change(sale, { target: { value: '150' } });
+    expect(screen.getByText('50% off')).toBeInTheDocument();
+    fireEvent.change(sale, { target: { value: '' } });
+    expect(screen.queryByTestId('discount-percentage')).not.toBeInTheDocument();
   });
 
   it('saves a paid program', async () => {
@@ -71,8 +93,8 @@ describe('ProgramPricingCard', () => {
     save();
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({
       pricingCategory: 'is_paid',
-      price: '500',
-      discount: null,
+      regularPrice: '500',
+      salePrice: null,
       pricingManagedByAdmin: false,
     }));
     expect(await screen.findByText('Pricing saved.')).toBeInTheDocument();

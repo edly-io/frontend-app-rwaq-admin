@@ -158,8 +158,8 @@ export const updateCoursePricing = async (
 ): Promise<CoursePricing> => {
   const body: Record<string, unknown> = {};
   if (patch.pricingCategory !== undefined) { body.pricing_category = patch.pricingCategory; }
-  if (patch.price !== undefined) { body.price = patch.price; }
-  if (patch.discount !== undefined) { body.discount = patch.discount; }
+  if (patch.regularPrice !== undefined) { body.regular_price = patch.regularPrice; }
+  if (patch.salePrice !== undefined) { body.sale_price = patch.salePrice; }
   if (patch.pricingManagedByAdmin !== undefined) {
     body.pricing_managed_by_admin = patch.pricingManagedByAdmin;
   }

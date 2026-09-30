@@ -107,13 +107,17 @@ const messages = defineMessages({
   pricingFree: { id: 'rwaq.admin.programs.pricing.free', defaultMessage: 'Free' },
   pricingPaid: { id: 'rwaq.admin.programs.pricing.paid', defaultMessage: 'Paid' },
   pricingPriceLabel: { id: 'rwaq.admin.programs.pricing.price-label', defaultMessage: 'Price ({currency})' },
-  pricingDiscountLabel: {
-    id: 'rwaq.admin.programs.pricing.discount-label',
-    defaultMessage: 'Sale price ({currency})',
+  pricingSalePriceLabel: {
+    id: 'rwaq.admin.programs.pricing.sale-price-label',
+    defaultMessage: 'Discounted Price / Sale Price ({currency})',
   },
-  pricingDiscountHint: {
-    id: 'rwaq.admin.programs.pricing.discount-hint',
+  pricingSalePriceHint: {
+    id: 'rwaq.admin.programs.pricing.sale-price-hint',
     defaultMessage: 'Optional. Leave empty when the program is not on sale.',
+  },
+  pricingDiscountPercentage: {
+    id: 'rwaq.admin.programs.pricing.discount-percentage',
+    defaultMessage: '{percentage}% off',
   },
   pricingCoursesNote: {
     id: 'rwaq.admin.programs.pricing.courses-note',
@@ -139,8 +143,8 @@ const messages = defineMessages({
     defaultMessage: 'Price must be greater than 0.',
   },
   pricingErrorNegative: { id: 'rwaq.admin.programs.pricing.error-negative', defaultMessage: 'Prices cannot be negative.' },
-  pricingErrorDiscountNotLower: {
-    id: 'rwaq.admin.programs.pricing.error-discount-not-lower',
+  pricingErrorSalePriceNotLower: {
+    id: 'rwaq.admin.programs.pricing.error-sale-price-not-lower',
     defaultMessage: 'Sale price must be lower than the price.',
   },
   pricingErrorSaveFailed: {

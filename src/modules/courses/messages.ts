@@ -671,13 +671,17 @@ export const courseRoleMessages = defineMessages({
     id: 'rwaq.admin.courses.pricing.price-label',
     defaultMessage: 'Price ({currency})',
   },
-  pricingDiscountLabel: {
-    id: 'rwaq.admin.courses.pricing.discount-label',
-    defaultMessage: 'Sale price ({currency})',
+  pricingSalePriceLabel: {
+    id: 'rwaq.admin.courses.pricing.sale-price-label',
+    defaultMessage: 'Discounted Price / Sale Price ({currency})',
   },
-  pricingDiscountHint: {
-    id: 'rwaq.admin.courses.pricing.discount-hint',
+  pricingSalePriceHint: {
+    id: 'rwaq.admin.courses.pricing.sale-price-hint',
     defaultMessage: 'Optional. Leave empty when the course is not on sale.',
+  },
+  pricingDiscountPercentage: {
+    id: 'rwaq.admin.courses.pricing.discount-percentage',
+    defaultMessage: '{percentage}% off',
   },
   pricingSave: {
     id: 'rwaq.admin.courses.pricing.save',
@@ -699,8 +703,8 @@ export const courseRoleMessages = defineMessages({
     id: 'rwaq.admin.courses.pricing.error-price-not-positive',
     defaultMessage: 'Price must be greater than 0.',
   },
-  pricingErrorDiscountNotLower: {
-    id: 'rwaq.admin.courses.pricing.error-discount-not-lower',
+  pricingErrorSalePriceNotLower: {
+    id: 'rwaq.admin.courses.pricing.error-sale-price-not-lower',
     defaultMessage: 'Sale price must be lower than the price.',
   },
   pricingErrorNegative: {
