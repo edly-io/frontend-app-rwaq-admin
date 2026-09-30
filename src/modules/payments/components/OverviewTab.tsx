@@ -62,7 +62,8 @@ const TrendChart = ({
   const data = (summary?.series ?? []).map((point) => ({
     name: periodLabel(
       point.period,
-      granularity,
+      // The kept previous data was fetched at its own granularity until the new one arrives.
+      summary?.granularity ?? granularity,
       intl.locale,
       (date) => intl.formatMessage(messages.weekOf, { date }),
     ),

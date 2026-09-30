@@ -24,7 +24,11 @@ jest.mock('./data/hooks', () => ({
 
 jest.mock('@src/components/charts/MetricChart', () => ({
   __esModule: true,
-  default: ({ ariaLabel }: { ariaLabel: string }) => <div data-testid="metric-chart" aria-label={ariaLabel} />,
+  default: ({ ariaLabel, data }: { ariaLabel: string; data: { name: string }[] }) => (
+    <div data-testid="metric-chart" aria-label={ariaLabel}>
+      {data.map((point) => <span key={point.name}>{point.name}</span>)}
+    </div>
+  ),
 }));
 
 const emptyPage = {
@@ -132,6 +136,23 @@ describe('PaymentsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Weekly' }));
 
     expect(hooks.usePaymentsSummary).toHaveBeenLastCalledWith(expect.objectContaining({ granularity: 'week' }));
+  });
+
+  it('labels the kept data by its own granularity while a new one loads, with no duplicate keys', async () => {
+    const day = (period: string) => ({ ...summary.series[0], period });
+    // Weekly is chosen, but the previous (daily) series is still on screen.
+    (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({
+      data: { ...summary, granularity: 'day', series: [day('2026-07-01'), day('2026-07-02')] },
+      isLoading: false,
+      isError: false,
+    });
+    const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
+    await renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Weekly' }));
+
+    expect(screen.getAllByText('Jul 1').length).toBeGreaterThan(0);
+    expect(errors.mock.calls.some(([message]) => String(message).includes('same key'))).toBe(false);
+    errors.mockRestore();
   });
 
   it('opens the Overview for a partner from By partner, and clears it when switching tabs', async () => {
