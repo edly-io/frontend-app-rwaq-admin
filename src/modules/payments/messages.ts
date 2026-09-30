@@ -86,7 +86,7 @@ const messages = defineMessages({
   },
   infoChartSplit: {
     id: 'rwaq.admin.payments.info.chartSplit',
-    defaultMessage: 'How the amount collected in each period divides between partners and Rwaq. Money from partners without a share is left out of both.',
+    defaultMessage: 'How the amount collected in each period divides between partners and Rwaq. Money from partners without a share is left out of both. Partner amounts are rounded per row, so figures can differ by a few cents from By partner, which is the payout figure.',
   },
 
   // ── Tab headings: what the tab counts and how it is calculated ─────────────
@@ -112,7 +112,7 @@ const messages = defineMessages({
   },
   howContent: {
     id: 'rwaq.admin.payments.how.content',
-    defaultMessage: 'Each purchase is split at its partner\'s share %, then added up per course or program. Example: a 500 course at a 30% share gives the partner 150 and Rwaq 350.',
+    defaultMessage: 'Each purchase is split at its partner\'s share %, then added up per course or program. Example: a 500 course at a 30% share gives the partner 150 and Rwaq 350. Partner amounts are rounded per row, so figures can differ by a few cents from By partner, which is the payout figure.',
   },
   infoLearnersTab: {
     id: 'rwaq.admin.payments.info.learnersTab',
@@ -120,7 +120,7 @@ const messages = defineMessages({
   },
   howLearners: {
     id: 'rwaq.admin.payments.how.learners',
-    defaultMessage: 'Each purchase is split at its own partner\'s share %, then added up per learner. A learner who bought from partners with different shares gets a blended split.',
+    defaultMessage: 'Each purchase is split at its own partner\'s share %, then added up per learner. A learner who bought from partners with different shares gets a blended split. Partner amounts are rounded per row, so figures can differ by a few cents from By partner, which is the payout figure.',
   },
   infoCouponsTab: {
     id: 'rwaq.admin.payments.info.couponsTab',
@@ -379,7 +379,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.payments.info.col.order',
     defaultMessage: 'The WordPress order ID. Admin grants have no WordPress order and show as Admin enrollment.',
   },
-  infoColDate: { id: 'rwaq.admin.payments.info.col.date', defaultMessage: 'When the order was paid.' },
+  infoColDate: {
+    id: 'rwaq.admin.payments.info.col.date',
+    defaultMessage: 'The day the order was paid, in UTC. The date range filters use UTC days too.',
+  },
   infoColBuyer: { id: 'rwaq.admin.payments.info.col.buyer', defaultMessage: 'The learner who placed the order. Click to open their profile.' },
   infoColCourses: {
     id: 'rwaq.admin.payments.info.col.courses',

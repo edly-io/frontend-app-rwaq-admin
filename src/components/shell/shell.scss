@@ -1997,11 +1997,12 @@ html[data-paragon-theme-variant='dark'] {
 }
 
 
-// ── Badges in dark mode ──────────────────────────────────────────────────────
+// ── Badges in dark mode, on Orders & Payments ────────────────────────────────
 // Paragon's light and secondary badges keep a pale background with dark text
 // in the dark theme, so they vanish into the card ("WordPress", "Course" and
-// the like). Each variant gets a tinted surface and readable text instead.
-html[data-paragon-theme-variant='dark'] {
+// the like). On the Orders & Payments tabs each variant gets a tinted surface
+// and readable text instead. Other pages keep Paragon's own badges.
+html[data-paragon-theme-variant='dark'] .rwaq-payments-tabs {
   .badge-light,
   .badge-secondary {
     --pgn-badge-bg: var(--rwaq-surface-raised);
@@ -2168,15 +2169,7 @@ html[data-paragon-theme-variant='dark'] {
   .rwaq-section-title:not(:first-child) { margin-top: var(--rwaq-space-4); }
 }
 
-// Names, orgs and emails stay on one line. The shared rule lets a cell shrink to
-// a single character ("Arbisof / t"), so here the table scrolls sideways instead.
 .rwaq-payments-tabs {
-  .rwaq-user-cell__name,
-  .rwaq-user-cell__meta {
-    overflow-wrap: normal;
-    white-space: nowrap;
-  }
-
   // Long headings ("Courses & programs sold") wrap to two lines instead of widening the column.
   // Count and money columns hug their content (width 1%), so spare width goes to the
   // first column instead of stretching "Courses & programs sold" across the table.

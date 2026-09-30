@@ -6,7 +6,9 @@
  * ("8,378.10"), and that card's number wraps when six tiles share a row.
  */
 import { Skeleton } from '@openedx/paragon';
+import { useIntl } from '@edx/frontend-platform/i18n';
 import InfoTooltip from '@src/components/InfoTooltip';
+import messages from '../messages';
 
 interface PaymentKpiProps {
   label: string;
@@ -21,6 +23,16 @@ interface PaymentKpiProps {
   isLoading?: boolean;
 }
 
+/** aria-label is only read on an element with a role, so the loader is a status region. */
+const KpiLoader = () => {
+  const intl = useIntl();
+  return (
+    <div role="status" aria-busy="true" aria-label={intl.formatMessage(messages.loadingTab)}>
+      <Skeleton height="1.75rem" width="70%" />
+    </div>
+  );
+};
+
 const PaymentKpi = ({
   label, value, unit, info, footnote, exact, isLoading = false,
 }: PaymentKpiProps) => (
@@ -29,7 +41,7 @@ const PaymentKpi = ({
       <span className="rwaq-payment-kpi__label">{label}</span>
     </InfoTooltip>
     {isLoading ? (
-      <div aria-busy="true" aria-label="Loading"><Skeleton height="1.75rem" width="70%" /></div>
+      <KpiLoader />
     ) : (
       <div className="rwaq-payment-kpi__value" title={exact} aria-label={exact}>
         {unit && value !== null && <span className="rwaq-payment-kpi__unit">{unit}</span>}

@@ -93,6 +93,10 @@ export interface MetricChartProps {
   xLabelAngle?: number;
   /** Show at most about this many x-axis labels, skipping evenly. Omit to show every label. */
   maxXLabels?: number;
+  /** Formats the y-axis ticks and the tooltip values, for money and the like. Omit to show the plain number. */
+  valueFormatter?: (value: number) => string;
+  /** Width in px kept for the y-axis labels. 36 fits small whole numbers, wider figures need more. */
+  yAxisWidth?: number;
 }
 
 /**
@@ -198,6 +202,8 @@ const MetricChart = ({
   hideLegend = false,
   xLabelAngle,
   maxXLabels,
+  valueFormatter,
+  yAxisWidth = 36,
 }: MetricChartProps) => {
   const reducedMotion = usePrefersReducedMotion();
   const colors = getChartColors();
@@ -255,8 +261,9 @@ const MetricChart = ({
           axisLine={false}
           tickLine={false}
           allowDecimals={false}
-          width={36}
+          width={yAxisWidth}
           ticks={yTicks}
+          {...(valueFormatter ? { tickFormatter: valueFormatter } : {})}
           domain={yTicks ? [0, yTicks[yTicks.length - 1]] : [0, 'auto']}
         />
       ),
@@ -288,6 +295,12 @@ const MetricChart = ({
       color: resolveParagonToken('--rwaq-text', '#1f2937'),
     },
     cursor: { fill: resolveParagonToken('--rwaq-row-hover', 'rgba(0,0,0,0.04)') },
+    // A string back from the formatter replaces only the value: the series name stays.
+    ...(valueFormatter ? {
+      formatter: (value: number | string | (number | string)[]) => (
+        typeof value === 'number' ? valueFormatter(value) : value
+      ),
+    } : {}),
   };
 
   // ChartLegend is defined at module scope above MetricChart (stable reference).

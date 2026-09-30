@@ -161,6 +161,31 @@ describe('Payment history amounts', () => {
   });
 });
 
+describe('Payment history date', () => {
+  const zone = process.env.TZ;
+  afterEach(() => {
+    if (zone === undefined) { delete process.env.TZ; } else { process.env.TZ = zone; }
+  });
+
+  it('shows the order\'s UTC day, the day the date filters count it in', () => {
+    // Already the 11th in Auckland.
+    process.env.TZ = 'Pacific/Auckland';
+    mockOrders([{ ...wholeOrder, orderDate: '2026-09-10T20:00:00Z' }]);
+    renderTab();
+
+    expect(firstRow().Date).toBe('9/10/2026');
+  });
+
+  it('says in the column\'s hover text that the date is in UTC', () => {
+    mockOrders([wholeOrder]);
+    renderTab();
+
+    fireEvent.mouseOver(screen.getByText('Date'));
+
+    expect(screen.getByText(/The day the order was paid, in UTC\./)).toBeInTheDocument();
+  });
+});
+
 describe('Payment history expanded row', () => {
   const expand = () => fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
 

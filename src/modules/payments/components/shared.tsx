@@ -20,6 +20,8 @@ import messages from '../messages';
 
 export const PAGE_SIZE = 10;
 export const CURRENCY = 'SAR';
+/** How long a download's blob URL stays valid, so the browser can start reading it before it is revoked. */
+const REVOKE_URL_AFTER_MS = 10_000;
 
 type Intl = ReturnType<typeof useIntl>;
 
@@ -89,7 +91,8 @@ export const ShareCell = ({ share }: { share: string | null }) => {
   );
 };
 
-export const formatDate = (iso: string) => new Date(iso).toLocaleDateString();
+/** The day of a timestamp in UTC, the same days the backend's date filters and buckets use. */
+export const formatDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { timeZone: 'UTC' });
 
 /** A tab's own date range. Each tab keeps its own, so one tab's setting never narrows another. */
 export const useDateRange = () => {
@@ -234,7 +237,8 @@ export const CsvButton = ({ report, params }: CsvButtonProps) => {
       a.href = url;
       a.download = filename;
       a.click();
-      URL.revokeObjectURL(url);
+      // Revoking at once can cancel the download in some browsers.
+      setTimeout(() => URL.revokeObjectURL(url), REVOKE_URL_AFTER_MS);
     } catch (err) {
       logError(err);
       showToast(intl.formatMessage(messages.downloadCsvFailed));

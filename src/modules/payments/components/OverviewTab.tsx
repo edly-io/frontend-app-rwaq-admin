@@ -18,7 +18,7 @@ import type { Granularity, PaymentsSummary, SeriesPoint } from '../data/types';
 import messages from '../messages';
 import PaymentKpi from './PaymentKpi';
 import {
-  CURRENCY, DateFilter, formatMoney, formatTileAmount, useDateRange, usePartnerFilter,
+  CURRENCY, DateFilter, formatAmount, formatMoney, formatTileAmount, useDateRange, usePartnerFilter,
 } from './shared';
 import type { ListTabProps } from './shared';
 
@@ -27,6 +27,8 @@ const LABEL_ANGLE = 60;
 // How many x-axis labels fit at 60 degrees: a full-width chart holds more than a half-width one.
 const FULL_WIDTH_LABELS = 45;
 const HALF_WIDTH_LABELS = 28;
+// Room for y-axis labels of money: "1,250,000.00" at the axis' 11px font.
+const MONEY_AXIS_WIDTH = 72;
 
 /** "2026-09-10" → a label for the x axis that suits the granularity. */
 const periodLabel = (
@@ -38,7 +40,8 @@ const periodLabel = (
   const [year, month, day] = period.split('-').map(Number);
   const date = new Date(year, month - 1, day);
   if (granularity === 'month') { return date.toLocaleDateString(locale, { month: 'short', year: 'numeric' }); }
-  const short = date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+  // With the year, a range over a year end never repeats a label ("Dec 30" in two years).
+  const short = date.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
   return granularity === 'week' ? weekOf(short) : short;
 };
 
@@ -53,10 +56,12 @@ interface TrendChartProps {
   hideLegend?: boolean;
   granularity: Granularity;
   maxLabels: number;
+  /** For money series: formats the y-axis ticks and the tooltip, and widens the axis to fit. */
+  formatValue?: (value: number) => string;
 }
 
 const TrendChart = ({
-  title, info, subtitle, summary, isLoading, isError, series, hideLegend, granularity, maxLabels,
+  title, info, subtitle, summary, isLoading, isError, series, hideLegend, granularity, maxLabels, formatValue,
 }: TrendChartProps) => {
   const intl = useIntl();
   const data = (summary?.series ?? []).map((point) => ({
@@ -97,6 +102,7 @@ const TrendChart = ({
           hideLegend={hideLegend}
           xLabelAngle={LABEL_ANGLE}
           maxXLabels={maxLabels}
+          {...(formatValue ? { valueFormatter: formatValue, yAxisWidth: MONEY_AXIS_WIDTH } : {})}
         />
       </div>
     );
@@ -144,6 +150,7 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
   const chartProps = {
     summary, isLoading, isError, granularity, subtitle,
   };
+  const formatMoneyValue = (value: number) => formatAmount(intl, String(value)) ?? '';
   const money = (label: string, value: string | undefined, info: string) => (
     <PaymentKpi
       label={label}
@@ -223,6 +230,7 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
           title={intl.formatMessage(messages.chartCollectedTitle)}
           info={intl.formatMessage(messages.infoChartCollected)}
           series={[{ key: intl.formatMessage(messages.seriesCollected), value: (point) => Number(point.netPaid) }]}
+          formatValue={formatMoneyValue}
           hideLegend
         />
         <TrendChart
@@ -242,6 +250,7 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
             { key: intl.formatMessage(messages.seriesPayout), value: (point) => Number(point.partnerAmount) },
             { key: intl.formatMessage(messages.seriesRwaq), value: (point) => Number(point.rwaqAmount) },
           ]}
+          formatValue={formatMoneyValue}
         />
       </div>
     </div>

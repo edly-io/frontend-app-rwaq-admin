@@ -24,10 +24,23 @@ jest.mock('./data/hooks', () => ({
   useDownloadPaymentsCsv: jest.fn(),
 }));
 
+// Stands in for the chart: its x labels, and what the money axis would show for 1234.5.
 jest.mock('@src/components/charts/MetricChart', () => ({
   __esModule: true,
-  default: ({ ariaLabel, data }: { ariaLabel: string; data: { name: string }[] }) => (
-    <div data-testid="metric-chart" aria-label={ariaLabel}>
+  default: ({
+    ariaLabel, data, valueFormatter, yAxisWidth,
+  }: {
+    ariaLabel: string;
+    data: { name: string }[];
+    valueFormatter?: (value: number) => string;
+    yAxisWidth?: number;
+  }) => (
+    <div
+      data-testid="metric-chart"
+      aria-label={ariaLabel}
+      data-axis-width={yAxisWidth}
+      data-axis-sample={valueFormatter ? valueFormatter(1234.5) : undefined}
+    >
       {data.map((point) => <span key={point.name}>{point.name}</span>)}
     </div>
   ),
@@ -152,7 +165,7 @@ describe('PaymentsPage', () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: 'Weekly' }));
 
-    expect(screen.getAllByText('Jul 1').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Jul 1, 2026').length).toBeGreaterThan(0);
     expect(errors.mock.calls.some(([message]) => String(message).includes('same key'))).toBe(false);
     errors.mockRestore();
   });
@@ -391,11 +404,92 @@ describe('PaymentsPage', () => {
     expect(screen.getByText('Coupon code: SAVE10')).toBeInTheDocument();
   });
 
+  it.each([
+    ['By content'],
+    ['By learner'],
+  ])('tells the reader on %s that partner amounts are rounded per row and By partner is the payout figure', async (tabName) => {
+    await renderPage();
+    await openTab(tabName);
+
+    expect(screen.getByText(
+      /Partner amounts are rounded per row, so figures can differ by a few cents from By partner, which is the payout figure\./,
+    )).toBeInTheDocument();
+  });
+
+  it('says the same on the partner split chart', async () => {
+    await renderPage();
+
+    fireEvent.mouseOver(screen.getByText('Partner payout and Rwaq revenue over time'));
+
+    expect(await screen.findByText(/which is the payout figure\./)).toBeInTheDocument();
+  });
+
   it('explains how each list is worked out, with an example', async () => {
     await renderPage();
     await openTab('By partner');
 
     expect(screen.getByText(/Partner payout = amount collected x the partner's share %/)).toBeInTheDocument();
+  });
+
+  describe('charts', () => {
+    const point = (period: string) => ({ ...summary.series[0], period });
+    const withSeries = (granularity: string, periods: string[]) => (
+      (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({
+        data: { ...summary, granularity, series: periods.map(point) }, isLoading: false, isError: false,
+      })
+    );
+
+    it('labels days with the year, so a range over a year end never repeats a label', async () => {
+      const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
+      withSeries('day', ['2025-12-30', '2026-12-30']);
+      await renderPage();
+      fireEvent.click(screen.getByRole('button', { name: 'Daily' }));
+
+      expect(screen.getAllByText('Dec 30, 2025').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Dec 30, 2026').length).toBeGreaterThan(0);
+      expect(errors.mock.calls.some(([message]) => String(message).includes('same key'))).toBe(false);
+      errors.mockRestore();
+    });
+
+    it('labels weeks with the year and months as before', async () => {
+      withSeries('week', ['2026-07-06']);
+      await renderPage();
+      expect(screen.getAllByText('Week of Jul 6, 2026').length).toBeGreaterThan(0);
+    });
+
+    it('labels months with the month and year', async () => {
+      withSeries('month', ['2026-07-01']);
+      await renderPage();
+      expect(screen.getAllByText('Jul 2026').length).toBeGreaterThan(0);
+    });
+
+    it('formats the money charts\' axis and tooltip as amounts on a wider axis, and leaves the orders chart plain', async () => {
+      await renderPage();
+
+      const charts = screen.getAllByTestId('metric-chart');
+      const byTitle = (title: string) => charts.find((chart) => chart.getAttribute('aria-label')?.startsWith(title));
+      const collected = byTitle('Amount collected over time') as HTMLElement;
+      const split = byTitle('Partner payout and Rwaq revenue over time') as HTMLElement;
+      const orders = byTitle('Orders over time') as HTMLElement;
+
+      [collected, split].forEach((chart) => {
+        expect(chart).toHaveAttribute('data-axis-sample', '1,234.50');
+        expect(chart).toHaveAttribute('data-axis-width', '72');
+      });
+      expect(orders).not.toHaveAttribute('data-axis-sample');
+      expect(orders).not.toHaveAttribute('data-axis-width');
+    });
+  });
+
+  describe('loading tiles', () => {
+    it('are status regions with a translated label, so screen readers announce them', async () => {
+      (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({ data: undefined, isLoading: true, isError: false });
+      await renderPage();
+
+      const loaders = screen.getAllByRole('status', { name: 'Loading' });
+      expect(loaders).toHaveLength(6);
+      loaders.forEach((loader) => expect(loader).toHaveAttribute('aria-busy', 'true'));
+    });
   });
 
   describe('URL', () => {
