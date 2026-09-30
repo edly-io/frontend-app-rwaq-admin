@@ -93,11 +93,17 @@ export interface DateRangePickerProps {
   startDate: string | undefined;
   endDate: string | undefined;
   onChange: (startDate: string | undefined, endDate: string | undefined) => void;
+  /** Fixed minimum width of the button, so the caret sits at the right edge. */
+  minWidth?: string;
+  /** Button size; `sm` by default, `md` to match a neighbouring search box. */
+  size?: 'sm' | 'md';
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps) => {
+const DateRangePicker = ({
+  startDate, endDate, onChange, minWidth, size = 'sm',
+}: DateRangePickerProps) => {
   const intl = useIntl();
   const containerRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLDivElement>(null);
@@ -214,11 +220,16 @@ const DateRangePicker = ({ startDate, endDate, onChange }: DateRangePickerProps)
       <div ref={toggleRef} style={{ display: 'inline-block' }}>
         <Button
           variant="outline-primary"
-          size="sm"
+          size={size}
           onClick={() => setIsOpen((o) => !o)}
           aria-expanded={isOpen}
           aria-haspopup="menu"
-          style={{ whiteSpace: 'nowrap' }}
+          style={{
+            whiteSpace: 'nowrap',
+            ...(minWidth ? {
+              minWidth, display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between',
+            } : {}),
+          }}
         >
           {activeLabel}
           <span aria-hidden="true" style={{ marginInlineStart: '0.375rem', opacity: 0.6 }}>▾</span>

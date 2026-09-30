@@ -3,7 +3,7 @@
  */
 import { screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
-import MetricChart from './MetricChart';
+import MetricChart, { labelInterval } from './MetricChart';
 import type { ChartDataPoint } from './MetricChart';
 
 // jsdom does not implement window.matchMedia — mock it
@@ -118,5 +118,15 @@ describe('MetricChart', () => {
       );
       expect(screen.getByRole('img', { name: 'Empty chart' })).toBeInTheDocument();
     });
+  });
+});
+
+describe('labelInterval', () => {
+  it('shows every label while they fit, then skips evenly', () => {
+    expect(labelInterval(12, 28)).toBe(0);
+    expect(labelInterval(28, 28)).toBe(0);
+    expect(labelInterval(30, 28)).toBe(1);
+    expect(labelInterval(100, 45)).toBe(2);
+    expect(labelInterval(400, undefined)).toBe(0);
   });
 });

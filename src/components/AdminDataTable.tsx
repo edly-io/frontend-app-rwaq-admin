@@ -7,6 +7,7 @@ import { ReactNode } from 'react';
 import { DataTable, Pagination, Spinner } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { adminDataTableMessages as messages } from './messages';
+import InfoTooltip from './InfoTooltip';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -23,6 +24,8 @@ export interface ColumnDef<Row extends object = Record<string, unknown>> {
   /** Explicit unique column id (defaults to `key`). Use for display/action columns
    *  that reuse a data key, to avoid react-table "Duplicate columns" errors. */
   id?: string;
+  /** Explains the column: hovering the heading shows this, as on the dashboard's tiles. */
+  info?: string;
   /** Custom cell renderer; receives the raw cell value and the full row object */
   renderCell?: (value: unknown, row: Row) => ReactNode;
 }
@@ -45,6 +48,9 @@ export interface AdminDataTableProps<Row extends object = Record<string, unknown
   pagination?: ServerPaginationState;
   /** Optional caption for accessibility */
   caption?: string;
+  /** Makes rows expandable: an expander column is added first, and an expanded
+   *  row renders this under itself. */
+  renderRowSubComponent?: (row: Row) => ReactNode;
 }
 
 /** Fallback rows-per-page when the caller doesn't say. */
@@ -52,12 +58,22 @@ const DEFAULT_PAGE_SIZE = 10;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+/** A column's heading: hidden from sight, explained on hover, or plain text. */
+const columnHeader = <Row extends object>(col: ColumnDef<Row>) => {
+  if (col.isLabelHidden) {
+    return function HiddenHeader() { return <span className="sr-only">{col.label}</span>; };
+  }
+  if (col.info) {
+    return function InfoHeader() {
+      return <InfoTooltip text={col.info!}><span className="rwaq-th-info">{col.label}</span></InfoTooltip>;
+    };
+  }
+  return col.label;
+};
+
 /** Build the column spec format that Paragon DataTable expects */
 const buildTableColumns = <Row extends object>(cols: ColumnDef<Row>[]) => cols.map((col) => ({
-  Header: col.isLabelHidden
-    // eslint-disable-next-line react/no-unstable-nested-components
-    ? () => <span className="sr-only">{col.label}</span>
-    : col.label,
+  Header: columnHeader(col),
   accessor: col.key,
   id: col.id ?? col.key,
   headerClassName: col.headerClassName,
@@ -83,8 +99,22 @@ const AdminDataTable = <Row extends object>({
   isLoading = false,
   pagination,
   caption,
+  renderRowSubComponent,
 }: AdminDataTableProps<Row>) => {
   const intl = useIntl();
+
+  // An expandable table gets its expander first, so the toggle sits beside the row it opens.
+  const tableColumns = renderRowSubComponent
+    ? [
+      {
+        id: 'expander',
+        // eslint-disable-next-line react/no-unstable-nested-components
+        Header: () => <span className="sr-only">{intl.formatMessage(messages.expandColumn)}</span>,
+        Cell: DataTable.ExpandRow,
+      },
+      ...buildTableColumns(columns),
+    ]
+    : buildTableColumns(columns);
 
   // Range comes from the server-side page, not react-table, which only ever
   // holds the current page's rows.
@@ -130,10 +160,14 @@ const AdminDataTable = <Row extends object>({
             so DataTable just renders what it is given and our footer owns
             paging entirely. */}
         <DataTable
-          columns={buildTableColumns(columns)}
+          columns={tableColumns}
           data={data}
           itemCount={data.length}
           initialState={{ pageSize: Math.max(data.length, 1) }}
+          {...(renderRowSubComponent ? {
+            isExpandable: true,
+            renderRowSubComponent: ({ row }: { row: { original: Row } }) => renderRowSubComponent(row.original),
+          } : {})}
         >
           <DataTable.Table />
         </DataTable>

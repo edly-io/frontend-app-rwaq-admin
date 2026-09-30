@@ -66,6 +66,7 @@ export const adminDataTableMessages = defineMessages({
   page: { id: 'rwaq.admin.dataTable.page', defaultMessage: 'Page' },
   currentPage: { id: 'rwaq.admin.dataTable.currentPage', defaultMessage: 'Current page' },
   pageOfCount: { id: 'rwaq.admin.dataTable.pageOfCount', defaultMessage: 'of' },
+  expandColumn: { id: 'rwaq.admin.dataTable.expandColumn', defaultMessage: 'Show details' },
 });
 
 // ── ComingSoon ────────────────────────────────────────────────────────────────
