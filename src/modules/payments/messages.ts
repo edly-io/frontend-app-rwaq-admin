@@ -86,7 +86,7 @@ const messages = defineMessages({
   },
   infoChartSplit: {
     id: 'rwaq.admin.payments.info.chartSplit',
-    defaultMessage: 'How the amount collected in each period divides between partners and Rwaq. Money from partners without a share is left out of both. Partner amounts are rounded per row, so figures can differ by a few cents from By partner, which is the payout figure.',
+    defaultMessage: 'How the amount collected in each period divides between partners and Rwaq. A partner without a share gets 0 and all of its money is Rwaq\'s. Partner amounts are rounded per row, so figures can differ by a few cents from By partner, which is the payout figure.',
   },
 
   // ── Tab headings: what the tab counts and how it is calculated ─────────────
@@ -323,7 +323,7 @@ const messages = defineMessages({
   colLearner: { id: 'rwaq.admin.payments.col.learner', defaultMessage: 'Learner' },
   infoColLearner: {
     id: 'rwaq.admin.payments.info.col.learner',
-    defaultMessage: 'The buyer. A Partial badge means some of their money is not split yet, hover it for an example.',
+    defaultMessage: 'The buyer. Each of their purchases is split at its own partner\'s share, so a buyer of several partners gets a blended split.',
   },
 
   // ── By coupon ──────────────────────────────────────────────────────────────
