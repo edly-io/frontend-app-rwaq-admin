@@ -124,7 +124,10 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
 
   const summaryQuery = usePaymentsSummary({ ...params, granularity });
   const summary = summaryQuery.data;
-  const { isLoading, isError } = summaryQuery;
+  // A range or partner change keeps the old figures as placeholder data until the new ones arrive.
+  // They must not pass for the new figures, so they show the loading state, as on the dashboard.
+  const isLoading = summaryQuery.isLoading || summaryQuery.isPlaceholderData;
+  const { isError } = summaryQuery;
 
   const tile = (value: string | undefined) => (isError || !summary ? null : formatTileAmount(intl, value));
   const exact = (value: string | undefined) => (

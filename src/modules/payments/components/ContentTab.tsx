@@ -18,7 +18,7 @@ import type {
 } from '../data/types';
 import messages from '../messages';
 import {
-  CsvButton, DateFilter, PAGE_SIZE, ShareCell, TabCard, TabHeading, revenueColumns, tablePagination,
+  CsvButton, DateFilter, PAGE_SIZE, ShareCell, TabCard, TabHeading, listScope, revenueColumns, tablePagination,
   useDateRange, useListState, usePartnerFilter,
 } from './shared';
 import type { ListTabProps } from './shared';
@@ -41,7 +41,7 @@ const ContentTab = ({ org, onOrgChange, onViewOrders }: ContentTabProps) => {
   const intl = useIntl();
   const dates = useDateRange();
   const params = { org: org || undefined, startDate: dates.startDate, endDate: dates.endDate };
-  const list = useListState(DEFAULT_ORDERING, { type: '' });
+  const list = useListState(DEFAULT_ORDERING, { type: '' }, listScope(org, dates.startDate, dates.endDate));
   const partner = usePartnerFilter(params, onOrgChange);
   const listParams: ContentListParams = {
     ...params,
@@ -52,7 +52,7 @@ const ContentTab = ({ org, onOrgChange, onViewOrders }: ContentTabProps) => {
     pageSize: PAGE_SIZE,
   };
   const {
-    data, isLoading, isError, error, refetch,
+    data, isLoading, isPlaceholderData, isError, error, refetch,
   } = usePaymentContent(listParams);
 
   const typeOptions = [
@@ -187,7 +187,7 @@ const ContentTab = ({ org, onOrgChange, onViewOrders }: ContentTabProps) => {
         <AdminDataTable
           columns={columns}
           data={data?.results ?? []}
-          isLoading={isLoading}
+          isLoading={isLoading || isPlaceholderData}
           caption={intl.formatMessage(messages.tabContent)}
           pagination={tablePagination(data, list.page, list.setPage)}
           renderRowSubComponent={(row) => (

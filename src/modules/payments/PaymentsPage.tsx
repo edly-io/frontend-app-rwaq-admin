@@ -11,17 +11,24 @@
  * learners, coupons) and lives in the URL so a reload keeps it. Switching tabs
  * clears it, so nothing stays narrowed out of sight. "View overview" on By
  * partner opens Overview for that partner.
+ *
+ * A tab stays mounted once opened, so it keeps its search, sort and page when
+ * the user comes back. While hidden it does not query (ActiveTabContext).
  */
 import {
-  Suspense, lazy, useCallback, useEffect, useState,
+  Component, Suspense, lazy, useCallback, useEffect, useState,
 } from 'react';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Spinner, Tab, Tabs } from '@openedx/paragon';
+import {
+  Button, Spinner, Tab, Tabs,
+} from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import { logError } from '@edx/frontend-platform/logging';
 import ErrorState from '@src/components/ErrorState';
 import LoadingPage from '@src/components/LoadingPage';
 import { useAdminCapabilities } from '@src/data/whoami';
+import { ActiveTabContext } from './data/activeTab';
 import messages from './messages';
 
 // Each tab is its own chunk, so opening the page loads only Overview and the
@@ -36,12 +43,50 @@ const CouponsTab = lazy(() => import('./components/CouponsTab'));
 const TABS = ['overview', 'orders', 'partners', 'content', 'learners', 'coupons'] as const;
 type PaymentsTab = typeof TABS[number];
 
+/** What a tab shows when its code fails to load (a dropped connection, a new deploy) or its render throws. */
+const TabFailed = () => {
+  const intl = useIntl();
+  return (
+    <ErrorState
+      title={intl.formatMessage(messages.errorTitle)}
+      action={(
+        <Button variant="outline-primary" onClick={() => window.location.reload()}>
+          {intl.formatMessage(messages.reload)}
+        </Button>
+      )}
+    />
+  );
+};
+
+/** Keeps one tab's failure from blanking the whole page: the tab row stays and the tab offers a reload. */
+class TabErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { failed: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: Error) {
+    logError(error);
+  }
+
+  render() {
+    const { failed } = this.state;
+    const { children } = this.props;
+    return failed ? <TabFailed /> : children;
+  }
+}
+
 /**
  * The tab row switches at once and this pane shows a spinner while its code
  * loads and while its first render is prepared. Mounting waits one frame so the
  * spinner paints before the tab's (heavier) first render blocks the page.
+ * `active` tells the tab's queries whether it is the one on screen.
  */
-const TabPanel = ({ children }: { children: ReactNode }) => {
+const TabPanel = ({ active, children }: { active: boolean; children: ReactNode }) => {
   const intl = useIntl();
   const [ready, setReady] = useState(false);
   useEffect(() => {
@@ -62,7 +107,13 @@ const TabPanel = ({ children }: { children: ReactNode }) => {
       </Spinner>
     </div>
   );
-  return ready ? <Suspense fallback={loader}>{children}</Suspense> : loader;
+  return (
+    <ActiveTabContext.Provider value={active}>
+      <TabErrorBoundary>
+        {ready ? <Suspense fallback={loader}>{children}</Suspense> : loader}
+      </TabErrorBoundary>
+    </ActiveTabContext.Provider>
+  );
 };
 
 const PaymentsDashboard = () => {
@@ -74,7 +125,9 @@ const PaymentsDashboard = () => {
   const org = searchParams.get('org') ?? '';
   const content = searchParams.get('content') ?? '';
   const contentTitle = searchParams.get('contentTitle') ?? '';
-  const user = searchParams.get('user') ?? '';
+  // A buyer id is a whole number. Anything else in the URL is ignored, as the backend would refuse it.
+  const userParam = searchParams.get('user') ?? '';
+  const user = /^\d+$/.test(userParam) ? userParam : '';
   const userTitle = searchParams.get('userTitle') ?? '';
   const couponCode = searchParams.get('couponCode') ?? '';
 
@@ -105,24 +158,28 @@ const PaymentsDashboard = () => {
         <Tabs
           id="payments-tabs"
           activeKey={tab}
-          onSelect={(key: string | null) => updateParams({
-            tab: key && key !== 'overview' ? key : undefined,
-            org: undefined,
-            content: undefined,
-            contentTitle: undefined,
-            user: undefined,
-            userTitle: undefined,
-            couponCode: undefined,
-          })}
+          onSelect={(key: string | null) => {
+            // Clicking the tab already open must not clear the partner or focus it is showing.
+            if ((key ?? 'overview') === tab) { return; }
+            updateParams({
+              tab: key && key !== 'overview' ? key : undefined,
+              org: undefined,
+              content: undefined,
+              contentTitle: undefined,
+              user: undefined,
+              userTitle: undefined,
+              couponCode: undefined,
+            });
+          }}
           mountOnEnter
         >
           <Tab eventKey="overview" title={intl.formatMessage(messages.tabOverview)}>
-            <TabPanel>
+            <TabPanel active={tab === 'overview'}>
               <OverviewTab org={org} onOrgChange={setOrg} />
             </TabPanel>
           </Tab>
           <Tab eventKey="orders" title={intl.formatMessage(messages.tabOrders)}>
-            <TabPanel>
+            <TabPanel active={tab === 'orders'}>
               <OrdersTab
                 org={org}
                 onOrgChange={setOrg}
@@ -136,7 +193,7 @@ const PaymentsDashboard = () => {
             </TabPanel>
           </Tab>
           <Tab eventKey="partners" title={intl.formatMessage(messages.tabPartners)}>
-            <TabPanel>
+            <TabPanel active={tab === 'partners'}>
               <PartnersTab
                 onViewOverview={(short) => updateParams({ tab: undefined, org: short })}
                 onViewOrders={(short) => updateParams({ tab: 'orders', org: short })}
@@ -144,7 +201,7 @@ const PaymentsDashboard = () => {
             </TabPanel>
           </Tab>
           <Tab eventKey="content" title={intl.formatMessage(messages.tabContent)}>
-            <TabPanel>
+            <TabPanel active={tab === 'content'}>
               <ContentTab
                 org={org}
                 onOrgChange={setOrg}
@@ -155,7 +212,7 @@ const PaymentsDashboard = () => {
             </TabPanel>
           </Tab>
           <Tab eventKey="learners" title={intl.formatMessage(messages.tabLearners)}>
-            <TabPanel>
+            <TabPanel active={tab === 'learners'}>
               <LearnersTab
                 org={org}
                 onOrgChange={setOrg}
@@ -166,7 +223,7 @@ const PaymentsDashboard = () => {
             </TabPanel>
           </Tab>
           <Tab eventKey="coupons" title={intl.formatMessage(messages.tabCoupons)}>
-            <TabPanel>
+            <TabPanel active={tab === 'coupons'}>
               <CouponsTab
                 org={org}
                 onOrgChange={setOrg}

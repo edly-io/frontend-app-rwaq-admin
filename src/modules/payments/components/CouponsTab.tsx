@@ -14,7 +14,7 @@ import { usePaymentCoupons } from '../data/hooks';
 import type { CouponRow, CouponScope } from '../data/types';
 import messages from '../messages';
 import {
-  CsvButton, DateFilter, PAGE_SIZE, TabCard, TabHeading, MoneyCell, tablePagination, useDateRange,
+  CsvButton, DateFilter, PAGE_SIZE, TabCard, TabHeading, MoneyCell, listScope, tablePagination, useDateRange,
   useListState, usePartnerFilter,
 } from './shared';
 import type { ListTabProps } from './shared';
@@ -31,7 +31,7 @@ const CouponsTab = ({ org, onOrgChange, onViewOrders }: CouponsTabProps) => {
   const intl = useIntl();
   const dates = useDateRange();
   const params = { org: org || undefined, startDate: dates.startDate, endDate: dates.endDate };
-  const list = useListState(DEFAULT_ORDERING, { scope: '' });
+  const list = useListState(DEFAULT_ORDERING, { scope: '' }, listScope(org, dates.startDate, dates.endDate));
   const partner = usePartnerFilter(params, onOrgChange);
   const listParams = {
     ...params,
@@ -42,7 +42,7 @@ const CouponsTab = ({ org, onOrgChange, onViewOrders }: CouponsTabProps) => {
     pageSize: PAGE_SIZE,
   };
   const {
-    data, isLoading, isError, error, refetch,
+    data, isLoading, isPlaceholderData, isError, error, refetch,
   } = usePaymentCoupons(listParams);
 
   const scopeOptions = [
@@ -172,7 +172,7 @@ const CouponsTab = ({ org, onOrgChange, onViewOrders }: CouponsTabProps) => {
         <AdminDataTable
           columns={columns}
           data={data?.results ?? []}
-          isLoading={isLoading}
+          isLoading={isLoading || isPlaceholderData}
           caption={intl.formatMessage(messages.tabCoupons)}
           pagination={tablePagination(data, list.page, list.setPage)}
           renderRowSubComponent={(row) => (

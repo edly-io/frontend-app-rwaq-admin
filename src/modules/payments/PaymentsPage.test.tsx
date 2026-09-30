@@ -4,7 +4,9 @@
  * The data hooks are mocked, as in the dashboard test, so this runs without a
  * QueryClient or network. MetricChart is stubbed for the same reason.
  */
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import {
+  act, fireEvent, screen, waitFor,
+} from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as whoami from '@src/data/whoami';
 import * as hooks from './data/hooks';
@@ -374,5 +376,111 @@ describe('PaymentsPage', () => {
     await openTab('By partner');
 
     expect(screen.getByText(/Partner payout = amount collected x the partner's share %/)).toBeInTheDocument();
+  });
+
+  describe('URL', () => {
+    const lastOrdersParams = () => {
+      const { calls } = (hooks.usePaymentOrders as jest.Mock).mock;
+      return calls[calls.length - 1][0];
+    };
+
+    it.each(['abc', '5abc', '-3', '1.5', ''])('ignores a user param of "%s" instead of sending it', async (value) => {
+      window.history.pushState({}, '', `/?tab=orders&user=${value}&userTitle=buyer`);
+      await renderPage();
+
+      expect(lastOrdersParams().user).toBeUndefined();
+      const sentNaN = (hooks.usePaymentOrders as jest.Mock).mock.calls.some(([params]) => Number.isNaN(params.user));
+      expect(sentNaN).toBe(false);
+      expect(screen.queryByText(/^Buyer:/)).not.toBeInTheDocument();
+    });
+
+    it('sends a whole-number user param and shows the buyer chip', async () => {
+      window.history.pushState({}, '', '/?tab=orders&user=5&userTitle=buyer5');
+      await renderPage();
+
+      expect(lastOrdersParams().user).toBe(5);
+      expect(screen.getByText('Buyer: buyer5')).toBeInTheDocument();
+    });
+
+    it('keeps a partner from the URL that has no revenue in the range, named by its short name', async () => {
+      window.history.pushState({}, '', '/?tab=orders&org=ZZZ');
+      await renderPage();
+
+      expect(lastOrdersParams().org).toBe('ZZZ');
+      expect(screen.getByText('Partner: ZZZ')).toBeInTheDocument();
+    });
+
+    it('follows the browser Back and Forward buttons between tabs', async () => {
+      window.history.pushState({}, '', '/?tab=orders');
+      await renderPage();
+      expect(screen.getByRole('tab', { name: 'Payment history', selected: true })).toBeInTheDocument();
+
+      act(() => {
+        window.history.pushState({}, '', '/?tab=partners');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+      await tabReady();
+
+      expect(screen.getByRole('tab', { name: 'By partner', selected: true })).toBeInTheDocument();
+    });
+
+    it('does nothing when the tab already open is clicked, so its partner and focus stay', async () => {
+      window.history.pushState(
+        {},
+        '',
+        `/?tab=orders&org=TPA&content=${encodeURIComponent('course-v1:TPA+C1+2026')}&contentTitle=Course%201`,
+      );
+      await renderPage();
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Payment history' }));
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('org')).toBe('TPA');
+      expect(params.get('content')).toBe('course-v1:TPA+C1+2026');
+      expect(screen.getByText('Course or program: Course 1')).toBeInTheDocument();
+      expect(screen.getByText('Partner: Org A')).toBeInTheDocument();
+    });
+
+    it('still clears the partner and focus when another tab is opened', async () => {
+      window.history.pushState({}, '', '/?tab=orders&org=TPA&couponCode=SAVE10');
+      await renderPage();
+
+      await openTab('By coupon');
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('tab')).toBe('coupons');
+      expect(params.has('org')).toBe(false);
+      expect(params.has('couponCode')).toBe(false);
+    });
+  });
+
+  describe('while the next figures load', () => {
+    it('shows the loading state on the tiles and charts instead of the previous range\'s figures', async () => {
+      (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({
+        data: summary, isLoading: false, isPlaceholderData: true, isFetching: true, isError: false,
+      });
+      await renderPage();
+
+      expect(screen.queryByText('700.00')).not.toBeInTheDocument();
+      expect(screen.queryByText('349.00')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('metric-chart')).not.toBeInTheDocument();
+    });
+
+    it.each([
+      ['Payment history', hooks.usePaymentOrders],
+      ['By partner', hooks.usePaymentPartners],
+      ['By content', hooks.usePaymentContent],
+      ['By learner', hooks.usePaymentLearners],
+      ['By coupon', hooks.usePaymentCoupons],
+    ])('shows %s as loading, not as the previous page', async (tabName, hook) => {
+      (hook as jest.Mock).mockReturnValue({
+        data: partnersPage, isLoading: false, isPlaceholderData: true, isFetching: true, isError: false,
+      });
+      await renderPage();
+      await openTab(tabName);
+
+      expect(screen.getByLabelText('Loading data…')).toBeInTheDocument();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    });
   });
 });

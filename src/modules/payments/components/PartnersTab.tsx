@@ -17,7 +17,7 @@ import type { PartnerRow, PaymentsParams } from '../data/types';
 import messages from '../messages';
 import OrdersDetail from './OrdersDetail';
 import {
-  CsvButton, DateFilter, PAGE_SIZE, ShareCell, TabCard, TabHeading, revenueColumns, tablePagination,
+  CsvButton, DateFilter, PAGE_SIZE, ShareCell, TabCard, TabHeading, listScope, revenueColumns, tablePagination,
   useDateRange, useListState,
 } from './shared';
 
@@ -34,12 +34,12 @@ const PartnersTab = ({ onViewOverview, onViewOrders }: PartnersTabProps) => {
   const intl = useIntl();
   const dates = useDateRange();
   const params: PaymentsParams = { startDate: dates.startDate, endDate: dates.endDate };
-  const list = useListState(DEFAULT_ORDERING, {});
+  const list = useListState(DEFAULT_ORDERING, {}, listScope(dates.startDate, dates.endDate));
   const listParams = {
     ...params, search: list.search || undefined, ordering: list.ordering, page: list.page, pageSize: PAGE_SIZE,
   };
   const {
-    data, isLoading, isError, error, refetch,
+    data, isLoading, isPlaceholderData, isError, error, refetch,
   } = usePaymentPartners(listParams);
 
   const sortOptions = [
@@ -155,7 +155,7 @@ const PartnersTab = ({ onViewOverview, onViewOrders }: PartnersTabProps) => {
         <AdminDataTable
           columns={columns}
           data={data?.results ?? []}
-          isLoading={isLoading}
+          isLoading={isLoading || isPlaceholderData}
           caption={intl.formatMessage(messages.tabPartners)}
           pagination={tablePagination(data, list.page, list.setPage)}
           renderRowSubComponent={(row) => (

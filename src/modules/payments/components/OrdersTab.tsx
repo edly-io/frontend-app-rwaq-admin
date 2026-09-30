@@ -21,7 +21,7 @@ import messages from '../messages';
 import { contentPath } from './ContentTab';
 import {
   CsvButton, DateFilter, DetailTable, PAGE_SIZE, TabCard, TabHeading, formatDate, MoneyCell, MoneyTd,
-  formatMoney, tablePagination, useDateRange, useListState, usePartnerFilter,
+  formatMoney, listScope, tablePagination, useDateRange, useListState, usePartnerFilter,
 } from './shared';
 import type { ListTabProps } from './shared';
 
@@ -45,7 +45,11 @@ const OrdersTab = ({
   const intl = useIntl();
   const dates = useDateRange();
   const params = { org: org || undefined, startDate: dates.startDate, endDate: dates.endDate };
-  const list = useListState(DEFAULT_ORDERING, { source: 'wordpress', coupon: '' });
+  const list = useListState(
+    DEFAULT_ORDERING,
+    { source: 'wordpress', coupon: '' },
+    listScope(org, dates.startDate, dates.endDate, content, user, couponCode),
+  );
   const partner = usePartnerFilter(params, onOrgChange);
   const listParams: OrderListParams = {
     ...params,
@@ -60,7 +64,7 @@ const OrdersTab = ({
     pageSize: PAGE_SIZE,
   };
   const {
-    data, isLoading, isError, error, refetch,
+    data, isLoading, isPlaceholderData, isError, error, refetch,
   } = usePaymentOrders(listParams);
 
   const sourceOptions = [
@@ -324,7 +328,7 @@ const OrdersTab = ({
         <AdminDataTable
           columns={columns}
           data={data?.results ?? []}
-          isLoading={isLoading}
+          isLoading={isLoading || isPlaceholderData}
           caption={intl.formatMessage(messages.tabOrders)}
           pagination={tablePagination(data, list.page, list.setPage)}
           renderRowSubComponent={renderDetails}

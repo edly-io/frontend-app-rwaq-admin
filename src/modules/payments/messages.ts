@@ -16,6 +16,7 @@ const messages = defineMessages({
 
   // ── Tabs ───────────────────────────────────────────────────────────────────
   loadingTab: { id: 'rwaq.admin.payments.loadingTab', defaultMessage: 'Loading' },
+  reload: { id: 'rwaq.admin.payments.reload', defaultMessage: 'Reload' },
   tabOverview: { id: 'rwaq.admin.payments.tab.overview', defaultMessage: 'Overview' },
   tabOrders: { id: 'rwaq.admin.payments.tab.orders', defaultMessage: 'Payment history' },
   tabPartners: { id: 'rwaq.admin.payments.tab.partners', defaultMessage: 'By partner' },

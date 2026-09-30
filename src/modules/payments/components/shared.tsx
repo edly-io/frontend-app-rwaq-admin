@@ -111,18 +111,31 @@ export const DateFilter = ({ range }: { range: ReturnType<typeof useDateRange> }
   />
 );
 
+/** One string for what a list is narrowed by outside useListState (partner, dates, focus), for its `scope`. */
+export const listScope = (...parts: (string | undefined)[]) => JSON.stringify(parts.map((part) => part ?? ''));
+
 /**
  * Search, sort, extra filters and page for one tab. Tab-local rather than in
  * the URL: the URL carries what the whole page shares (partner, dates, tab).
+ *
+ * `scope` names that shared narrowing (see listScope). A page number only holds
+ * under the scope it was picked in, so when the scope changes the page is 1 in
+ * the same render. Resetting it afterwards in an effect would send one request
+ * for the old page first, and DRF answers a page past the end with a 404.
  */
 export const useListState = <Filters extends Record<string, string>>(
   defaultOrdering: string,
   defaultFilters: Filters,
+  scope: string,
 ) => {
   const [search, setSearch] = useState('');
   const [ordering, setOrdering] = useState(defaultOrdering);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
-  const [page, setPage] = useState(1);
+  const [pageState, setPageState] = useState({ scope, page: 1 });
+  // Forget a page picked under another scope, so it cannot return if the scope does.
+  if (pageState.scope !== scope) { setPageState({ scope, page: 1 }); }
+  const page = pageState.scope === scope ? pageState.page : 1;
+  const setPage = (next: number) => setPageState({ scope, page: next });
 
   return {
     search,

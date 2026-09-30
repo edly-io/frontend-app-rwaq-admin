@@ -14,8 +14,8 @@ import { usePaymentLearners } from '../data/hooks';
 import type { LearnerRow } from '../data/types';
 import messages from '../messages';
 import {
-  CsvButton, DateFilter, PAGE_SIZE, TabCard, TabHeading, revenueColumns, tablePagination, useDateRange,
-  useListState, usePartnerFilter,
+  CsvButton, DateFilter, PAGE_SIZE, TabCard, TabHeading, listScope, revenueColumns, tablePagination,
+  useDateRange, useListState, usePartnerFilter,
 } from './shared';
 import type { ListTabProps } from './shared';
 import OrdersDetail from './OrdersDetail';
@@ -31,13 +31,13 @@ const LearnersTab = ({ org, onOrgChange, onViewOrders }: LearnersTabProps) => {
   const intl = useIntl();
   const dates = useDateRange();
   const params = { org: org || undefined, startDate: dates.startDate, endDate: dates.endDate };
-  const list = useListState(DEFAULT_ORDERING, {});
+  const list = useListState(DEFAULT_ORDERING, {}, listScope(org, dates.startDate, dates.endDate));
   const partner = usePartnerFilter(params, onOrgChange);
   const listParams = {
     ...params, search: list.search || undefined, ordering: list.ordering, page: list.page, pageSize: PAGE_SIZE,
   };
   const {
-    data, isLoading, isError, error, refetch,
+    data, isLoading, isPlaceholderData, isError, error, refetch,
   } = usePaymentLearners(listParams);
 
   const sortOptions = [
@@ -137,7 +137,7 @@ const LearnersTab = ({ org, onOrgChange, onViewOrders }: LearnersTabProps) => {
         <AdminDataTable
           columns={columns}
           data={data?.results ?? []}
-          isLoading={isLoading}
+          isLoading={isLoading || isPlaceholderData}
           caption={intl.formatMessage(messages.tabLearners)}
           pagination={tablePagination(data, list.page, list.setPage)}
           renderRowSubComponent={(row) => (
