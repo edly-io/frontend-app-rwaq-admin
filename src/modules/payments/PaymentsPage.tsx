@@ -123,7 +123,7 @@ const PaymentsDashboard = () => {
 
   const tabParam = searchParams.get('tab') as PaymentsTab | null;
   const tab: PaymentsTab = tabParam && TABS.includes(tabParam) ? tabParam : 'overview';
-  const org = searchParams.get('org') ?? '';
+  const org = (searchParams.get('org') ?? '').trim();
   const content = searchParams.get('content') ?? '';
   const contentTitle = searchParams.get('contentTitle') ?? '';
   // A buyer id is a whole number. Anything else in the URL is ignored, as the backend would refuse it.

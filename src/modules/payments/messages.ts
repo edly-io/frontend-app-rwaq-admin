@@ -50,7 +50,7 @@ const messages = defineMessages({
   },
   infoPartner: {
     id: 'rwaq.admin.payments.info.partner',
-    defaultMessage: 'What Rwaq owes partners: each item\'s amount collected times its partner\'s current revenue share. Changing a share changes this for past orders too. Partners without a share are left out.',
+    defaultMessage: 'What Rwaq owes partners: each item\'s amount collected times its partner\'s current revenue share. Changing a share changes this for past orders too. A partner without a share gets 0.',
   },
 
   infoRwaq: {
