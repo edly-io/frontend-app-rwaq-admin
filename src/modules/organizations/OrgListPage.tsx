@@ -187,6 +187,13 @@ const OrgListPage = () => {
     { label: intl.formatMessage(messages.colPrograms), key: 'programCount' },
     { label: intl.formatMessage(messages.colAdmins), key: 'adminCount' },
     {
+      label: intl.formatMessage(messages.colRevenueShare),
+      key: 'revenueSharePercentage',
+      renderCell: (value) => (value !== null && value !== undefined
+        ? `${Number(value)}%`
+        : <span className="text-muted">{intl.formatMessage(messages.detailNone)}</span>),
+    },
+    {
       label: intl.formatMessage(messages.colActions),
       headerClassName: 'rwaq-th--actions',
       key: 'actions',
