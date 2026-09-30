@@ -646,7 +646,7 @@ describe('PaymentsPage', () => {
       await openFirstRow('By coupon');
       // The expansion asks for the coupon's orders under the partner too.
       expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({
-        couponCode: 'SAVE10', org: 'TPA', paid: true, pageSize: 5,
+        couponCode: 'SAVE10', org: 'TPA', pageSize: 5,
       }));
       fireEvent.click(screen.getByRole('button', { name: 'View all' }));
       await tabReady();

@@ -55,8 +55,9 @@ const OrdersDetail = ({ focus, params, onViewAll }: OrdersDetailProps) => {
     couponCode: focus.kind === 'coupon' ? focus.code : undefined,
     source: 'wordpress',
     status: 'completed',
-    // Count only orders the row counted: the row sums paid items, so a free order is not one of them.
-    paid: true,
+    // Count only orders the row counted. A revenue row sums paid items, so a free order is not one of them.
+    // A coupon row counts the orders that used the code, a 100% off order included.
+    paid: focus.kind === 'coupon' ? undefined : true,
     ordering: '-order_date',
     page: 1,
     pageSize: SHOWN,

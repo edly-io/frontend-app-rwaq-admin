@@ -100,16 +100,32 @@ describe('OrdersDetail request', () => {
     ['coupon', { kind: 'coupon', code: 'SAVE10' }, { couponCode: 'SAVE10' }],
     ['coupon under a partner', { kind: 'coupon', code: 'SAVE10', org: 'TPA' }, { couponCode: 'SAVE10', org: 'TPA' }],
   ] as [string, OrdersFocus, Record<string, unknown>][])(
-    'asks for paid completed purchases, narrowed the way the %s row is',
+    'asks for completed purchases, narrowed the way the %s row is',
     (_name, focus, expected) => {
       mockOrders([]);
       renderDetail(focus);
 
       expect(lastQuery()).toEqual(expect.objectContaining({
-        ...expected, paid: true, source: 'wordpress', status: 'completed', startDate: '2026-09-01', pageSize: 5, page: 1,
+        ...expected, source: 'wordpress', status: 'completed', startDate: '2026-09-01', pageSize: 5, page: 1,
       }));
     },
   );
+
+  it.each([
+    ['partner', { kind: 'partner', org: 'TPA', orgName: 'Org A' }],
+    ['content', { kind: 'content', key: 'k' }],
+    ['learner', { kind: 'learner', userId: 5 }],
+  ] as [string, OrdersFocus][])('counts only orders with a paid item for a %s row', (_name, focus) => {
+    mockOrders([]);
+    renderDetail(focus);
+    expect(lastQuery().paid).toBe(true);
+  });
+
+  it('does not ask for paid orders on a coupon row, which counts 100% off orders too', () => {
+    mockOrders([]);
+    renderDetail({ kind: 'coupon', code: 'FREE100' });
+    expect(lastQuery().paid).toBeUndefined();
+  });
 
   it('asks for no partner from a content or a whole-learner row', () => {
     mockOrders([]);
