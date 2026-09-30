@@ -63,9 +63,11 @@ export interface ProgramDetail extends ProgramSummary {
   introVideoUrl: string | null;
   pricingCategory: ProgramPricingCategory;
   /** Decimal strings, not numbers, to avoid float rounding on money. */
-  price: string | null;
-  discount: string | null;
-  /** ISO 4217 code of price and discount. */
+  regularPrice: string | null;
+  salePrice: string | null;
+  /** Read-only, 2 decimals (e.g. "25.13"). null when there is no sale price. */
+  discountPercentage: string | null;
+  /** ISO 4217 code of the regular and sale price. */
   currency: string;
   /** When true, Studio shows this program's pricing read-only. Settable only from here. */
   pricingManagedByAdmin: boolean;
@@ -133,8 +135,8 @@ export interface ProgramPatch {
   description?: string;
   longDescription?: string;
   pricingCategory?: ProgramPricingCategory;
-  price?: string | null;
-  discount?: string | null;
+  regularPrice?: string | null;
+  salePrice?: string | null;
   pricingManagedByAdmin?: boolean;
 }
 

@@ -16,8 +16,9 @@ const mockUpdate = jest.fn();
 
 const basePricing: CoursePricing = {
   pricingCategory: 'is_free',
-  price: null,
-  discount: null,
+  regularPrice: null,
+  salePrice: null,
+  discountPercentage: null,
   currency: 'SAR',
   pricingManagedByAdmin: false,
   partOfProgram: null,
@@ -74,13 +75,34 @@ describe('CoursePricingCard', () => {
     renderCard();
     fireEvent.click(screen.getByRole('radio', { name: 'Paid' }));
     expect(screen.getByLabelText('Price (SAR)')).toBeInTheDocument();
-    expect(screen.getByLabelText('Sale price (SAR)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Discounted Price / Sale Price (SAR)')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('radio', { name: 'Program-only course' }));
     expect(screen.queryByLabelText('Price (SAR)')).not.toBeInTheDocument();
   });
 
+  it('computes the discount percentage live from the inputs', () => {
+    renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00' });
+    const price = screen.getByLabelText('Price (SAR)');
+    const sale = screen.getByLabelText('Discounted Price / Sale Price (SAR)');
+    expect(screen.queryByTestId('discount-percentage')).not.toBeInTheDocument();
+    fireEvent.change(price, { target: { value: '200' } });
+    fireEvent.change(sale, { target: { value: '150' } });
+    expect(screen.getByText('25% off')).toBeInTheDocument();
+    expect(mockUpdate).not.toHaveBeenCalled();
+    fireEvent.change(price, { target: { value: '300' } });
+    expect(screen.getByText('50% off')).toBeInTheDocument();
+    fireEvent.change(sale, { target: { value: '300' } });
+    expect(screen.queryByTestId('discount-percentage')).not.toBeInTheDocument();
+    fireEvent.change(sale, { target: { value: '350' } });
+    expect(screen.queryByTestId('discount-percentage')).not.toBeInTheDocument();
+    fireEvent.change(sale, { target: { value: '150' } });
+    expect(screen.getByText('50% off')).toBeInTheDocument();
+    fireEvent.change(sale, { target: { value: '' } });
+    expect(screen.queryByTestId('discount-percentage')).not.toBeInTheDocument();
+  });
+
   it('validates price and sale price on blur', () => {
-    renderCard({ pricingCategory: 'is_paid', price: '100.00' });
+    renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00' });
     const price = screen.getByLabelText('Price (SAR)');
     fireEvent.change(price, { target: { value: '0' } });
     fireEvent.blur(price);
@@ -90,21 +112,21 @@ describe('CoursePricingCard', () => {
     fireEvent.blur(price);
     expect(screen.queryByText('Price must be greater than 0.')).not.toBeInTheDocument();
 
-    const discount = screen.getByLabelText('Sale price (SAR)');
-    fireEvent.change(discount, { target: { value: '100' } });
-    fireEvent.blur(discount);
+    const salePrice = screen.getByLabelText('Discounted Price / Sale Price (SAR)');
+    fireEvent.change(salePrice, { target: { value: '100' } });
+    fireEvent.blur(salePrice);
     expect(screen.getByText('Sale price must be lower than the price.')).toBeInTheDocument();
   });
 
   it('does not save when a paid price is invalid', () => {
-    renderCard({ pricingCategory: 'is_paid', price: '0' });
+    renderCard({ pricingCategory: 'is_paid', regularPrice: '0' });
     save();
     expect(screen.getByText('Price must be greater than 0.')).toBeInTheDocument();
     expect(mockUpdate).not.toHaveBeenCalled();
   });
 
   it('saves Free with PUT, not DELETE', async () => {
-    renderCard({ pricingCategory: 'is_paid', price: '100.00' });
+    renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00' });
     fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
     save();
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({
@@ -118,19 +140,19 @@ describe('CoursePricingCard', () => {
     renderCard();
     fireEvent.click(screen.getByRole('radio', { name: 'Paid' }));
     fireEvent.change(screen.getByLabelText('Price (SAR)'), { target: { value: '200' } });
-    fireEvent.change(screen.getByLabelText('Sale price (SAR)'), { target: { value: '150' } });
+    fireEvent.change(screen.getByLabelText('Discounted Price / Sale Price (SAR)'), { target: { value: '150' } });
     fireEvent.click(screen.getByRole('checkbox', { name: /Manage pricing from the admin panel/ }));
     save();
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({
       pricingCategory: 'is_paid',
-      price: '200',
-      discount: '150',
+      regularPrice: '200',
+      salePrice: '150',
       pricingManagedByAdmin: true,
     }));
   });
 
   it('keeps the card editable when the lock is on', () => {
-    renderCard({ pricingCategory: 'is_paid', price: '100.00', pricingManagedByAdmin: true });
+    renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00', pricingManagedByAdmin: true });
     expect(screen.getByRole('radio', { name: 'Free' })).toBeEnabled();
     expect(screen.getByLabelText('Price (SAR)')).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Save pricing' })).toBeEnabled();
@@ -161,11 +183,11 @@ describe('CoursePricingCard', () => {
 
   it('attaches a backend error to the field it names', async () => {
     mockUpdate.mockRejectedValue({
-      response: { status: 400, data: { detail: 'Sale price must be lower than the price.', field: 'discount' } },
+      response: { status: 400, data: { detail: 'Sale price must be lower than the price.', field: 'sale_price' } },
     });
-    renderCard({ pricingCategory: 'is_paid', price: '100.00' });
+    renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00' });
     save();
     const message = await screen.findByText('Sale price must be lower than the price.');
-    expect(message.closest('.pgn__form-group')).toContainElement(screen.getByLabelText('Sale price (SAR)'));
+    expect(message.closest('.pgn__form-group')).toContainElement(screen.getByLabelText('Discounted Price / Sale Price (SAR)'));
   });
 });

@@ -13,6 +13,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
+import { getDiscountPercent } from '@src/data/discountPercent';
 import { getErrorReason } from '@src/data/httpError';
 import { useUpdateProgram } from '../data/hooks';
 import type { ProgramDetail, ProgramPricingCategory } from '../data/types';
@@ -22,14 +23,14 @@ interface ProgramPricingCardProps {
   program: ProgramDetail;
 }
 
-type PricingField = 'pricingCategory' | 'price' | 'discount';
+type PricingField = 'pricingCategory' | 'regularPrice' | 'salePrice';
 type FieldErrors = Partial<Record<PricingField, string>>;
 
 /** DRF error keys, mapped to the form field they belong to. */
 const BACKEND_FIELDS: Record<string, PricingField> = {
   pricing_category: 'pricingCategory',
-  price: 'price',
-  discount: 'discount',
+  regular_price: 'regularPrice',
+  sale_price: 'salePrice',
 };
 
 const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
@@ -37,8 +38,8 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   const { mutateAsync, isPending } = useUpdateProgram(program.uuid);
 
   const [category, setCategory] = useState<ProgramPricingCategory>('is_free');
-  const [price, setPrice] = useState('');
-  const [discount, setDiscount] = useState('');
+  const [regularPrice, setRegularPrice] = useState('');
+  const [salePrice, setSalePrice] = useState('');
   const [managedByAdmin, setManagedByAdmin] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState('');
@@ -46,26 +47,28 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
 
   useEffect(() => {
     setCategory(program.pricingCategory || 'is_free');
-    setPrice(program.price ?? '');
-    setDiscount(program.discount ?? '');
+    setRegularPrice(program.regularPrice ?? '');
+    setSalePrice(program.salePrice ?? '');
     setManagedByAdmin(program.pricingManagedByAdmin ?? false);
-  }, [program.pricingCategory, program.price, program.discount, program.pricingManagedByAdmin]);
+  }, [program.pricingCategory, program.regularPrice, program.salePrice, program.pricingManagedByAdmin]);
 
   const isPaid = category === 'is_paid';
+  // Live from the inputs, before saving.
+  const discountPercent = getDiscountPercent(regularPrice, salePrice);
   const currency = program.currency || 'SAR';
 
-  const validatePrice = (): string => {
-    if (price.trim() === '') { return intl.formatMessage(messages.pricingErrorPriceRequired); }
-    if (!(Number(price) > 0)) { return intl.formatMessage(messages.pricingErrorPriceNotPositive); }
+  const validateRegularPrice = (): string => {
+    if (regularPrice.trim() === '') { return intl.formatMessage(messages.pricingErrorPriceRequired); }
+    if (!(Number(regularPrice) > 0)) { return intl.formatMessage(messages.pricingErrorPriceNotPositive); }
     return '';
   };
 
-  const validateDiscount = (): string => {
-    if (discount.trim() === '') { return ''; }
-    const d = Number(discount);
+  const validateSalePrice = (): string => {
+    if (salePrice.trim() === '') { return ''; }
+    const d = Number(salePrice);
     if (d < 0) { return intl.formatMessage(messages.pricingErrorNegative); }
-    if (price.trim() !== '' && d >= Number(price)) {
-      return intl.formatMessage(messages.pricingErrorDiscountNotLower);
+    if (regularPrice.trim() !== '' && d >= Number(regularPrice)) {
+      return intl.formatMessage(messages.pricingErrorSalePriceNotLower);
     }
     return '';
   };
@@ -75,10 +78,10 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   };
 
   const handleSave = async () => {
-    const priceError = isPaid ? validatePrice() : '';
-    const discountError = isPaid ? validateDiscount() : '';
-    setFieldErrors({ price: priceError || undefined, discount: discountError || undefined });
-    if (priceError || discountError) {
+    const regularPriceError = isPaid ? validateRegularPrice() : '';
+    const salePriceError = isPaid ? validateSalePrice() : '';
+    setFieldErrors({ regularPrice: regularPriceError || undefined, salePrice: salePriceError || undefined });
+    if (regularPriceError || salePriceError) {
       setSaved(false);
       return;
     }
@@ -86,8 +89,8 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
     try {
       await mutateAsync({
         pricingCategory: category,
-        price: isPaid ? price.trim() : null,
-        discount: isPaid && discount.trim() !== '' ? discount.trim() : null,
+        regularPrice: isPaid ? regularPrice.trim() : null,
+        salePrice: isPaid && salePrice.trim() !== '' ? salePrice.trim() : null,
         pricingManagedByAdmin: managedByAdmin,
       });
       setSaved(true);
@@ -148,39 +151,44 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
 
       {isPaid && (
         <>
-          <Form.Group isInvalid={!!fieldErrors.price} controlId="program-pricing-price">
+          <Form.Group isInvalid={!!fieldErrors.regularPrice} controlId="program-pricing-regular-price">
             <Form.Label>{intl.formatMessage(messages.pricingPriceLabel, { currency })}</Form.Label>
             <Form.Control
               type="number"
               min="0"
               step="0.01"
-              value={price}
+              value={regularPrice}
               disabled={isPending}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setPrice(e.target.value); touched('price'); }}
-              onBlur={() => setFieldError('price', validatePrice())}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setRegularPrice(e.target.value); touched('regularPrice'); }}
+              onBlur={() => setFieldError('regularPrice', validateRegularPrice())}
             />
-            {fieldErrors.price && (
-              <Form.Control.Feedback type="invalid">{fieldErrors.price}</Form.Control.Feedback>
+            {fieldErrors.regularPrice && (
+              <Form.Control.Feedback type="invalid">{fieldErrors.regularPrice}</Form.Control.Feedback>
             )}
           </Form.Group>
 
-          <Form.Group isInvalid={!!fieldErrors.discount} controlId="program-pricing-discount">
-            <Form.Label>{intl.formatMessage(messages.pricingDiscountLabel, { currency })}</Form.Label>
+          <Form.Group isInvalid={!!fieldErrors.salePrice} controlId="program-pricing-sale-price">
+            <Form.Label>{intl.formatMessage(messages.pricingSalePriceLabel, { currency })}</Form.Label>
             <Form.Control
               type="number"
               min="0"
               step="0.01"
-              value={discount}
+              value={salePrice}
               disabled={isPending}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setDiscount(e.target.value);
-                touched('discount');
+                setSalePrice(e.target.value);
+                touched('salePrice');
               }}
-              onBlur={() => setFieldError('discount', validateDiscount())}
+              onBlur={() => setFieldError('salePrice', validateSalePrice())}
             />
-            {fieldErrors.discount
-              ? <Form.Control.Feedback type="invalid">{fieldErrors.discount}</Form.Control.Feedback>
-              : <Form.Text muted>{intl.formatMessage(messages.pricingDiscountHint)}</Form.Text>}
+            {fieldErrors.salePrice
+              ? <Form.Control.Feedback type="invalid">{fieldErrors.salePrice}</Form.Control.Feedback>
+              : <Form.Text muted>{intl.formatMessage(messages.pricingSalePriceHint)}</Form.Text>}
+            {discountPercent !== null && (
+              <Form.Text data-testid="discount-percentage">
+                {intl.formatMessage(messages.pricingDiscountPercentage, { percentage: discountPercent })}
+              </Form.Text>
+            )}
           </Form.Group>
 
           <p className="small text-muted">{intl.formatMessage(messages.pricingCoursesNote)}</p>

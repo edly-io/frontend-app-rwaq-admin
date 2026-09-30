@@ -150,9 +150,11 @@ export interface CoursePricing {
   /** null when no type was chosen yet (a legacy course with no pricing row). It behaves as free. */
   pricingCategory: CoursePricingCategory | null;
   /** Decimal strings, not numbers — avoids float rounding on money. */
-  price: string | null;
-  discount: string | null;
-  /** ISO 4217 code of price and discount. null when the course is free. */
+  regularPrice: string | null;
+  salePrice: string | null;
+  /** Read-only, 2 decimals (e.g. "25.13"). null when there is no sale price. */
+  discountPercentage: string | null;
+  /** ISO 4217 code of the regular and sale price. null when the course is free. */
   currency: string | null;
   /**
    * When true, Studio renders this course's pricing read-only and the
@@ -170,7 +172,7 @@ export interface CoursePricing {
 /** Every field optional — the endpoint accepts a partial update. */
 export interface CoursePricingPatch {
   pricingCategory?: CoursePricingCategory;
-  price?: string | null;
-  discount?: string | null;
+  regularPrice?: string | null;
+  salePrice?: string | null;
   pricingManagedByAdmin?: boolean;
 }
