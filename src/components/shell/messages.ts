@@ -34,6 +34,7 @@ export const sideNavMessages = defineMessages({
   courses: { id: 'rwaq.admin.sidenav.courses', defaultMessage: 'Courses' },
   programs: { id: 'rwaq.admin.sidenav.programs', defaultMessage: 'Programs' },
   categories: { id: 'rwaq.admin.sidenav.categories', defaultMessage: 'Categories' },
+  payments: { id: 'rwaq.admin.sidenav.payments', defaultMessage: 'Orders & Payments' },
   settings: { id: 'rwaq.admin.sidenav.settings', defaultMessage: 'Settings' },
   comingSoon: { id: 'rwaq.admin.sidenav.comingSoon', defaultMessage: 'Soon' },
   navAriaLabel: { id: 'rwaq.admin.sidenav.navAriaLabel', defaultMessage: 'Admin navigation' },

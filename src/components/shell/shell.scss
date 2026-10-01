@@ -1996,3 +1996,218 @@ html[data-paragon-theme-variant='dark'] {
   to   { transform: rotate(360deg); }
 }
 
+
+// ── Badges in dark mode, on Orders & Payments ────────────────────────────────
+// Paragon's light and secondary badges keep a pale background with dark text
+// in the dark theme, so they vanish into the card ("WordPress", "Course" and
+// the like). On the Orders & Payments tabs each variant gets a tinted surface
+// and readable text instead. Other pages keep Paragon's own badges.
+html[data-paragon-theme-variant='dark'] .rwaq-payments-tabs {
+  .badge-light,
+  .badge-secondary {
+    --pgn-badge-bg: var(--rwaq-surface-raised);
+    --pgn-badge-color: var(--rwaq-text);
+    border: 1px solid var(--rwaq-card-border);
+  }
+
+  .badge-primary,
+  .badge-info {
+    --pgn-badge-bg: var(--rwaq-accent-soft);
+    --pgn-badge-color: #8ccbe6;
+  }
+
+  .badge-success {
+    --pgn-badge-bg: rgba(52, 199, 89, 0.16);
+    --pgn-badge-color: #6ee7a0;
+  }
+
+  .badge-warning {
+    --pgn-badge-bg: rgba(245, 179, 1, 0.16);
+    --pgn-badge-color: #f5c451;
+  }
+
+  .badge-danger {
+    --pgn-badge-bg: rgba(249, 112, 102, 0.16);
+    --pgn-badge-color: #f97066;
+  }
+}
+
+// ── Orders & Payments ────────────────────────────────────────────────────────
+// Air between the tab row and what it shows, and between a tab's heading and
+// its search bar.
+.rwaq-payments-tabs .tab-content { padding-top: var(--rwaq-space-5); }
+
+.rwaq-tab-heading { margin-bottom: var(--rwaq-space-4); }
+
+.rwaq-tab-heading__how {
+  margin: var(--rwaq-space-1) 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--rwaq-muted);
+}
+
+// Column headings that explain themselves on hover.
+.rwaq-th-info { cursor: help; }
+
+// Overview
+.rwaq-overview__toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--rwaq-space-3);
+  margin-bottom: var(--rwaq-space-4);
+
+  .form-group { min-width: 14rem; }
+}
+
+// Six tiles in a row, then three, then two as the page narrows.
+.rwaq-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--rwaq-space-3);
+  margin-bottom: var(--rwaq-space-6);
+}
+
+@media (max-width: 75rem) {
+  .rwaq-payment-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 40rem) {
+  .rwaq-payment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.rwaq-payment-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rwaq-space-2);
+  min-width: 0;
+  margin: 0;
+  padding: 1rem 1.125rem;
+}
+
+// Two lines reserved, so a long label never pushes its number out of line with the other tiles.
+.rwaq-payment-kpi__label {
+  min-height: 2.1em;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.05rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rwaq-muted);
+  cursor: help;
+}
+
+.rwaq-payment-kpi__value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.rwaq-payment-kpi__unit {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--rwaq-muted);
+}
+
+.rwaq-payment-kpi__number {
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--rwaq-heading);
+}
+
+.rwaq-payment-kpi__number--long { font-size: 1.125rem; }
+
+.rwaq-payment-kpi__note {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--rwaq-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rwaq-overview__trends-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--rwaq-space-3);
+  margin-bottom: var(--rwaq-space-3);
+}
+
+.rwaq-overview__granularity {
+  display: flex;
+  align-items: center;
+  gap: var(--rwaq-space-2);
+}
+
+.rwaq-overview__disabled-wrap { display: inline-flex; }
+
+.rwaq-payment-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rwaq-space-3);
+
+  > :first-child { grid-column: 1 / -1; }
+}
+
+@media (max-width: 62rem) {
+  .rwaq-payment-charts { grid-template-columns: minmax(0, 1fr); }
+}
+
+// Expanded row: the detail fills the whole row, with the same inset on both sides.
+.rwaq-row-detail {
+  width: 100%;
+  padding: var(--rwaq-space-4) var(--rwaq-space-5);
+  background: var(--rwaq-table-head-bg);
+
+  table { width: 100%; margin-bottom: 0; }
+  table + .rwaq-section-title,
+  .rwaq-section-title:not(:first-child) { margin-top: var(--rwaq-space-4); }
+}
+
+.rwaq-payments-tabs {
+  // Long headings ("Courses & programs sold") wrap to two lines instead of widening the column.
+  // Count and money columns hug their content (width 1%), so spare width goes to the
+  // first column instead of stretching "Courses & programs sold" across the table.
+  th.rwaq-th--wrap {
+    white-space: normal;
+    max-width: 8.5rem;
+    width: 1%;
+  }
+
+  .rwaq-table-scroll table > tbody > tr > td { white-space: nowrap; }
+
+  // Paragon caps every cell at 20vw and clips it with an ellipsis, which cut "Long Names" off.
+  // Here a cell is as wide as its content and the table scrolls sideways if it must.
+  .pgn__data-table-cell-wrap {
+    max-width: none;
+    overflow: visible;
+  }
+
+  // Names, emails and keys grow to 220px, then continue on the next line. Names break at
+  // spaces first, and only a single word longer than 220px (an email) breaks inside itself.
+  .rwaq-user-cell__name,
+  .rwaq-user-cell__meta {
+    // Text width up to the cap. A max-width alone lets the table squeeze the column down to
+    // its longest word, so the width has to be set as well.
+    width: max-content;
+    max-width: 220px;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .rwaq-row-detail { white-space: normal; }
+}
+
+// A compact amount ("SAR 1.25M") shows the exact figure on hover.
+.rwaq-money-compact { cursor: help; }
+
+.rwaq-row-detail__more {
+  margin: var(--rwaq-space-3) 0 0;
+  font-size: 0.8125rem;
+  color: var(--rwaq-muted);
+}
