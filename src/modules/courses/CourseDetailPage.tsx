@@ -96,9 +96,12 @@ const CourseDetailPage = () => {
   // ── Data ───────────────────────────────────────────────────────────────────
 
   const { data: course, isLoading, isError } = useCourse(courseId);
-  // The enroll modal's mode list depends on the course (a Paid course also offers
-  // no-id-professional), so it comes from the same endpoint as the Users enroll picker.
-  const { data: enrollableCourses } = useEnrollableCourses(courseId, modal.kind === 'enroll');
+  // The enroll modal's mode list depends on the course (a Paid course offers only
+  // no-id-professional, a Program-only course keeps honor), so it comes from the same endpoint as
+  // the Users enroll picker.
+  const {
+    data: enrollableCourses, isLoading: enrollModesLoading,
+  } = useEnrollableCourses(courseId, modal.kind === 'enroll');
   const enrollModes = enrollableCourses?.find((row) => row.courseId === courseId)?.availableModes;
 
   const {
@@ -431,6 +434,7 @@ const CourseDetailPage = () => {
         courseId={courseId}
         courseName={course.displayName}
         availableModes={enrollModes}
+        modesLoading={enrollModesLoading}
       />
 
       <AddStaffModal
