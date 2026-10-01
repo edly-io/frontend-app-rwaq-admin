@@ -27,12 +27,14 @@ interface EnrollUserModalProps {
   courseName: string;
   /** Modes available for this course. Falls back to the platform's common set. */
   availableModes?: string[];
+  /** True while the course's modes load, so a Paid course never flashes honor or audit. */
+  modesLoading?: boolean;
 }
 
 const DEFAULT_MODES = ['honor', 'audit'];
 
 const EnrollUserModal = ({
-  isOpen, onClose, courseId, courseName, availableModes = DEFAULT_MODES,
+  isOpen, onClose, courseId, courseName, availableModes = DEFAULT_MODES, modesLoading = false,
 }: EnrollUserModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
@@ -73,7 +75,7 @@ const EnrollUserModal = ({
     event?.preventDefault();
     setHasTriedSubmit(true);
     setConflictMessage('');
-    if (!user || !mode || !hasReason(reason)) { return; }
+    if (!user || !mode || modesLoading || !hasReason(reason)) { return; }
 
     try {
       await mutation.mutateAsync({
@@ -101,7 +103,7 @@ const EnrollUserModal = ({
       onSubmit={handleSubmit}
       submitLabel={intl.formatMessage(messages.enrollModalSubmit)}
       cancelLabel={intl.formatMessage(messages.enrollModalCancel)}
-      isSubmitting={mutation.isPending}
+      isSubmitting={mutation.isPending || modesLoading}
     >
       {conflictMessage && (
         <p className="text-danger small">{conflictMessage}</p>
@@ -109,7 +111,7 @@ const EnrollUserModal = ({
 
       <UserPicker selected={user} onSelect={setUser} error={userError} />
 
-      {user && availableModes.length > 1 && (
+      {user && !modesLoading && availableModes.length > 0 && (
         <Form.Group>
           <Form.Label>{intl.formatMessage(messages.enrollModalModeLabel)}</Form.Label>
           <Form.Control
