@@ -20,14 +20,15 @@ import {
   CsvButton, DateFilter, PAGE_SIZE, ShareCell, TabCard, TabHeading, listScope, revenueColumns, tablePagination,
   useDateRange, useListState,
 } from './shared';
+import type { DateRange } from './shared';
 
 const DEFAULT_ORDERING = '-net_paid';
 
 interface PartnersTabProps {
   /** This tab lists every partner, so it has a date range of its own but no partner filter. */
-  onViewOverview: (org: string) => void;
+  onViewOverview: (org: string, range: DateRange) => void;
   /** Opens Payment history narrowed to one partner. */
-  onViewOrders: (org: string) => void;
+  onViewOrders: (org: string, range: DateRange) => void;
 }
 
 const PartnersTab = ({ onViewOverview, onViewOrders }: PartnersTabProps) => {
@@ -109,7 +110,7 @@ const PartnersTab = ({ onViewOverview, onViewOrders }: PartnersTabProps) => {
         <Button
           variant="outline-primary"
           size="sm"
-          onClick={() => onViewOverview(row.org)}
+          onClick={() => onViewOverview(row.org, { startDate: dates.startDate, endDate: dates.endDate })}
           aria-label={intl.formatMessage(messages.viewOverviewAria, { org: row.orgName })}
         >
           {intl.formatMessage(messages.viewOverview)}
@@ -162,7 +163,7 @@ const PartnersTab = ({ onViewOverview, onViewOrders }: PartnersTabProps) => {
             <OrdersDetail
               focus={{ kind: 'partner', org: row.org, orgName: row.orgName }}
               params={params}
-              onViewAll={() => onViewOrders(row.org)}
+              onViewAll={() => onViewOrders(row.org, { startDate: dates.startDate, endDate: dates.endDate })}
             />
           )}
         />

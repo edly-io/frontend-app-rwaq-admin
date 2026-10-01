@@ -26,7 +26,7 @@ import {
   CsvButton, DateFilter, DetailTable, PAGE_SIZE, TabCard, TabHeading, formatDate, MoneyCell, MoneyTd,
   formatMoney, listScope, tablePagination, useDateRange, useListState, usePartnerFilter,
 } from './shared';
-import type { ListTabProps } from './shared';
+import type { ListTabProps, RangeHandoff } from './shared';
 
 const DEFAULT_ORDERING = '-order_date';
 
@@ -40,13 +40,17 @@ interface OrdersTabProps extends ListTabProps {
   /** Set when arriving from By coupon: only orders that used exactly this code. */
   couponCode?: string;
   onFocusClear: () => void;
+  /** Clears the partner and the focus in one URL update. Two updates in a row would undo each other. */
+  onScopeClear: () => void;
+  /** The range of the tab that opened this one with "View all". */
+  range?: RangeHandoff;
 }
 
 const OrdersTab = ({
-  org, onOrgChange, content, contentTitle, user, userTitle, couponCode, onFocusClear,
+  org, onOrgChange, content, contentTitle, user, userTitle, couponCode, onFocusClear, onScopeClear, range,
 }: OrdersTabProps) => {
   const intl = useIntl();
-  const dates = useDateRange();
+  const dates = useDateRange(range);
   const params = { org: org || undefined, startDate: dates.startDate, endDate: dates.endDate };
   const list = useListState(
     DEFAULT_ORDERING,
@@ -319,7 +323,7 @@ const OrdersTab = ({
           },
         ]}
         appliedChips={chips}
-        onClearAll={() => { list.clearAll(); onOrgChange(''); onFocusClear(); dates.setRange(); }}
+        onClearAll={() => { list.clearAll(); onScopeClear(); dates.setRange(); }}
         actions={(
           <>
             <DateFilter range={dates} />

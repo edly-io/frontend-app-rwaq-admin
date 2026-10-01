@@ -21,7 +21,7 @@ import {
   CsvButton, DateFilter, PAGE_SIZE, ShareCell, TabCard, TabHeading, listScope, revenueColumns, tablePagination,
   useDateRange, useListState, usePartnerFilter,
 } from './shared';
-import type { ListTabProps } from './shared';
+import type { DateRange, ListTabProps } from './shared';
 import OrdersDetail from './OrdersDetail';
 
 const DEFAULT_ORDERING = '-net_paid';
@@ -34,7 +34,7 @@ export const contentPath = (type: ContentType, key: string, programUuid: string 
 
 interface ContentTabProps extends ListTabProps {
   /** Opens Payment history narrowed to the orders that bought one course or program. */
-  onViewOrders: (key: string, title: string) => void;
+  onViewOrders: (key: string, title: string, range: DateRange) => void;
 }
 
 const ContentTab = ({ org, onOrgChange, onViewOrders }: ContentTabProps) => {
@@ -194,7 +194,7 @@ const ContentTab = ({ org, onOrgChange, onViewOrders }: ContentTabProps) => {
             <OrdersDetail
               focus={{ kind: 'content', key: row.key }}
               params={params}
-              onViewAll={() => onViewOrders(row.key, row.title)}
+              onViewAll={() => onViewOrders(row.key, row.title, { startDate: dates.startDate, endDate: dates.endDate })}
             />
           )}
         />

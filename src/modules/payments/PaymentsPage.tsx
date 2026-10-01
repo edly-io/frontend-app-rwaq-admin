@@ -11,7 +11,8 @@
  * learners, coupons) and lives in the URL so a reload keeps it. Switching tabs
  * clears it, so nothing stays narrowed out of sight. "View overview" on By
  * partner opens Overview for that partner, and "View all" on the other tabs
- * opens Payment history for the row while keeping the partner.
+ * opens Payment history for the row while keeping the partner. Both hand the
+ * tab's date range to the tab they open, so it shows the same period.
  *
  * A tab stays mounted once opened, so it keeps its search, sort and page when
  * the user comes back. While hidden it does not query (ActiveTabContext).
@@ -30,6 +31,7 @@ import ErrorState from '@src/components/ErrorState';
 import LoadingPage from '@src/components/LoadingPage';
 import { useAdminCapabilities } from '@src/data/whoami';
 import { ActiveTabContext } from './data/activeTab';
+import type { DateRange, RangeHandoff } from './components/shared';
 import messages from './messages';
 
 // Each tab is its own chunk, so opening the page loads only Overview and the
@@ -143,9 +145,21 @@ const PaymentsDashboard = () => {
   }, [setSearchParams]);
 
   const setOrg = (value: string) => updateParams({ org: value || undefined });
-  const clearFocus = () => updateParams({
+  const noFocus = {
     content: undefined, contentTitle: undefined, user: undefined, userTitle: undefined, couponCode: undefined,
-  });
+  };
+  const clearFocus = () => updateParams(noFocus);
+  const clearScope = () => updateParams({ org: undefined, ...noFocus });
+
+  // The range each jump hands to Overview or Payment history. A new id on every jump makes the tab take it.
+  const [handoffs, setHandoffs] = useState<{ overview?: RangeHandoff; orders?: RangeHandoff }>({});
+  const handOver = (target: 'overview' | 'orders', range: DateRange) => setHandoffs((prev) => ({
+    ...prev, [target]: { ...range, id: (prev[target]?.id ?? 0) + 1 },
+  }));
+  const viewOrders = (range: DateRange, updates: Record<string, string>) => {
+    handOver('orders', range);
+    updateParams({ tab: 'orders', ...updates });
+  };
 
   return (
     <div className="rwaq-page">
@@ -176,7 +190,7 @@ const PaymentsDashboard = () => {
         >
           <Tab eventKey="overview" title={intl.formatMessage(messages.tabOverview)}>
             <TabPanel active={tab === 'overview'}>
-              <OverviewTab org={org} onOrgChange={setOrg} />
+              <OverviewTab org={org} onOrgChange={setOrg} range={handoffs.overview} />
             </TabPanel>
           </Tab>
           <Tab eventKey="orders" title={intl.formatMessage(messages.tabOrders)}>
@@ -190,14 +204,19 @@ const PaymentsDashboard = () => {
                 userTitle={userTitle}
                 couponCode={couponCode}
                 onFocusClear={clearFocus}
+                onScopeClear={clearScope}
+                range={handoffs.orders}
               />
             </TabPanel>
           </Tab>
           <Tab eventKey="partners" title={intl.formatMessage(messages.tabPartners)}>
             <TabPanel active={tab === 'partners'}>
               <PartnersTab
-                onViewOverview={(short) => updateParams({ tab: undefined, org: short })}
-                onViewOrders={(short) => updateParams({ tab: 'orders', org: short })}
+                onViewOverview={(short, range) => {
+                  handOver('overview', range);
+                  updateParams({ tab: undefined, org: short });
+                }}
+                onViewOrders={(short, range) => viewOrders(range, { org: short })}
               />
             </TabPanel>
           </Tab>
@@ -206,9 +225,7 @@ const PaymentsDashboard = () => {
               <ContentTab
                 org={org}
                 onOrgChange={setOrg}
-                onViewOrders={(key, title) => updateParams({
-                  tab: 'orders', content: key, contentTitle: title,
-                })}
+                onViewOrders={(key, title, range) => viewOrders(range, { content: key, contentTitle: title })}
               />
             </TabPanel>
           </Tab>
@@ -217,9 +234,10 @@ const PaymentsDashboard = () => {
               <LearnersTab
                 org={org}
                 onOrgChange={setOrg}
-                onViewOrders={(userId, username) => updateParams({
-                  tab: 'orders', user: String(userId), userTitle: username,
-                })}
+                onViewOrders={(userId, username, range) => viewOrders(
+                  range,
+                  { user: String(userId), userTitle: username },
+                )}
               />
             </TabPanel>
           </Tab>
@@ -228,7 +246,7 @@ const PaymentsDashboard = () => {
               <CouponsTab
                 org={org}
                 onOrgChange={setOrg}
-                onViewOrders={(code) => updateParams({ tab: 'orders', couponCode: code })}
+                onViewOrders={(code, range) => viewOrders(range, { couponCode: code })}
               />
             </TabPanel>
           </Tab>

@@ -17,14 +17,14 @@ import {
   CsvButton, DateFilter, PAGE_SIZE, TabCard, TabHeading, MoneyCell, listScope, tablePagination, useDateRange,
   useListState, usePartnerFilter,
 } from './shared';
-import type { ListTabProps } from './shared';
+import type { DateRange, ListTabProps } from './shared';
 import OrdersDetail from './OrdersDetail';
 
 const DEFAULT_ORDERING = '-discount_given';
 
 interface CouponsTabProps extends ListTabProps {
   /** Opens Payment history narrowed to the orders that used one code. */
-  onViewOrders: (code: string) => void;
+  onViewOrders: (code: string, range: DateRange) => void;
 }
 
 const CouponsTab = ({ org, onOrgChange, onViewOrders }: CouponsTabProps) => {
@@ -179,7 +179,7 @@ const CouponsTab = ({ org, onOrgChange, onViewOrders }: CouponsTabProps) => {
             <OrdersDetail
               focus={{ kind: 'coupon', code: row.code, org: org || undefined }}
               params={params}
-              onViewAll={() => onViewOrders(row.code)}
+              onViewAll={() => onViewOrders(row.code, { startDate: dates.startDate, endDate: dates.endDate })}
             />
           )}
         />

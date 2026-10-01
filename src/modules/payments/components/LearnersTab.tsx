@@ -17,14 +17,14 @@ import {
   CsvButton, DateFilter, PAGE_SIZE, TabCard, TabHeading, listScope, revenueColumns, tablePagination,
   useDateRange, useListState, usePartnerFilter,
 } from './shared';
-import type { ListTabProps } from './shared';
+import type { DateRange, ListTabProps } from './shared';
 import OrdersDetail from './OrdersDetail';
 
 const DEFAULT_ORDERING = '-net_paid';
 
 interface LearnersTabProps extends ListTabProps {
   /** Opens Payment history narrowed to one buyer. */
-  onViewOrders: (userId: number, username: string) => void;
+  onViewOrders: (userId: number, username: string, range: DateRange) => void;
 }
 
 const LearnersTab = ({ org, onOrgChange, onViewOrders }: LearnersTabProps) => {
@@ -144,7 +144,11 @@ const LearnersTab = ({ org, onOrgChange, onViewOrders }: LearnersTabProps) => {
             <OrdersDetail
               focus={{ kind: 'learner', userId: row.userId, org: org || undefined }}
               params={params}
-              onViewAll={() => onViewOrders(row.userId, row.username)}
+              onViewAll={() => onViewOrders(
+                row.userId,
+                row.username,
+                { startDate: dates.startDate, endDate: dates.endDate },
+              )}
             />
           )}
         />

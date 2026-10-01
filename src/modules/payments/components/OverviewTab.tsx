@@ -20,7 +20,7 @@ import PaymentKpi from './PaymentKpi';
 import {
   CURRENCY, DateFilter, formatAmount, formatMoney, formatTileAmount, useDateRange, usePartnerFilter,
 } from './shared';
-import type { ListTabProps } from './shared';
+import type { ListTabProps, RangeHandoff } from './shared';
 
 const CHART_HEIGHT = 240;
 const LABEL_ANGLE = 60;
@@ -121,9 +121,14 @@ const TrendChart = ({
   );
 };
 
-const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
+interface OverviewTabProps extends ListTabProps {
+  /** The range of By partner when "View overview" opened this tab. */
+  range?: RangeHandoff;
+}
+
+const OverviewTab = ({ org, onOrgChange, range }: OverviewTabProps) => {
   const intl = useIntl();
-  const dates = useDateRange();
+  const dates = useDateRange(range);
   const params = { org: org || undefined, startDate: dates.startDate, endDate: dates.endDate };
   const partner = usePartnerFilter(params, onOrgChange);
   const [granularity, setGranularity] = useState<Granularity>('month');

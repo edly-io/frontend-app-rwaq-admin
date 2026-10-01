@@ -658,6 +658,75 @@ describe('PaymentsPage', () => {
     });
   });
 
+  describe('Clear all on Payment history', () => {
+    it('clears the partner and the focus together', async () => {
+      window.history.pushState({}, '', '/?tab=orders&org=TPA&couponCode=SAVE10');
+      await renderPage();
+
+      fireEvent.click(within(screen.getByRole('tabpanel')).getByRole('button', { name: 'Clear all' }));
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('tab')).toBe('orders');
+      expect(params.has('org')).toBe(false);
+      expect(params.has('couponCode')).toBe(false);
+      const { calls } = (hooks.usePaymentOrders as jest.Mock).mock;
+      expect(calls[calls.length - 1][0]).toEqual(expect.objectContaining({ org: undefined, couponCode: undefined }));
+    });
+  });
+
+  describe('a jump to another tab keeps the date range', () => {
+    const pickLast30Days = () => {
+      fireEvent.click(within(screen.getByRole('tabpanel')).getByRole('button', { name: /All time/ }));
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Last 30 days' }));
+    };
+
+    it('View all opens Payment history over the row\'s range, which the history then keeps as its own', async () => {
+      (hooks.usePaymentOrders as jest.Mock).mockReturnValue({
+        data: pageOf([tpaView], 8), isLoading: false, isError: false,
+      });
+      await renderPage();
+      await openTab('By partner');
+      pickLast30Days();
+      const { startDate, endDate } = (hooks.usePaymentPartners as jest.Mock).mock.lastCall[0];
+      expect(startDate).toEqual(expect.any(String));
+
+      fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
+      (hooks.usePaymentOrders as jest.Mock).mockClear();
+      fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+      await tabReady();
+
+      // The hidden By partner expansion keeps asking for its 5 rows, so look at the history's own calls.
+      const lastHistory = () => (hooks.usePaymentOrders as jest.Mock).mock.calls
+        .map(([params]) => params).filter((params) => params.pageSize === 10).pop();
+      expect(lastHistory()).toEqual(expect.objectContaining({
+        org: 'TPA', pageSize: 10, startDate, endDate,
+      }));
+      // No history request went out over all time on the way.
+      const allTime = (hooks.usePaymentOrders as jest.Mock).mock.calls
+        .filter(([params]) => params.pageSize === 10 && !params.startDate);
+      expect(allTime).toHaveLength(0);
+
+      // The range is the history's own now: Clear all resets it.
+      fireEvent.click(within(screen.getByRole('tabpanel')).getByRole('button', { name: 'Clear all' }));
+      expect(lastHistory()).toEqual(expect.objectContaining({ startDate: undefined }));
+    });
+
+    it('View overview opens Overview for the partner over the same range', async () => {
+      await renderPage();
+      await openTab('By partner');
+      pickLast30Days();
+      const { startDate, endDate } = (hooks.usePaymentPartners as jest.Mock).mock.lastCall[0];
+
+      fireEvent.click(screen.getByRole('button', { name: 'Open the overview for Org A' }));
+      await tabReady();
+
+      expect(screen.getByRole('tab', { name: 'Overview', selected: true })).toBeInTheDocument();
+      expect((hooks.usePaymentsSummary as jest.Mock).mock.lastCall[0]).toEqual(expect.objectContaining({
+        org: 'TPA', startDate, endDate,
+      }));
+    });
+  });
+
   describe('while the next figures load', () => {
     it('shows the loading state on the tiles and charts instead of the previous range\'s figures', async () => {
       (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({

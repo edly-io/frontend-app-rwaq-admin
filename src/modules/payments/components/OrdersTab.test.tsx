@@ -93,7 +93,7 @@ const mockOrders = (orders: unknown[]) => (hooks.usePaymentOrders as jest.Mock).
 });
 
 const renderTab = (org?: string) => renderWrapper(
-  <OrdersTab org={org} onOrgChange={jest.fn()} onFocusClear={jest.fn()} />,
+  <OrdersTab org={org} onOrgChange={jest.fn()} onFocusClear={jest.fn()} onScopeClear={jest.fn()} />,
 );
 
 /** The text of each cell of the first body row, by the table's header text. */

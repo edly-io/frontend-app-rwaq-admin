@@ -94,12 +94,34 @@ export const ShareCell = ({ share }: { share: string | null }) => {
 /** The day of a timestamp in UTC, the same days the backend's date filters and buckets use. */
 export const formatDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { timeZone: 'UTC' });
 
-/** A tab's own date range. Each tab keeps its own, so one tab's setting never narrows another. */
-export const useDateRange = () => {
-  const [range, setRange] = useState<{ startDate?: string; endDate?: string }>({});
+export interface DateRange {
+  startDate?: string;
+  endDate?: string;
+}
+
+/** A range handed over by "View all" or "View overview". `id` changes on every jump, even to the same dates. */
+export interface RangeHandoff extends DateRange {
+  id: number;
+}
+
+/**
+ * A tab's own date range. Each tab keeps its own, so one tab's setting never narrows another.
+ *
+ * A jump from another tab hands its range over and the tab takes it as its own.
+ * It is taken in the same render, as useListState resets its page, so the old
+ * range never sends a request.
+ */
+export const useDateRange = (handoff?: RangeHandoff) => {
+  const [state, setState] = useState<DateRange & { handoffId?: number }>({ ...handoff, handoffId: handoff?.id });
+  const arrived = handoff !== undefined && handoff.id !== state.handoffId;
+  if (arrived) { setState({ startDate: handoff.startDate, endDate: handoff.endDate, handoffId: handoff.id }); }
+  const range = arrived ? handoff : state;
   return {
-    ...range,
-    setRange: (startDate?: string, endDate?: string) => setRange({ startDate, endDate }),
+    startDate: range.startDate,
+    endDate: range.endDate,
+    setRange: (startDate?: string, endDate?: string) => setState(
+      (prev) => ({ startDate, endDate, handoffId: prev.handoffId }),
+    ),
   };
 };
 
