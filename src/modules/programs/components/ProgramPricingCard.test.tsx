@@ -19,7 +19,6 @@ const makeProgram = (overrides: Partial<ProgramDetail> = {}) => ({
   salePrice: null,
   discountPercentage: null,
   currency: 'SAR',
-  pricingManagedByAdmin: false,
   ...overrides,
 } as ProgramDetail);
 
@@ -95,7 +94,6 @@ describe('ProgramPricingCard', () => {
       pricingCategory: 'is_paid',
       regularPrice: '500',
       salePrice: null,
-      pricingManagedByAdmin: false,
     }));
     expect(await screen.findByText('Pricing saved.')).toBeInTheDocument();
   });

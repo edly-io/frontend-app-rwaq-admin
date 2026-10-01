@@ -5,9 +5,6 @@
  * validation: a paid program needs a price above 0, and the sale price must be
  * below it. Switching back to Free clears both prices. The backend reports
  * refusals as DRF field errors, shown on the field they name.
- *
- * This is the only place pricingManagedByAdmin can be set. Org admins can still
- * change pricing while it is on.
  */
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Form } from '@openedx/paragon';
@@ -40,7 +37,6 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   const [category, setCategory] = useState<ProgramPricingCategory>('is_free');
   const [regularPrice, setRegularPrice] = useState('');
   const [salePrice, setSalePrice] = useState('');
-  const [managedByAdmin, setManagedByAdmin] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
@@ -49,8 +45,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
     setCategory(program.pricingCategory || 'is_free');
     setRegularPrice(program.regularPrice ?? '');
     setSalePrice(program.salePrice ?? '');
-    setManagedByAdmin(program.pricingManagedByAdmin ?? false);
-  }, [program.pricingCategory, program.regularPrice, program.salePrice, program.pricingManagedByAdmin]);
+  }, [program.pricingCategory, program.regularPrice, program.salePrice]);
 
   const isPaid = category === 'is_paid';
   // Live from the inputs, before saving.
@@ -91,7 +86,6 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
         pricingCategory: category,
         regularPrice: isPaid ? regularPrice.trim() : null,
         salePrice: isPaid && salePrice.trim() !== '' ? salePrice.trim() : null,
-        pricingManagedByAdmin: managedByAdmin,
       });
       setSaved(true);
     } catch (err) {
@@ -194,18 +188,6 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
           <p className="small text-muted">{intl.formatMessage(messages.pricingCoursesNote)}</p>
         </>
       )}
-
-      <Form.Group controlId="program-pricing-managed-by-admin">
-        <Form.Checkbox
-          name="pricingManagedByAdmin"
-          checked={managedByAdmin}
-          disabled={isPending}
-          description={intl.formatMessage(messages.pricingManagedHint)}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setManagedByAdmin(e.target.checked); touched(); }}
-        >
-          {intl.formatMessage(messages.pricingManagedLabel)}
-        </Form.Checkbox>
-      </Form.Group>
 
       <Button variant="primary" size="sm" onClick={handleSave} disabled={isPending}>
         {intl.formatMessage(isPending ? messages.pricingSaving : messages.pricingSave)}
