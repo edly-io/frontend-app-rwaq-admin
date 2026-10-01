@@ -112,7 +112,9 @@ export interface RangeHandoff extends DateRange {
  * range never sends a request.
  */
 export const useDateRange = (handoff?: RangeHandoff) => {
-  const [state, setState] = useState<DateRange & { handoffId?: number }>({ ...handoff, handoffId: handoff?.id });
+  const [state, setState] = useState<DateRange & { handoffId?: number }>(
+    { startDate: handoff?.startDate, endDate: handoff?.endDate, handoffId: handoff?.id },
+  );
   const arrived = handoff !== undefined && handoff.id !== state.handoffId;
   if (arrived) { setState({ startDate: handoff.startDate, endDate: handoff.endDate, handoffId: handoff.id }); }
   const range = arrived ? handoff : state;
