@@ -24,6 +24,7 @@ import ProfileAvatar from '@src/components/ProfileAvatar';
 import ErrorState from '@src/components/ErrorState';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorStatus } from '@src/data/httpError';
+import { useEnrollableCourses } from '@src/modules/users/data/hooks';
 import modeLabel from '@src/modules/users/modeLabel';
 import {
   useCourse,
@@ -95,6 +96,10 @@ const CourseDetailPage = () => {
   // ── Data ───────────────────────────────────────────────────────────────────
 
   const { data: course, isLoading, isError } = useCourse(courseId);
+  // The enroll modal's mode list depends on the course (a Paid course also offers
+  // no-id-professional), so it comes from the same endpoint as the Users enroll picker.
+  const { data: enrollableCourses } = useEnrollableCourses(courseId, modal.kind === 'enroll');
+  const enrollModes = enrollableCourses?.find((row) => row.courseId === courseId)?.availableModes;
 
   const {
     data: enrollmentData,
@@ -425,6 +430,7 @@ const CourseDetailPage = () => {
         onClose={() => setModal({ kind: 'none' })}
         courseId={courseId}
         courseName={course.displayName}
+        availableModes={enrollModes}
       />
 
       <AddStaffModal
