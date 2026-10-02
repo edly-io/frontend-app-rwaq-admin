@@ -89,6 +89,8 @@ export interface EnrollableCourse {
   displayName: string;
   org: string;
   availableModes: string[];
+  /** True when the course is reached through the subscription, so enrolling asks for a plan. */
+  isPartOfSubscription?: boolean;
   start: string | null;
   end: string | null;
 }
@@ -99,6 +101,9 @@ export interface EnrollPayload {
   mode: string;
   /** Required by the API. Without it the audit trail explains nothing. */
   reason: string;
+  /** Subscription content only: used when the learner has no live subscription. */
+  subscriptionPlan?: 'monthly' | 'yearly' | 'custom';
+  subscriptionEndsAt?: string;
 }
 
 /** PATCH /api/v1/admin/users/{id}/enrollments/{courseId}/ */

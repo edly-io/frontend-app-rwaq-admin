@@ -16,6 +16,9 @@ import ReasonField, {
   ReasonValues, emptyReason, hasReason, resolveReason,
 } from '@src/modules/users/components/ReasonField';
 import modeLabel from '@src/modules/users/modeLabel';
+import SubscriptionPlanFields, {
+  defaultSubscriptionPlan, subscriptionPlanPayload,
+} from '@src/components/SubscriptionPlanFields';
 import UserPicker from '../components/UserPicker';
 import { useEnrollUserInCourse } from '../data/hooks';
 import messages from '../messages';
@@ -29,12 +32,14 @@ interface EnrollUserModalProps {
   availableModes?: string[];
   /** True while the course's modes load, so a Paid course never flashes honor or audit. */
   modesLoading?: boolean;
+  /** True when the course is reached through the subscription: the admin picks a plan for learners without one. */
+  isPartOfSubscription?: boolean;
 }
 
 const DEFAULT_MODES = ['honor', 'audit'];
 
 const EnrollUserModal = ({
-  isOpen, onClose, courseId, courseName, availableModes = DEFAULT_MODES, modesLoading = false,
+  isOpen, onClose, courseId, courseName, availableModes = DEFAULT_MODES, modesLoading = false, isPartOfSubscription = false,
 }: EnrollUserModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
@@ -43,6 +48,7 @@ const EnrollUserModal = ({
   const [user, setUser] = useState<UserSummary | null>(null);
   const [mode, setMode] = useState(availableModes[0] ?? 'honor');
   const [reason, setReason] = useState<ReasonValues>(emptyReason);
+  const [plan, setPlan] = useState(defaultSubscriptionPlan);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
   const [conflictMessage, setConflictMessage] = useState('');
 
@@ -82,6 +88,7 @@ const EnrollUserModal = ({
         userId: user.id,
         mode,
         reason: resolveReason(reason),
+        ...subscriptionPlanPayload(isPartOfSubscription, plan),
       });
       showToast(intl.formatMessage(messages.enrollModalSuccess));
       onClose();
@@ -125,6 +132,8 @@ const EnrollUserModal = ({
           </Form.Control>
         </Form.Group>
       )}
+
+      {user && isPartOfSubscription && <SubscriptionPlanFields value={plan} onChange={setPlan} />}
 
       <ReasonField values={reason} onChange={setReason} error={reasonError} />
     </FormModal>

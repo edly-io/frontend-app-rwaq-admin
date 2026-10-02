@@ -24,6 +24,9 @@ import ConflictAlert from '../components/ConflictAlert';
 import { useEnrollUser } from '../data/hooks';
 import type { EnrollableCourse, UserEnrollment } from '../data/types';
 import messages from '../messages';
+import SubscriptionPlanFields, {
+  defaultSubscriptionPlan, subscriptionPlanPayload,
+} from '@src/components/SubscriptionPlanFields';
 import modeLabel from '../modeLabel';
 
 interface EnrollModalProps {
@@ -45,6 +48,7 @@ const EnrollModal = ({
   const [course, setCourse] = useState<EnrollableCourse | null>(null);
   const [mode, setMode] = useState('');
   const [reason, setReason] = useState<ReasonValues>(emptyReason);
+  const [plan, setPlan] = useState(defaultSubscriptionPlan);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
   const [isConflict, setIsConflict] = useState(false);
 
@@ -90,6 +94,7 @@ const EnrollModal = ({
         courseId: course.courseId,
         mode,
         reason: resolveReason(reason),
+        ...subscriptionPlanPayload(course.isPartOfSubscription, plan),
       });
       // Deliberately not "enrolled and certified": the platform recomputes
       // grades and certificates on a queue, so claiming they are done here
@@ -147,6 +152,8 @@ const EnrollModal = ({
           </Form.Control>
         </Form.Group>
       )}
+
+      {course?.isPartOfSubscription && <SubscriptionPlanFields value={plan} onChange={setPlan} />}
 
       <ReasonField values={reason} onChange={setReason} error={reasonError} />
     </FormModal>
