@@ -42,8 +42,9 @@ const PartnersTab = lazy(() => import('./components/PartnersTab'));
 const ContentTab = lazy(() => import('./components/ContentTab'));
 const LearnersTab = lazy(() => import('./components/LearnersTab'));
 const CouponsTab = lazy(() => import('./components/CouponsTab'));
+const SubscriptionsTab = lazy(() => import('./components/SubscriptionsTab'));
 
-const TABS = ['overview', 'orders', 'partners', 'content', 'learners', 'coupons'] as const;
+const TABS = ['overview', 'orders', 'partners', 'content', 'learners', 'coupons', 'subscriptions'] as const;
 type PaymentsTab = typeof TABS[number];
 
 /** What a tab shows when its code fails to load (a dropped connection, a new deploy) or its render throws. */
@@ -248,6 +249,11 @@ const PaymentsDashboard = () => {
                 onOrgChange={setOrg}
                 onViewOrders={(code, range) => viewOrders(range, { couponCode: code })}
               />
+            </TabPanel>
+          </Tab>
+          <Tab eventKey="subscriptions" title={intl.formatMessage(messages.tabSubscriptions)}>
+            <TabPanel active={tab === 'subscriptions'}>
+              <SubscriptionsTab />
             </TabPanel>
           </Tab>
         </Tabs>

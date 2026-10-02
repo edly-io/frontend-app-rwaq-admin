@@ -179,6 +179,35 @@ export interface OrderListParams extends ListParams {
   paid?: boolean;
 }
 
+export type SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'revoked';
+
+export interface SubscriptionRow {
+  id: number;
+  learner: string;
+  email: string;
+  plan: 'monthly' | 'yearly' | 'custom';
+  source: 'wordpress' | 'admin';
+  status: SubscriptionStatus;
+  startsAt: string;
+  endsAt: string;
+  payments: number;
+  netPaid: string;
+  discounts: string;
+}
+
+export interface SubscriptionListParams extends ListParams {
+  status?: SubscriptionStatus | '';
+}
+
+/** GET subscriptions/summary/ — what the tab's tiles show. */
+export interface SubscriptionsSummary {
+  revenue: string;
+  new: number;
+  renewals: number;
+  cancellations: number;
+  activeAtEnd: number;
+}
+
 export interface ContentListParams extends ListParams {
   type?: ContentType;
 }
@@ -188,4 +217,4 @@ export interface CouponListParams extends ListParams {
 }
 
 /** The lists with a csv/ twin. */
-export type PaymentsReport = 'orders' | 'partners' | 'content' | 'learners' | 'coupons';
+export type PaymentsReport = 'orders' | 'partners' | 'content' | 'learners' | 'coupons' | 'subscriptions';

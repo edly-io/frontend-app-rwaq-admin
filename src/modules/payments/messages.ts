@@ -22,6 +22,7 @@ const messages = defineMessages({
   tabPartners: { id: 'rwaq.admin.payments.tab.partners', defaultMessage: 'By partner' },
   tabContent: { id: 'rwaq.admin.payments.tab.content', defaultMessage: 'By content' },
   tabLearners: { id: 'rwaq.admin.payments.tab.learners', defaultMessage: 'By learner' },
+  tabSubscriptions: { id: 'rwaq.admin.payments.tab.subscriptions', defaultMessage: 'Subscriptions' },
   tabCoupons: { id: 'rwaq.admin.payments.tab.coupons', defaultMessage: 'By coupon' },
 
   // ── Overview: KPI tiles ────────────────────────────────────────────────────
