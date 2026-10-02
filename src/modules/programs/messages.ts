@@ -106,6 +106,10 @@ const messages = defineMessages({
   pricingCategoryLabel: { id: 'rwaq.admin.programs.pricing.category-label', defaultMessage: 'Pricing type' },
   pricingFree: { id: 'rwaq.admin.programs.pricing.free', defaultMessage: 'Free' },
   pricingPaid: { id: 'rwaq.admin.programs.pricing.paid', defaultMessage: 'Paid' },
+  pricingSubscription: {
+    id: 'rwaq.admin.programs.pricing.subscription',
+    defaultMessage: 'Is part of Subscription',
+  },
   pricingPriceLabel: { id: 'rwaq.admin.programs.pricing.price-label', defaultMessage: 'Price ({currency})' },
   pricingSalePriceLabel: {
     id: 'rwaq.admin.programs.pricing.sale-price-label',

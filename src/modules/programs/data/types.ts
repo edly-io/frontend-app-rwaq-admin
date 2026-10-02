@@ -74,7 +74,7 @@ export interface ProgramDetail extends ProgramSummary {
 }
 
 /** Mirrors rwaq_features.programs.models.Program.PRICING_CATEGORY_CHOICES. */
-export type ProgramPricingCategory = 'is_free' | 'is_paid';
+export type ProgramPricingCategory = 'is_free' | 'is_paid' | 'is_part_of_subscription';
 
 /** One row of GET /api/v1/admin/programs/{uuid}/courses/ */
 export interface ProgramCourse {

@@ -177,7 +177,7 @@ const CoursesTab = ({ uuid }: { uuid: string }) => {
 
 // ── Learners tab ──────────────────────────────────────────────────────────────
 
-const LearnersTab = ({ uuid }: { uuid: string }) => {
+const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: boolean }) => {
   const intl = useIntl();
   const [isEnrollOpen, setEnrollOpen] = useState(false);
   const [unenrollTarget, setUnenrollTarget] = useState<ProgramLearner | null>(null);
@@ -253,6 +253,7 @@ const LearnersTab = ({ uuid }: { uuid: string }) => {
         isOpen={isEnrollOpen}
         onClose={() => setEnrollOpen(false)}
         uuid={uuid}
+        isSubscription={isSubscription}
       />
 
       <UnenrollLearnerModal
@@ -473,7 +474,7 @@ const ProgramDetailPage = () => {
           <CoursesTab uuid={program.uuid} />
         </div>
         <div id="tabpanel-learners" role="tabpanel" aria-labelledby="tab-learners" hidden={activeTab !== 'learners'}>
-          <LearnersTab uuid={program.uuid} />
+          <LearnersTab uuid={program.uuid} isSubscription={program.pricingCategory === 'is_part_of_subscription'} />
         </div>
       </div>
     </div>

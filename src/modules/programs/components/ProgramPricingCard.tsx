@@ -137,6 +137,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
         >
           <option value="is_free">{intl.formatMessage(messages.pricingFree)}</option>
           <option value="is_paid">{intl.formatMessage(messages.pricingPaid)}</option>
+          <option value="is_part_of_subscription">{intl.formatMessage(messages.pricingSubscription)}</option>
         </Form.Control>
         {fieldErrors.pricingCategory && (
           <Form.Control.Feedback type="invalid">{fieldErrors.pricingCategory}</Form.Control.Feedback>
