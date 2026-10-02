@@ -101,12 +101,12 @@ describe('PaymentsPage', () => {
     expect(hooks.usePaymentsSummary).not.toHaveBeenCalled();
   });
 
-  it('has only the Overview and Payment history tabs', async () => {
+  it('has the Overview, Payment history and Subscriptions tabs', async () => {
     await renderPage();
 
     // Paragon adds a "More..." overflow tab when it cannot measure the row (jsdom).
     const names = screen.getAllByRole('tab').map((tab) => tab.textContent).filter((name) => name !== 'More...');
-    expect(names).toEqual(['Overview', 'Payment history']);
+    expect(names).toEqual(['Overview', 'Payment history', 'Subscriptions']);
   });
 
   it('opens on the Overview with the tiles in order and amounts in SAR', async () => {

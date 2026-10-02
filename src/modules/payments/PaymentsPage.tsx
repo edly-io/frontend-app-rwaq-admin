@@ -33,8 +33,9 @@ import messages from './messages';
 // others download the first time they are opened.
 const OverviewTab = lazy(() => import('./components/OverviewTab'));
 const OrdersTab = lazy(() => import('./components/OrdersTab'));
+const SubscriptionsTab = lazy(() => import('./components/SubscriptionsTab'));
 
-const TABS = ['overview', 'orders'] as const;
+const TABS = ['overview', 'orders', 'subscriptions'] as const;
 type PaymentsTab = typeof TABS[number];
 
 /** What a tab shows when its code fails to load (a dropped connection, a new deploy) or its render throws. */
@@ -157,6 +158,11 @@ const PaymentsDashboard = () => {
           <Tab eventKey="orders" title={intl.formatMessage(messages.tabOrders)}>
             <TabPanel active={tab === 'orders'}>
               <OrdersTab org={org} onOrgChange={setOrg} />
+            </TabPanel>
+          </Tab>
+          <Tab eventKey="subscriptions" title={intl.formatMessage(messages.tabSubscriptions)}>
+            <TabPanel active={tab === 'subscriptions'}>
+              <SubscriptionsTab />
             </TabPanel>
           </Tab>
         </Tabs>

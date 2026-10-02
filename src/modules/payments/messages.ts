@@ -18,6 +18,7 @@ const messages = defineMessages({
   reload: { id: 'rwaq.admin.payments.reload', defaultMessage: 'Reload' },
   tabOverview: { id: 'rwaq.admin.payments.tab.overview', defaultMessage: 'Overview' },
   tabOrders: { id: 'rwaq.admin.payments.tab.orders', defaultMessage: 'Payment history' },
+  tabSubscriptions: { id: 'rwaq.admin.payments.tab.subscriptions', defaultMessage: 'Subscriptions' },
 
   // ── Overview: KPI tiles ────────────────────────────────────────────────────
   kpiOrders: { id: 'rwaq.admin.payments.kpi.orders', defaultMessage: 'Orders' },

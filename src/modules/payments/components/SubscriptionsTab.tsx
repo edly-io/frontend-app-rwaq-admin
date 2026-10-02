@@ -1,0 +1,229 @@
+/**
+ * Subscriptions — one row per Rwaq subscription paid or granted in the date range, with KPI tiles.
+ *
+ * Subscription payments are not part of the other tabs: they are all Rwaq's, with no partner
+ * share. An admin grant lists the subscription but never counts as revenue.
+ */
+import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
+import AdminDataTable from '@src/components/AdminDataTable';
+import type { ColumnDef } from '@src/components/AdminDataTable';
+import ErrorState from '@src/components/ErrorState';
+import SearchFilterBar from '@src/components/SearchFilterBar';
+import type { AppliedChip } from '@src/components/SearchFilterBar';
+import { getErrorStatus } from '@src/data/httpError';
+import { usePaymentSubscriptions, useSubscriptionsSummary } from '../data/hooks';
+import type { SubscriptionRow, SubscriptionStatus } from '../data/types';
+import PaymentKpi from './PaymentKpi';
+import {
+  CsvButton, DateFilter, PAGE_SIZE, TabCard, TabHeading, listScope, tablePagination, useDateRange, useListState,
+} from './shared';
+
+const DEFAULT_ORDERING = '-ends_at';
+const CURRENCY = 'SAR';
+const STATUSES: SubscriptionStatus[] = ['active', 'cancelled', 'expired', 'revoked'];
+
+const messages = defineMessages({
+  title: { id: 'rwaq.admin.payments.subscriptions.title', defaultMessage: 'Subscriptions' },
+  info: {
+    id: 'rwaq.admin.payments.subscriptions.info',
+    defaultMessage: 'Rwaq subscriptions paid or granted in the date range. All subscription revenue is Rwaq\'s.',
+  },
+  how: {
+    id: 'rwaq.admin.payments.subscriptions.how',
+    defaultMessage: 'Amounts count WordPress payments in the range. Admin grants are listed but never count as revenue.',
+  },
+  search: { id: 'rwaq.admin.payments.subscriptions.search', defaultMessage: 'Search by username or email' },
+  statusLabel: { id: 'rwaq.admin.payments.subscriptions.status', defaultMessage: 'Status' },
+  statusAll: { id: 'rwaq.admin.payments.subscriptions.status-all', defaultMessage: 'All statuses' },
+  active: { id: 'rwaq.admin.payments.subscriptions.status.active', defaultMessage: 'Active' },
+  cancelled: { id: 'rwaq.admin.payments.subscriptions.status.cancelled', defaultMessage: 'Cancelled' },
+  expired: { id: 'rwaq.admin.payments.subscriptions.status.expired', defaultMessage: 'Expired' },
+  revoked: { id: 'rwaq.admin.payments.subscriptions.status.revoked', defaultMessage: 'Revoked' },
+  colLearner: { id: 'rwaq.admin.payments.subscriptions.col.learner', defaultMessage: 'Learner' },
+  colPlan: { id: 'rwaq.admin.payments.subscriptions.col.plan', defaultMessage: 'Plan' },
+  colSource: { id: 'rwaq.admin.payments.subscriptions.col.source', defaultMessage: 'Source' },
+  colStatus: { id: 'rwaq.admin.payments.subscriptions.col.status', defaultMessage: 'Status' },
+  colStarts: { id: 'rwaq.admin.payments.subscriptions.col.starts', defaultMessage: 'Starts' },
+  colEnds: { id: 'rwaq.admin.payments.subscriptions.col.ends', defaultMessage: 'Ends' },
+  colPayments: { id: 'rwaq.admin.payments.subscriptions.col.payments', defaultMessage: 'Payments' },
+  colCollected: { id: 'rwaq.admin.payments.subscriptions.col.collected', defaultMessage: 'Collected (SAR)' },
+  colDiscounts: { id: 'rwaq.admin.payments.subscriptions.col.discounts', defaultMessage: 'Discounts (SAR)' },
+  monthly: { id: 'rwaq.admin.payments.subscriptions.plan.monthly', defaultMessage: 'Monthly' },
+  yearly: { id: 'rwaq.admin.payments.subscriptions.plan.yearly', defaultMessage: 'Yearly' },
+  custom: { id: 'rwaq.admin.payments.subscriptions.plan.custom', defaultMessage: 'End date' },
+  wordpress: { id: 'rwaq.admin.payments.subscriptions.source.wordpress', defaultMessage: 'WordPress' },
+  admin: { id: 'rwaq.admin.payments.subscriptions.source.admin', defaultMessage: 'Admin' },
+  kpiRevenue: { id: 'rwaq.admin.payments.subscriptions.kpi.revenue', defaultMessage: 'Revenue' },
+  kpiNew: { id: 'rwaq.admin.payments.subscriptions.kpi.new', defaultMessage: 'New subscriptions' },
+  kpiRenewals: { id: 'rwaq.admin.payments.subscriptions.kpi.renewals', defaultMessage: 'Renewals' },
+  kpiCancellations: { id: 'rwaq.admin.payments.subscriptions.kpi.cancellations', defaultMessage: 'Cancellations' },
+  kpiActive: { id: 'rwaq.admin.payments.subscriptions.kpi.active', defaultMessage: 'Active at end of range' },
+  infoRevenue: {
+    id: 'rwaq.admin.payments.subscriptions.kpi.revenue-info',
+    defaultMessage: 'What WordPress subscription payments collected in the range.',
+  },
+  infoNew: {
+    id: 'rwaq.admin.payments.subscriptions.kpi.new-info',
+    defaultMessage: 'Subscriptions whose first payment is in the range.',
+  },
+  infoRenewals: {
+    id: 'rwaq.admin.payments.subscriptions.kpi.renewals-info',
+    defaultMessage: 'Payments in the range after a subscription\'s first.',
+  },
+  infoCancellations: {
+    id: 'rwaq.admin.payments.subscriptions.kpi.cancellations-info',
+    defaultMessage: 'Subscriptions cancelled in the range. Access continues until their end date.',
+  },
+  infoActive: {
+    id: 'rwaq.admin.payments.subscriptions.kpi.active-info',
+    defaultMessage: 'Subscriptions with a paid or granted period covering the end of the range, not revoked by then.',
+  },
+  sortEndsDesc: { id: 'rwaq.admin.payments.subscriptions.sort.ends-desc', defaultMessage: 'Ends, latest first' },
+  sortEndsAsc: { id: 'rwaq.admin.payments.subscriptions.sort.ends-asc', defaultMessage: 'Ends, earliest first' },
+  sortCollectedDesc: { id: 'rwaq.admin.payments.subscriptions.sort.collected', defaultMessage: 'Collected, highest first' },
+  sortLearner: { id: 'rwaq.admin.payments.subscriptions.sort.learner', defaultMessage: 'Learner A to Z' },
+  sortLabel: { id: 'rwaq.admin.payments.subscriptions.sort.label', defaultMessage: 'Sort by' },
+  chipSearch: { id: 'rwaq.admin.payments.subscriptions.chip.search', defaultMessage: 'Search: {term}' },
+  chipStatus: { id: 'rwaq.admin.payments.subscriptions.chip.status', defaultMessage: 'Status: {status}' },
+  errorTitle: { id: 'rwaq.admin.payments.subscriptions.error', defaultMessage: 'Could not load subscriptions' },
+});
+
+const SubscriptionsTab = () => {
+  const intl = useIntl();
+  const dates = useDateRange();
+  const params = { startDate: dates.startDate, endDate: dates.endDate };
+  const list = useListState(DEFAULT_ORDERING, { status: '' }, listScope('', dates.startDate, dates.endDate));
+  const status = list.filters.status as SubscriptionStatus | '';
+  const listParams = {
+    ...params, status, search: list.search || undefined, ordering: list.ordering, page: list.page, pageSize: PAGE_SIZE,
+  };
+  const {
+    data, isLoading, isPlaceholderData, isError, error, refetch,
+  } = usePaymentSubscriptions(listParams);
+  const { data: summary, isLoading: summaryLoading, isError: summaryError } = useSubscriptionsSummary(params);
+
+  const label = (key: keyof typeof messages) => intl.formatMessage(messages[key]);
+  const formatDate = (value: string) => intl.formatDate(value, { dateStyle: 'medium' });
+  const count = (value: number | undefined) => (value !== undefined && !summaryError ? value.toLocaleString(intl.locale) : null);
+
+  const sortOptions = [
+    { value: '-ends_at', label: label('sortEndsDesc') },
+    { value: 'ends_at', label: label('sortEndsAsc') },
+    { value: '-net_paid', label: label('sortCollectedDesc') },
+    { value: 'learner', label: label('sortLearner') },
+  ];
+
+  const chips: AppliedChip[] = [];
+  if (list.search) {
+    chips.push({
+      key: 'search', label: intl.formatMessage(messages.chipSearch, { term: list.search }), onRemove: () => list.setSearch(''),
+    });
+  }
+  if (status) {
+    chips.push({
+      key: 'status',
+      label: intl.formatMessage(messages.chipStatus, { status: label(status) }),
+      onRemove: () => list.setFilter('status', ''),
+    });
+  }
+
+  const columns: ColumnDef<SubscriptionRow>[] = [
+    {
+      label: label('colLearner'),
+      key: 'learner',
+      renderCell: (_value, row) => (
+        <div className="min-width-0">
+          <div className="rwaq-user-cell__name" title={row.learner}>{row.learner}</div>
+          <div className="rwaq-user-cell__meta" title={row.email}>{row.email}</div>
+        </div>
+      ),
+    },
+    { label: label('colPlan'), key: 'plan', renderCell: (_value, row) => label(row.plan) },
+    { label: label('colSource'), key: 'source', renderCell: (_value, row) => label(row.source) },
+    { label: label('colStatus'), key: 'status', renderCell: (_value, row) => label(row.status) },
+    { label: label('colStarts'), key: 'startsAt', renderCell: (_value, row) => formatDate(row.startsAt) },
+    { label: label('colEnds'), key: 'endsAt', renderCell: (_value, row) => formatDate(row.endsAt) },
+    { label: label('colPayments'), key: 'payments' },
+    { label: label('colCollected'), key: 'netPaid' },
+    { label: label('colDiscounts'), key: 'discounts' },
+  ];
+
+  return (
+    <TabCard>
+      <TabHeading title={label('title')} info={label('info')} how={label('how')} />
+
+      <div className="rwaq-payment-grid mb-3">
+        <PaymentKpi
+          label={label('kpiRevenue')}
+          unit={CURRENCY}
+          value={summary && !summaryError ? summary.revenue : null}
+          info={label('infoRevenue')}
+          isLoading={summaryLoading}
+        />
+        <PaymentKpi label={label('kpiNew')} value={count(summary?.new)} info={label('infoNew')} isLoading={summaryLoading} />
+        <PaymentKpi
+          label={label('kpiRenewals')} value={count(summary?.renewals)} info={label('infoRenewals')}
+          isLoading={summaryLoading}
+        />
+        <PaymentKpi
+          label={label('kpiCancellations')} value={count(summary?.cancellations)} info={label('infoCancellations')}
+          isLoading={summaryLoading}
+        />
+        <PaymentKpi
+          label={label('kpiActive')} value={count(summary?.activeAtEnd)} info={label('infoActive')}
+          isLoading={summaryLoading}
+        />
+      </div>
+
+      <SearchFilterBar
+        searchTerm={list.search}
+        onSearch={list.setSearch}
+        searchPlaceholder={label('search')}
+        filterGroups={[
+          {
+            id: 'status',
+            label: label('statusLabel'),
+            value: status,
+            options: [
+              { value: '', label: label('statusAll') },
+              ...STATUSES.map((value) => ({ value, label: label(value) })),
+            ],
+            onChange: (value: string) => list.setFilter('status', value),
+          },
+          {
+            id: 'ordering',
+            label: label('sortLabel'),
+            value: list.ordering,
+            options: sortOptions,
+            onChange: list.setOrdering,
+          },
+        ]}
+        appliedChips={chips}
+        onClearAll={() => { list.clearAll(); dates.setRange(); }}
+        actions={(
+          <>
+            <DateFilter range={dates} />
+            <CsvButton report="subscriptions" params={listParams} />
+          </>
+        )}
+      />
+      {isError ? (
+        <ErrorState
+          statusCode={getErrorStatus(error) || undefined}
+          title={label('errorTitle')}
+          onRetry={() => refetch()}
+        />
+      ) : (
+        <AdminDataTable
+          columns={columns}
+          data={data?.results ?? []}
+          isLoading={isLoading || isPlaceholderData}
+          caption={label('title')}
+          pagination={tablePagination(data, list.page, list.setPage)}
+        />
+      )}
+    </TabCard>
+  );
+};
+
+export default SubscriptionsTab;
