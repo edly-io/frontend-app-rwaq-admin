@@ -17,6 +17,9 @@ import { Alert } from '@openedx/paragon';
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
+import SubscriptionPlanFields, {
+  defaultSubscriptionPlan, subscriptionPlanPayload,
+} from '@src/components/SubscriptionPlanFields';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorReason } from '@src/data/httpError';
 import { useBulkEnrollLearners } from '../data/hooks';
@@ -56,15 +59,18 @@ interface BulkEnrollModalProps {
   isOpen: boolean;
   onClose: () => void;
   uuid: string;
+  /** True for a subscription program: the admin picks a plan for learners without a live subscription. */
+  isSubscription?: boolean;
 }
 
 const BulkEnrollModal = ({
-  isOpen, onClose, uuid,
+  isOpen, onClose, uuid, isSubscription = false,
 }: BulkEnrollModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
   const [emails, setEmails] = useState('');
   const [reason, setReason] = useState('');
+  const [plan, setPlan] = useState(defaultSubscriptionPlan);
   const [result, setResult] = useState<BulkEnrollResult | null>(null);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
@@ -113,7 +119,9 @@ const BulkEnrollModal = ({
         // into the same courses at once, and pile concurrent writes onto the
         // LMS for no gain in an operation that is already fast per chunk.
         // eslint-disable-next-line no-await-in-loop
-        const res = await mutateAsync({ emails: chunk.join(','), reason: reason.trim() });
+        const res = await mutateAsync({
+          emails: chunk.join(','), reason: reason.trim(), ...subscriptionPlanPayload(isSubscription, plan),
+        });
         merged.enrolled.push(...res.enrolled);
         merged.alreadyEnrolled.push(...res.alreadyEnrolled);
         merged.failed.push(...res.failed);
@@ -197,6 +205,8 @@ const BulkEnrollModal = ({
           <span className="small text-muted">
             {intl.formatMessage(messages.bulkEnrollReasonHelp)}
           </span>
+
+          {isSubscription && <SubscriptionPlanFields value={plan} onChange={setPlan} />}
 
           <div className="d-flex justify-content-between align-items-baseline mt-1">
             {/* The cap is stated up front rather than only once it is breached —

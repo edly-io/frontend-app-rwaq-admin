@@ -102,7 +102,8 @@ const CourseDetailPage = () => {
   const {
     data: enrollableCourses, isLoading: enrollModesLoading,
   } = useEnrollableCourses(courseId, modal.kind === 'enroll');
-  const enrollModes = enrollableCourses?.find((row) => row.courseId === courseId)?.availableModes;
+  const enrollableRow = enrollableCourses?.find((row) => row.courseId === courseId);
+  const enrollModes = enrollableRow?.availableModes;
 
   const {
     data: enrollmentData,
@@ -435,6 +436,7 @@ const CourseDetailPage = () => {
         courseName={course.displayName}
         availableModes={enrollModes}
         modesLoading={enrollModesLoading}
+        isPartOfSubscription={enrollableRow?.isPartOfSubscription}
       />
 
       <AddStaffModal

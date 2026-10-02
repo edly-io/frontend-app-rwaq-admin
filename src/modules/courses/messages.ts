@@ -655,6 +655,14 @@ export const courseRoleMessages = defineMessages({
     id: 'rwaq.admin.courses.pricing.paid-description',
     defaultMessage: 'Sold on its own at the price set below.',
   },
+  pricingSubscription: {
+    id: 'rwaq.admin.courses.pricing.subscription',
+    defaultMessage: 'Is part of Subscription',
+  },
+  pricingSubscriptionDescription: {
+    id: 'rwaq.admin.courses.pricing.subscription-description',
+    defaultMessage: 'Learners reach this course through the Rwaq subscription. It has no price of its own.',
+  },
   pricingProgramOnly: {
     id: 'rwaq.admin.courses.pricing.program-only',
     defaultMessage: 'Program-only course',
