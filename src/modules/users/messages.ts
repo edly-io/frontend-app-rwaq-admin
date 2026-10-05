@@ -310,6 +310,10 @@ const messages = defineMessages({
   },
   enrollSelected: { id: 'rwaq.admin.users.enroll.selected', defaultMessage: 'Selected course' },
   enrollClear: { id: 'rwaq.admin.users.enroll.clear', defaultMessage: 'Change course' },
+  enrollAlreadySubscription: {
+    id: 'rwaq.admin.users.enroll.alreadySubscription',
+    defaultMessage: 'Already enrolled. Pick it to grant a subscription if theirs has ended.',
+  },
   enrollAlready: {
     id: 'rwaq.admin.users.enroll.already',
     defaultMessage: 'Already enrolled in this course.',
@@ -369,6 +373,10 @@ const messages = defineMessages({
   },
   reasonSelect: { id: 'rwaq.admin.users.reason.select', defaultMessage: 'Choose a reason' },
 
+  enrollSuccessSubscription: {
+    id: 'rwaq.admin.users.enroll.successSubscription',
+    defaultMessage: 'Enrolled in {course}. Their subscription runs until {date}.',
+  },
   enrollSuccess: {
     id: 'rwaq.admin.users.enroll.success',
     defaultMessage: 'Enrolled in {course}. Grades and certificates update shortly.',

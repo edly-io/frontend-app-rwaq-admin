@@ -120,19 +120,24 @@ const CoursePicker = ({
             // it out silently would read as "that course doesn't exist", which
             // sends the admin looking for a problem that isn't there.
             const isEnrolled = activeCourseIds.includes(course.courseId);
+            // A subscription course stays pickable when enrolled: the learner's subscription may have
+            // ended, and the admin can grant a new one. The API refuses it while one is live.
+            const canPick = !isEnrolled || course.isPartOfSubscription === true;
             return (
               <li key={course.courseId}>
                 <button
                   type="button"
                   className="rwaq-course-picker__option"
-                  disabled={isEnrolled}
+                  disabled={!canPick}
                   onClick={() => onSelect(course)}
                 >
                   <span className="rwaq-user-cell__name">{course.displayName}</span>
                   <span className="rwaq-user-cell__meta">{course.courseId}</span>
                   {isEnrolled && (
                     <span className="rwaq-course-picker__option-note">
-                      {intl.formatMessage(messages.enrollAlready)}
+                      {intl.formatMessage(
+                        course.isPartOfSubscription ? messages.enrollAlreadySubscription : messages.enrollAlready,
+                      )}
                     </span>
                   )}
                 </button>

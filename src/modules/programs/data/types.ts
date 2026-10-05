@@ -142,6 +142,8 @@ export interface ProgramPatch {
 export interface BulkEnrollRow {
   email: string;
   username: string;
+  /** Set when the row was enrolled but something did not apply, for example a plan for a subscribed learner. */
+  note?: string;
 }
 
 /** One address it could not, with the reason to show the admin. */

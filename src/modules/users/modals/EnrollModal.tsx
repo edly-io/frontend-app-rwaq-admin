@@ -16,6 +16,9 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorReason, getErrorStatus } from '@src/data/httpError';
+import SubscriptionPlanFields, {
+  defaultSubscriptionPlan, subscriptionPlanPayload,
+} from '@src/components/SubscriptionPlanFields';
 import ReasonField, {
   ReasonValues, emptyReason, hasReason, resolveReason,
 } from '../components/ReasonField';
@@ -24,9 +27,6 @@ import ConflictAlert from '../components/ConflictAlert';
 import { useEnrollUser } from '../data/hooks';
 import type { EnrollableCourse, UserEnrollment } from '../data/types';
 import messages from '../messages';
-import SubscriptionPlanFields, {
-  defaultSubscriptionPlan, subscriptionPlanPayload,
-} from '@src/components/SubscriptionPlanFields';
 import modeLabel from '../modeLabel';
 
 interface EnrollModalProps {
@@ -60,6 +60,7 @@ const EnrollModal = ({
       setCourse(null);
       setMode('');
       setReason(emptyReason);
+      setPlan(defaultSubscriptionPlan);
       setHasTriedSubmit(false);
       setIsConflict(false);
     }
@@ -90,7 +91,7 @@ const EnrollModal = ({
 
     setIsConflict(false);
     try {
-      await mutation.mutateAsync({
+      const result = await mutation.mutateAsync({
         courseId: course.courseId,
         mode,
         reason: resolveReason(reason),
@@ -99,7 +100,12 @@ const EnrollModal = ({
       // Deliberately not "enrolled and certified": the platform recomputes
       // grades and certificates on a queue, so claiming they are done here
       // would be a promise this code cannot keep.
-      showToast(intl.formatMessage(messages.enrollSuccess, { course: course.displayName }));
+      showToast(result?.subscription?.endsAt
+        ? intl.formatMessage(messages.enrollSuccessSubscription, {
+          course: course.displayName,
+          date: intl.formatDate(result.subscription.endsAt, { dateStyle: 'medium' }),
+        })
+        : intl.formatMessage(messages.enrollSuccess, { course: course.displayName }));
       onClose();
     } catch (error) {
       // 409 means the enrollment moved under us — the fix is to look again,

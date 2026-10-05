@@ -105,14 +105,24 @@ export interface CourseEnrollmentParams {
   pageSize?: number;
 }
 
-/** POST /api/v1/admin/courses/{courseId}/enrollments/ — body: { user_id, mode, reason, subscription_plan?, subscription_ends_at? } */
+/** POST /api/v1/admin/courses/{courseId}/enrollments/ — body: { user_id, mode, reason, subscription_plan? } */
 export interface CourseEnrollPayload {
   userId: number;
   mode: string;
   reason: string;
   /** Subscription content only: used when the learner has no live subscription. */
-  subscriptionPlan?: 'monthly' | 'yearly' | 'custom';
-  subscriptionEndsAt?: string;
+  subscriptionPlan?: 'monthly' | 'yearly';
+}
+
+/** The subscription the API reports after enrolling into subscription content. */
+export interface EnrollSubscription {
+  status: string;
+  endsAt: string;
+}
+
+/** POST /api/v1/admin/courses/{courseId}/enrollments/ response, as far as the form reads it. */
+export interface CourseEnrollResult {
+  subscription?: EnrollSubscription | null;
 }
 
 // ── Course staff ──────────────────────────────────────────────────────────────

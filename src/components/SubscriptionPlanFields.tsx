@@ -1,42 +1,35 @@
 /**
  * SubscriptionPlanFields — the plan an admin picks when enrolling a learner into subscription content.
  *
- * Sent as subscription_plan and subscription_ends_at. The backend uses them only when the learner
- * has no live subscription, and creates an admin subscription from them.
+ * Sent as subscription_plan. A learner with no live subscription needs a plan, which gives them an
+ * admin subscription counted from today. A learner who already has one is enrolled without a plan:
+ * WooCommerce manages their subscription, and the API refuses a plan for them.
  */
 import { Form } from '@openedx/paragon';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
 
-export type SubscriptionPlan = 'monthly' | 'yearly' | 'custom';
+export type SubscriptionPlan = 'monthly' | 'yearly';
 
-export interface SubscriptionPlanValue {
-  plan: SubscriptionPlan;
-  endsAt: string;
-}
+/** The picked plan, or an empty string while none is picked. */
+export type SubscriptionPlanValue = SubscriptionPlan | '';
 
-export const defaultSubscriptionPlan: SubscriptionPlanValue = { plan: 'monthly', endsAt: '' };
+export const defaultSubscriptionPlan: SubscriptionPlanValue = '';
 
-/** The request fields for a plan value, or none when the content is not part of the subscription. */
+/** The request field for a plan value, or nothing when the content is not part of the subscription. */
 export const subscriptionPlanPayload = (
   isSubscription: boolean | undefined,
   value: SubscriptionPlanValue,
-): { subscriptionPlan?: SubscriptionPlan; subscriptionEndsAt?: string } => {
-  if (!isSubscription) { return {}; }
-  return value.plan === 'custom'
-    ? { subscriptionPlan: 'custom', subscriptionEndsAt: value.endsAt }
-    : { subscriptionPlan: value.plan };
-};
+): { subscriptionPlan?: SubscriptionPlan } => (isSubscription && value ? { subscriptionPlan: value } : {});
 
 const messages = defineMessages({
   label: { id: 'rwaq.admin.subscription-plan.label', defaultMessage: 'Subscription plan' },
+  none: { id: 'rwaq.admin.subscription-plan.none', defaultMessage: 'No plan (the learner already has a subscription)' },
   help: {
     id: 'rwaq.admin.subscription-plan.help',
-    defaultMessage: 'Used only if the learner has no live subscription. It gives them access to all subscription content.',
+    defaultMessage: 'Pick a plan for a learner who has no live subscription. It gives them access to all subscription content from today.',
   },
   monthly: { id: 'rwaq.admin.subscription-plan.monthly', defaultMessage: 'Monthly' },
   yearly: { id: 'rwaq.admin.subscription-plan.yearly', defaultMessage: 'Yearly' },
-  custom: { id: 'rwaq.admin.subscription-plan.custom', defaultMessage: 'End date' },
-  endsAt: { id: 'rwaq.admin.subscription-plan.ends-at', defaultMessage: 'Access ends on' },
 });
 
 interface Props {
@@ -47,31 +40,19 @@ interface Props {
 const SubscriptionPlanFields = ({ value, onChange }: Props) => {
   const intl = useIntl();
   return (
-    <>
-      <Form.Group>
-        <Form.Label>{intl.formatMessage(messages.label)}</Form.Label>
-        <Form.Control
-          as="select"
-          value={value.plan}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange({ ...value, plan: e.target.value as SubscriptionPlan })}
-        >
-          <option value="monthly">{intl.formatMessage(messages.monthly)}</option>
-          <option value="yearly">{intl.formatMessage(messages.yearly)}</option>
-          <option value="custom">{intl.formatMessage(messages.custom)}</option>
-        </Form.Control>
-        <Form.Text>{intl.formatMessage(messages.help)}</Form.Text>
-      </Form.Group>
-      {value.plan === 'custom' && (
-        <Form.Group>
-          <Form.Label>{intl.formatMessage(messages.endsAt)}</Form.Label>
-          <Form.Control
-            type="date"
-            value={value.endsAt}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ ...value, endsAt: e.target.value })}
-          />
-        </Form.Group>
-      )}
-    </>
+    <Form.Group>
+      <Form.Label>{intl.formatMessage(messages.label)}</Form.Label>
+      <Form.Control
+        as="select"
+        value={value}
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange(e.target.value as SubscriptionPlanValue)}
+      >
+        <option value="">{intl.formatMessage(messages.none)}</option>
+        <option value="monthly">{intl.formatMessage(messages.monthly)}</option>
+        <option value="yearly">{intl.formatMessage(messages.yearly)}</option>
+      </Form.Control>
+      <Form.Text>{intl.formatMessage(messages.help)}</Form.Text>
+    </Form.Group>
   );
 };
 

@@ -82,6 +82,7 @@ const BulkEnrollModal = ({
     if (isOpen) {
       setEmails('');
       setReason('');
+      setPlan(defaultSubscriptionPlan);
       setResult(null);
       setError('');
       setProgress(null);
@@ -152,6 +153,7 @@ const BulkEnrollModal = ({
   // is to close — relabel the button rather than leaving a submit that would
   // re-enroll the same list.
   const isDone = result !== null;
+  const notedRows = result ? [...result.enrolled, ...result.alreadyEnrolled].filter((row) => row.note) : [];
 
   return (
     <FormModal
@@ -254,6 +256,20 @@ const BulkEnrollModal = ({
               </div>
             )}
           </Alert>
+
+          {notedRows.length > 0 && (
+            <Alert variant="info" className="mb-0">
+              <ul className="mb-0 pl-3 small" style={{ maxHeight: '11rem', overflowY: 'auto' }}>
+                {notedRows.map((row) => (
+                  <li key={row.email} dir="ltr">
+                    <span className="font-weight-bold">{row.email}</span>
+                    {' — '}
+                    {row.note}
+                  </li>
+                ))}
+              </ul>
+            </Alert>
+          )}
 
           {result.failed.length > 0 && (
             <Alert variant="warning" className="mb-0">

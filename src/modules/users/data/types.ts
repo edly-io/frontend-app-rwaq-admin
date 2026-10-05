@@ -81,6 +81,8 @@ export interface UserEnrollment {
   lastChangeReason: string | null;
   lastChangeBy: string | null;
   lastChangeAt: string | null;
+  /** Set on the response to enrolling into subscription content: the learner's subscription now. */
+  subscription?: { status: string; endsAt: string } | null;
 }
 
 /** One row of the course picker behind the enroll form. */
@@ -102,8 +104,7 @@ export interface EnrollPayload {
   /** Required by the API. Without it the audit trail explains nothing. */
   reason: string;
   /** Subscription content only: used when the learner has no live subscription. */
-  subscriptionPlan?: 'monthly' | 'yearly' | 'custom';
-  subscriptionEndsAt?: string;
+  subscriptionPlan?: 'monthly' | 'yearly';
 }
 
 /** PATCH /api/v1/admin/users/{id}/enrollments/{courseId}/ */

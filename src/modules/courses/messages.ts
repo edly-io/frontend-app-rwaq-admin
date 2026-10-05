@@ -348,6 +348,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.courses.modal.enroll.success',
     defaultMessage: 'User enrolled successfully.',
   },
+  enrollModalSuccessSubscription: {
+    id: 'rwaq.admin.courses.modal.enroll.successSubscription',
+    defaultMessage: 'User enrolled. Their subscription runs until {date}.',
+  },
   enrollModalConflict: {
     id: 'rwaq.admin.courses.modal.enroll.conflict',
     defaultMessage: 'This user is already enrolled in this course.',

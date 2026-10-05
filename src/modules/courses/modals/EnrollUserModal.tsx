@@ -39,7 +39,8 @@ interface EnrollUserModalProps {
 const DEFAULT_MODES = ['honor', 'audit'];
 
 const EnrollUserModal = ({
-  isOpen, onClose, courseId, courseName, availableModes = DEFAULT_MODES, modesLoading = false, isPartOfSubscription = false,
+  isOpen, onClose, courseId, courseName, availableModes = DEFAULT_MODES, modesLoading = false,
+  isPartOfSubscription = false,
 }: EnrollUserModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
@@ -58,6 +59,7 @@ const EnrollUserModal = ({
       setUser(null);
       setMode(availableModes[0] ?? 'honor');
       setReason(emptyReason);
+      setPlan(defaultSubscriptionPlan);
       setHasTriedSubmit(false);
       setConflictMessage('');
     }
@@ -84,13 +86,17 @@ const EnrollUserModal = ({
     if (!user || !mode || modesLoading || !hasReason(reason)) { return; }
 
     try {
-      await mutation.mutateAsync({
+      const result = await mutation.mutateAsync({
         userId: user.id,
         mode,
         reason: resolveReason(reason),
         ...subscriptionPlanPayload(isPartOfSubscription, plan),
       });
-      showToast(intl.formatMessage(messages.enrollModalSuccess));
+      showToast(result.subscription?.endsAt
+        ? intl.formatMessage(messages.enrollModalSuccessSubscription, {
+          date: intl.formatDate(result.subscription.endsAt, { dateStyle: 'medium' }),
+        })
+        : intl.formatMessage(messages.enrollModalSuccess));
       onClose();
     } catch (error) {
       if (getErrorStatus(error) === 409) {

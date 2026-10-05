@@ -105,10 +105,7 @@ export const useUnenrollProgramLearner = (uuid: string) => {
 export const useBulkEnrollLearners = (uuid: string) => {
   const queryClient = useQueryClient();
 
-  return useMutation<
-    BulkEnrollResult, Error,
-    { emails: string; reason: string; subscriptionPlan?: string; subscriptionEndsAt?: string }
-  >({
+  return useMutation<BulkEnrollResult, Error, { emails: string; reason: string; subscriptionPlan?: string }>({
     mutationFn: ({ emails, reason, ...plan }) => bulkEnrollLearners(uuid, emails, reason, plan),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: programQueryKeys.learners(uuid) });

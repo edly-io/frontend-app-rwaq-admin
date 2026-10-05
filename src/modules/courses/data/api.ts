@@ -34,6 +34,7 @@ import type {
   CourseEnrollmentParams,
   CourseEnrollmentResponse,
   CourseEnrollPayload,
+  CourseEnrollResult,
   CourseListParams,
   CourseListResponse,
   CourseStaffAddPayload,
@@ -96,11 +97,12 @@ export const downloadCourseEnrollmentsCsv = async (courseId: string): Promise<Bl
 export const enrollUserInCourse = async (
   courseId: string,
   payload: CourseEnrollPayload,
-): Promise<void> => {
-  await getAuthenticatedHttpClient().post(
+): Promise<CourseEnrollResult> => {
+  const { data } = await getAuthenticatedHttpClient().post(
     `${getCoursesBaseUrl()}/${encodeURIComponent(courseId)}/enrollments/`,
     snakeCaseObject(payload),
   );
+  return camelCaseObject(data) as CourseEnrollResult;
 };
 
 // ── Staff ─────────────────────────────────────────────────────────────────────
