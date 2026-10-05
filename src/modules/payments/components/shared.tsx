@@ -95,7 +95,12 @@ export const ShareCell = ({ share }: { share: string | null }) => {
 
 /** The date and time of a timestamp in UTC, the same days the backend's date filters and buckets use. */
 export const formatDateTime = (iso: string, locale?: string) => new Date(iso).toLocaleString(locale, {
-  timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short', hourCycle: 'h23',
+  timeZone: 'UTC',
+  calendar: 'gregory',
+  numberingSystem: 'latn',
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  hourCycle: 'h23',
 });
 
 export interface DateRange {
@@ -257,7 +262,7 @@ export const CsvButton = ({ report, params }: CsvButtonProps) => {
 
   const handleClick = async () => {
     try {
-      const { blob, filename } = await mutation.mutateAsync({ report, params });
+      const { blob, filename } = await mutation.mutateAsync({ report, params, language: intl.locale });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

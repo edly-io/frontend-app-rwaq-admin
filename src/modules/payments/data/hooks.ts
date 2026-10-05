@@ -83,7 +83,7 @@ export const usePaymentCoupons = (params: CouponListParams) => useQuery({
 
 /** Download a report's CSV with the given filters. */
 export const useDownloadPaymentsCsv = () => useMutation({
-  mutationFn: ({ report, params }: { report: PaymentsReport; params: ListParams }) => (
-    downloadPaymentsCsv(report, params)
+  mutationFn: ({ report, params, language }: { report: PaymentsReport; params: ListParams; language?: string }) => (
+    downloadPaymentsCsv(report, params, language)
   ),
 });

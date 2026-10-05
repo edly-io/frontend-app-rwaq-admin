@@ -143,6 +143,18 @@ describe('payments api', () => {
     expect(result.filename).toBe('payments_partners_TPA.csv');
   });
 
+  it('asks for the CSV in the given language', async () => {
+    get.mockResolvedValue({ data: new Blob(['x']), headers: {} });
+
+    await downloadPaymentsCsv('orders', {}, 'ar');
+
+    expect(get).toHaveBeenCalledWith(`${BASE}/orders/csv/`, {
+      params: {},
+      responseType: 'blob',
+      headers: { 'Accept-Language': 'ar' },
+    });
+  });
+
   it('names the CSV itself when the server header is not readable', async () => {
     get.mockResolvedValue({ data: new Blob(['x']), headers: {} });
 

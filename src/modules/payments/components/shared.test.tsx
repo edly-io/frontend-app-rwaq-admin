@@ -210,6 +210,7 @@ describe('CsvButton', () => {
         user: 5,
       },
       responseType: 'blob',
+      headers: { 'Accept-Language': 'en' },
     });
   });
 

@@ -71,15 +71,18 @@ const filenameFrom = (disposition: string | undefined): string | null => {
  *
  * A plain <a href> won't work — the JWT won't be sent. The authenticated
  * client fetches a blob, and the page triggers the download from it.
+ * With a *language* the file's titles and headers come in it, not in the browser's language.
  */
 export const downloadPaymentsCsv = async (
   report: PaymentsReport,
   params: ListParams,
+  language?: string,
 ): Promise<{ blob: Blob; filename: string }> => {
   const { page, pageSize, ...filters } = params;
   const response = await getAuthenticatedHttpClient().get(`${getPaymentsBaseUrl()}/${report}/csv/`, {
     params: toQuery(filters),
     responseType: 'blob',
+    ...(language ? { headers: { 'Accept-Language': language } } : {}),
   });
   const fallback = ['payments', report, filters.startDate, filters.endDate, filters.org]
     .filter(Boolean)
