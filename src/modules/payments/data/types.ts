@@ -161,6 +161,8 @@ export interface OrderRow {
   partnerDiscountAmount: string | null;
   partnerPricePaid: string | null;
   reason: string;
+  /** The admin who enrolled the learner. null for WordPress orders. */
+  enrolledBy: { id: number; username: string; email: string } | null;
   items: OrderItem[];
   coupons: OrderCoupon[];
 }

@@ -11,7 +11,7 @@ import { usePaymentOrders } from '../data/hooks';
 import type { OrderRow, PaymentsParams } from '../data/types';
 import messages from '../messages';
 import {
-  DetailTable, MoneyTd, ViewAllNote, formatDate,
+  DetailTable, MoneyTd, ViewAllNote, formatDateTime,
 } from './shared';
 
 const SHOWN = 5;
@@ -120,7 +120,7 @@ const OrdersDetail = ({ focus, params, onViewAll }: OrdersDetailProps) => {
             {orders.map((order) => (
               <tr key={order.id}>
                 <td>{order.wordpressOrderId}</td>
-                <td>{formatDate(order.orderDate)}</td>
+                <td>{formatDateTime(order.orderDate, intl.locale)}</td>
                 {focus.kind !== 'learner' && <BuyerCell order={order} />}
                 {(focus.kind === 'partner' || focus.kind === 'learner') && <td>{order.items.length}</td>}
                 <MoneyTd value={amount(order)} />

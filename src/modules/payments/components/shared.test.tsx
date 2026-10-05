@@ -13,7 +13,7 @@ import { logError } from '@edx/frontend-platform/logging';
 import { IntlProvider } from '@edx/frontend-platform/i18n';
 import { useToast } from '@src/components/ToastContext';
 import {
-  CsvButton, formatDate, listScope, useListState,
+  CsvButton, formatDateTime, listScope, useListState,
 } from './shared';
 
 jest.mock('@edx/frontend-platform/auth', () => ({ getAuthenticatedHttpClient: jest.fn() }));
@@ -106,19 +106,19 @@ describe('useListState', () => {
   });
 });
 
-describe('formatDate', () => {
+describe('formatDateTime', () => {
   const zone = process.env.TZ;
   afterEach(() => {
     if (zone === undefined) { delete process.env.TZ; } else { process.env.TZ = zone; }
   });
 
-  it('shows the UTC day of a timestamp even where the browser is already on the next day', () => {
+  it('shows the UTC date and time of a timestamp even where the browser is already on the next day', () => {
     // Auckland is 12 to 13 hours ahead: 20:00 UTC on the 10th is the morning of the 11th there.
     process.env.TZ = 'Pacific/Auckland';
 
-    expect(formatDate('2026-09-10T20:00:00Z')).toBe('9/10/2026');
-    expect(formatDate('2026-09-10T23:59:59Z')).toBe('9/10/2026');
-    expect(formatDate('2026-09-10T00:00:00Z')).toBe('9/10/2026');
+    expect(formatDateTime('2026-09-10T20:00:00Z', 'en-US')).toBe('Sep 10, 2026, 20:00');
+    expect(formatDateTime('2026-09-10T23:59:59Z', 'en-US')).toBe('Sep 10, 2026, 23:59');
+    expect(formatDateTime('2026-09-10T00:00:00Z', 'en-US')).toBe('Sep 10, 2026, 00:00');
   });
 });
 

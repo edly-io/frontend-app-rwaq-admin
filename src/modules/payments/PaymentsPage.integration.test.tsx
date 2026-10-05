@@ -81,6 +81,7 @@ const order = (id: number) => ({
   partnerDiscountAmount: null,
   partnerPricePaid: null,
   reason: '',
+  enrolledBy: null,
   coupons: [],
   items: [],
 });

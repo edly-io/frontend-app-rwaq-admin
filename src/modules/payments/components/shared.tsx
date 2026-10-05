@@ -83,7 +83,9 @@ export const MoneyTd = ({ value }: { value: string | null | undefined }) => (
 /** "70.00" → "70%", or a "Not set" that explains on hover what no share means. */
 export const ShareCell = ({ share }: { share: string | null }) => {
   const intl = useIntl();
-  if (share !== null) { return <span>{`${Number(share)}%`}</span>; }
+  if (share !== null) {
+    return <span>{intl.formatNumber(Number(share) / 100, { style: 'percent', maximumFractionDigits: 2 })}</span>;
+  }
   return (
     <InfoTooltip text={intl.formatMessage(messages.noShareInfo)}>
       <span className="rwaq-th-info">{intl.formatMessage(messages.notSet)}</span>
@@ -91,8 +93,10 @@ export const ShareCell = ({ share }: { share: string | null }) => {
   );
 };
 
-/** The day of a timestamp in UTC, the same days the backend's date filters and buckets use. */
-export const formatDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { timeZone: 'UTC' });
+/** The date and time of a timestamp in UTC, the same days the backend's date filters and buckets use. */
+export const formatDateTime = (iso: string, locale?: string) => new Date(iso).toLocaleString(locale, {
+  timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short', hourCycle: 'h23',
+});
 
 export interface DateRange {
   startDate?: string;
@@ -205,23 +209,21 @@ export const tablePagination = <Row extends object>(
  * The Partner dropdown and its chip for a list tab. The partner lives in the
  * page URL so it survives a reload, but each tab offers its own dropdown:
  * switching tabs clears it, so a list never narrows itself out of sight.
- * Options are the partners with revenue in the date range.
+ * Options are every partner, whether or not it sold anything in the date range.
  */
 export const usePartnerFilter = (
   params: PaymentsParams,
   onOrgChange: (org: string) => void,
 ): { group: FilterGroup; chip: AppliedChip | null } => {
   const intl = useIntl();
-  const { data } = usePaymentPartners({
-    startDate: params.startDate, endDate: params.endDate, ordering: 'org_name', pageSize: 100,
-  });
+  const { data } = usePaymentPartners({ ordering: 'org_name', pageSize: 100 });
   const partners = data?.results ?? [];
   const org = params.org ?? '';
   const options = [
     { value: '', label: intl.formatMessage(messages.allPartners) },
     ...partners.map((partner) => ({ value: partner.org, label: partner.orgName })),
   ];
-  // A partner chosen earlier may have no revenue in a newly picked range.
+  // A partner in the URL may not be in the first page of options.
   if (org && !options.some((option) => option.value === org)) {
     options.push({ value: org, label: org });
   }

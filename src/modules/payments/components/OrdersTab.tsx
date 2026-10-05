@@ -23,7 +23,7 @@ import type { OrderListParams, OrderRow, OrderSource } from '../data/types';
 import messages from '../messages';
 import { contentPath } from './ContentTab';
 import {
-  CsvButton, DateFilter, DetailTable, PAGE_SIZE, TabCard, TabHeading, formatDate, MoneyCell, MoneyTd,
+  CsvButton, DateFilter, DetailTable, PAGE_SIZE, TabCard, TabHeading, formatDateTime, MoneyCell, MoneyTd,
   formatMoney, listScope, tablePagination, useDateRange, useListState, usePartnerFilter,
 } from './shared';
 import type { ListTabProps, RangeHandoff } from './shared';
@@ -162,7 +162,7 @@ const OrdersTab = ({
       label: intl.formatMessage(messages.colDate),
       info: intl.formatMessage(messages.infoColDate),
       key: 'orderDate',
-      renderCell: (value) => formatDate(value as string),
+      renderCell: (value) => formatDateTime(value as string, intl.locale),
     },
     {
       label: intl.formatMessage(messages.colBuyer),
@@ -212,6 +212,23 @@ const OrdersTab = ({
       key: 'source',
       renderCell: (value) => <Badge variant="light">{optionLabel(sourceOptions, value as string)}</Badge>,
     },
+    {
+      label: intl.formatMessage(messages.colReason),
+      info: intl.formatMessage(messages.infoColReason),
+      key: 'reason',
+      renderCell: (value) => <span className="rwaq-reason-cell">{value as string}</span>,
+    },
+    {
+      label: intl.formatMessage(messages.colEnrolledBy),
+      info: intl.formatMessage(messages.infoColEnrolledBy),
+      key: 'enrolledBy',
+      renderCell: (_value, row) => (row.enrolledBy ? (
+        <div className="min-width-0">
+          <div className="rwaq-user-cell__name" title={row.enrolledBy.username}>{row.enrolledBy.username}</div>
+          <div className="rwaq-user-cell__meta" title={row.enrolledBy.email}>{row.enrolledBy.email}</div>
+        </div>
+      ) : null),
+    },
   ];
 
   const renderDetails = (order: OrderRow) => (
@@ -241,7 +258,7 @@ const OrdersTab = ({
                     {item.revokedAt && (
                       <InfoTooltip
                         text={intl.formatMessage(messages.infoRevoked, {
-                          date: formatDate(item.revokedAt),
+                          date: formatDateTime(item.revokedAt, intl.locale),
                           reason: item.revokeReason || '—',
                         })}
                       >
@@ -281,8 +298,17 @@ const OrdersTab = ({
           ))}
         </ul>
       )}
+      {order.enrolledBy && (
+        <p className="text-muted mt-3 mb-0">
+          {intl.formatMessage(messages.adminEnrolledBy, {
+            admin: `${order.enrolledBy.username} (${order.enrolledBy.email})`,
+          })}
+        </p>
+      )}
       {order.reason && (
-        <p className="text-muted mt-3 mb-0">{intl.formatMessage(messages.adminReason, { reason: order.reason })}</p>
+        <p className={`text-muted mb-0 ${order.enrolledBy ? '' : 'mt-3'}`}>
+          {intl.formatMessage(messages.adminReason, { reason: order.reason })}
+        </p>
       )}
     </DetailTable>
   );

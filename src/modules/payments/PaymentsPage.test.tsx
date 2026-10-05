@@ -276,6 +276,7 @@ describe('PaymentsPage', () => {
     partnerDiscountAmount: null,
     partnerPricePaid: null,
     reason: '',
+    enrolledBy: null,
     coupons: [{
       code: 'SAVE10',
       scope: 'cart',

@@ -364,7 +364,7 @@ const messages = defineMessages({
     defaultMessage: 'Search by username, email, order ID or coupon code',
   },
   colOrder: { id: 'rwaq.admin.payments.col.order', defaultMessage: 'Order' },
-  colDate: { id: 'rwaq.admin.payments.col.date', defaultMessage: 'Date' },
+  colDate: { id: 'rwaq.admin.payments.col.date', defaultMessage: 'Date and time (UTC)' },
   colBuyer: { id: 'rwaq.admin.payments.col.buyer', defaultMessage: 'Buyer' },
   colCourses: { id: 'rwaq.admin.payments.col.courses', defaultMessage: 'Items' },
   colPrice: { id: 'rwaq.admin.payments.col.price', defaultMessage: 'Price (SAR)' },
@@ -381,7 +381,7 @@ const messages = defineMessages({
   },
   infoColDate: {
     id: 'rwaq.admin.payments.info.col.date',
-    defaultMessage: 'The day the order was paid, in UTC. The date range filters use UTC days too.',
+    defaultMessage: 'When the order was paid, in UTC. The date range filters use UTC days.',
   },
   infoColBuyer: { id: 'rwaq.admin.payments.info.col.buyer', defaultMessage: 'The learner who placed the order. Click to open their profile.' },
   infoColCourses: {
@@ -440,6 +440,17 @@ const messages = defineMessages({
     defaultMessage: 'An admin unenrolled the learner on {date}. Reason: {reason}. The payment still counts as revenue.',
   },
   adminReason: { id: 'rwaq.admin.payments.orders.reason', defaultMessage: 'Reason: {reason}' },
+  adminEnrolledBy: { id: 'rwaq.admin.payments.orders.enrolledBy', defaultMessage: 'Enrolled by: {admin}' },
+  colReason: { id: 'rwaq.admin.payments.col.reason', defaultMessage: 'Reason' },
+  colEnrolledBy: { id: 'rwaq.admin.payments.col.enrolledBy', defaultMessage: 'Enrolled by' },
+  infoColReason: {
+    id: 'rwaq.admin.payments.info.col.reason',
+    defaultMessage: 'The reason the admin gave when enrolling the learner. Empty for WordPress purchases.',
+  },
+  infoColEnrolledBy: {
+    id: 'rwaq.admin.payments.info.col.enrolledBy',
+    defaultMessage: 'The admin who enrolled the learner. Empty for WordPress purchases.',
+  },
 });
 
 export default messages;

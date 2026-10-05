@@ -58,6 +58,7 @@ const order = (overrides = {}) => ({
   partnerDiscountAmount: null,
   partnerPricePaid: null,
   reason: '',
+  enrolledBy: null,
   coupons: [],
   items: [],
   ...overrides,

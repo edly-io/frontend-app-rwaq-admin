@@ -63,6 +63,7 @@ const wholeOrder = {
   partnerDiscountAmount: null,
   partnerPricePaid: null,
   reason: '',
+  enrolledBy: null,
   coupons: [cartCoupon],
   items: [
     item('course-v1:TPA+C1+2026', '93.33', { actualPrice: '100.00', discountAmount: '6.67' }),
@@ -167,22 +168,64 @@ describe('Payment history date', () => {
     if (zone === undefined) { delete process.env.TZ; } else { process.env.TZ = zone; }
   });
 
-  it('shows the order\'s UTC day, the day the date filters count it in', () => {
+  it('shows the order\'s UTC date and time, the day the date filters count it in', () => {
     // Already the 11th in Auckland.
     process.env.TZ = 'Pacific/Auckland';
     mockOrders([{ ...wholeOrder, orderDate: '2026-09-10T20:00:00Z' }]);
     renderTab();
 
-    expect(firstRow().Date).toBe('9/10/2026');
+    expect(firstRow()['Date and time (UTC)']).toBe('Sep 10, 2026, 20:00');
   });
 
   it('says in the column\'s hover text that the date is in UTC', () => {
     mockOrders([wholeOrder]);
     renderTab();
 
-    fireEvent.mouseOver(screen.getByText('Date'));
+    fireEvent.mouseOver(screen.getByText('Date and time (UTC)'));
 
-    expect(screen.getByText(/The day the order was paid, in UTC\./)).toBeInTheDocument();
+    expect(screen.getByText(/When the order was paid, in UTC\./)).toBeInTheDocument();
+  });
+});
+
+describe('Partner filter options', () => {
+  it('asks for every partner, not only the ones with sales in the date range', () => {
+    mockOrders([wholeOrder]);
+    renderTab();
+
+    expect(hooks.usePaymentPartners).toHaveBeenCalledWith({ ordering: 'org_name', pageSize: 100 });
+  });
+});
+
+describe('Payment history admin grants', () => {
+  const grant = {
+    ...wholeOrder,
+    wordpressOrderId: null,
+    source: 'admin' as const,
+    reason: 'Sponsored cohort',
+    enrolledBy: { id: 7, username: 'rwaq_admin', email: 'admin@rwaq.org' },
+  };
+
+  it('shows the reason and the admin who enrolled the learner', () => {
+    mockOrders([grant]);
+    renderTab();
+    expect(firstRow().Reason).toBe('Sponsored cohort');
+    expect(firstRow()['Enrolled by']).toBe('rwaq_adminadmin@rwaq.org');
+  });
+
+  it('leaves both blank for a purchase', () => {
+    mockOrders([wholeOrder]);
+    renderTab();
+    expect(firstRow().Reason).toBe('');
+    expect(firstRow()['Enrolled by']).toBe('');
+  });
+
+  it('repeats both in the expanded row', () => {
+    mockOrders([grant]);
+    renderTab();
+    fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
+
+    expect(screen.getByText('Enrolled by: rwaq_admin (admin@rwaq.org)')).toBeInTheDocument();
+    expect(screen.getByText('Reason: Sponsored cohort')).toBeInTheDocument();
   });
 });
 

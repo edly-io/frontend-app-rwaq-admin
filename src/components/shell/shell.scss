@@ -2181,6 +2181,14 @@ html[data-paragon-theme-variant='dark'] .rwaq-payments-tabs {
 
   .rwaq-table-scroll table > tbody > tr > td { white-space: nowrap; }
 
+  // An admin's free-text reason wraps instead of stretching the table.
+  .rwaq-reason-cell {
+    display: inline-block;
+    min-width: 12rem;
+    max-width: 20rem;
+    white-space: normal;
+  }
+
   // Paragon caps every cell at 20vw and clips it with an ellipsis, which cut "Long Names" off.
   // Here a cell is as wide as its content and the table scrolls sideways if it must.
   .pgn__data-table-cell-wrap {
