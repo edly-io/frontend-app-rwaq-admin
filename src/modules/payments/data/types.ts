@@ -127,7 +127,7 @@ export interface SubscriptionRow {
   id: number;
   learner: string;
   email: string;
-  plan: 'monthly' | 'yearly' | 'custom';
+  plan: 'monthly' | 'yearly';
   source: 'wordpress' | 'admin';
   status: SubscriptionStatus;
   startsAt: string;

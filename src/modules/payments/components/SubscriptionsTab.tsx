@@ -15,7 +15,8 @@ import { usePaymentSubscriptions, useSubscriptionsSummary } from '../data/hooks'
 import type { SubscriptionRow, SubscriptionStatus } from '../data/types';
 import PaymentKpi from './PaymentKpi';
 import {
-  CsvButton, DateFilter, PAGE_SIZE, TabCard, TabHeading, listScope, tablePagination, useDateRange, useListState,
+  CsvButton, DateFilter, MoneyCell, PAGE_SIZE, TabCard, TabHeading, formatMoney, formatTileAmount, listScope,
+  tablePagination, useDateRange, useListState,
 } from './shared';
 
 const DEFAULT_ORDERING = '-ends_at';
@@ -50,7 +51,6 @@ const messages = defineMessages({
   colDiscounts: { id: 'rwaq.admin.payments.subscriptions.col.discounts', defaultMessage: 'Discounts (SAR)' },
   monthly: { id: 'rwaq.admin.payments.subscriptions.plan.monthly', defaultMessage: 'Monthly' },
   yearly: { id: 'rwaq.admin.payments.subscriptions.plan.yearly', defaultMessage: 'Yearly' },
-  custom: { id: 'rwaq.admin.payments.subscriptions.plan.custom', defaultMessage: 'End date' },
   wordpress: { id: 'rwaq.admin.payments.subscriptions.source.wordpress', defaultMessage: 'WordPress' },
   admin: { id: 'rwaq.admin.payments.subscriptions.source.admin', defaultMessage: 'Admin' },
   kpiRevenue: { id: 'rwaq.admin.payments.subscriptions.kpi.revenue', defaultMessage: 'Revenue' },
@@ -72,11 +72,11 @@ const messages = defineMessages({
   },
   infoCancellations: {
     id: 'rwaq.admin.payments.subscriptions.kpi.cancellations-info',
-    defaultMessage: 'Subscriptions cancelled in the range. Access continues until their end date.',
+    defaultMessage: 'Subscriptions cancelled in the range, also those reactivated later. Access continues until their end date.',
   },
   infoActive: {
     id: 'rwaq.admin.payments.subscriptions.kpi.active-info',
-    defaultMessage: 'Subscriptions with a paid or granted period covering the end of the range, not revoked by then.',
+    defaultMessage: 'Learners with a paid or granted period covering the end of the range. A revoked subscription stops counting.',
   },
   sortEndsDesc: { id: 'rwaq.admin.payments.subscriptions.sort.ends-desc', defaultMessage: 'Ends, latest first' },
   sortEndsAsc: { id: 'rwaq.admin.payments.subscriptions.sort.ends-asc', defaultMessage: 'Ends, earliest first' },
@@ -102,9 +102,14 @@ const SubscriptionsTab = () => {
   } = usePaymentSubscriptions(listParams);
   const { data: summary, isLoading: summaryLoading, isError: summaryError } = useSubscriptionsSummary(params);
 
-  const label = (key: keyof typeof messages) => intl.formatMessage(messages[key]);
+  // A plan, source or status this page has no text for shows as sent instead of throwing.
+  const label = (key: string) => (key in messages
+    ? intl.formatMessage(messages[key as keyof typeof messages])
+    : key);
   const formatDate = (value: string) => intl.formatDate(value, { dateStyle: 'medium' });
-  const count = (value: number | undefined) => (value !== undefined && !summaryError ? value.toLocaleString(intl.locale) : null);
+  const count = (value: number | undefined) => (
+    value !== undefined && !summaryError ? value.toLocaleString(intl.locale) : null
+  );
 
   const sortOptions = [
     { value: '-ends_at', label: label('sortEndsDesc') },
@@ -144,8 +149,8 @@ const SubscriptionsTab = () => {
     { label: label('colStarts'), key: 'startsAt', renderCell: (_value, row) => formatDate(row.startsAt) },
     { label: label('colEnds'), key: 'endsAt', renderCell: (_value, row) => formatDate(row.endsAt) },
     { label: label('colPayments'), key: 'payments' },
-    { label: label('colCollected'), key: 'netPaid' },
-    { label: label('colDiscounts'), key: 'discounts' },
+    { label: label('colCollected'), key: 'netPaid', renderCell: (value) => <MoneyCell value={value as string} strong /> },
+    { label: label('colDiscounts'), key: 'discounts', renderCell: (value) => <MoneyCell value={value as string} /> },
   ];
 
   return (
@@ -156,21 +161,28 @@ const SubscriptionsTab = () => {
         <PaymentKpi
           label={label('kpiRevenue')}
           unit={CURRENCY}
-          value={summary && !summaryError ? summary.revenue : null}
+          value={summary && !summaryError ? formatTileAmount(intl, summary.revenue) : null}
+          exact={summary && !summaryError ? formatMoney(intl, summary.revenue) ?? undefined : undefined}
           info={label('infoRevenue')}
           isLoading={summaryLoading}
         />
         <PaymentKpi label={label('kpiNew')} value={count(summary?.new)} info={label('infoNew')} isLoading={summaryLoading} />
         <PaymentKpi
-          label={label('kpiRenewals')} value={count(summary?.renewals)} info={label('infoRenewals')}
+          label={label('kpiRenewals')}
+          value={count(summary?.renewals)}
+          info={label('infoRenewals')}
           isLoading={summaryLoading}
         />
         <PaymentKpi
-          label={label('kpiCancellations')} value={count(summary?.cancellations)} info={label('infoCancellations')}
+          label={label('kpiCancellations')}
+          value={count(summary?.cancellations)}
+          info={label('infoCancellations')}
           isLoading={summaryLoading}
         />
         <PaymentKpi
-          label={label('kpiActive')} value={count(summary?.activeAtEnd)} info={label('infoActive')}
+          label={label('kpiActive')}
+          value={count(summary?.activeAtEnd)}
+          info={label('infoActive')}
           isLoading={summaryLoading}
         />
       </div>
