@@ -17,7 +17,8 @@ import ReasonField, {
 } from '@src/modules/users/components/ReasonField';
 import modeLabel from '@src/modules/users/modeLabel';
 import SubscriptionPlanFields, {
-  defaultSubscriptionPlan, subscriptionPlanPayload,
+  defaultSubscriptionPlan, isPlanRequired, subscriptionPlanPayload,
+  subscriptionPlanRequiredMessage,
 } from '@src/components/SubscriptionPlanFields';
 import UserPicker from '../components/UserPicker';
 import { useEnrollUserInCourse } from '../data/hooks';
@@ -32,7 +33,7 @@ interface EnrollUserModalProps {
   availableModes?: string[];
   /** True while the course's modes load, so a Paid course never flashes honor or audit. */
   modesLoading?: boolean;
-  /** True when the course is reached through the subscription: the admin picks a plan for learners without one. */
+  /** True when the course is part of the subscription: a learner without a live one needs a plan. */
   isPartOfSubscription?: boolean;
 }
 
@@ -75,6 +76,11 @@ const EnrollUserModal = ({
   const userError = hasTriedSubmit && !user
     ? intl.formatMessage(messages.enrollModalUserRequired)
     : undefined;
+  const liveUntil = user?.subscriptionEndsAt ?? null;
+  const planMissing = isPlanRequired(isPartOfSubscription, plan, liveUntil);
+  const planError = hasTriedSubmit && user && planMissing
+    ? intl.formatMessage(subscriptionPlanRequiredMessage)
+    : undefined;
   const reasonError = hasTriedSubmit && !hasReason(reason)
     ? intl.formatMessage(messages.enrollModalReasonRequired)
     : undefined;
@@ -83,14 +89,14 @@ const EnrollUserModal = ({
     event?.preventDefault();
     setHasTriedSubmit(true);
     setConflictMessage('');
-    if (!user || !mode || modesLoading || !hasReason(reason)) { return; }
+    if (!user || !mode || modesLoading || !hasReason(reason) || planMissing) { return; }
 
     try {
       const result = await mutation.mutateAsync({
         userId: user.id,
         mode,
         reason: resolveReason(reason),
-        ...subscriptionPlanPayload(isPartOfSubscription, plan),
+        ...subscriptionPlanPayload(isPartOfSubscription, plan, liveUntil),
       });
       showToast(result.subscription?.endsAt
         ? intl.formatMessage(messages.enrollModalSuccessSubscription, {
@@ -122,7 +128,11 @@ const EnrollUserModal = ({
         <p className="text-danger small">{conflictMessage}</p>
       )}
 
-      <UserPicker selected={user} onSelect={setUser} error={userError} />
+      <UserPicker
+        selected={user}
+        onSelect={(picked) => { setUser(picked); setPlan(defaultSubscriptionPlan); }}
+        error={userError}
+      />
 
       {user && !modesLoading && availableModes.length > 0 && (
         <Form.Group>
@@ -139,7 +149,9 @@ const EnrollUserModal = ({
         </Form.Group>
       )}
 
-      {user && isPartOfSubscription && <SubscriptionPlanFields value={plan} onChange={setPlan} />}
+      {user && isPartOfSubscription && (
+        <SubscriptionPlanFields value={plan} onChange={setPlan} liveUntil={liveUntil} error={planError} />
+      )}
 
       <ReasonField values={reason} onChange={setReason} error={reasonError} />
     </FormModal>

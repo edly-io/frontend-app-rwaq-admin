@@ -51,6 +51,8 @@ export interface UserSummary {
   isEmailConfirmed: boolean;
   authenticationMethod: string;
   isProfilePublic: boolean;
+  /** ISO end date of a live subscription (active, or cancelled but not yet ended), else null. */
+  subscriptionEndsAt: string | null;
 }
 
 /** Full user detail from GET /api/v1/admin/users/{id}/ */

@@ -17,7 +17,7 @@ import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorReason, getErrorStatus } from '@src/data/httpError';
 import SubscriptionPlanFields, {
-  defaultSubscriptionPlan, subscriptionPlanPayload,
+  defaultSubscriptionPlan, isPlanRequired, subscriptionPlanPayload, subscriptionPlanRequiredMessage,
 } from '@src/components/SubscriptionPlanFields';
 import ReasonField, {
   ReasonValues, emptyReason, hasReason, resolveReason,
@@ -36,10 +36,12 @@ interface EnrollModalProps {
   userName: string;
   /** The rows already on screen, so the form knows what's a re-enrollment. */
   enrollments: UserEnrollment[];
+  /** End date of the learner's live subscription, or null when they have none. */
+  subscriptionEndsAt?: string | null;
 }
 
 const EnrollModal = ({
-  isOpen, onClose, userId, userName, enrollments,
+  isOpen, onClose, userId, userName, enrollments, subscriptionEndsAt = null,
 }: EnrollModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
@@ -71,6 +73,7 @@ const EnrollModal = ({
   // the first is the platform's own default ordering.
   useEffect(() => {
     setMode(course?.availableModes[0] ?? '');
+    setPlan(defaultSubscriptionPlan);
   }, [course]);
 
   const activeCourseIds = enrollments.filter((e) => e.isActive).map((e) => e.courseId);
@@ -80,6 +83,10 @@ const EnrollModal = ({
   const courseError = hasTriedSubmit && course === null
     ? intl.formatMessage(messages.enrollCourseRequired)
     : undefined;
+  const planMissing = isPlanRequired(course?.isPartOfSubscription, plan, subscriptionEndsAt);
+  const planError = hasTriedSubmit && planMissing
+    ? intl.formatMessage(subscriptionPlanRequiredMessage)
+    : undefined;
   const reasonError = hasTriedSubmit && !hasReason(reason)
     ? intl.formatMessage(messages.reasonRequired)
     : undefined;
@@ -87,7 +94,7 @@ const EnrollModal = ({
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
     setHasTriedSubmit(true);
-    if (!course || !mode || !hasReason(reason)) { return; }
+    if (!course || !mode || !hasReason(reason) || planMissing) { return; }
 
     setIsConflict(false);
     try {
@@ -95,7 +102,7 @@ const EnrollModal = ({
         courseId: course.courseId,
         mode,
         reason: resolveReason(reason),
-        ...subscriptionPlanPayload(course.isPartOfSubscription, plan),
+        ...subscriptionPlanPayload(course.isPartOfSubscription, plan, subscriptionEndsAt),
       });
       // Deliberately not "enrolled and certified": the platform recomputes
       // grades and certificates on a queue, so claiming they are done here
@@ -159,7 +166,14 @@ const EnrollModal = ({
         </Form.Group>
       )}
 
-      {course?.isPartOfSubscription && <SubscriptionPlanFields value={plan} onChange={setPlan} />}
+      {course?.isPartOfSubscription && (
+        <SubscriptionPlanFields
+          value={plan}
+          onChange={setPlan}
+          liveUntil={subscriptionEndsAt}
+          error={planError}
+        />
+      )}
 
       <ReasonField values={reason} onChange={setReason} error={reasonError} />
     </FormModal>

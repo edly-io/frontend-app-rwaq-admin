@@ -18,7 +18,7 @@ import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
 import SubscriptionPlanFields, {
-  defaultSubscriptionPlan, subscriptionPlanPayload,
+  defaultSubscriptionPlan, isPlanRequired, subscriptionPlanPayload, subscriptionPlanRequiredMessage,
 } from '@src/components/SubscriptionPlanFields';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorReason } from '@src/data/httpError';
@@ -71,6 +71,7 @@ const BulkEnrollModal = ({
   const [emails, setEmails] = useState('');
   const [reason, setReason] = useState('');
   const [plan, setPlan] = useState(defaultSubscriptionPlan);
+  const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
   const [result, setResult] = useState<BulkEnrollResult | null>(null);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
@@ -83,6 +84,7 @@ const BulkEnrollModal = ({
       setEmails('');
       setReason('');
       setPlan(defaultSubscriptionPlan);
+      setHasTriedSubmit(false);
       setResult(null);
       setError('');
       setProgress(null);
@@ -100,10 +102,15 @@ const BulkEnrollModal = ({
   // Nothing to send, too many, or something that is not an address: the button
   // is disabled rather than silently doing nothing when clicked.
   const cannotSubmit = count === 0 || overMax || invalid.length > 0;
+  const planMissing = isPlanRequired(isSubscription, plan);
+  const planError = hasTriedSubmit && planMissing
+    ? intl.formatMessage(subscriptionPlanRequiredMessage)
+    : undefined;
 
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    if (cannotSubmit) { return; }
+    setHasTriedSubmit(true);
+    if (cannotSubmit || planMissing) { return; }
     setError('');
     setProgress({ done: 0, total: count });
 
@@ -208,7 +215,7 @@ const BulkEnrollModal = ({
             {intl.formatMessage(messages.bulkEnrollReasonHelp)}
           </span>
 
-          {isSubscription && <SubscriptionPlanFields value={plan} onChange={setPlan} />}
+          {isSubscription && <SubscriptionPlanFields value={plan} onChange={setPlan} error={planError} isBulk />}
 
           <div className="d-flex justify-content-between align-items-baseline mt-1">
             {/* The cap is stated up front rather than only once it is breached —
