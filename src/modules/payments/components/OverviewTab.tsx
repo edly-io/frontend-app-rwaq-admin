@@ -22,8 +22,7 @@ import type { ListTabProps } from './shared';
 
 const CHART_HEIGHT = 240;
 const LABEL_ANGLE = 60;
-// How many x-axis labels fit at 60 degrees: a full-width chart holds more than a half-width one.
-const FULL_WIDTH_LABELS = 45;
+// How many x-axis labels fit at 60 degrees in a half-width chart.
 const HALF_WIDTH_LABELS = 28;
 // Room for y-axis labels of money: "1,250,000.00" at the axis' 11px font.
 const MONEY_AXIS_WIDTH = 72;
@@ -218,7 +217,7 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
       <div className="rwaq-payment-charts">
         <TrendChart
           {...chartProps}
-          maxLabels={FULL_WIDTH_LABELS}
+          maxLabels={HALF_WIDTH_LABELS}
           title={intl.formatMessage(messages.chartCollectedTitle)}
           info={intl.formatMessage(messages.infoChartCollected)}
           series={[{ key: intl.formatMessage(messages.seriesCollected), value: (point) => Number(point.netPaid) }]}

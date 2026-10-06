@@ -183,25 +183,30 @@ export const tablePagination = <Row extends object>(
  * The Partner dropdown and its chip for a list tab. The partner lives in the
  * page URL so it survives a reload, but each tab offers its own dropdown:
  * switching tabs clears it, so a list never narrows itself out of sight.
- * Options are the active organizations, whether or not they sold anything in the date range.
+ * Options are all organizations, active or not, whether or not they sold anything in the date range.
  */
 export const usePartnerFilter = (
   params: PaymentsParams,
   onOrgChange: (org: string) => void,
 ): { group: FilterGroup; chip: AppliedChip | null } => {
   const intl = useIntl();
-  const { data } = useOrganizations({ filter: 'active', ordering: 'name', pageSize: 100 });
+  const { data } = useOrganizations({ ordering: 'name', pageSize: 100 });
   const partners = data?.results ?? [];
   const org = params.org ?? '';
   const options = [
     { value: '', label: intl.formatMessage(messages.allPartners) },
-    ...partners.map((partner) => ({ value: partner.shortName, label: partner.name })),
+    // A native select cannot show subtext, so the slug follows the name in brackets.
+    ...partners.map((partner) => ({
+      value: partner.shortName,
+      label: partner.name === partner.shortName ? partner.name : `${partner.name} (${partner.shortName})`,
+    })),
   ];
-  // A partner in the URL may be inactive or beyond the first 100 options.
+  // A partner in the URL may be beyond the first 100 options.
   if (org && !options.some((option) => option.value === org)) {
     options.push({ value: org, label: org });
   }
-  const label = options.find((option) => option.value === org)?.label ?? org;
+  // The chip names the partner without the slug.
+  const label = partners.find((partner) => partner.shortName === org)?.name ?? org;
   return {
     group: {
       id: 'partner',

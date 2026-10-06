@@ -121,23 +121,22 @@ describe('Payment history amounts', () => {
     expect(row.Items).toBe('2');
     expect(row['Order value (SAR)']).toBe('150.00');
     expect(row['Discount (SAR)']).toBe('10.00');
-    expect(row['Amount collected (SAR)']).toBe('140.00');
+    expect(row['Revenue (SAR)']).toBe('140.00');
     expect(screen.queryByText(/this partner/)).not.toBeInTheDocument();
   });
 
-  it('shows only the partner\'s part under a partner, with headers that say so', () => {
+  it('shows only the partner\'s part under a partner', () => {
     mockOrders([tpaOrder]);
     renderTab('TPA');
 
     const row = firstRow();
     expect(row.Items).toBe('1');
-    expect(row['Order value (SAR, this partner)']).toBe('100.00');
-    expect(row['Discount (SAR, this partner)']).toBe('6.67');
-    expect(row['Amount collected (SAR, this partner)']).toBe('93.33');
+    expect(row['Order value (SAR)']).toBe('100.00');
+    expect(row['Discount (SAR)']).toBe('6.67');
+    expect(row['Revenue (SAR)']).toBe('93.33');
     // Nothing of the whole order is left in the row.
     expect(Object.values(row)).not.toContain('150.00');
     expect(Object.values(row)).not.toContain('140.00');
-    expect(screen.queryByText('Amount collected (SAR)')).not.toBeInTheDocument();
   });
 
   it('shows 0.00 when the partner\'s items were all free, not the whole-order amounts', () => {
@@ -151,8 +150,8 @@ describe('Payment history amounts', () => {
     renderTab('TPA');
 
     const row = firstRow();
-    expect(row['Amount collected (SAR, this partner)']).toBe('0.00');
-    expect(row['Discount (SAR, this partner)']).toBe('100.00');
+    expect(row['Revenue (SAR)']).toBe('0.00');
+    expect(row['Discount (SAR)']).toBe('100.00');
   });
 
   it('asks the backend for the partner', () => {
@@ -193,7 +192,7 @@ describe('Partner filter options', () => {
     mockOrders([wholeOrder]);
     renderTab();
 
-    expect(orgHooks.useOrganizations).toHaveBeenCalledWith({ filter: 'active', ordering: 'name', pageSize: 100 });
+    expect(orgHooks.useOrganizations).toHaveBeenCalledWith({ ordering: 'name', pageSize: 100 });
   });
 
   it('offers the organizations by name with their short name as the value', () => {
@@ -205,7 +204,7 @@ describe('Partner filter options', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
 
-    expect(within(screen.getByLabelText('Partner')).getByRole('option', { name: 'Org A' })).toHaveValue('TPA');
+    expect(within(screen.getByLabelText('Partner')).getByRole('option', { name: 'Org A (TPA)' })).toHaveValue('TPA');
   });
 });
 
@@ -218,27 +217,16 @@ describe('Payment history admin grants', () => {
     enrolledBy: { id: 7, username: 'rwaq_admin', email: 'admin@rwaq.org' },
   };
 
-  it('shows the reason and the admin who enrolled the learner', () => {
-    mockOrders([grant]);
-    renderTab();
-    expect(firstRow().Reason).toBe('Sponsored cohort');
-    expect(firstRow()['Enrolled by']).toBe('rwaq_adminadmin@rwaq.org');
-  });
-
-  it('leaves both blank for a purchase', () => {
-    mockOrders([wholeOrder]);
-    renderTab();
-    expect(firstRow().Reason).toBe('');
-    expect(firstRow()['Enrolled by']).toBe('');
-  });
-
-  it('repeats both in the expanded row', () => {
+  it('shows the reason and the admin who enrolled the learner in the expanded row', () => {
     mockOrders([grant]);
     renderTab();
     fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
 
-    expect(screen.getByText('Enrolled by: rwaq_admin (admin@rwaq.org)')).toBeInTheDocument();
-    expect(screen.getByText('Reason: Sponsored cohort')).toBeInTheDocument();
+    expect(screen.getByText('Enrolled by:').tagName).toBe('STRONG');
+    expect(screen.getByText('Enrolled by:').parentElement).toHaveTextContent('Enrolled by: rwaq_admin (admin@rwaq.org)');
+    expect(screen.getByText('Reason:').tagName).toBe('STRONG');
+    expect(screen.getByText('Reason:').parentElement).toHaveTextContent('Reason: Sponsored cohort');
+    expect(screen.queryByRole('columnheader', { name: /^(Reason|Enrolled by)/ })).not.toBeInTheDocument();
   });
 });
 

@@ -112,7 +112,7 @@ describe('PaymentsPage', () => {
   it('opens on the Overview with the tiles in order and amounts in SAR', async () => {
     await renderPage();
 
-    const labels = ['Orders', 'Order value', 'Discounts', 'Amount collected'].map((label) => screen.getByText(label));
+    const labels = ['Orders', 'Order value', 'Discounts', 'Revenue'].map((label) => screen.getByText(label));
     labels.slice(1).forEach((label, index) => {
       // eslint-disable-next-line no-bitwise
       expect(labels[index].compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -228,7 +228,7 @@ describe('PaymentsPage', () => {
     expect(screen.getByText('45M')).toBeInTheDocument();
     expect(screen.getByLabelText('SAR 45,000,000.00')).toBeInTheDocument();
     // The currency is in the header, not repeated in every cell.
-    expect(screen.getByText('Amount collected (SAR)')).toBeInTheDocument();
+    expect(screen.getByText('Revenue (SAR)')).toBeInTheDocument();
     expect(screen.queryByText(/^SAR /)).not.toBeInTheDocument();
     // Under 100,000 stays exact.
     expect(screen.getByText('99,999.99')).toBeInTheDocument();
@@ -271,7 +271,7 @@ describe('PaymentsPage', () => {
 
       const charts = screen.getAllByTestId('metric-chart');
       const byTitle = (title: string) => charts.find((chart) => chart.getAttribute('aria-label')?.startsWith(title));
-      const collected = byTitle('Amount collected over time') as HTMLElement;
+      const collected = byTitle('Revenue over time') as HTMLElement;
       const orders = byTitle('Orders over time') as HTMLElement;
 
       expect(collected).toHaveAttribute('data-axis-sample', '1,234.50');

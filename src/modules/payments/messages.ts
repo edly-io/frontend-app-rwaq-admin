@@ -23,7 +23,7 @@ const messages = defineMessages({
   kpiOrders: { id: 'rwaq.admin.payments.kpi.orders', defaultMessage: 'Orders' },
   kpiOrderValue: { id: 'rwaq.admin.payments.kpi.orderValue', defaultMessage: 'Order value' },
   kpiDiscounts: { id: 'rwaq.admin.payments.kpi.discounts', defaultMessage: 'Discounts' },
-  kpiCollected: { id: 'rwaq.admin.payments.kpi.collected', defaultMessage: 'Amount collected' },
+  kpiCollected: { id: 'rwaq.admin.payments.kpi.collected', defaultMessage: 'Revenue' },
   infoOrders: {
     id: 'rwaq.admin.payments.info.orders',
     defaultMessage: 'Completed WordPress orders with at least one paid item.',
@@ -48,9 +48,9 @@ const messages = defineMessages({
   granWeek: { id: 'rwaq.admin.payments.trends.week', defaultMessage: 'Weekly' },
   granMonth: { id: 'rwaq.admin.payments.trends.month', defaultMessage: 'Monthly' },
   weekOf: { id: 'rwaq.admin.payments.trends.weekOf', defaultMessage: 'Week of {date}' },
-  chartCollectedTitle: { id: 'rwaq.admin.payments.chart.collected', defaultMessage: 'Amount collected over time' },
+  chartCollectedTitle: { id: 'rwaq.admin.payments.chart.collected', defaultMessage: 'Revenue over time' },
   chartOrdersTitle: { id: 'rwaq.admin.payments.chart.orders', defaultMessage: 'Orders over time' },
-  seriesCollected: { id: 'rwaq.admin.payments.series.collected', defaultMessage: 'Amount collected (SAR)' },
+  seriesCollected: { id: 'rwaq.admin.payments.series.collected', defaultMessage: 'Revenue (SAR)' },
   seriesOrders: { id: 'rwaq.admin.payments.series.orders', defaultMessage: 'Orders' },
   chartAllTime: { id: 'rwaq.admin.payments.chart.allTime', defaultMessage: 'All time' },
   chartRange: { id: 'rwaq.admin.payments.chart.range', defaultMessage: 'Selected range' },
@@ -58,7 +58,7 @@ const messages = defineMessages({
   chartUnavailable: { id: 'rwaq.admin.payments.chart.unavailable', defaultMessage: 'The chart could not be loaded.' },
   infoChartCollected: {
     id: 'rwaq.admin.payments.info.chartCollected',
-    defaultMessage: 'Amount collected per day, week or month of the order date, in SAR.',
+    defaultMessage: 'Revenue per day, week or month of the order date, in SAR.',
   },
   infoChartOrders: {
     id: 'rwaq.admin.payments.info.chartOrders',
@@ -72,7 +72,7 @@ const messages = defineMessages({
   },
   howOrders: {
     id: 'rwaq.admin.payments.how.orders',
-    defaultMessage: 'Amount collected is what the learner paid after coupons. Purchases are WordPress payments. Admin grants are free enrollments and are not revenue.',
+    defaultMessage: 'Revenue is what the learner paid after coupons. Purchases are WordPress payments. Admin grants are free enrollments and are not revenue.',
   },
 
   // ── Shared list controls ───────────────────────────────────────────────────
@@ -85,19 +85,11 @@ const messages = defineMessages({
 
   sortDateDesc: { id: 'rwaq.admin.payments.sort.dateDesc', defaultMessage: 'Newest first' },
   sortDateAsc: { id: 'rwaq.admin.payments.sort.dateAsc', defaultMessage: 'Oldest first' },
-  sortPaidDesc: { id: 'rwaq.admin.payments.sort.paidDesc', defaultMessage: 'Amount collected, highest first' },
+  sortPaidDesc: { id: 'rwaq.admin.payments.sort.paidDesc', defaultMessage: 'Revenue, highest first' },
 
   // ── Revenue columns: one set of labels, with hover text per tab ────────────
   colOrderValue: { id: 'rwaq.admin.payments.col.orderValue', defaultMessage: 'Order value (SAR)' },
-  colOrderValuePartner: {
-    id: 'rwaq.admin.payments.col.orderValuePartner',
-    defaultMessage: 'Order value (SAR, this partner)',
-  },
-  colCollected: { id: 'rwaq.admin.payments.col.collected', defaultMessage: 'Amount collected (SAR)' },
-  colCollectedPartner: {
-    id: 'rwaq.admin.payments.col.collectedPartner',
-    defaultMessage: 'Amount collected (SAR, this partner)',
-  },
+  colCollected: { id: 'rwaq.admin.payments.col.collected', defaultMessage: 'Revenue (SAR)' },
 
   // By partner (a row is one partner)
 
@@ -129,10 +121,6 @@ const messages = defineMessages({
   colCourses: { id: 'rwaq.admin.payments.col.courses', defaultMessage: 'Items' },
   colPrice: { id: 'rwaq.admin.payments.col.price', defaultMessage: 'Price (SAR)' },
   colDiscount: { id: 'rwaq.admin.payments.col.discount', defaultMessage: 'Discount (SAR)' },
-  colDiscountPartner: {
-    id: 'rwaq.admin.payments.col.discountPartner',
-    defaultMessage: 'Discount (SAR, this partner)',
-  },
   colPaid: { id: 'rwaq.admin.payments.col.paid', defaultMessage: 'Paid (SAR)' },
   colSource: { id: 'rwaq.admin.payments.col.source', defaultMessage: 'Source' },
   infoColOrder: {
@@ -199,18 +187,8 @@ const messages = defineMessages({
     id: 'rwaq.admin.payments.info.revoked',
     defaultMessage: 'An admin unenrolled the learner on {date}. Reason: {reason}. The payment still counts as revenue.',
   },
-  adminReason: { id: 'rwaq.admin.payments.orders.reason', defaultMessage: 'Reason: {reason}' },
-  adminEnrolledBy: { id: 'rwaq.admin.payments.orders.enrolledBy', defaultMessage: 'Enrolled by: {admin}' },
-  colReason: { id: 'rwaq.admin.payments.col.reason', defaultMessage: 'Reason' },
-  colEnrolledBy: { id: 'rwaq.admin.payments.col.enrolledBy', defaultMessage: 'Enrolled by' },
-  infoColReason: {
-    id: 'rwaq.admin.payments.info.col.reason',
-    defaultMessage: 'The reason the admin gave when enrolling the learner. Empty for WordPress purchases.',
-  },
-  infoColEnrolledBy: {
-    id: 'rwaq.admin.payments.info.col.enrolledBy',
-    defaultMessage: 'The admin who enrolled the learner. Empty for WordPress purchases.',
-  },
+  adminReason: { id: 'rwaq.admin.payments.orders.reason', defaultMessage: '<b>Reason:</b> {reason}' },
+  adminEnrolledBy: { id: 'rwaq.admin.payments.orders.enrolledBy', defaultMessage: '<b>Enrolled by:</b> {admin}' },
 });
 
 export default messages;

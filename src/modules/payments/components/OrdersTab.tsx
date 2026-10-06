@@ -2,12 +2,13 @@
  * Payment history — every order, one row each. A row opens to show its
  * courses and programs (linked to their detail pages) and its coupons.
  *
- * Defaults to WordPress purchases, the orders that are payments. The chip says
- * so, and removing it also shows admin grants (free enrollments).
+ * Shows every order, purchases and admin grants (free enrollments). The Source
+ * filter narrows it to one of them.
  *
  * With a partner chosen, a row shows that partner's part of the order only:
  * its items, and the amounts the backend sums over them (partner* fields).
  */
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -29,6 +30,8 @@ import {
 } from './shared';
 import type { ListTabProps } from './shared';
 
+const boldText = (chunks: ReactNode[]) => <strong>{chunks}</strong>;
+
 const DEFAULT_ORDERING = '-order_date';
 
 /** The existing detail page for a course or program. */
@@ -43,7 +46,7 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
   const params = { org: org || undefined, startDate: dates.startDate, endDate: dates.endDate };
   const list = useListState(
     DEFAULT_ORDERING,
-    { source: 'wordpress', coupon: '' },
+    { source: '', coupon: '' },
     listScope(org, dates.startDate, dates.endDate),
   );
   const partner = usePartnerFilter(params, onOrgChange);
@@ -151,21 +154,21 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
       renderCell: (_value, row) => row.items.length,
     },
     {
-      label: intl.formatMessage(hasPartner ? messages.colOrderValuePartner : messages.colOrderValue),
+      label: intl.formatMessage(messages.colOrderValue),
       info: intl.formatMessage(hasPartner ? messages.infoColOrderPricePartner : messages.infoColOrderPrice),
       headerClassName: 'rwaq-th--wrap',
       key: hasPartner ? 'partnerActualPrice' : 'actualPrice',
       renderCell: (value) => <MoneyCell value={value as string} />,
     },
     {
-      label: intl.formatMessage(hasPartner ? messages.colDiscountPartner : messages.colDiscount),
+      label: intl.formatMessage(messages.colDiscount),
       info: intl.formatMessage(hasPartner ? messages.infoColOrderDiscountPartner : messages.infoColOrderDiscount),
       headerClassName: hasPartner ? 'rwaq-th--wrap' : undefined,
       key: hasPartner ? 'partnerDiscountAmount' : 'discountTotal',
       renderCell: (value) => <MoneyCell value={value as string} />,
     },
     {
-      label: intl.formatMessage(hasPartner ? messages.colCollectedPartner : messages.colCollected),
+      label: intl.formatMessage(messages.colCollected),
       info: intl.formatMessage(hasPartner ? messages.infoColOrderPaidPartner : messages.infoColOrderPaid),
       headerClassName: 'rwaq-th--wrap',
       key: hasPartner ? 'partnerPricePaid' : 'pricePaid',
@@ -176,23 +179,6 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
       info: intl.formatMessage(messages.infoColSource),
       key: 'source',
       renderCell: (value) => <Badge variant="light">{optionLabel(sourceOptions, value as string)}</Badge>,
-    },
-    {
-      label: intl.formatMessage(messages.colReason),
-      info: intl.formatMessage(messages.infoColReason),
-      key: 'reason',
-      renderCell: (value) => <span className="rwaq-reason-cell">{value as string}</span>,
-    },
-    {
-      label: intl.formatMessage(messages.colEnrolledBy),
-      info: intl.formatMessage(messages.infoColEnrolledBy),
-      key: 'enrolledBy',
-      renderCell: (_value, row) => (row.enrolledBy ? (
-        <div className="min-width-0">
-          <div className="rwaq-user-cell__name" title={row.enrolledBy.username}>{row.enrolledBy.username}</div>
-          <div className="rwaq-user-cell__meta" title={row.enrolledBy.email}>{row.enrolledBy.email}</div>
-        </div>
-      ) : null),
     },
   ];
 
@@ -267,12 +253,13 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
         <p className="text-muted mt-3 mb-0">
           {intl.formatMessage(messages.adminEnrolledBy, {
             admin: `${order.enrolledBy.username} (${order.enrolledBy.email})`,
+            b: boldText,
           })}
         </p>
       )}
       {order.reason && (
         <p className={`text-muted mb-0 ${order.enrolledBy ? '' : 'mt-3'}`}>
-          {intl.formatMessage(messages.adminReason, { reason: order.reason })}
+          {intl.formatMessage(messages.adminReason, { reason: order.reason, b: boldText })}
         </p>
       )}
     </DetailTable>
