@@ -55,7 +55,7 @@ beforeEach(() => {
   (hooks.usePaymentSubscriptions as jest.Mock).mockReturnValue(page([row]));
   (hooks.useSubscriptionsSummary as jest.Mock).mockReturnValue({
     data: {
-      revenue: '1140.00', new: 3, renewals: 1, cancellations: 1, activeAtEnd: 2,
+      revenue: '1140.00', active: 5, expired: 2, cancelled: 1,
     },
     isLoading: false,
     isError: false,
@@ -65,14 +65,17 @@ beforeEach(() => {
 });
 
 describe('Subscriptions KPI cards', () => {
-  it('shows the four cards, with no Active card', () => {
+  it('shows revenue and the active, expired and cancelled subscriptions with their counts', () => {
     renderWrapper(<SubscriptionsTab />);
 
-    expect(screen.getByText('Subscription revenue')).toBeInTheDocument();
-    expect(screen.queryByText('Active on end date')).not.toBeInTheDocument();
-    expect(screen.getByText('New subscriptions')).toBeInTheDocument();
-    expect(screen.getByText('Renewals')).toBeInTheDocument();
-    expect(screen.getByText('Cancellations')).toBeInTheDocument();
+    const card = (label: string) => (screen.getByText(label).closest('.rwaq-payment-kpi') as HTMLElement);
+    expect(card('Subscription revenue')).toBeInTheDocument();
+    expect(within(card('Active subscriptions')).getByText('5')).toBeInTheDocument();
+    expect(within(card('Expired subscriptions')).getByText('2')).toBeInTheDocument();
+    expect(within(card('Cancelled subscriptions')).getByText('1')).toBeInTheDocument();
+    expect(screen.queryByText('Renewals')).not.toBeInTheDocument();
+    expect(screen.queryByText('New subscriptions')).not.toBeInTheDocument();
+    expect(document.querySelectorAll('.rwaq-payment-kpi')).toHaveLength(4);
   });
 
   it('has the date filter above the cards', () => {

@@ -63,24 +63,24 @@ const messages = defineMessages({
   wordpress: { id: 'rwaq.admin.payments.subscriptions.source.wordpress', defaultMessage: 'WordPress' },
   admin: { id: 'rwaq.admin.payments.subscriptions.source.admin', defaultMessage: 'Admin' },
   kpiRevenue: { id: 'rwaq.admin.payments.subscriptions.kpi.revenue', defaultMessage: 'Subscription revenue' },
-  kpiNew: { id: 'rwaq.admin.payments.subscriptions.kpi.new', defaultMessage: 'New subscriptions' },
-  kpiRenewals: { id: 'rwaq.admin.payments.subscriptions.kpi.renewals', defaultMessage: 'Renewals' },
-  kpiCancellations: { id: 'rwaq.admin.payments.subscriptions.kpi.cancellations', defaultMessage: 'Cancellations' },
+  kpiActive: { id: 'rwaq.admin.payments.subscriptions.kpi.active', defaultMessage: 'Active subscriptions' },
+  kpiExpired: { id: 'rwaq.admin.payments.subscriptions.kpi.expired', defaultMessage: 'Expired subscriptions' },
+  kpiCancelled: { id: 'rwaq.admin.payments.subscriptions.kpi.cancelled', defaultMessage: 'Cancelled subscriptions' },
   infoRevenue: {
     id: 'rwaq.admin.payments.subscriptions.kpi.revenue-info',
     defaultMessage: 'Amount collected from WordPress subscription payments in the period.',
   },
-  infoNew: {
-    id: 'rwaq.admin.payments.subscriptions.kpi.new-info',
-    defaultMessage: 'Subscriptions whose first payment is in the range.',
+  infoActive: {
+    id: 'rwaq.admin.payments.subscriptions.kpi.active-info',
+    defaultMessage: 'Subscriptions with access today that the learner has not cancelled. A count as of today, not affected by the period.',
   },
-  infoRenewals: {
-    id: 'rwaq.admin.payments.subscriptions.kpi.renewals-info',
-    defaultMessage: 'Payments in the range after a subscription\'s first.',
+  infoExpired: {
+    id: 'rwaq.admin.payments.subscriptions.kpi.expired-info',
+    defaultMessage: 'Subscriptions whose end date has passed. A count as of today, not affected by the period.',
   },
-  infoCancellations: {
-    id: 'rwaq.admin.payments.subscriptions.kpi.cancellations-info',
-    defaultMessage: 'Subscriptions cancelled in the range, also those reactivated later. Access continues until their end date.',
+  infoCancelled: {
+    id: 'rwaq.admin.payments.subscriptions.kpi.cancelled-info',
+    defaultMessage: 'Subscriptions the learner cancelled that still have access until their end date. A count as of today, not affected by the period.',
   },
   sortStartsDesc: { id: 'rwaq.admin.payments.subscriptions.sort.starts-desc', defaultMessage: 'Starts, latest first' },
   sortStartsAsc: { id: 'rwaq.admin.payments.subscriptions.sort.starts-asc', defaultMessage: 'Starts, earliest first' },
@@ -244,17 +244,22 @@ const SubscriptionsTab = () => {
           info={label('infoRevenue')}
           isLoading={summaryLoading}
         />
-        <PaymentKpi label={label('kpiNew')} value={count(summary?.new)} info={label('infoNew')} isLoading={summaryLoading} />
         <PaymentKpi
-          label={label('kpiRenewals')}
-          value={count(summary?.renewals)}
-          info={label('infoRenewals')}
+          label={label('kpiActive')}
+          value={count(summary?.active)}
+          info={label('infoActive')}
           isLoading={summaryLoading}
         />
         <PaymentKpi
-          label={label('kpiCancellations')}
-          value={count(summary?.cancellations)}
-          info={label('infoCancellations')}
+          label={label('kpiExpired')}
+          value={count(summary?.expired)}
+          info={label('infoExpired')}
+          isLoading={summaryLoading}
+        />
+        <PaymentKpi
+          label={label('kpiCancelled')}
+          value={count(summary?.cancelled)}
+          info={label('infoCancelled')}
           isLoading={summaryLoading}
         />
       </div>

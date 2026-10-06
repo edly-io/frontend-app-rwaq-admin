@@ -54,7 +54,7 @@ export const getPaymentSubscriptions = (params: SubscriptionListParams) => (
   getList<SubscriptionRow>('subscriptions', params)
 );
 
-/** GET subscriptions/summary/ — revenue, new, renewals, cancellations and active at the end of the range. */
+/** GET subscriptions/summary/ — revenue in the range, and the active, expired and cancelled subscriptions today. */
 export const getSubscriptionsSummary = async (params: PaymentsParams = {}): Promise<SubscriptionsSummary> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getPaymentsBaseUrl()}/subscriptions/summary/`, {
     params: toQuery(params),

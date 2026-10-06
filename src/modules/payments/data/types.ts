@@ -157,10 +157,10 @@ export interface SubscriptionListParams extends ListParams {
 /** GET subscriptions/summary/ — what the tab's tiles show. */
 export interface SubscriptionsSummary {
   revenue: string;
-  new: number;
-  renewals: number;
-  cancellations: number;
-  activeAtEnd: number;
+  /** The subscriptions in each state today, whatever the date range. */
+  active: number;
+  expired: number;
+  cancelled: number;
 }
 
 /** The lists with a csv/ twin. */
