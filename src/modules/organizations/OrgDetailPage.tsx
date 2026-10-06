@@ -208,6 +208,12 @@ const OrgDetailPage = () => {
               label: intl.formatMessage(messages.detailShowLogoOnProgramCertificate),
               value: organization.showLogoOnProgramCertificate ? 'Enabled' : '—',
             },
+            {
+              label: intl.formatMessage(messages.detailRevenueShare),
+              value: organization.revenueSharePercentage !== null && organization.revenueSharePercentage !== undefined
+                ? `${Number(organization.revenueSharePercentage)}%`
+                : dash,
+            },
             ...(organization.description ? [{
               label: intl.formatMessage(messages.detailDescription),
               // eslint-disable-next-line react/no-danger

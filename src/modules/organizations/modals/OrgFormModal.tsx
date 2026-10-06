@@ -25,6 +25,8 @@ import messages from '../messages';
 
 const SHORT_NAME_RE = /^[A-Za-z0-9_-]+$/;
 const MAX_NAME = 255;
+// Up to 3 integer digits and 2 decimals, no sign or exponent (backend: max_digits=5, decimal_places=2).
+const REVENUE_SHARE_RE = /^\d{1,3}(\.\d{1,2})?$/;
 
 interface FormValues {
   name: string;
@@ -33,6 +35,7 @@ interface FormValues {
   description: string;
   featuredVideo: string;
   showLogoOnProgramCertificate: boolean;
+  revenueSharePercentage: string;
 }
 
 const emptyValues: FormValues = {
@@ -42,6 +45,7 @@ const emptyValues: FormValues = {
   description: '',
   featuredVideo: '',
   showLogoOnProgramCertificate: false,
+  revenueSharePercentage: '',
 };
 
 const toFormValues = (organization: OrgDetail | null): FormValues => {
@@ -53,6 +57,7 @@ const toFormValues = (organization: OrgDetail | null): FormValues => {
       description: organization.description ?? '',
       featuredVideo: organization.featuredVideo ?? '',
       showLogoOnProgramCertificate: organization.showLogoOnProgramCertificate ?? false,
+      revenueSharePercentage: organization.revenueSharePercentage ?? '',
     }
     : emptyValues;
   return values;
@@ -89,6 +94,15 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
       .max(MAX_NAME, intl.formatMessage(messages.tooLong))
       .required(intl.formatMessage(messages.requiredField)),
     arabicName: Yup.string().max(MAX_NAME, intl.formatMessage(messages.tooLong)),
+    // Mirrors the backend DecimalField(max_digits=5, decimal_places=2): plain
+    // decimal digits only, so 35.5555 and 1e1 fail inline instead of as an API error.
+    revenueSharePercentage: Yup.string()
+      .trim()
+      .test(
+        'revenue-share',
+        intl.formatMessage(messages.revenueShareInvalid),
+        (value) => !value || (REVENUE_SHARE_RE.test(value) && Number(value) <= 100),
+      ),
   });
 
   const formik = useFormik<FormValues>({
@@ -103,6 +117,7 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             description: values.description,
             featuredVideo: values.featuredVideo,
             showLogoOnProgramCertificate: values.showLogoOnProgramCertificate,
+            revenueSharePercentage: String(values.revenueSharePercentage ?? '').trim(),
           };
           await updateMutation.mutateAsync({ patch, logoFile });
           showToast(intl.formatMessage(messages.toastUpdated, { name: values.name }));
@@ -118,6 +133,10 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
             // regardless of what the admin ticked (EDLYCSRWAQ-230).
             showLogoOnProgramCertificate: values.showLogoOnProgramCertificate,
           };
+          const revenueShare = String(values.revenueSharePercentage ?? '').trim();
+          if (revenueShare) {
+            payload.revenueSharePercentage = revenueShare;
+          }
           const created = await createMutation.mutateAsync(payload);
           if (logoFile) {
             await updateOrganization(created.shortName, {}, logoFile);
@@ -331,6 +350,31 @@ const OrgFormModal = ({ isOpen, onClose, organization }: OrgFormModalProps) => {
           >
             {intl.formatMessage(messages.fieldShowLogoOnProgramCertificate)}
           </Form.Checkbox>
+        </Form.Group>
+      </section>
+
+      <section className="rwaq-form-section">
+        <Form.Group
+          className="mb-0"
+          isInvalid={!!fieldError('revenueSharePercentage')}
+          controlId="org-form-revenue-share"
+        >
+          <Form.Label>{intl.formatMessage(messages.fieldRevenueShare)}</Form.Label>
+          <Form.Control
+            name="revenueSharePercentage"
+            type="number"
+            min={0}
+            max={100}
+            step="0.01"
+            value={formik.values.revenueSharePercentage}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+          />
+          {fieldError('revenueSharePercentage') ? (
+            <Form.Control.Feedback type="invalid">{fieldError('revenueSharePercentage')}</Form.Control.Feedback>
+          ) : (
+            <Form.Text muted>{intl.formatMessage(messages.fieldRevenueShareHelp)}</Form.Text>
+          )}
         </Form.Group>
       </section>
 

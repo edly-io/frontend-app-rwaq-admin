@@ -10,7 +10,6 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { logError } from '@edx/frontend-platform/logging';
 import { renderWrapper } from '@src/setupTest';
 import * as whoami from '@src/data/whoami';
-import * as orgHooks from '@src/modules/organizations/data/hooks';
 import * as hooks from './data/hooks';
 import PaymentsPage from './PaymentsPage';
 
@@ -18,11 +17,13 @@ jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn() }));
 
 jest.mock('@edx/frontend-platform/logging', () => ({ logError: jest.fn() }));
 
-jest.mock('@src/modules/organizations/data/hooks', () => ({ useOrganizations: jest.fn() }));
-
 jest.mock('./data/hooks', () => ({
   usePaymentsSummary: jest.fn(),
   usePaymentOrders: jest.fn(),
+  usePaymentPartners: jest.fn(),
+  usePaymentContent: jest.fn(),
+  usePaymentLearners: jest.fn(),
+  usePaymentCoupons: jest.fn(),
   useDownloadPaymentsCsv: jest.fn(),
 }));
 
@@ -47,6 +48,8 @@ const summary = {
   gross: '800.00',
   discounts: '100.00',
   netPaid: '700.00',
+  partnerAmount: '349.00',
+  rwaqAmount: '201.00',
   orders: 3,
   items: 4,
   granularity: 'month',
@@ -60,7 +63,8 @@ beforeEach(() => {
   (logError as jest.Mock).mockClear();
   (whoami.useAdminCapabilities as jest.Mock).mockReturnValue({ data: { isSuperuser: true }, isLoading: false });
   (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({ data: summary, isLoading: false, isError: false });
-  (orgHooks.useOrganizations as jest.Mock).mockReturnValue({ data: emptyPage, isLoading: false, isError: false });
+  [hooks.usePaymentPartners, hooks.usePaymentContent, hooks.usePaymentLearners, hooks.usePaymentCoupons]
+    .forEach((hook) => (hook as jest.Mock).mockReturnValue({ data: emptyPage, isLoading: false, isError: false }));
   (hooks.useDownloadPaymentsCsv as jest.Mock).mockReturnValue({ mutateAsync: jest.fn(), isPending: false });
 });
 
@@ -86,10 +90,13 @@ describe('a tab that fails to load', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Payment history' }));
     await screen.findByText('Could not load payments.');
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Overview' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'By partner' }));
     await tabReady();
 
-    expect(screen.getByRole('tab', { name: 'Overview', selected: true })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'By partner', selected: true })).toBeInTheDocument();
+    expect(screen.getByText('Partner payout = amount collected x the partner\'s share %', { exact: false }))
+      .toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'Overview' }));
     expect(screen.getByText('700.00')).toBeInTheDocument();
     errors.mockRestore();
   });

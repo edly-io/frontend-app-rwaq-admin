@@ -1,14 +1,18 @@
 /**
- * Orders & Payments — what was paid and the payment history, for Rwaq superadmins.
+ * Orders & Payments — payment history and revenue splits, for Rwaq superadmins.
  *
  * Built on the dashboard's primitives (MetricChart, DateRangePicker,
  * InfoTooltip) and the list pages' SearchFilterBar + AdminDataTable, so it
  * looks like the rest of the panel in both themes.
  *
- * One tab row. Overview holds the tiles and trends, Payment history is the list.
- * Each tab has its own date range, so one tab's setting never narrows the other.
- * The partner is chosen on the tab that uses it and lives in the URL so a reload
- * keeps it. Switching tabs clears it, so nothing stays narrowed out of sight.
+ * One tab row. Overview holds the tiles and trends, the other tabs are lists.
+ * Every tab has its own date range, so one tab's setting never narrows another.
+ * The partner is chosen on the tab that uses it (Overview, history, content,
+ * learners, coupons) and lives in the URL so a reload keeps it. Switching tabs
+ * clears it, so nothing stays narrowed out of sight. "View overview" on By
+ * partner opens Overview for that partner, and "View all" on the other tabs
+ * opens Payment history for the row while keeping the partner. Both hand the
+ * tab's date range to the tab they open, so it shows the same period.
  *
  * A tab stays mounted once opened, so it keeps its search, sort and page when
  * the user comes back. While hidden it does not query (ActiveTabContext).
@@ -27,14 +31,19 @@ import ErrorState from '@src/components/ErrorState';
 import LoadingPage from '@src/components/LoadingPage';
 import { useAdminCapabilities } from '@src/data/whoami';
 import { ActiveTabContext } from './data/activeTab';
+import type { DateRange, RangeHandoff } from './components/shared';
 import messages from './messages';
 
 // Each tab is its own chunk, so opening the page loads only Overview and the
 // others download the first time they are opened.
 const OverviewTab = lazy(() => import('./components/OverviewTab'));
 const OrdersTab = lazy(() => import('./components/OrdersTab'));
+const PartnersTab = lazy(() => import('./components/PartnersTab'));
+const ContentTab = lazy(() => import('./components/ContentTab'));
+const LearnersTab = lazy(() => import('./components/LearnersTab'));
+const CouponsTab = lazy(() => import('./components/CouponsTab'));
 
-const TABS = ['overview', 'orders'] as const;
+const TABS = ['overview', 'orders', 'partners', 'content', 'learners', 'coupons'] as const;
 type PaymentsTab = typeof TABS[number];
 
 /** What a tab shows when its code fails to load (a dropped connection, a new deploy) or its render throws. */
@@ -117,6 +126,13 @@ const PaymentsDashboard = () => {
   const tabParam = searchParams.get('tab') as PaymentsTab | null;
   const tab: PaymentsTab = tabParam && TABS.includes(tabParam) ? tabParam : 'overview';
   const org = (searchParams.get('org') ?? '').trim();
+  const content = searchParams.get('content') ?? '';
+  const contentTitle = searchParams.get('contentTitle') ?? '';
+  // A buyer id is a whole number. Anything else in the URL is ignored, as the backend would refuse it.
+  const userParam = searchParams.get('user') ?? '';
+  const user = /^\d+$/.test(userParam) ? userParam : '';
+  const userTitle = searchParams.get('userTitle') ?? '';
+  const couponCode = searchParams.get('couponCode') ?? '';
 
   const updateParams = useCallback((updates: Record<string, string | undefined>) => {
     setSearchParams((prev) => {
@@ -129,6 +145,21 @@ const PaymentsDashboard = () => {
   }, [setSearchParams]);
 
   const setOrg = (value: string) => updateParams({ org: value || undefined });
+  const noFocus = {
+    content: undefined, contentTitle: undefined, user: undefined, userTitle: undefined, couponCode: undefined,
+  };
+  const clearFocus = () => updateParams(noFocus);
+  const clearScope = () => updateParams({ org: undefined, ...noFocus });
+
+  // The range each jump hands to Overview or Payment history. A new id on every jump makes the tab take it.
+  const [handoffs, setHandoffs] = useState<{ overview?: RangeHandoff; orders?: RangeHandoff }>({});
+  const handOver = (target: 'overview' | 'orders', range: DateRange) => setHandoffs((prev) => ({
+    ...prev, [target]: { ...range, id: (prev[target]?.id ?? 0) + 1 },
+  }));
+  const viewOrders = (range: DateRange, updates: Record<string, string>) => {
+    handOver('orders', range);
+    updateParams({ tab: 'orders', ...updates });
+  };
 
   return (
     <div className="rwaq-page">
@@ -145,18 +176,78 @@ const PaymentsDashboard = () => {
           onSelect={(key: string | null) => {
             // Clicking the tab already open must not clear the partner or focus it is showing.
             if ((key ?? 'overview') === tab) { return; }
-            updateParams({ tab: key && key !== 'overview' ? key : undefined, org: undefined });
+            updateParams({
+              tab: key && key !== 'overview' ? key : undefined,
+              org: undefined,
+              content: undefined,
+              contentTitle: undefined,
+              user: undefined,
+              userTitle: undefined,
+              couponCode: undefined,
+            });
           }}
           mountOnEnter
         >
           <Tab eventKey="overview" title={intl.formatMessage(messages.tabOverview)}>
             <TabPanel active={tab === 'overview'}>
-              <OverviewTab org={org} onOrgChange={setOrg} />
+              <OverviewTab org={org} onOrgChange={setOrg} range={handoffs.overview} />
             </TabPanel>
           </Tab>
           <Tab eventKey="orders" title={intl.formatMessage(messages.tabOrders)}>
             <TabPanel active={tab === 'orders'}>
-              <OrdersTab org={org} onOrgChange={setOrg} />
+              <OrdersTab
+                org={org}
+                onOrgChange={setOrg}
+                content={content}
+                contentTitle={contentTitle}
+                user={user}
+                userTitle={userTitle}
+                couponCode={couponCode}
+                onFocusClear={clearFocus}
+                onScopeClear={clearScope}
+                range={handoffs.orders}
+              />
+            </TabPanel>
+          </Tab>
+          <Tab eventKey="partners" title={intl.formatMessage(messages.tabPartners)}>
+            <TabPanel active={tab === 'partners'}>
+              <PartnersTab
+                onViewOverview={(short, range) => {
+                  handOver('overview', range);
+                  updateParams({ tab: undefined, org: short });
+                }}
+                onViewOrders={(short, range) => viewOrders(range, { org: short })}
+              />
+            </TabPanel>
+          </Tab>
+          <Tab eventKey="content" title={intl.formatMessage(messages.tabContent)}>
+            <TabPanel active={tab === 'content'}>
+              <ContentTab
+                org={org}
+                onOrgChange={setOrg}
+                onViewOrders={(key, title, range) => viewOrders(range, { content: key, contentTitle: title })}
+              />
+            </TabPanel>
+          </Tab>
+          <Tab eventKey="learners" title={intl.formatMessage(messages.tabLearners)}>
+            <TabPanel active={tab === 'learners'}>
+              <LearnersTab
+                org={org}
+                onOrgChange={setOrg}
+                onViewOrders={(userId, username, range) => viewOrders(
+                  range,
+                  { user: String(userId), userTitle: username },
+                )}
+              />
+            </TabPanel>
+          </Tab>
+          <Tab eventKey="coupons" title={intl.formatMessage(messages.tabCoupons)}>
+            <TabPanel active={tab === 'coupons'}>
+              <CouponsTab
+                org={org}
+                onOrgChange={setOrg}
+                onViewOrders={(code, range) => viewOrders(range, { couponCode: code })}
+              />
             </TabPanel>
           </Tab>
         </Tabs>

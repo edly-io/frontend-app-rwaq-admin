@@ -9,14 +9,12 @@
  */
 import { fireEvent, screen, within } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
-import * as orgHooks from '@src/modules/organizations/data/hooks';
 import * as hooks from '../data/hooks';
 import OrdersTab from './OrdersTab';
 
-jest.mock('@src/modules/organizations/data/hooks', () => ({ useOrganizations: jest.fn() }));
-
 jest.mock('../data/hooks', () => ({
   usePaymentOrders: jest.fn(),
+  usePaymentPartners: jest.fn(),
   useDownloadPaymentsCsv: jest.fn(),
 }));
 
@@ -96,7 +94,7 @@ const mockOrders = (orders: unknown[]) => (hooks.usePaymentOrders as jest.Mock).
 });
 
 const renderTab = (org?: string) => renderWrapper(
-  <OrdersTab org={org} onOrgChange={jest.fn()} />,
+  <OrdersTab org={org} onOrgChange={jest.fn()} onFocusClear={jest.fn()} onScopeClear={jest.fn()} />,
 );
 
 /** The text of each cell of the first body row, by the table's header text. */
@@ -108,7 +106,7 @@ const firstRow = () => {
 
 beforeEach(() => {
   jest.resetAllMocks();
-  (orgHooks.useOrganizations as jest.Mock).mockReturnValue({ data: undefined });
+  (hooks.usePaymentPartners as jest.Mock).mockReturnValue({ data: undefined });
   (hooks.useDownloadPaymentsCsv as jest.Mock).mockReturnValue({ mutateAsync: jest.fn(), isPending: false });
 });
 
@@ -155,11 +153,12 @@ describe('Payment history amounts', () => {
     expect(row['Discount (SAR, this partner)']).toBe('100.00');
   });
 
-  it('asks the backend for the partner', () => {
+  it('asks the backend for the partner and leaves paid out of the history list', () => {
     mockOrders([tpaOrder]);
     renderTab('TPA');
 
     expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({ org: 'TPA' }));
+    expect((hooks.usePaymentOrders as jest.Mock).mock.calls[0][0].paid).toBeUndefined();
   });
 });
 
@@ -189,23 +188,11 @@ describe('Payment history date', () => {
 });
 
 describe('Partner filter options', () => {
-  it('asks for every active organization, not only the ones with sales in the date range', () => {
+  it('asks for every partner, not only the ones with sales in the date range', () => {
     mockOrders([wholeOrder]);
     renderTab();
 
-    expect(orgHooks.useOrganizations).toHaveBeenCalledWith({ filter: 'active', ordering: 'name', pageSize: 100 });
-  });
-
-  it('offers the organizations by name with their short name as the value', () => {
-    (orgHooks.useOrganizations as jest.Mock).mockReturnValue({
-      data: { results: [{ shortName: 'TPA', name: 'Org A' }] },
-    });
-    mockOrders([wholeOrder]);
-    renderTab();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
-
-    expect(within(screen.getByLabelText('Partner')).getByRole('option', { name: 'Org A' })).toHaveValue('TPA');
+    expect(hooks.usePaymentPartners).toHaveBeenCalledWith({ ordering: 'org_name', pageSize: 100 });
   });
 });
 

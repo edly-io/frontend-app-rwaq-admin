@@ -1,5 +1,5 @@
 /**
- * PaymentsPage — the superuser gate, the Overview tiles and trends, Payment history and the partner filter.
+ * PaymentsPage — the superuser gate, the Overview tiles and trends, and the partner filter.
  *
  * The data hooks are mocked, as in the dashboard test, so this runs without a
  * QueryClient or network. MetricChart is stubbed for the same reason.
@@ -9,17 +9,18 @@ import {
 } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as whoami from '@src/data/whoami';
-import * as orgHooks from '@src/modules/organizations/data/hooks';
 import * as hooks from './data/hooks';
 import PaymentsPage from './PaymentsPage';
 
 jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn() }));
 
-jest.mock('@src/modules/organizations/data/hooks', () => ({ useOrganizations: jest.fn() }));
-
 jest.mock('./data/hooks', () => ({
   usePaymentsSummary: jest.fn(),
   usePaymentOrders: jest.fn(),
+  usePaymentPartners: jest.fn(),
+  usePaymentContent: jest.fn(),
+  usePaymentLearners: jest.fn(),
+  usePaymentCoupons: jest.fn(),
   useDownloadPaymentsCsv: jest.fn(),
 }));
 
@@ -44,6 +45,7 @@ jest.mock('@src/components/charts/MetricChart', () => ({
     </div>
   ),
 }));
+
 const emptyPage = {
   pagination: {
     count: 0, numPages: 1, next: null, previous: null,
@@ -55,6 +57,8 @@ const summary = {
   gross: '800.00',
   discounts: '100.00',
   netPaid: '700.00',
+  partnerAmount: '349.00',
+  rwaqAmount: '201.00',
   orders: 3,
   items: 4,
   granularity: 'month',
@@ -64,14 +68,27 @@ const summary = {
     gross: '700.00',
     discounts: '100.00',
     netPaid: '600.00',
+    partnerAmount: '279.00',
+    rwaqAmount: '171.00',
   }],
 };
 
-const orgsPage = {
+const partnersPage = {
   pagination: {
     count: 1, numPages: 1, next: null, previous: null,
   },
-  results: [{ shortName: 'TPA', name: 'Org A' }],
+  results: [{
+    org: 'TPA',
+    orgName: 'Org A',
+    share: '70.00',
+    orders: 2,
+    items: 2,
+    gross: '400.00',
+    discounts: '30.00',
+    netPaid: '370.00',
+    partnerAmount: '259.00',
+    rwaqAmount: '111.00',
+  }],
 };
 
 const setCapabilities = (isSuperuser: boolean, isLoading = false) => {
@@ -82,8 +99,9 @@ beforeEach(() => {
   window.history.pushState({}, '', '/');
   setCapabilities(true);
   (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({ data: summary, isLoading: false, isError: false });
-  (hooks.usePaymentOrders as jest.Mock).mockReturnValue({ data: emptyPage, isLoading: false, isError: false });
-  (orgHooks.useOrganizations as jest.Mock).mockReturnValue({ data: orgsPage, isLoading: false, isError: false });
+  [hooks.usePaymentOrders, hooks.usePaymentContent, hooks.usePaymentLearners, hooks.usePaymentCoupons]
+    .forEach((hook) => (hook as jest.Mock).mockReturnValue({ data: emptyPage, isLoading: false, isError: false }));
+  (hooks.usePaymentPartners as jest.Mock).mockReturnValue({ data: partnersPage, isLoading: false, isError: false });
   (hooks.useDownloadPaymentsCsv as jest.Mock).mockReturnValue({ mutateAsync: jest.fn(), isPending: false });
 });
 
@@ -101,26 +119,20 @@ describe('PaymentsPage', () => {
     expect(hooks.usePaymentsSummary).not.toHaveBeenCalled();
   });
 
-  it('has only the Overview and Payment history tabs', async () => {
+  it('opens on the Overview with the tiles in order, amounts in SAR, and the unsplit money', async () => {
     await renderPage();
 
-    // Paragon adds a "More..." overflow tab when it cannot measure the row (jsdom).
-    const names = screen.getAllByRole('tab').map((tab) => tab.textContent).filter((name) => name !== 'More...');
-    expect(names).toEqual(['Overview', 'Payment history']);
-  });
-
-  it('opens on the Overview with the tiles in order and amounts in SAR', async () => {
-    await renderPage();
-
-    const labels = ['Orders', 'Order value', 'Discounts', 'Amount collected'].map((label) => screen.getByText(label));
+    const labels = ['Orders', 'Order value', 'Discounts', 'Amount collected', 'Payable to partners', 'Rwaq revenue']
+      .map((label) => screen.getByText(label));
     labels.slice(1).forEach((label, index) => {
       // eslint-disable-next-line no-bitwise
       expect(labels[index].compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
     expect(screen.getByText('700.00')).toBeInTheDocument();
-    expect(screen.queryByText('Payable to partners')).not.toBeInTheDocument();
-    expect(screen.queryByText('Rwaq revenue')).not.toBeInTheDocument();
-    expect(screen.getAllByTestId('metric-chart')).toHaveLength(2);
+    expect(screen.getByText('349.00')).toBeInTheDocument();
+    expect(screen.getByText('201.00')).toBeInTheDocument();
+    expect(screen.queryByText(/not split/)).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('metric-chart')).toHaveLength(3);
   });
 
   it('says so when the totals cannot be loaded, instead of showing zero', async () => {
@@ -128,7 +140,7 @@ describe('PaymentsPage', () => {
     await renderPage();
 
     expect(screen.getByText('Could not load payments.')).toBeInTheDocument();
-    expect(screen.getAllByText('The chart could not be loaded.')).toHaveLength(2);
+    expect(screen.getAllByText('The chart could not be loaded.')).toHaveLength(3);
     expect(screen.queryByText('0.00')).not.toBeInTheDocument();
   });
 
@@ -158,15 +170,36 @@ describe('PaymentsPage', () => {
     errors.mockRestore();
   });
 
-  it('asks the summary for the partner chosen on Overview, and clears it when switching tabs', async () => {
+  it('opens the Overview for a partner from By partner, and clears it when switching tabs', async () => {
     await renderPage();
-    fireEvent.change(screen.getByLabelText('Partner'), { target: { value: 'TPA' } });
+    await openTab('By partner');
+    fireEvent.click(screen.getByRole('button', { name: 'Open the overview for Org A' }));
 
+    expect(screen.getByText('Payable to partner')).toBeInTheDocument();
     expect(hooks.usePaymentsSummary).toHaveBeenLastCalledWith(expect.objectContaining({ org: 'TPA' }));
 
     await openTab('Payment history');
-    expect(new URLSearchParams(window.location.search).has('org')).toBe(false);
     expect(hooks.usePaymentOrders).toHaveBeenLastCalledWith(expect.objectContaining({ org: undefined }));
+  });
+
+  it('shows a partner without a share as Not set with a payout of 0.00, all of it Rwaq revenue', async () => {
+    (hooks.usePaymentPartners as jest.Mock).mockReturnValue({
+      data: {
+        ...partnersPage,
+        results: [{
+          ...partnersPage.results[0], share: null, partnerAmount: '0.00', rwaqAmount: '370.00',
+        }],
+      },
+      isLoading: false,
+      isError: false,
+    });
+    await renderPage();
+    await openTab('By partner');
+
+    expect(screen.getByText('Not set')).toBeInTheDocument();
+    expect(screen.getByText('0.00')).toBeInTheDocument();
+    // Collected and Rwaq revenue are both 370: nothing goes to the partner.
+    expect(screen.getAllByText('370.00')).toHaveLength(2);
   });
 
   it('keeps a date range per tab: choosing one on Overview does not narrow the other tabs', async () => {
@@ -193,37 +226,18 @@ describe('PaymentsPage', () => {
     expect(screen.getByText('12.35M')).toBeInTheDocument();
     expect(screen.getByTitle('SAR 12,345,678.90')).toBeInTheDocument();
   });
+
   it('shows big amounts in tables in short form with the exact amount on hover', async () => {
-    (hooks.usePaymentOrders as jest.Mock).mockReturnValue({
+    (hooks.usePaymentPartners as jest.Mock).mockReturnValue({
       data: {
-        ...emptyPage,
-        pagination: { ...emptyPage.pagination, count: 1 },
-        results: [{
-          id: 7,
-          wordpressOrderId: 'wp-7',
-          source: 'wordpress',
-          status: 'completed',
-          orderDate: '2026-09-10T10:00:00Z',
-          userId: 5,
-          username: 'buyer5',
-          email: 'buyer5@example.com',
-          actualPrice: '99999.99',
-          discountTotal: '0.00',
-          pricePaid: '45000000.00',
-          partnerActualPrice: null,
-          partnerDiscountAmount: null,
-          partnerPricePaid: null,
-          reason: '',
-          enrolledBy: null,
-          coupons: [],
-          items: [],
-        }],
+        ...partnersPage,
+        results: [{ ...partnersPage.results[0], netPaid: '45000000.00', gross: '99999.99' }],
       },
       isLoading: false,
       isError: false,
     });
     await renderPage();
-    await openTab('Payment history');
+    await openTab('By partner');
 
     expect(screen.getByText('45M')).toBeInTheDocument();
     expect(screen.getByLabelText('SAR 45,000,000.00')).toBeInTheDocument();
@@ -232,6 +246,190 @@ describe('PaymentsPage', () => {
     expect(screen.queryByText(/^SAR /)).not.toBeInTheDocument();
     // Under 100,000 stays exact.
     expect(screen.getByText('99,999.99')).toBeInTheDocument();
+  });
+
+  const pageOf = (results: unknown[], count = results.length) => ({
+    pagination: {
+      count, numPages: 1, next: null, previous: null,
+    },
+    results,
+  });
+
+  // A cart of 100 for TPA's course and 50 for another partner's, paid 150 in all.
+  const mixedOrder = {
+    id: 7,
+    wordpressOrderId: 'wp-7',
+    source: 'wordpress',
+    status: 'completed',
+    orderDate: '2026-09-10T10:00:00Z',
+    paidVia: 'moyasar',
+    currency: 'SAR',
+    userId: 5,
+    username: 'buyer5',
+    email: 'buyer5@example.com',
+    orderBy: 'buyer5@example.com',
+    actualPrice: '150.00',
+    discountTotal: '0.00',
+    pricePaid: '150.00',
+    // Set by the backend only when the list is narrowed to a partner.
+    partnerActualPrice: null,
+    partnerDiscountAmount: null,
+    partnerPricePaid: null,
+    reason: '',
+    enrolledBy: null,
+    coupons: [{
+      code: 'SAVE10',
+      scope: 'cart',
+      discountType: 'amount',
+      value: '10',
+      courseId: null,
+      programKey: null,
+      discountAmount: '10.00',
+      partnerDiscountAmount: null,
+    }],
+    items: [
+      {
+        type: 'course',
+        key: 'course-v1:TPA+C1+2026',
+        programUuid: null,
+        title: 'Course 1',
+        org: 'TPA',
+        actualPrice: '100.00',
+        discountAmount: '0.00',
+        pricePaid: '100.00',
+        revokedAt: null,
+        revokeReason: '',
+      },
+      {
+        type: 'course',
+        key: 'course-v1:TPB+C2+2026',
+        programUuid: null,
+        title: 'Course 2',
+        org: 'TPB',
+        actualPrice: '50.00',
+        discountAmount: '0.00',
+        pricePaid: '50.00',
+        revokedAt: null,
+        revokeReason: '',
+      },
+    ],
+  };
+
+  // What the backend returns for the same order when the list is narrowed to TPA: its item and its amounts only.
+  const tpaView = {
+    ...mixedOrder,
+    items: [mixedOrder.items[0]],
+    partnerActualPrice: '100.00',
+    partnerDiscountAmount: '0.00',
+    partnerPricePaid: '100.00',
+  };
+
+  it('expands a partner into its orders, counting only that partner\'s items, and View all opens the history', async () => {
+    (hooks.usePaymentOrders as jest.Mock).mockReturnValue({
+      data: pageOf([tpaView], 12), isLoading: false, isError: false,
+    });
+    await renderPage();
+    await openTab('By partner');
+    fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
+
+    expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({
+      org: 'TPA', pageSize: 5, source: 'wordpress', status: 'completed',
+    }));
+    expect(hooks.usePaymentContent).not.toHaveBeenCalledWith(expect.objectContaining({ pageSize: 5 }));
+    // Only the TPA course counts: 100, not the whole 150 cart.
+    expect(screen.getAllByRole('cell', { name: '100.00' })).toHaveLength(1);
+    expect(screen.queryAllByRole('cell', { name: '150.00' })).toHaveLength(0);
+    expect(screen.getByText('Showing 1 of 12.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+    await tabReady();
+    expect(screen.getByRole('tab', { name: 'Payment history', selected: true })).toBeInTheDocument();
+    expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({ org: 'TPA', pageSize: 10 }));
+  });
+
+  it('expands a learner into their orders and View all filters the history to that buyer', async () => {
+    (hooks.usePaymentLearners as jest.Mock).mockReturnValue({
+      data: pageOf([{
+        userId: 5,
+        username: 'buyer5',
+        email: 'buyer5@example.com',
+        orders: 8,
+        items: 9,
+        gross: '150.00',
+        discounts: '0.00',
+        netPaid: '150.00',
+        partnerAmount: '70.00',
+        rwaqAmount: '80.00',
+      }]),
+      isLoading: false,
+      isError: false,
+    });
+    (hooks.usePaymentOrders as jest.Mock).mockReturnValue({
+      data: pageOf([mixedOrder], 8), isLoading: false, isError: false,
+    });
+    await renderPage();
+    await openTab('By learner');
+    fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
+
+    expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({ user: 5, pageSize: 5 }));
+    // The learner row's Order value and Amount collected, then the order's whole amount.
+    expect(screen.getAllByText('150.00')).toHaveLength(3);
+
+    fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+    await tabReady();
+    expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({ user: 5, pageSize: 10 }));
+    expect(screen.getByText('Buyer: buyer5')).toBeInTheDocument();
+  });
+
+  it('expands a coupon into its orders with the discount it gave, and View all filters by the exact code', async () => {
+    (hooks.usePaymentCoupons as jest.Mock).mockReturnValue({
+      data: pageOf([{
+        code: 'SAVE10', scope: 'cart', discountType: 'amount', orders: 6, discountGiven: '60.00',
+      }]),
+      isLoading: false,
+      isError: false,
+    });
+    (hooks.usePaymentOrders as jest.Mock).mockReturnValue({
+      data: pageOf([mixedOrder], 6), isLoading: false, isError: false,
+    });
+    await renderPage();
+    await openTab('By coupon');
+    fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
+
+    expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({ couponCode: 'SAVE10', pageSize: 5 }));
+    expect(screen.getByText('10.00')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+    await tabReady();
+    expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({ couponCode: 'SAVE10', pageSize: 10 }));
+    expect(screen.getByText('Coupon code: SAVE10')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['By content'],
+    ['By learner'],
+  ])('tells the reader on %s that partner amounts are rounded per row and By partner is the payout figure', async (tabName) => {
+    await renderPage();
+    await openTab(tabName);
+
+    expect(screen.getByText(
+      /Partner amounts are rounded per row, so figures can differ by a few cents from By partner, which is the payout figure\./,
+    )).toBeInTheDocument();
+  });
+
+  it('says the same on the partner split chart', async () => {
+    await renderPage();
+
+    fireEvent.mouseOver(screen.getByText('Partner payout and Rwaq revenue over time'));
+
+    expect(await screen.findByText(/which is the payout figure\./)).toBeInTheDocument();
+  });
+
+  it('explains how each list is worked out, with an example', async () => {
+    await renderPage();
+    await openTab('By partner');
+
+    expect(screen.getByText(/Partner payout = amount collected x the partner's share %/)).toBeInTheDocument();
   });
 
   describe('charts', () => {
@@ -266,16 +464,19 @@ describe('PaymentsPage', () => {
       expect(screen.getAllByText('Jul 2026').length).toBeGreaterThan(0);
     });
 
-    it('formats the money chart\'s axis and tooltip as amounts on a wider axis, and leaves the orders chart plain', async () => {
+    it('formats the money charts\' axis and tooltip as amounts on a wider axis, and leaves the orders chart plain', async () => {
       await renderPage();
 
       const charts = screen.getAllByTestId('metric-chart');
       const byTitle = (title: string) => charts.find((chart) => chart.getAttribute('aria-label')?.startsWith(title));
       const collected = byTitle('Amount collected over time') as HTMLElement;
+      const split = byTitle('Partner payout and Rwaq revenue over time') as HTMLElement;
       const orders = byTitle('Orders over time') as HTMLElement;
 
-      expect(collected).toHaveAttribute('data-axis-sample', '1,234.50');
-      expect(collected).toHaveAttribute('data-axis-width', '72');
+      [collected, split].forEach((chart) => {
+        expect(chart).toHaveAttribute('data-axis-sample', '1,234.50');
+        expect(chart).toHaveAttribute('data-axis-width', '72');
+      });
       expect(orders).not.toHaveAttribute('data-axis-sample');
       expect(orders).not.toHaveAttribute('data-axis-width');
     });
@@ -287,7 +488,7 @@ describe('PaymentsPage', () => {
       await renderPage();
 
       const loaders = screen.getAllByRole('status', { name: 'Loading' });
-      expect(loaders).toHaveLength(4);
+      expect(loaders).toHaveLength(6);
       loaders.forEach((loader) => expect(loader).toHaveAttribute('aria-busy', 'true'));
     });
   });
@@ -298,26 +499,30 @@ describe('PaymentsPage', () => {
       return calls[calls.length - 1][0];
     };
 
-    it('keeps a partner from the URL that is not among the options, named by its short name', async () => {
+    it.each(['abc', '5abc', '-3', '1.5', ''])('ignores a user param of "%s" instead of sending it', async (value) => {
+      window.history.pushState({}, '', `/?tab=orders&user=${value}&userTitle=buyer`);
+      await renderPage();
+
+      expect(lastOrdersParams().user).toBeUndefined();
+      const sentNaN = (hooks.usePaymentOrders as jest.Mock).mock.calls.some(([params]) => Number.isNaN(params.user));
+      expect(sentNaN).toBe(false);
+      expect(screen.queryByText(/^Buyer:/)).not.toBeInTheDocument();
+    });
+
+    it('sends a whole-number user param and shows the buyer chip', async () => {
+      window.history.pushState({}, '', '/?tab=orders&user=5&userTitle=buyer5');
+      await renderPage();
+
+      expect(lastOrdersParams().user).toBe(5);
+      expect(screen.getByText('Buyer: buyer5')).toBeInTheDocument();
+    });
+
+    it('keeps a partner from the URL that has no revenue in the range, named by its short name', async () => {
       window.history.pushState({}, '', '/?tab=orders&org=ZZZ');
       await renderPage();
 
       expect(lastOrdersParams().org).toBe('ZZZ');
       expect(screen.getByText('Partner: ZZZ')).toBeInTheDocument();
-    });
-
-    it('names a partner from the URL by its organization name', async () => {
-      window.history.pushState({}, '', '/?tab=orders&org=TPA');
-      await renderPage();
-
-      expect(screen.getByText('Partner: Org A')).toBeInTheDocument();
-    });
-
-    it('falls back to Overview for a tab that no longer exists', async () => {
-      window.history.pushState({}, '', '/?tab=partners');
-      await renderPage();
-
-      expect(screen.getByRole('tab', { name: 'Overview', selected: true })).toBeInTheDocument();
     });
 
     it('follows the browser Back and Forward buttons between tabs', async () => {
@@ -326,39 +531,137 @@ describe('PaymentsPage', () => {
       expect(screen.getByRole('tab', { name: 'Payment history', selected: true })).toBeInTheDocument();
 
       act(() => {
-        window.history.pushState({}, '', '/');
+        window.history.pushState({}, '', '/?tab=partners');
         window.dispatchEvent(new PopStateEvent('popstate'));
       });
       await tabReady();
 
-      expect(screen.getByRole('tab', { name: 'Overview', selected: true })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'By partner', selected: true })).toBeInTheDocument();
     });
 
-    it('does nothing when the tab already open is clicked, so its partner stays', async () => {
-      window.history.pushState({}, '', '/?tab=orders&org=TPA');
+    it('does nothing when the tab already open is clicked, so its partner and focus stay', async () => {
+      window.history.pushState(
+        {},
+        '',
+        `/?tab=orders&org=TPA&content=${encodeURIComponent('course-v1:TPA+C1+2026')}&contentTitle=Course%201`,
+      );
       await renderPage();
 
       fireEvent.click(screen.getByRole('tab', { name: 'Payment history' }));
 
-      expect(new URLSearchParams(window.location.search).get('org')).toBe('TPA');
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('org')).toBe('TPA');
+      expect(params.get('content')).toBe('course-v1:TPA+C1+2026');
+      expect(screen.getByText('Course or program: Course 1')).toBeInTheDocument();
       expect(screen.getByText('Partner: Org A')).toBeInTheDocument();
     });
 
-    it('still clears the partner when another tab is opened', async () => {
-      window.history.pushState({}, '', '/?tab=orders&org=TPA');
+    it('still clears the partner and focus when another tab is opened', async () => {
+      window.history.pushState({}, '', '/?tab=orders&org=TPA&couponCode=SAVE10');
       await renderPage();
 
-      await openTab('Overview');
+      await openTab('By coupon');
 
       const params = new URLSearchParams(window.location.search);
-      expect(params.has('tab')).toBe(false);
+      expect(params.get('tab')).toBe('coupons');
       expect(params.has('org')).toBe(false);
+      expect(params.has('couponCode')).toBe(false);
+    });
+  });
+
+  describe('View all keeps the partner', () => {
+    const revenue = {
+      items: 1, gross: '100.00', discounts: '0.00', netPaid: '100.00', partnerAmount: '70.00', rwaqAmount: '30.00',
+    };
+    const lastOrdersParams = () => {
+      const { calls } = (hooks.usePaymentOrders as jest.Mock).mock;
+      return calls[calls.length - 1][0];
+    };
+    const openFirstRow = async (tabName: string) => {
+      (hooks.usePaymentOrders as jest.Mock).mockReturnValue({
+        data: pageOf([tpaView], 8), isLoading: false, isError: false,
+      });
+      await renderPage();
+      await openTab(tabName);
+      fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
+    };
+
+    it('from a course row: the history is narrowed to the course and still to the partner', async () => {
+      window.history.pushState({}, '', '/?tab=content&org=TPA');
+      (hooks.usePaymentContent as jest.Mock).mockReturnValue({
+        data: pageOf([{
+          type: 'course',
+          key: 'course-v1:TPA+C1+2026',
+          programUuid: null,
+          title: 'Course 1',
+          org: 'TPA',
+          orgName: 'Org A',
+          share: '70.00',
+          ...revenue,
+        }]),
+        isLoading: false,
+        isError: false,
+      });
+      await openFirstRow('By content');
+      fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+      await tabReady();
+
+      expect(lastOrdersParams()).toEqual(expect.objectContaining({
+        org: 'TPA', content: 'course-v1:TPA+C1+2026', pageSize: 10,
+      }));
+      expect(new URLSearchParams(window.location.search).get('org')).toBe('TPA');
+      // Tabs stay mounted, so look only at the one on screen.
+      const history = within(screen.getByRole('tabpanel'));
+      expect(history.getByText('Partner: Org A')).toBeInTheDocument();
+      expect(history.getByText('Course or program: Course 1')).toBeInTheDocument();
+    });
+
+    it('from a learner row: the history is narrowed to the buyer and still to the partner', async () => {
+      window.history.pushState({}, '', '/?tab=learners&org=TPA');
+      (hooks.usePaymentLearners as jest.Mock).mockReturnValue({
+        data: pageOf([{
+          userId: 5, username: 'buyer5', email: 'buyer5@example.com', orders: 8, ...revenue,
+        }]),
+        isLoading: false,
+        isError: false,
+      });
+      await openFirstRow('By learner');
+      fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+      await tabReady();
+
+      expect(lastOrdersParams()).toEqual(expect.objectContaining({ org: 'TPA', user: 5, pageSize: 10 }));
+      const history = within(screen.getByRole('tabpanel'));
+      expect(history.getByText('Partner: Org A')).toBeInTheDocument();
+      expect(history.getByText('Buyer: buyer5')).toBeInTheDocument();
+    });
+
+    it('from a coupon row: the history is narrowed to the code and still to the partner', async () => {
+      window.history.pushState({}, '', '/?tab=coupons&org=TPA');
+      (hooks.usePaymentCoupons as jest.Mock).mockReturnValue({
+        data: pageOf([{
+          code: 'SAVE10', scope: 'cart', discountType: 'amount', orders: 6, discountGiven: '60.00',
+        }]),
+        isLoading: false,
+        isError: false,
+      });
+      await openFirstRow('By coupon');
+      // The expansion asks for the coupon's orders under the partner too.
+      expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({
+        couponCode: 'SAVE10', org: 'TPA', pageSize: 5,
+      }));
+      fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+      await tabReady();
+
+      expect(lastOrdersParams()).toEqual(expect.objectContaining({ org: 'TPA', couponCode: 'SAVE10', pageSize: 10 }));
+      const history = within(screen.getByRole('tabpanel'));
+      expect(history.getByText('Partner: Org A')).toBeInTheDocument();
+      expect(history.getByText('Coupon code: SAVE10')).toBeInTheDocument();
     });
   });
 
   describe('Clear all on Payment history', () => {
-    it('clears the partner', async () => {
-      window.history.pushState({}, '', '/?tab=orders&org=TPA');
+    it('clears the partner and the focus together', async () => {
+      window.history.pushState({}, '', '/?tab=orders&org=TPA&couponCode=SAVE10');
       await renderPage();
 
       fireEvent.click(within(screen.getByRole('tabpanel')).getByRole('button', { name: 'Clear all' }));
@@ -366,8 +669,62 @@ describe('PaymentsPage', () => {
       const params = new URLSearchParams(window.location.search);
       expect(params.get('tab')).toBe('orders');
       expect(params.has('org')).toBe(false);
+      expect(params.has('couponCode')).toBe(false);
       const { calls } = (hooks.usePaymentOrders as jest.Mock).mock;
-      expect(calls[calls.length - 1][0]).toEqual(expect.objectContaining({ org: undefined }));
+      expect(calls[calls.length - 1][0]).toEqual(expect.objectContaining({ org: undefined, couponCode: undefined }));
+    });
+  });
+
+  describe('a jump to another tab keeps the date range', () => {
+    const pickLast30Days = () => {
+      fireEvent.click(within(screen.getByRole('tabpanel')).getByRole('button', { name: /All time/ }));
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Last 30 days' }));
+    };
+
+    it('View all opens Payment history over the row\'s range, which the history then keeps as its own', async () => {
+      (hooks.usePaymentOrders as jest.Mock).mockReturnValue({
+        data: pageOf([tpaView], 8), isLoading: false, isError: false,
+      });
+      await renderPage();
+      await openTab('By partner');
+      pickLast30Days();
+      const { startDate, endDate } = (hooks.usePaymentPartners as jest.Mock).mock.lastCall[0];
+      expect(startDate).toEqual(expect.any(String));
+
+      fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
+      (hooks.usePaymentOrders as jest.Mock).mockClear();
+      fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+      await tabReady();
+
+      // The hidden By partner expansion keeps asking for its 5 rows, so look at the history's own calls.
+      const lastHistory = () => (hooks.usePaymentOrders as jest.Mock).mock.calls
+        .map(([params]) => params).filter((params) => params.pageSize === 10).pop();
+      expect(lastHistory()).toEqual(expect.objectContaining({
+        org: 'TPA', pageSize: 10, startDate, endDate,
+      }));
+      // No history request went out over all time on the way.
+      const allTime = (hooks.usePaymentOrders as jest.Mock).mock.calls
+        .filter(([params]) => params.pageSize === 10 && !params.startDate);
+      expect(allTime).toHaveLength(0);
+
+      // The range is the history's own now: Clear all resets it.
+      fireEvent.click(within(screen.getByRole('tabpanel')).getByRole('button', { name: 'Clear all' }));
+      expect(lastHistory()).toEqual(expect.objectContaining({ startDate: undefined }));
+    });
+
+    it('View overview opens Overview for the partner over the same range', async () => {
+      await renderPage();
+      await openTab('By partner');
+      pickLast30Days();
+      const { startDate, endDate } = (hooks.usePaymentPartners as jest.Mock).mock.lastCall[0];
+
+      fireEvent.click(screen.getByRole('button', { name: 'Open the overview for Org A' }));
+      await tabReady();
+
+      expect(screen.getByRole('tab', { name: 'Overview', selected: true })).toBeInTheDocument();
+      expect((hooks.usePaymentsSummary as jest.Mock).mock.lastCall[0]).toEqual(expect.objectContaining({
+        org: 'TPA', startDate, endDate,
+      }));
     });
   });
 
@@ -379,15 +736,22 @@ describe('PaymentsPage', () => {
       await renderPage();
 
       expect(screen.queryByText('700.00')).not.toBeInTheDocument();
+      expect(screen.queryByText('349.00')).not.toBeInTheDocument();
       expect(screen.queryByTestId('metric-chart')).not.toBeInTheDocument();
     });
 
-    it('shows Payment history as loading, not as the previous page', async () => {
-      (hooks.usePaymentOrders as jest.Mock).mockReturnValue({
-        data: emptyPage, isLoading: false, isPlaceholderData: true, isFetching: true, isError: false,
+    it.each([
+      ['Payment history', hooks.usePaymentOrders],
+      ['By partner', hooks.usePaymentPartners],
+      ['By content', hooks.usePaymentContent],
+      ['By learner', hooks.usePaymentLearners],
+      ['By coupon', hooks.usePaymentCoupons],
+    ])('shows %s as loading, not as the previous page', async (tabName, hook) => {
+      (hook as jest.Mock).mockReturnValue({
+        data: partnersPage, isLoading: false, isPlaceholderData: true, isFetching: true, isError: false,
       });
       await renderPage();
-      await openTab('Payment history');
+      await openTab(tabName);
 
       expect(screen.getByLabelText('Loading data…')).toBeInTheDocument();
       expect(screen.queryByRole('table')).not.toBeInTheDocument();
