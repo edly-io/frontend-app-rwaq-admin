@@ -2061,6 +2061,9 @@ html[data-paragon-theme-variant='dark'] .rwaq-payments-tabs {
   .form-group { min-width: 14rem; }
 }
 
+// Date filter only, on the right like Overview's.
+.rwaq-overview__toolbar--end { justify-content: flex-end; }
+
 // Four tiles across the full width, then two as the page narrows.
 .rwaq-payment-grid {
   display: grid;
@@ -2072,6 +2075,9 @@ html[data-paragon-theme-variant='dark'] .rwaq-payments-tabs {
 @media (max-width: 50rem) {
   .rwaq-payment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+// Five tiles (Subscriptions): as many per line as fit, the rest wrap.
+.rwaq-payment-grid--fit { grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); }
 
 .rwaq-payment-kpi {
   display: flex;

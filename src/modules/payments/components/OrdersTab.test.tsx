@@ -95,8 +95,8 @@ const mockOrders = (orders: unknown[]) => (hooks.usePaymentOrders as jest.Mock).
   isError: false,
 });
 
-const renderTab = (org?: string) => renderWrapper(
-  <OrdersTab org={org} onOrgChange={jest.fn()} />,
+const renderTab = (org?: string, subscription?: number) => renderWrapper(
+  <OrdersTab org={org} onOrgChange={jest.fn()} subscription={subscription} onSubscriptionChange={jest.fn()} />,
 );
 
 /** The text of each cell of the first body row, by the table's header text. */
@@ -274,5 +274,52 @@ describe('Payment history expanded row', () => {
     expect(screen.getAllByText('Title of course-v1:TPA+C1+2026')).toHaveLength(2);
     expect(errors.mock.calls.some(([message]) => String(message).includes('same key'))).toBe(false);
     errors.mockRestore();
+  });
+});
+
+describe('Payment history subscription orders', () => {
+  const subscriptionItem = {
+    ...item('', '90.00'),
+    type: 'subscription',
+    key: null,
+    title: 'monthly',
+    org: '',
+    subscriptionId: 4,
+    plan: 'monthly',
+    periodStartsAt: '2026-09-10T10:00:00Z',
+    periodEndsAt: '2026-10-10T10:00:00Z',
+  };
+  const subscriptionOrder = {
+    ...wholeOrder, id: 9, wordpressOrderId: 'wp-9', items: [subscriptionItem], coupons: [],
+  };
+
+  it('shows the plan and the period the payment bought in the expanded row', () => {
+    mockOrders([subscriptionOrder]);
+    renderTab();
+    fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
+
+    const itemRow = screen.getByText('Subscription: Monthly').closest('tr') as HTMLElement;
+    expect(within(itemRow).getByText('Period: Sep 10, 2026 to Oct 10, 2026')).toBeInTheDocument();
+    expect(within(itemRow).getByText('Subscription')).toBeInTheDocument();
+    expect(within(itemRow).queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('asks for the chosen type', () => {
+    mockOrders([subscriptionOrder]);
+    renderTab();
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+    fireEvent.change(screen.getByLabelText('Type'), { target: { value: 'subscription' } });
+
+    const { calls } = (hooks.usePaymentOrders as jest.Mock).mock;
+    expect(calls[calls.length - 1][0]).toEqual(expect.objectContaining({ type: 'subscription' }));
+  });
+
+  it('asks for one subscription and shows a chip for it', () => {
+    mockOrders([subscriptionOrder]);
+    renderTab(undefined, 4);
+
+    const { calls } = (hooks.usePaymentOrders as jest.Mock).mock;
+    expect(calls[calls.length - 1][0]).toEqual(expect.objectContaining({ subscription: 4 }));
+    expect(screen.getByText('Subscription: buyer5, Monthly')).toBeInTheDocument();
   });
 });

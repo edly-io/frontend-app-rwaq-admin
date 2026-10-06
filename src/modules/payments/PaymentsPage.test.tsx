@@ -344,6 +344,21 @@ describe('PaymentsPage', () => {
       expect(screen.getByText('Partner: Org A')).toBeInTheDocument();
     });
 
+    it('asks the Payment history for the subscription in the URL, and shows a chip for it', async () => {
+      window.history.pushState({}, '', '/?tab=orders&subscription=4');
+      await renderPage();
+
+      expect(lastOrdersParams().subscription).toBe(4);
+      expect(screen.getByText('Subscription: #4')).toBeInTheDocument();
+    });
+
+    it('ignores a subscription in the URL that is not a number', async () => {
+      window.history.pushState({}, '', '/?tab=orders&subscription=abc');
+      await renderPage();
+
+      expect(lastOrdersParams().subscription).toBeUndefined();
+    });
+
     it('still clears the partner when another tab is opened', async () => {
       window.history.pushState({}, '', '/?tab=orders&org=TPA');
       await renderPage();
@@ -368,6 +383,19 @@ describe('PaymentsPage', () => {
       expect(params.has('org')).toBe(false);
       const { calls } = (hooks.usePaymentOrders as jest.Mock).mock;
       expect(calls[calls.length - 1][0]).toEqual(expect.objectContaining({ org: undefined }));
+    });
+  });
+
+  describe('Clear all with a subscription', () => {
+    it('clears the partner and the subscription together', async () => {
+      window.history.pushState({}, '', '/?tab=orders&org=TPA&subscription=4');
+      await renderPage();
+
+      fireEvent.click(within(screen.getByRole('tabpanel')).getByRole('button', { name: 'Clear all' }));
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.has('org')).toBe(false);
+      expect(params.has('subscription')).toBe(false);
     });
   });
 
