@@ -6,6 +6,7 @@ import {
   keepPreviousData, useQuery, useMutation, useQueryClient,
 } from '@tanstack/react-query';
 import { appId } from '@src/constants';
+import { courseQueryKeys as coursesModuleKeys } from '@src/modules/courses/data/hooks';
 import type {
   ChangeModePayload,
   EnrollPayload,
@@ -110,6 +111,8 @@ const invalidateAfterEnrollmentChange = (
 ) => {
   queryClient.invalidateQueries({ queryKey: userQueryKeys.enrollments(id) });
   queryClient.invalidateQueries({ queryKey: userQueryKeys.detail(id) });
+  // The Courses list shows each course's enrollment count.
+  queryClient.invalidateQueries({ queryKey: coursesModuleKeys.lists() });
 };
 
 /** POST new user — invalidates the list so it refetches after creation. */

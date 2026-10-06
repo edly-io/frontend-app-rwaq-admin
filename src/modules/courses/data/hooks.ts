@@ -92,6 +92,9 @@ export const useEnrollUserInCourse = (courseId: string) => {
   return useMutation({
     mutationFn: (payload: CourseEnrollPayload) => enrollUserInCourse(courseId, payload),
     onSuccess: () => {
+      // The Courses list shows each course's enrollment count and is fresh for a minute,
+      // so it needs the same refresh as this course's own queries.
+      queryClient.invalidateQueries({ queryKey: courseQueryKeys.lists() });
       // Invalidate all enrollment query variations for this course
       queryClient.invalidateQueries({ queryKey: courseQueryKeys.detail(courseId) });
       queryClient.invalidateQueries({
