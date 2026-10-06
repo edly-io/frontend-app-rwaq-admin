@@ -1,10 +1,8 @@
 /**
  * Overview — the KPI tiles and the trends for one date range and, optionally,
- * one partner. Nothing on this tab is a list: the tables live on the other tabs.
+ * one partner. Nothing on this tab is a list: the orders are on Payment history.
  *
- * The date range is this tab's own, like every tab's. A partner without a
- * revenue share keeps nothing: all of its revenue is Rwaq's, so the payable
- * figure is 0.00 rather than a gap.
+ * The date range is this tab's own, like every tab's.
  */
 import { useState } from 'react';
 import {
@@ -20,7 +18,7 @@ import PaymentKpi from './PaymentKpi';
 import {
   CURRENCY, DateFilter, formatAmount, formatMoney, formatTileAmount, useDateRange, usePartnerFilter,
 } from './shared';
-import type { ListTabProps, RangeHandoff } from './shared';
+import type { ListTabProps } from './shared';
 
 const CHART_HEIGHT = 240;
 const LABEL_ANGLE = 60;
@@ -121,14 +119,9 @@ const TrendChart = ({
   );
 };
 
-interface OverviewTabProps extends ListTabProps {
-  /** The range of By partner when "View overview" opened this tab. */
-  range?: RangeHandoff;
-}
-
-const OverviewTab = ({ org, onOrgChange, range }: OverviewTabProps) => {
+const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
   const intl = useIntl();
-  const dates = useDateRange(range);
+  const dates = useDateRange();
   const params = { org: org || undefined, startDate: dates.startDate, endDate: dates.endDate };
   const partner = usePartnerFilter(params, onOrgChange);
   const [granularity, setGranularity] = useState<Granularity>('month');
@@ -201,12 +194,6 @@ const OverviewTab = ({ org, onOrgChange, range }: OverviewTabProps) => {
           intl.formatMessage(messages.infoDiscounts),
         )}
         {money(intl.formatMessage(messages.kpiCollected), summary?.netPaid, intl.formatMessage(messages.infoCollected))}
-        {money(
-          intl.formatMessage(params.org ? messages.kpiPartnerOne : messages.kpiPartner),
-          summary?.partnerAmount,
-          intl.formatMessage(messages.infoPartner),
-        )}
-        {money(intl.formatMessage(messages.kpiRwaq), summary?.rwaqAmount, intl.formatMessage(messages.infoRwaq))}
       </div>
 
       <div className="rwaq-overview__trends-head">
@@ -245,17 +232,6 @@ const OverviewTab = ({ org, onOrgChange, range }: OverviewTabProps) => {
           info={intl.formatMessage(messages.infoChartOrders)}
           series={[{ key: intl.formatMessage(messages.seriesOrders), value: (point) => point.orders }]}
           hideLegend
-        />
-        <TrendChart
-          {...chartProps}
-          maxLabels={HALF_WIDTH_LABELS}
-          title={intl.formatMessage(messages.chartSplitTitle)}
-          info={intl.formatMessage(messages.infoChartSplit)}
-          series={[
-            { key: intl.formatMessage(messages.seriesPayout), value: (point) => Number(point.partnerAmount) },
-            { key: intl.formatMessage(messages.seriesRwaq), value: (point) => Number(point.rwaqAmount) },
-          ]}
-          formatValue={formatMoneyValue}
         />
       </div>
     </div>

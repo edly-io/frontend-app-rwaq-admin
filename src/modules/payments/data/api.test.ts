@@ -6,11 +6,7 @@
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import {
   downloadPaymentsCsv,
-  getPaymentContent,
-  getPaymentCoupons,
-  getPaymentLearners,
   getPaymentOrders,
-  getPaymentPartners,
   getPaymentsSummary,
 } from './api';
 
@@ -38,7 +34,7 @@ describe('payments api', () => {
   it('sends snake_case filters, drops empty ones, and camelCases the summary', async () => {
     get.mockResolvedValue({
       data: {
-        net_paid: '700.00', partner_amount: '349.00', series: [{ period: '2026-09-01', net_paid: '600.00' }],
+        net_paid: '700.00', series: [{ period: '2026-09-01', net_paid: '600.00' }],
       },
     });
 
@@ -67,7 +63,6 @@ describe('payments api', () => {
       org: 'TPA',
       source: 'wordpress',
       coupon: 'with',
-      content: 'course-v1:TPA+C1+2026',
       search: 'buyer',
       ordering: '-order_date',
       page: 2,
@@ -79,7 +74,6 @@ describe('payments api', () => {
         org: 'TPA',
         source: 'wordpress',
         coupon: 'with',
-        content: 'course-v1:TPA+C1+2026',
         search: 'buyer',
         ordering: '-order_date',
         page: 2,
@@ -88,18 +82,6 @@ describe('payments api', () => {
     });
     expect(page.pagination.numPages).toBe(1);
     expect(page.results[0].wordpressOrderId).toBe('wp-1');
-  });
-
-  it('sends paid=1 when only paid orders are wanted, and nothing when it is not set', async () => {
-    get.mockResolvedValue({ data: { pagination: {}, results: [] } });
-
-    await getPaymentOrders({ org: 'TPA', paid: true });
-    await getPaymentOrders({ org: 'TPA', paid: false });
-    await getPaymentOrders({ org: 'TPA' });
-
-    expect(get).toHaveBeenNthCalledWith(1, `${BASE}/orders/`, { params: { org: 'TPA', paid: 1 } });
-    expect(get).toHaveBeenNthCalledWith(2, `${BASE}/orders/`, { params: { org: 'TPA' } });
-    expect(get).toHaveBeenNthCalledWith(3, `${BASE}/orders/`, { params: { org: 'TPA' } });
   });
 
   it('camelCases the partner fields of an order and its coupons', async () => {
@@ -116,7 +98,7 @@ describe('payments api', () => {
       },
     });
 
-    const page = await getPaymentOrders({ org: 'TPA', paid: true });
+    const page = await getPaymentOrders({ org: 'TPA' });
 
     expect(page.results[0].partnerPricePaid).toBe('93.33');
     expect(page.results[0].partnerActualPrice).toBe('100.00');
@@ -128,19 +110,19 @@ describe('payments api', () => {
     const blob = new Blob(['x']);
     get.mockResolvedValue({
       data: blob,
-      headers: { 'content-disposition': 'attachment; filename="payments_partners_TPA.csv"' },
+      headers: { 'content-disposition': 'attachment; filename="payments_orders_TPA.csv"' },
     });
 
-    const result = await downloadPaymentsCsv('partners', {
-      org: 'TPA', search: 'org', page: 3, pageSize: 10, ordering: '-net_paid',
+    const result = await downloadPaymentsCsv('orders', {
+      org: 'TPA', search: 'buyer', page: 3, pageSize: 10, ordering: '-order_date',
     });
 
-    expect(get).toHaveBeenCalledWith(`${BASE}/partners/csv/`, {
-      params: { org: 'TPA', search: 'org', ordering: '-net_paid' },
+    expect(get).toHaveBeenCalledWith(`${BASE}/orders/csv/`, {
+      params: { org: 'TPA', search: 'buyer', ordering: '-order_date' },
       responseType: 'blob',
     });
     expect(result.blob).toBe(blob);
-    expect(result.filename).toBe('payments_partners_TPA.csv');
+    expect(result.filename).toBe('payments_orders_TPA.csv');
   });
 
   it('asks for the CSV in the given language', async () => {
@@ -172,81 +154,27 @@ describe('payments api', () => {
     },
   });
 
-  it('lists partners from partners/ with snake_case filters and camelCased rows', async () => {
-    get.mockResolvedValue(listPage({
-      org: 'TPA', org_name: 'Org A', net_paid: '370.00', partner_amount: '259.00',
-    }));
-
-    const page = await getPaymentPartners({
-      startDate: '2026-09-01', search: 'org', ordering: '-net_paid', page: 2, pageSize: 10,
-    });
-
-    expect(get).toHaveBeenCalledWith(`${BASE}/partners/`, {
-      params: {
-        start_date: '2026-09-01', search: 'org', ordering: '-net_paid', page: 2, page_size: 10,
-      },
-    });
-    expect(page.results[0].orgName).toBe('Org A');
-    expect(page.results[0].partnerAmount).toBe('259.00');
-  });
-
-  it('lists content from content/ with its type filter', async () => {
-    get.mockResolvedValue(listPage({ program_uuid: 'u-1', title: 'Program', rwaq_amount: '30.00' }));
-
-    const page = await getPaymentContent({ org: 'TPA', type: 'program', ordering: 'title' });
-
-    expect(get).toHaveBeenCalledWith(`${BASE}/content/`, {
-      params: { org: 'TPA', type: 'program', ordering: 'title' },
-    });
-    expect(page.results[0].programUuid).toBe('u-1');
-    expect(page.results[0].rwaqAmount).toBe('30.00');
-  });
-
-  it('lists learners from learners/', async () => {
-    get.mockResolvedValue(listPage({ user_id: 5, username: 'buyer5', net_paid: '140.00' }));
-
-    const page = await getPaymentLearners({ search: 'buyer', page: 1, pageSize: 10 });
-
-    expect(get).toHaveBeenCalledWith(`${BASE}/learners/`, {
-      params: { search: 'buyer', page: 1, page_size: 10 },
-    });
-    expect(page.results[0].userId).toBe(5);
-    expect(page.results[0].netPaid).toBe('140.00');
-  });
-
-  it('lists coupons from coupons/ with its scope filter', async () => {
-    get.mockResolvedValue(listPage({ code: 'SAVE10', discount_type: 'amount', discount_given: '60.00' }));
-
-    const page = await getPaymentCoupons({ org: 'TPA', scope: 'cart', ordering: '-discount_given' });
-
-    expect(get).toHaveBeenCalledWith(`${BASE}/coupons/`, {
-      params: { org: 'TPA', scope: 'cart', ordering: '-discount_given' },
-    });
-    expect(page.results[0].discountType).toBe('amount');
-    expect(page.results[0].discountGiven).toBe('60.00');
-  });
-
   describe('query params', () => {
     it('keeps a 0, which is a real value, and drops undefined and empty strings', async () => {
       get.mockResolvedValue(listPage({}));
 
       await getPaymentOrders({
-        user: 0, page: 0, search: '', org: undefined, couponCode: 'SAVE10',
+        page: 0, search: '', org: undefined, coupon: 'with',
       });
 
       expect(get).toHaveBeenCalledWith(`${BASE}/orders/`, {
-        params: { user: 0, page: 0, coupon_code: 'SAVE10' },
+        params: { page: 0, coupon: 'with' },
       });
     });
 
     it('does not drop a NaN: it is sent so the backend refuses it instead of the list silently widening', async () => {
       get.mockResolvedValue(listPage({}));
 
-      await getPaymentOrders({ user: Number('abc') });
+      await getPaymentOrders({ page: Number('abc') });
 
       const { params } = get.mock.calls[0][1];
-      expect(Object.keys(params)).toEqual(['user']);
-      expect(Number.isNaN(params.user)).toBe(true);
+      expect(Object.keys(params)).toEqual(['page']);
+      expect(Number.isNaN(params.page)).toBe(true);
     });
   });
 
@@ -276,7 +204,7 @@ describe('payments api', () => {
     it('falls back to its own name when the headers are missing altogether', async () => {
       get.mockResolvedValue({ data: new Blob(['x']) });
 
-      expect((await downloadPaymentsCsv('coupons', { org: 'TPA' })).filename).toBe('payments_coupons_TPA.csv');
+      expect((await downloadPaymentsCsv('orders', { org: 'TPA' })).filename).toBe('payments_orders_TPA.csv');
     });
 
     it('rejects with the http error when the server refuses, so the caller can say so', async () => {

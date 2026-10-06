@@ -28,8 +28,6 @@ export interface OrgSummary {
   courseCount: number;
   adminCount: number;
   programCount: number;
-  /** Share of paid course and program revenue, "0.00" to "100.00". null when unset. */
-  revenueSharePercentage: string | null;
 }
 
 /** One Organization Admin in an org's roster */
@@ -65,8 +63,6 @@ export interface OrgCreatePayload {
   arabicName?: string;
   featuredVideo?: string;
   showLogoOnProgramCertificate?: boolean;
-  /** "0" to "100" with up to 2 decimals. Omit to leave it unset. */
-  revenueSharePercentage?: string;
 }
 
 /** Fields PATCH /rwaq/api/organizations/<short_name>/ accepts */
@@ -75,8 +71,6 @@ export interface OrgProfilePatch {
   arabicName?: string;
   featuredVideo?: string;
   showLogoOnProgramCertificate?: boolean;
-  /** Empty string clears it. */
-  revenueSharePercentage?: string;
 }
 
 /** Sortable columns supported by the backend's OrderingFilter. */

@@ -8,18 +8,17 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWrapper } from '@src/setupTest';
 import * as whoami from '@src/data/whoami';
+import * as orgHooks from '@src/modules/organizations/data/hooks';
 import * as api from './data/api';
 import PaymentsPage from './PaymentsPage';
 
 jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn() }));
 
+jest.mock('@src/modules/organizations/data/hooks', () => ({ useOrganizations: jest.fn() }));
+
 jest.mock('./data/api', () => ({
   getPaymentsSummary: jest.fn(),
   getPaymentOrders: jest.fn(),
-  getPaymentPartners: jest.fn(),
-  getPaymentContent: jest.fn(),
-  getPaymentLearners: jest.fn(),
-  getPaymentCoupons: jest.fn(),
   downloadPaymentsCsv: jest.fn(),
 }));
 
@@ -41,26 +40,13 @@ const summary = {
   gross: '800.00',
   discounts: '100.00',
   netPaid: '700.00',
-  partnerAmount: '349.00',
-  rwaqAmount: '201.00',
   orders: 3,
   items: 4,
   granularity: 'month',
   series: [],
 };
 
-const partner = {
-  org: 'TPA',
-  orgName: 'Org A',
-  share: '70.00',
-  orders: 2,
-  items: 2,
-  gross: '400.00',
-  discounts: '30.00',
-  netPaid: '370.00',
-  partnerAmount: '259.00',
-  rwaqAmount: '111.00',
-};
+const partner = { shortName: 'TPA', name: 'Org A' };
 
 const order = (id: number) => ({
   id,
@@ -102,11 +88,8 @@ beforeEach(() => {
   jest.resetAllMocks();
   (whoami.useAdminCapabilities as jest.Mock).mockReturnValue({ data: { isSuperuser: true }, isLoading: false });
   mockApi.getPaymentsSummary.mockResolvedValue(summary as never);
-  mockApi.getPaymentPartners.mockResolvedValue(pageOf([partner]) as never);
+  (orgHooks.useOrganizations as jest.Mock).mockReturnValue({ data: pageOf([partner]), isLoading: false });
   mockApi.getPaymentOrders.mockResolvedValue(pageOf([order(1)], 3, 25) as never);
-  mockApi.getPaymentContent.mockResolvedValue(pageOf([]) as never);
-  mockApi.getPaymentLearners.mockResolvedValue(pageOf([]) as never);
-  mockApi.getPaymentCoupons.mockResolvedValue(pageOf([]) as never);
 });
 
 describe('PaymentsPage requests', () => {
@@ -152,15 +135,15 @@ describe('PaymentsPage requests', () => {
 
   it('does not query a tab that is open but hidden, and keeps what it had', async () => {
     await renderPage();
-    await openTab('By partner');
     await openTab('Payment history');
     await waitFor(() => expect(mockApi.getPaymentOrders).toHaveBeenCalled());
-    await openTab('By partner');
+    await openTab('Overview');
     const ordersBefore = mockApi.getPaymentOrders.mock.calls.length;
     const summaryBefore = mockApi.getPaymentsSummary.mock.calls.length;
 
-    // Overview for a partner: Overview queries with the partner, the hidden history tab does not.
-    fireEvent.click(screen.getByRole('button', { name: 'Open the overview for Org A' }));
+    // A partner chosen on Overview: Overview queries with it, the hidden history tab does not.
+    // Both tabs are mounted and each has a Partner select, so pick Overview's.
+    fireEvent.change(document.getElementById('rwaq-overview-partner') as HTMLElement, { target: { value: 'TPA' } });
     await waitFor(() => expect(callsOf(mockApi.getPaymentsSummary as jest.Mock)).toContainEqual(
       expect.objectContaining({ org: 'TPA' }),
     ));

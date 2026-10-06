@@ -1,20 +1,20 @@
 /**
- * Pieces every payments tab shares: money formatting, list state, the CSV
- * button, the tab heading, the partner filter and the revenue columns.
+ * Pieces the payments tabs share: money formatting, list state, the CSV
+ * button, the tab heading and the partner filter.
  */
 import { ReactNode, useState } from 'react';
 import { Button } from '@openedx/paragon';
 import { Download } from '@openedx/paragon/icons';
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
-import type { ColumnDef } from '@src/components/AdminDataTable';
 import InfoTooltip from '@src/components/InfoTooltip';
 import type { AppliedChip, FilterGroup } from '@src/components/SearchFilterBar';
 import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
 import { useToast } from '@src/components/ToastContext';
-import { useDownloadPaymentsCsv, usePaymentPartners } from '../data/hooks';
+import { useOrganizations } from '@src/modules/organizations/data/hooks';
+import { useDownloadPaymentsCsv } from '../data/hooks';
 import type {
-  ListParams, Paginated, PaymentsParams, PaymentsReport, RevenueTotals,
+  ListParams, Paginated, PaymentsParams, PaymentsReport,
 } from '../data/types';
 import messages from '../messages';
 
@@ -80,19 +80,6 @@ export const MoneyTd = ({ value }: { value: string | null | undefined }) => (
   <td><MoneyCell value={value} /></td>
 );
 
-/** "70.00" → "70%", or a "Not set" that explains on hover what no share means. */
-export const ShareCell = ({ share }: { share: string | null }) => {
-  const intl = useIntl();
-  if (share !== null) {
-    return <span>{intl.formatNumber(Number(share) / 100, { style: 'percent', maximumFractionDigits: 2 })}</span>;
-  }
-  return (
-    <InfoTooltip text={intl.formatMessage(messages.noShareInfo)}>
-      <span className="rwaq-th-info">{intl.formatMessage(messages.notSet)}</span>
-    </InfoTooltip>
-  );
-};
-
 /** The date and time of a timestamp in UTC, the same days the backend's date filters and buckets use. */
 export const formatDateTime = (iso: string, locale?: string) => new Date(iso).toLocaleString(locale, {
   timeZone: 'UTC',
@@ -108,31 +95,13 @@ export interface DateRange {
   endDate?: string;
 }
 
-/** A range handed over by "View all" or "View overview". `id` changes on every jump, even to the same dates. */
-export interface RangeHandoff extends DateRange {
-  id: number;
-}
-
-/**
- * A tab's own date range. Each tab keeps its own, so one tab's setting never narrows another.
- *
- * A jump from another tab hands its range over and the tab takes it as its own.
- * It is taken in the same render, as useListState resets its page, so the old
- * range never sends a request.
- */
-export const useDateRange = (handoff?: RangeHandoff) => {
-  const [state, setState] = useState<DateRange & { handoffId?: number }>(
-    { startDate: handoff?.startDate, endDate: handoff?.endDate, handoffId: handoff?.id },
-  );
-  const arrived = handoff !== undefined && handoff.id !== state.handoffId;
-  if (arrived) { setState({ startDate: handoff.startDate, endDate: handoff.endDate, handoffId: handoff.id }); }
-  const range = arrived ? handoff : state;
+/** A tab's own date range. Each tab keeps its own, so one tab's setting never narrows another. */
+export const useDateRange = () => {
+  const [range, setState] = useState<DateRange>({});
   return {
     startDate: range.startDate,
     endDate: range.endDate,
-    setRange: (startDate?: string, endDate?: string) => setState(
-      (prev) => ({ startDate, endDate, handoffId: prev.handoffId }),
-    ),
+    setRange: (startDate?: string, endDate?: string) => setState({ startDate, endDate }),
   };
 };
 
@@ -214,21 +183,21 @@ export const tablePagination = <Row extends object>(
  * The Partner dropdown and its chip for a list tab. The partner lives in the
  * page URL so it survives a reload, but each tab offers its own dropdown:
  * switching tabs clears it, so a list never narrows itself out of sight.
- * Options are every partner, whether or not it sold anything in the date range.
+ * Options are the active organizations, whether or not they sold anything in the date range.
  */
 export const usePartnerFilter = (
   params: PaymentsParams,
   onOrgChange: (org: string) => void,
 ): { group: FilterGroup; chip: AppliedChip | null } => {
   const intl = useIntl();
-  const { data } = usePaymentPartners({ ordering: 'org_name', pageSize: 100 });
+  const { data } = useOrganizations({ filter: 'active', ordering: 'name', pageSize: 100 });
   const partners = data?.results ?? [];
   const org = params.org ?? '';
   const options = [
     { value: '', label: intl.formatMessage(messages.allPartners) },
-    ...partners.map((partner) => ({ value: partner.org, label: partner.orgName })),
+    ...partners.map((partner) => ({ value: partner.shortName, label: partner.name })),
   ];
-  // A partner in the URL may not be in the first page of options.
+  // A partner in the URL may be inactive or beyond the first 100 options.
   if (org && !options.some((option) => option.value === org)) {
     options.push({ value: org, label: org });
   }
@@ -307,69 +276,6 @@ export const TabHeading = ({ title, info, how }: TabHeadingProps) => (
   </div>
 );
 
-/** The hover text and labels of the revenue columns, which read differently on each tab. */
-export interface RevenueInfos {
-  purchasesLabel: string;
-  purchases: string;
-  orderValue: string;
-  discounts: string;
-  collected: string;
-  payout: string;
-  rwaq: string;
-}
-
-/**
- * Purchases, order value, discounts, amount collected, partner payout and
- * Rwaq revenue: the same on every revenue tab, each explained for what a row
- * is on that tab (a partner, a course or program, a learner).
- */
-export const revenueColumns = <Row extends RevenueTotals>(
-  intl: Intl,
-  infos: RevenueInfos,
-): ColumnDef<Row>[] => [
-    {
-      label: infos.purchasesLabel,
-      info: infos.purchases,
-      headerClassName: 'rwaq-th--wrap',
-      key: 'items',
-    },
-    {
-      label: intl.formatMessage(messages.colOrderValue),
-      info: infos.orderValue,
-      headerClassName: 'rwaq-th--wrap',
-      key: 'gross',
-      renderCell: (value) => <MoneyCell value={value as string} />,
-    },
-    {
-      label: intl.formatMessage(messages.colDiscounts),
-      info: infos.discounts,
-      headerClassName: 'rwaq-th--wrap',
-      key: 'discounts',
-      renderCell: (value) => <MoneyCell value={value as string} />,
-    },
-    {
-      label: intl.formatMessage(messages.colCollected),
-      info: infos.collected,
-      headerClassName: 'rwaq-th--wrap',
-      key: 'netPaid',
-      renderCell: (value) => <MoneyCell value={value as string} strong />,
-    },
-    {
-      label: intl.formatMessage(messages.colPayout),
-      info: infos.payout,
-      headerClassName: 'rwaq-th--wrap',
-      key: 'partnerAmount',
-      renderCell: (value) => <MoneyCell value={value as string} />,
-    },
-    {
-      label: intl.formatMessage(messages.colRwaq),
-      info: infos.rwaq,
-      headerClassName: 'rwaq-th--wrap',
-      key: 'rwaqAmount',
-      renderCell: (value) => <MoneyCell value={value as string} />,
-    },
-  ];
-
 /** Children wrapped as the table card of a tab. */
 export const TabCard = ({ children }: { children: ReactNode }) => (
   <div className="rwaq-card rwaq-card--fit">{children}</div>
@@ -379,19 +285,6 @@ export const TabCard = ({ children }: { children: ReactNode }) => (
 export const DetailTable = ({ children }: { children: ReactNode }) => (
   <div className="rwaq-row-detail">{children}</div>
 );
-
-/** Under an expanded row that shows only the first few: how many exist and a way to see them all. */
-export const ViewAllNote = ({ shown, total, onViewAll }: { shown: number; total: number; onViewAll: () => void }) => {
-  const intl = useIntl();
-  if (total <= shown) { return null; }
-  return (
-    <p className="rwaq-row-detail__more">
-      {intl.formatMessage(messages.showingOf, { shown, total })}
-      {' '}
-      <Button variant="link" size="inline" onClick={onViewAll}>{intl.formatMessage(messages.viewAll)}</Button>
-    </p>
-  );
-};
 
 /** What every tab gets from the page: the chosen partner and a way to change it. Dates are the tab's own. */
 export interface ListTabProps {

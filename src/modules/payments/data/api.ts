@@ -3,8 +3,8 @@
  * Components call the hooks in hooks.ts, never this file directly.
  *
  *   GET /api/v1/admin/payments/summary/
- *   GET /api/v1/admin/payments/{orders,partners,content,learners,coupons}/
- *   GET /api/v1/admin/payments/{report}/csv/   same filters, every row, as a file
+ *   GET /api/v1/admin/payments/orders/
+ *   GET /api/v1/admin/payments/orders/csv/   same filters, every item, as a file
  *
  * Host: Studio (CMS), matching the dashboard analytics.
  * Authentication: Superuser only (IsSuperAdmin — is_staff=True without is_superuser returns 403).
@@ -14,16 +14,10 @@ import { camelCaseObject, snakeCaseObject } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { getStudioApiUrl } from '@src/data/utils';
 import type {
-  ContentListParams,
-  ContentRow,
-  CouponListParams,
-  CouponRow,
-  LearnerRow,
   ListParams,
   OrderListParams,
   OrderRow,
   Paginated,
-  PartnerRow,
   PaymentsReport,
   PaymentsSummary,
   SummaryParams,
@@ -51,14 +45,7 @@ export const getPaymentsSummary = async (params: SummaryParams = {}): Promise<Pa
   return camelCaseObject(data) as PaymentsSummary;
 };
 
-/** `paid` goes out as paid=1 when set, and is left out otherwise. */
-export const getPaymentOrders = ({ paid, ...params }: OrderListParams) => (
-  getList<OrderRow>('orders', { ...params, ...(paid ? { paid: 1 } : {}) })
-);
-export const getPaymentPartners = (params: ListParams) => getList<PartnerRow>('partners', params);
-export const getPaymentContent = (params: ContentListParams) => getList<ContentRow>('content', params);
-export const getPaymentLearners = (params: ListParams) => getList<LearnerRow>('learners', params);
-export const getPaymentCoupons = (params: CouponListParams) => getList<CouponRow>('coupons', params);
+export const getPaymentOrders = (params: OrderListParams) => getList<OrderRow>('orders', params);
 
 /** The filename the backend sent, or null when the header isn't readable (CORS). */
 const filenameFrom = (disposition: string | undefined): string | null => {

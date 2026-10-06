@@ -12,16 +12,10 @@ import { appId } from '@src/constants';
 import { ActiveTabContext } from './activeTab';
 import {
   downloadPaymentsCsv,
-  getPaymentContent,
-  getPaymentCoupons,
-  getPaymentLearners,
   getPaymentOrders,
-  getPaymentPartners,
   getPaymentsSummary,
 } from './api';
 import type {
-  ContentListParams,
-  CouponListParams,
   ListParams,
   OrderListParams,
   PaymentsReport,
@@ -54,30 +48,6 @@ export const usePaymentsSummary = (params: SummaryParams = {}) => useQuery({
 export const usePaymentOrders = (params: OrderListParams) => useQuery({
   queryKey: paymentsQueryKeys.list('orders', params),
   queryFn: () => getPaymentOrders(params),
-  ...useListOptions(),
-});
-
-export const usePaymentPartners = (params: ListParams) => useQuery({
-  queryKey: paymentsQueryKeys.list('partners', params),
-  queryFn: () => getPaymentPartners(params),
-  ...useListOptions(),
-});
-
-export const usePaymentContent = (params: ContentListParams) => useQuery({
-  queryKey: paymentsQueryKeys.list('content', params),
-  queryFn: () => getPaymentContent(params),
-  ...useListOptions(),
-});
-
-export const usePaymentLearners = (params: ListParams) => useQuery({
-  queryKey: paymentsQueryKeys.list('learners', params),
-  queryFn: () => getPaymentLearners(params),
-  ...useListOptions(),
-});
-
-export const usePaymentCoupons = (params: CouponListParams) => useQuery({
-  queryKey: paymentsQueryKeys.list('coupons', params),
-  queryFn: () => getPaymentCoupons(params),
   ...useListOptions(),
 });
 

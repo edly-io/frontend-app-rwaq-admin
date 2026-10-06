@@ -127,14 +127,14 @@ describe('CsvButton', () => {
   const revokeObjectURL = jest.fn();
   let clicked: { download: string; href: string }[];
 
-  const renderButton = (params = {}, report: 'orders' | 'partners' = 'orders') => {
+  const renderButton = (params = {}) => {
     const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
     const wrapper = ({ children }: { children: ReactNode }) => (
       <IntlProvider locale="en">
         <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
       </IntlProvider>
     );
-    return render(<CsvButton report={report} params={params} />, { wrapper });
+    return render(<CsvButton report="orders" params={params} />, { wrapper });
   };
 
   beforeEach(() => {
@@ -189,8 +189,7 @@ describe('CsvButton', () => {
       search: 'buyer',
       ordering: '-order_date',
       source: 'wordpress',
-      couponCode: 'SAVE10',
-      user: 5,
+      coupon: 'with',
       page: 3,
       pageSize: 10,
     });
@@ -206,8 +205,7 @@ describe('CsvButton', () => {
         search: 'buyer',
         ordering: '-order_date',
         source: 'wordpress',
-        coupon_code: 'SAVE10',
-        user: 5,
+        coupon: 'with',
       },
       responseType: 'blob',
       headers: { 'Accept-Language': 'en' },
@@ -217,7 +215,7 @@ describe('CsvButton', () => {
   it('is disabled while the download is in flight and enabled again after', async () => {
     let finish: (value: unknown) => void = () => {};
     get.mockReturnValue(new Promise((resolve) => { finish = resolve; }));
-    renderButton({}, 'partners');
+    renderButton();
 
     fireEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
 
