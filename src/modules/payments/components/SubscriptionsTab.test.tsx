@@ -84,6 +84,27 @@ describe('Subscriptions KPI cards', () => {
   });
 });
 
+describe('Subscriptions list', () => {
+  it('asks for the latest start first', () => {
+    renderWrapper(<SubscriptionsTab />);
+
+    const { calls } = (hooks.usePaymentSubscriptions as jest.Mock).mock;
+    expect(calls[calls.length - 1][0]).toEqual(expect.objectContaining({ ordering: '-starts_at' }));
+  });
+
+  it('shows the status and the source as chips, with the source column last', () => {
+    renderWrapper(<SubscriptionsTab />);
+
+    const cells = within(screen.getAllByRole('row')[1]).getAllByRole('cell');
+    const status = within(cells[3]).getByText('Active');
+    expect(status).toHaveClass('badge', 'badge-success');
+    const source = within(cells[cells.length - 1]).getByText('WordPress');
+    expect(source).toHaveClass('badge', 'badge-light');
+    const headers = screen.getAllByRole('columnheader').map((header) => header.textContent);
+    expect(headers[headers.length - 1]).toMatch(/Source/);
+  });
+});
+
 describe('Subscriptions expanded row', () => {
   const expand = () => fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
 

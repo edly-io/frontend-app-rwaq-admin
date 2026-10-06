@@ -5,6 +5,7 @@
  * share. An admin grant lists the subscription but never counts as revenue.
  */
 import { Link } from 'react-router-dom';
+import { Badge } from '@openedx/paragon';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
@@ -21,9 +22,13 @@ import {
   formatTileAmount, listScope, tablePagination, useDateRange, useListState,
 } from './shared';
 
-const DEFAULT_ORDERING = '-ends_at';
+const DEFAULT_ORDERING = '-starts_at';
 const CURRENCY = 'SAR';
 const STATUSES: SubscriptionStatus[] = ['active', 'cancelled', 'expired', 'revoked'];
+/** Chip colour of each status: green while live, amber when cancelled but not ended, grey or red when over. */
+const STATUS_VARIANT: Record<SubscriptionStatus, string> = {
+  active: 'success', cancelled: 'warning', expired: 'light', revoked: 'danger',
+};
 /** How many payments an expanded row lists before it links to the full history. */
 const PAYMENTS_SHOWN = 5;
 
@@ -77,6 +82,8 @@ const messages = defineMessages({
     id: 'rwaq.admin.payments.subscriptions.kpi.cancellations-info',
     defaultMessage: 'Subscriptions cancelled in the range, also those reactivated later. Access continues until their end date.',
   },
+  sortStartsDesc: { id: 'rwaq.admin.payments.subscriptions.sort.starts-desc', defaultMessage: 'Starts, latest first' },
+  sortStartsAsc: { id: 'rwaq.admin.payments.subscriptions.sort.starts-asc', defaultMessage: 'Starts, earliest first' },
   sortEndsDesc: { id: 'rwaq.admin.payments.subscriptions.sort.ends-desc', defaultMessage: 'Ends, latest first' },
   sortEndsAsc: { id: 'rwaq.admin.payments.subscriptions.sort.ends-asc', defaultMessage: 'Ends, earliest first' },
   sortCollectedDesc: { id: 'rwaq.admin.payments.subscriptions.sort.collected', defaultMessage: 'Collected, highest first' },
@@ -173,6 +180,8 @@ const SubscriptionsTab = () => {
   );
 
   const sortOptions = [
+    { value: '-starts_at', label: label('sortStartsDesc') },
+    { value: 'starts_at', label: label('sortStartsAsc') },
     { value: '-ends_at', label: label('sortEndsDesc') },
     { value: 'ends_at', label: label('sortEndsAsc') },
     { value: '-net_paid', label: label('sortCollectedDesc') },
@@ -205,13 +214,17 @@ const SubscriptionsTab = () => {
       ),
     },
     { label: label('colPlan'), key: 'plan', renderCell: (_value, row) => label(row.plan) },
-    { label: label('colSource'), key: 'source', renderCell: (_value, row) => label(row.source) },
-    { label: label('colStatus'), key: 'status', renderCell: (_value, row) => label(row.status) },
+    {
+      label: label('colStatus'),
+      key: 'status',
+      renderCell: (_value, row) => <Badge variant={STATUS_VARIANT[row.status] ?? 'light'}>{label(row.status)}</Badge>,
+    },
     { label: label('colStarts'), key: 'startsAt', renderCell: (_value, row) => formatDate(row.startsAt) },
     { label: label('colEnds'), key: 'endsAt', renderCell: (_value, row) => formatDate(row.endsAt) },
     { label: label('colPayments'), key: 'payments' },
     { label: label('colCollected'), key: 'netPaid', renderCell: (value) => <MoneyCell value={value as string} strong /> },
     { label: label('colDiscounts'), key: 'discounts', renderCell: (value) => <MoneyCell value={value as string} /> },
+    { label: label('colSource'), key: 'source', renderCell: (_value, row) => <Badge variant="light">{label(row.source)}</Badge> },
   ];
 
   return (
