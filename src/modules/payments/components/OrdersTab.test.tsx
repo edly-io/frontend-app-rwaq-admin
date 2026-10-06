@@ -9,12 +9,14 @@
  */
 import { fireEvent, screen, within } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
+import * as orgHooks from '@src/modules/organizations/data/hooks';
 import * as hooks from '../data/hooks';
 import OrdersTab from './OrdersTab';
 
+jest.mock('@src/modules/organizations/data/hooks', () => ({ useOrganizations: jest.fn() }));
+
 jest.mock('../data/hooks', () => ({
   usePaymentOrders: jest.fn(),
-  usePaymentPartners: jest.fn(),
   useDownloadPaymentsCsv: jest.fn(),
 }));
 
@@ -63,6 +65,7 @@ const wholeOrder = {
   partnerDiscountAmount: null,
   partnerPricePaid: null,
   reason: '',
+  enrolledBy: null,
   coupons: [cartCoupon],
   items: [
     item('course-v1:TPA+C1+2026', '93.33', { actualPrice: '100.00', discountAmount: '6.67' }),
@@ -93,7 +96,7 @@ const mockOrders = (orders: unknown[]) => (hooks.usePaymentOrders as jest.Mock).
 });
 
 const renderTab = (org?: string) => renderWrapper(
-  <OrdersTab org={org} onOrgChange={jest.fn()} onFocusClear={jest.fn()} onScopeClear={jest.fn()} />,
+  <OrdersTab org={org} onOrgChange={jest.fn()} />,
 );
 
 /** The text of each cell of the first body row, by the table's header text. */
@@ -105,7 +108,7 @@ const firstRow = () => {
 
 beforeEach(() => {
   jest.resetAllMocks();
-  (hooks.usePaymentPartners as jest.Mock).mockReturnValue({ data: undefined });
+  (orgHooks.useOrganizations as jest.Mock).mockReturnValue({ data: undefined });
   (hooks.useDownloadPaymentsCsv as jest.Mock).mockReturnValue({ mutateAsync: jest.fn(), isPending: false });
 });
 
@@ -118,23 +121,22 @@ describe('Payment history amounts', () => {
     expect(row.Items).toBe('2');
     expect(row['Order value (SAR)']).toBe('150.00');
     expect(row['Discount (SAR)']).toBe('10.00');
-    expect(row['Amount collected (SAR)']).toBe('140.00');
+    expect(row['Revenue (SAR)']).toBe('140.00');
     expect(screen.queryByText(/this partner/)).not.toBeInTheDocument();
   });
 
-  it('shows only the partner\'s part under a partner, with headers that say so', () => {
+  it('shows only the partner\'s part under a partner', () => {
     mockOrders([tpaOrder]);
     renderTab('TPA');
 
     const row = firstRow();
     expect(row.Items).toBe('1');
-    expect(row['Order value (SAR, this partner)']).toBe('100.00');
-    expect(row['Discount (SAR, this partner)']).toBe('6.67');
-    expect(row['Amount collected (SAR, this partner)']).toBe('93.33');
+    expect(row['Order value (SAR)']).toBe('100.00');
+    expect(row['Discount (SAR)']).toBe('6.67');
+    expect(row['Revenue (SAR)']).toBe('93.33');
     // Nothing of the whole order is left in the row.
     expect(Object.values(row)).not.toContain('150.00');
     expect(Object.values(row)).not.toContain('140.00');
-    expect(screen.queryByText('Amount collected (SAR)')).not.toBeInTheDocument();
   });
 
   it('shows 0.00 when the partner\'s items were all free, not the whole-order amounts', () => {
@@ -148,16 +150,15 @@ describe('Payment history amounts', () => {
     renderTab('TPA');
 
     const row = firstRow();
-    expect(row['Amount collected (SAR, this partner)']).toBe('0.00');
-    expect(row['Discount (SAR, this partner)']).toBe('100.00');
+    expect(row['Revenue (SAR)']).toBe('0.00');
+    expect(row['Discount (SAR)']).toBe('100.00');
   });
 
-  it('asks the backend for the partner and leaves paid out of the history list', () => {
+  it('asks the backend for the partner', () => {
     mockOrders([tpaOrder]);
     renderTab('TPA');
 
     expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({ org: 'TPA' }));
-    expect((hooks.usePaymentOrders as jest.Mock).mock.calls[0][0].paid).toBeUndefined();
   });
 });
 
@@ -167,22 +168,65 @@ describe('Payment history date', () => {
     if (zone === undefined) { delete process.env.TZ; } else { process.env.TZ = zone; }
   });
 
-  it('shows the order\'s UTC day, the day the date filters count it in', () => {
+  it('shows the order\'s UTC date and time, the day the date filters count it in', () => {
     // Already the 11th in Auckland.
     process.env.TZ = 'Pacific/Auckland';
     mockOrders([{ ...wholeOrder, orderDate: '2026-09-10T20:00:00Z' }]);
     renderTab();
 
-    expect(firstRow().Date).toBe('9/10/2026');
+    expect(firstRow()['Date and time (UTC)']).toBe('Sep 10, 2026, 20:00');
   });
 
   it('says in the column\'s hover text that the date is in UTC', () => {
     mockOrders([wholeOrder]);
     renderTab();
 
-    fireEvent.mouseOver(screen.getByText('Date'));
+    fireEvent.mouseOver(screen.getByText('Date and time (UTC)'));
 
-    expect(screen.getByText(/The day the order was paid, in UTC\./)).toBeInTheDocument();
+    expect(screen.getByText(/When the order was paid, in UTC\./)).toBeInTheDocument();
+  });
+});
+
+describe('Partner filter options', () => {
+  it('asks for every active organization, not only the ones with sales in the date range', () => {
+    mockOrders([wholeOrder]);
+    renderTab();
+
+    expect(orgHooks.useOrganizations).toHaveBeenCalledWith({ ordering: 'name', pageSize: 100 });
+  });
+
+  it('offers the organizations by name with their short name as the value', () => {
+    (orgHooks.useOrganizations as jest.Mock).mockReturnValue({
+      data: { results: [{ shortName: 'TPA', name: 'Org A' }] },
+    });
+    mockOrders([wholeOrder]);
+    renderTab();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+
+    expect(within(screen.getByLabelText('Partner')).getByRole('option', { name: 'Org A (TPA)' })).toHaveValue('TPA');
+  });
+});
+
+describe('Payment history admin grants', () => {
+  const grant = {
+    ...wholeOrder,
+    wordpressOrderId: null,
+    source: 'admin' as const,
+    reason: 'Sponsored cohort',
+    enrolledBy: { id: 7, username: 'rwaq_admin', email: 'admin@rwaq.org' },
+  };
+
+  it('shows the reason and the admin who enrolled the learner in the expanded row', () => {
+    mockOrders([grant]);
+    renderTab();
+    fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
+
+    expect(screen.getByText('Enrolled by:').tagName).toBe('STRONG');
+    expect(screen.getByText('Enrolled by:').parentElement).toHaveTextContent('Enrolled by: rwaq_admin (admin@rwaq.org)');
+    expect(screen.getByText('Reason:').tagName).toBe('STRONG');
+    expect(screen.getByText('Reason:').parentElement).toHaveTextContent('Reason: Sponsored cohort');
+    expect(screen.queryByRole('columnheader', { name: /^(Reason|Enrolled by)/ })).not.toBeInTheDocument();
   });
 });
 

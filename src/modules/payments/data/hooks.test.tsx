@@ -8,22 +8,11 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ActiveTabContext } from './activeTab';
 import * as api from './api';
-import {
-  usePaymentContent,
-  usePaymentCoupons,
-  usePaymentLearners,
-  usePaymentOrders,
-  usePaymentPartners,
-  usePaymentsSummary,
-} from './hooks';
+import { usePaymentOrders, usePaymentsSummary } from './hooks';
 
 jest.mock('./api', () => ({
   getPaymentsSummary: jest.fn(),
   getPaymentOrders: jest.fn(),
-  getPaymentPartners: jest.fn(),
-  getPaymentContent: jest.fn(),
-  getPaymentLearners: jest.fn(),
-  getPaymentCoupons: jest.fn(),
   downloadPaymentsCsv: jest.fn(),
 }));
 
@@ -114,10 +103,6 @@ describe('payments hooks', () => {
   const hooks: [string, () => QueryState, () => jest.Mock][] = [
     ['summary', () => usePaymentsSummary({}), () => mockApi.getPaymentsSummary as jest.Mock],
     ['orders', () => usePaymentOrders({}), () => mockApi.getPaymentOrders as jest.Mock],
-    ['partners', () => usePaymentPartners({}), () => mockApi.getPaymentPartners as jest.Mock],
-    ['content', () => usePaymentContent({}), () => mockApi.getPaymentContent as jest.Mock],
-    ['learners', () => usePaymentLearners({}), () => mockApi.getPaymentLearners as jest.Mock],
-    ['coupons', () => usePaymentCoupons({}), () => mockApi.getPaymentCoupons as jest.Mock],
   ];
 
   it.each(hooks)('does not query %s in a hidden tab, and queries once the tab is shown', async (_name, useHook, fn) => {
@@ -136,8 +121,8 @@ describe('payments hooks', () => {
   });
 
   it('keeps its data while hidden and does not refetch when shown again with the same filters', async () => {
-    mockApi.getPaymentPartners.mockResolvedValue(page('rows') as never);
-    const { result, rerender } = renderHook(() => usePaymentPartners({ search: 'a' }), { wrapper: createWrapper() });
+    mockApi.getPaymentOrders.mockResolvedValue(page('rows') as never);
+    const { result, rerender } = renderHook(() => usePaymentOrders({ search: 'a' }), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     active = false;
@@ -146,6 +131,6 @@ describe('payments hooks', () => {
     active = true;
     rerender();
 
-    expect(mockApi.getPaymentPartners).toHaveBeenCalledTimes(1);
+    expect(mockApi.getPaymentOrders).toHaveBeenCalledTimes(1);
   });
 });
