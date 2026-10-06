@@ -19,32 +19,43 @@ import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
 import { getErrorStatus } from '@src/data/httpError';
 import { usePaymentOrders } from '../data/hooks';
-import type {
-  ContentType, OrderListParams, OrderRow, OrderSource,
-} from '../data/types';
+import type { OrderListParams, OrderRow, OrderSource } from '../data/types';
 import messages from '../messages';
+import { contentPath } from './ContentTab';
 import {
   CsvButton, DateFilter, DetailTable, PAGE_SIZE, TabCard, TabHeading, formatDateTime, MoneyCell, MoneyTd,
   formatMoney, listScope, tablePagination, useDateRange, useListState, usePartnerFilter,
 } from './shared';
-import type { ListTabProps } from './shared';
+import type { ListTabProps, RangeHandoff } from './shared';
 
 const DEFAULT_ORDERING = '-order_date';
 
-/** The existing detail page for a course or program. */
-const contentPath = (type: ContentType, key: string, programUuid: string | null): string | null => {
-  if (type === 'program') { return programUuid ? `/programs/${programUuid}` : null; }
-  return `/courses/${encodeURIComponent(key)}`;
-};
+interface OrdersTabProps extends ListTabProps {
+  /** Set when arriving from a By content row: only orders that bought this course or program. */
+  content?: string;
+  contentTitle?: string;
+  /** Set when arriving from By learner: only this buyer's orders. */
+  user?: string;
+  userTitle?: string;
+  /** Set when arriving from By coupon: only orders that used exactly this code. */
+  couponCode?: string;
+  onFocusClear: () => void;
+  /** Clears the partner and the focus in one URL update. Two updates in a row would undo each other. */
+  onScopeClear: () => void;
+  /** The range of the tab that opened this one with "View all". */
+  range?: RangeHandoff;
+}
 
-const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
+const OrdersTab = ({
+  org, onOrgChange, content, contentTitle, user, userTitle, couponCode, onFocusClear, onScopeClear, range,
+}: OrdersTabProps) => {
   const intl = useIntl();
-  const dates = useDateRange();
+  const dates = useDateRange(range);
   const params = { org: org || undefined, startDate: dates.startDate, endDate: dates.endDate };
   const list = useListState(
     DEFAULT_ORDERING,
     { source: 'wordpress', coupon: '' },
-    listScope(org, dates.startDate, dates.endDate),
+    listScope(org, dates.startDate, dates.endDate, content, user, couponCode),
   );
   const partner = usePartnerFilter(params, onOrgChange);
   // Under a partner the backend narrows each order to that partner's items and totals them separately.
@@ -53,6 +64,9 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
     ...params,
     source: (list.filters.source || undefined) as OrderSource | undefined,
     coupon: (list.filters.coupon || undefined) as OrderListParams['coupon'],
+    content: content || undefined,
+    user: user ? Number(user) : undefined,
+    couponCode: couponCode || undefined,
     search: list.search || undefined,
     ordering: list.ordering,
     page: list.page,
@@ -90,6 +104,27 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
     });
   }
   if (partner.chip) { chips.push(partner.chip); }
+  if (content) {
+    chips.push({
+      key: 'content',
+      label: intl.formatMessage(messages.chipContent, { title: contentTitle || content }),
+      onRemove: onFocusClear,
+    });
+  }
+  if (user) {
+    chips.push({
+      key: 'user',
+      label: intl.formatMessage(messages.chipBuyer, { name: userTitle || user }),
+      onRemove: onFocusClear,
+    });
+  }
+  if (couponCode) {
+    chips.push({
+      key: 'couponCode',
+      label: intl.formatMessage(messages.chipCouponCode, { code: couponCode }),
+      onRemove: onFocusClear,
+    });
+  }
   if (list.filters.source) {
     chips.push({
       key: 'source',
@@ -314,7 +349,7 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
           },
         ]}
         appliedChips={chips}
-        onClearAll={() => { list.clearAll(); onOrgChange(''); dates.setRange(); }}
+        onClearAll={() => { list.clearAll(); onScopeClear(); dates.setRange(); }}
         actions={(
           <>
             <DateFilter range={dates} />
