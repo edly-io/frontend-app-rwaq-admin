@@ -24,6 +24,7 @@ import ProfileAvatar from '@src/components/ProfileAvatar';
 import ErrorState from '@src/components/ErrorState';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorStatus } from '@src/data/httpError';
+import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import { useEnrollableCourses } from '@src/modules/users/data/hooks';
 import modeLabel from '@src/modules/users/modeLabel';
 import {
@@ -352,7 +353,13 @@ const CourseDetailPage = () => {
                 : intl.formatMessage(messages.downloadCsv)}
             </Button>
             {isSubscription ? (
-              <span className="text-muted small">{intl.formatMessage(messages.enrollSubscriptionNote)}</span>
+              <DisabledButtonWithTooltip
+                id="course-enroll-subscription"
+                size="sm"
+                tooltip={intl.formatMessage(messages.enrollSubscriptionNote)}
+              >
+                {intl.formatMessage(messages.enrollUser)}
+              </DisabledButtonWithTooltip>
             ) : (
               <Button
                 variant="primary"

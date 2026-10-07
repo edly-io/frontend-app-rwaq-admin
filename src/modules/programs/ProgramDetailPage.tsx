@@ -24,6 +24,7 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import DetailGrid from '@src/components/DetailGrid';
+import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
 import ProgramPricingCard from './components/ProgramPricingCard';
@@ -185,7 +186,7 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
   const [page, setPage] = useState(1);
   const { data, isLoading, isError } = useProgramLearners(uuid, page);
 
-  const allColumns: ColumnDef<ProgramLearner>[] = [
+  const columns: ColumnDef<ProgramLearner>[] = [
     {
       label: intl.formatMessage(messages.colLearnerName),
       key: 'name',
@@ -220,7 +221,18 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
     {
       label: intl.formatMessage(messages.colLearnerActions),
       key: 'id',
-      renderCell: (_value, row) => (
+      // A subscription program is joined and left only through the learner's own subscription.
+      renderCell: (_value, row) => (isSubscription ? (
+        <DisabledButtonWithTooltip
+          id={`program-unenroll-subscription-${row.id}`}
+          variant="outline-secondary"
+          size="sm"
+          tooltip={intl.formatMessage(messages.learnersSubscriptionNote)}
+          ariaLabel={`${intl.formatMessage(messages.unenrollLearnerAction)}, ${row.name}`}
+        >
+          {intl.formatMessage(messages.unenrollLearnerAction)}
+        </DisabledButtonWithTooltip>
+      ) : (
         <Button
           variant="outline-secondary"
           size="sm"
@@ -229,11 +241,9 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
         >
           {intl.formatMessage(messages.unenrollLearnerAction)}
         </Button>
-      ),
+      )),
     },
   ];
-  // A subscription program is joined and left only through the learner's own subscription.
-  const columns = isSubscription ? allColumns.filter((column) => column.key !== 'id') : allColumns;
 
   if (isError) {
     return <Alert variant="danger">{intl.formatMessage(messages.learnersError)}</Alert>;
@@ -247,7 +257,12 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
     <>
       <div className="d-flex justify-content-end mb-3">
         {isSubscription ? (
-          <p className="text-muted small mb-0">{intl.formatMessage(messages.learnersSubscriptionNote)}</p>
+          <DisabledButtonWithTooltip
+            id="program-bulk-enroll-subscription"
+            tooltip={intl.formatMessage(messages.learnersSubscriptionNote)}
+          >
+            {intl.formatMessage(messages.bulkEnrollButton)}
+          </DisabledButtonWithTooltip>
         ) : (
           <Button variant="primary" onClick={() => setEnrollOpen(true)}>
             {intl.formatMessage(messages.bulkEnrollButton)}
