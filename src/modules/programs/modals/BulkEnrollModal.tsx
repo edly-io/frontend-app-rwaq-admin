@@ -17,9 +17,6 @@ import { Alert } from '@openedx/paragon';
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
-import SubscriptionPlanFields, {
-  defaultSubscriptionPlan, isPlanRequired, subscriptionPlanPayload, subscriptionPlanRequiredMessage,
-} from '@src/components/SubscriptionPlanFields';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorReason } from '@src/data/httpError';
 import { useBulkEnrollLearners } from '../data/hooks';
@@ -59,19 +56,15 @@ interface BulkEnrollModalProps {
   isOpen: boolean;
   onClose: () => void;
   uuid: string;
-  /** True for a subscription program: the admin picks a plan for learners without a live subscription. */
-  isSubscription?: boolean;
 }
 
 const BulkEnrollModal = ({
-  isOpen, onClose, uuid, isSubscription = false,
+  isOpen, onClose, uuid,
 }: BulkEnrollModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
   const [emails, setEmails] = useState('');
   const [reason, setReason] = useState('');
-  const [plan, setPlan] = useState(defaultSubscriptionPlan);
-  const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
   const [result, setResult] = useState<BulkEnrollResult | null>(null);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
@@ -83,8 +76,6 @@ const BulkEnrollModal = ({
     if (isOpen) {
       setEmails('');
       setReason('');
-      setPlan(defaultSubscriptionPlan);
-      setHasTriedSubmit(false);
       setResult(null);
       setError('');
       setProgress(null);
@@ -102,15 +93,10 @@ const BulkEnrollModal = ({
   // Nothing to send, too many, or something that is not an address: the button
   // is disabled rather than silently doing nothing when clicked.
   const cannotSubmit = count === 0 || overMax || invalid.length > 0;
-  const planMissing = isPlanRequired(isSubscription, plan);
-  const planError = hasTriedSubmit && planMissing
-    ? intl.formatMessage(subscriptionPlanRequiredMessage)
-    : undefined;
 
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    setHasTriedSubmit(true);
-    if (cannotSubmit || planMissing) { return; }
+    if (cannotSubmit) { return; }
     setError('');
     setProgress({ done: 0, total: count });
 
@@ -127,9 +113,7 @@ const BulkEnrollModal = ({
         // into the same courses at once, and pile concurrent writes onto the
         // LMS for no gain in an operation that is already fast per chunk.
         // eslint-disable-next-line no-await-in-loop
-        const res = await mutateAsync({
-          emails: chunk.join(','), reason: reason.trim(), ...subscriptionPlanPayload(isSubscription, plan),
-        });
+        const res = await mutateAsync({ emails: chunk.join(','), reason: reason.trim() });
         merged.enrolled.push(...res.enrolled);
         merged.alreadyEnrolled.push(...res.alreadyEnrolled);
         merged.failed.push(...res.failed);
@@ -160,7 +144,6 @@ const BulkEnrollModal = ({
   // is to close — relabel the button rather than leaving a submit that would
   // re-enroll the same list.
   const isDone = result !== null;
-  const notedRows = result ? [...result.enrolled, ...result.alreadyEnrolled].filter((row) => row.note) : [];
 
   return (
     <FormModal
@@ -215,8 +198,6 @@ const BulkEnrollModal = ({
             {intl.formatMessage(messages.bulkEnrollReasonHelp)}
           </span>
 
-          {isSubscription && <SubscriptionPlanFields value={plan} onChange={setPlan} error={planError} isBulk />}
-
           <div className="d-flex justify-content-between align-items-baseline mt-1">
             {/* The cap is stated up front rather than only once it is breached —
                 an admin pasting a long list needs to know before they paste. */}
@@ -263,20 +244,6 @@ const BulkEnrollModal = ({
               </div>
             )}
           </Alert>
-
-          {notedRows.length > 0 && (
-            <Alert variant="info" className="mb-0">
-              <ul className="mb-0 pl-3 small" style={{ maxHeight: '11rem', overflowY: 'auto' }}>
-                {notedRows.map((row) => (
-                  <li key={row.email} dir="ltr">
-                    <span className="font-weight-bold">{row.email}</span>
-                    {' — '}
-                    {row.note}
-                  </li>
-                ))}
-              </ul>
-            </Alert>
-          )}
 
           {result.failed.length > 0 && (
             <Alert variant="warning" className="mb-0">

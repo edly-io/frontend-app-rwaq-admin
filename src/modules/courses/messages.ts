@@ -226,6 +226,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.courseDetail.enrollments.enrollUser',
     defaultMessage: 'Enroll a User',
   },
+  enrollSubscriptionNote: {
+    id: 'rwaq.admin.courseDetail.enrollments.subscriptionNote',
+    defaultMessage: 'Learners join this course through their Rwaq subscription.',
+  },
   enrollmentColUser: {
     id: 'rwaq.admin.courseDetail.enrollments.col.user',
     defaultMessage: 'User',
@@ -347,10 +351,6 @@ const messages = defineMessages({
   enrollModalSuccess: {
     id: 'rwaq.admin.courses.modal.enroll.success',
     defaultMessage: 'User enrolled successfully.',
-  },
-  enrollModalSuccessSubscription: {
-    id: 'rwaq.admin.courses.modal.enroll.successSubscription',
-    defaultMessage: 'User enrolled. Their subscription runs until {date}.',
   },
   enrollModalConflict: {
     id: 'rwaq.admin.courses.modal.enroll.conflict',

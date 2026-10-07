@@ -49,7 +49,6 @@ const emptyProfileUser = {
   isActive: true,
   isEmailConfirmed: true,
   isProfilePublic: false,
-  subscriptionEndsAt: null,
   isLegacy: false,
   createdAt: '2026-01-01T00:00:00Z',
   lastLogin: null,

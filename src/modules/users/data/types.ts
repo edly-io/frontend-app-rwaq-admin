@@ -51,8 +51,6 @@ export interface UserSummary {
   isEmailConfirmed: boolean;
   authenticationMethod: string;
   isProfilePublic: boolean;
-  /** ISO end date of a live subscription (active, or cancelled but not yet ended), else null. */
-  subscriptionEndsAt: string | null;
 }
 
 /** Full user detail from GET /api/v1/admin/users/{id}/ */
@@ -83,8 +81,8 @@ export interface UserEnrollment {
   lastChangeReason: string | null;
   lastChangeBy: string | null;
   lastChangeAt: string | null;
-  /** Set on the response to enrolling into subscription content: the learner's subscription now. */
-  subscription?: { status: string; endsAt: string } | null;
+  /** True for subscription content: admins cannot change the mode or unenroll the learner. */
+  isPartOfSubscription?: boolean;
 }
 
 /** One row of the course picker behind the enroll form. */
@@ -93,7 +91,7 @@ export interface EnrollableCourse {
   displayName: string;
   org: string;
   availableModes: string[];
-  /** True when the course is reached through the subscription, so enrolling asks for a plan. */
+  /** True when the course is reached through the subscription. Admins cannot enroll anyone into it. */
   isPartOfSubscription?: boolean;
   start: string | null;
   end: string | null;
@@ -105,8 +103,6 @@ export interface EnrollPayload {
   mode: string;
   /** Required by the API. Without it the audit trail explains nothing. */
   reason: string;
-  /** Subscription content only: used when the learner has no live subscription. */
-  subscriptionPlan?: 'monthly' | 'yearly';
 }
 
 /** PATCH /api/v1/admin/users/{id}/enrollments/{courseId}/ */

@@ -185,7 +185,7 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
   const [page, setPage] = useState(1);
   const { data, isLoading, isError } = useProgramLearners(uuid, page);
 
-  const columns: ColumnDef<ProgramLearner>[] = [
+  const allColumns: ColumnDef<ProgramLearner>[] = [
     {
       label: intl.formatMessage(messages.colLearnerName),
       key: 'name',
@@ -232,6 +232,8 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
       ),
     },
   ];
+  // A subscription program is joined and left only through the learner's own subscription.
+  const columns = isSubscription ? allColumns.filter((column) => column.key !== 'id') : allColumns;
 
   if (isError) {
     return <Alert variant="danger">{intl.formatMessage(messages.learnersError)}</Alert>;
@@ -244,16 +246,19 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
   return (
     <>
       <div className="d-flex justify-content-end mb-3">
-        <Button variant="primary" onClick={() => setEnrollOpen(true)}>
-          {intl.formatMessage(messages.bulkEnrollButton)}
-        </Button>
+        {isSubscription ? (
+          <p className="text-muted small mb-0">{intl.formatMessage(messages.learnersSubscriptionNote)}</p>
+        ) : (
+          <Button variant="primary" onClick={() => setEnrollOpen(true)}>
+            {intl.formatMessage(messages.bulkEnrollButton)}
+          </Button>
+        )}
       </div>
 
       <BulkEnrollModal
         isOpen={isEnrollOpen}
         onClose={() => setEnrollOpen(false)}
         uuid={uuid}
-        isSubscription={isSubscription}
       />
 
       <UnenrollLearnerModal

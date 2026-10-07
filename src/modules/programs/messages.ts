@@ -191,6 +191,10 @@ const messages = defineMessages({
   no: { id: 'rwaq.admin.programs.no', defaultMessage: 'No' },
 
   // ── Bulk enroll ─────────────────────────────────────────────────────────────
+  learnersSubscriptionNote: {
+    id: 'rwaq.admin.programs.learners.subscriptionNote',
+    defaultMessage: 'Learners join and leave this program through their Rwaq subscription.',
+  },
   bulkEnrollButton: { id: 'rwaq.admin.programs.bulkEnroll.button', defaultMessage: 'Bulk enroll' },
   bulkEnrollTitle: { id: 'rwaq.admin.programs.bulkEnroll.title', defaultMessage: 'Enroll learners' },
   bulkEnrollHelp: { id: 'rwaq.admin.programs.bulkEnroll.help', defaultMessage: 'Paste email addresses, separated by commas or new lines. Learners are enrolled in the program and all of its courses.' },

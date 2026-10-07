@@ -16,9 +16,6 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorReason, getErrorStatus } from '@src/data/httpError';
-import SubscriptionPlanFields, {
-  defaultSubscriptionPlan, isPlanRequired, subscriptionPlanPayload, subscriptionPlanRequiredMessage,
-} from '@src/components/SubscriptionPlanFields';
 import ReasonField, {
   ReasonValues, emptyReason, hasReason, resolveReason,
 } from '../components/ReasonField';
@@ -36,12 +33,10 @@ interface EnrollModalProps {
   userName: string;
   /** The rows already on screen, so the form knows what's a re-enrollment. */
   enrollments: UserEnrollment[];
-  /** End date of the learner's live subscription, or null when they have none. */
-  subscriptionEndsAt?: string | null;
 }
 
 const EnrollModal = ({
-  isOpen, onClose, userId, userName, enrollments, subscriptionEndsAt = null,
+  isOpen, onClose, userId, userName, enrollments,
 }: EnrollModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
@@ -50,7 +45,6 @@ const EnrollModal = ({
   const [course, setCourse] = useState<EnrollableCourse | null>(null);
   const [mode, setMode] = useState('');
   const [reason, setReason] = useState<ReasonValues>(emptyReason);
-  const [plan, setPlan] = useState(defaultSubscriptionPlan);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
   const [isConflict, setIsConflict] = useState(false);
 
@@ -62,7 +56,6 @@ const EnrollModal = ({
       setCourse(null);
       setMode('');
       setReason(emptyReason);
-      setPlan(defaultSubscriptionPlan);
       setHasTriedSubmit(false);
       setIsConflict(false);
     }
@@ -73,7 +66,6 @@ const EnrollModal = ({
   // the first is the platform's own default ordering.
   useEffect(() => {
     setMode(course?.availableModes[0] ?? '');
-    setPlan(defaultSubscriptionPlan);
   }, [course]);
 
   const activeCourseIds = enrollments.filter((e) => e.isActive).map((e) => e.courseId);
@@ -83,10 +75,6 @@ const EnrollModal = ({
   const courseError = hasTriedSubmit && course === null
     ? intl.formatMessage(messages.enrollCourseRequired)
     : undefined;
-  const planMissing = isPlanRequired(course?.isPartOfSubscription, plan, subscriptionEndsAt);
-  const planError = hasTriedSubmit && planMissing
-    ? intl.formatMessage(subscriptionPlanRequiredMessage)
-    : undefined;
   const reasonError = hasTriedSubmit && !hasReason(reason)
     ? intl.formatMessage(messages.reasonRequired)
     : undefined;
@@ -94,25 +82,19 @@ const EnrollModal = ({
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
     setHasTriedSubmit(true);
-    if (!course || !mode || !hasReason(reason) || planMissing) { return; }
+    if (!course || !mode || !hasReason(reason)) { return; }
 
     setIsConflict(false);
     try {
-      const result = await mutation.mutateAsync({
+      await mutation.mutateAsync({
         courseId: course.courseId,
         mode,
         reason: resolveReason(reason),
-        ...subscriptionPlanPayload(course.isPartOfSubscription, plan, subscriptionEndsAt),
       });
       // Deliberately not "enrolled and certified": the platform recomputes
       // grades and certificates on a queue, so claiming they are done here
       // would be a promise this code cannot keep.
-      showToast(result?.subscription?.endsAt
-        ? intl.formatMessage(messages.enrollSuccessSubscription, {
-          course: course.displayName,
-          date: intl.formatDate(result.subscription.endsAt, { dateStyle: 'medium' }),
-        })
-        : intl.formatMessage(messages.enrollSuccess, { course: course.displayName }));
+      showToast(intl.formatMessage(messages.enrollSuccess, { course: course.displayName }));
       onClose();
     } catch (error) {
       // 409 means the enrollment moved under us — the fix is to look again,
@@ -164,15 +146,6 @@ const EnrollModal = ({
             ))}
           </Form.Control>
         </Form.Group>
-      )}
-
-      {course?.isPartOfSubscription && (
-        <SubscriptionPlanFields
-          value={plan}
-          onChange={setPlan}
-          liveUntil={subscriptionEndsAt}
-          error={planError}
-        />
       )}
 
       <ReasonField values={reason} onChange={setReason} error={reasonError} />

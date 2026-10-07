@@ -225,7 +225,6 @@ const UserDetailPage = () => {
         userId={user.id}
         userName={displayName}
         enrollments={rows}
-        subscriptionEndsAt={user.subscriptionEndsAt}
       />
 
       <ChangeModeModal

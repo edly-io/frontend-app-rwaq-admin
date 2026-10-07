@@ -16,10 +16,6 @@ import ReasonField, {
   ReasonValues, emptyReason, hasReason, resolveReason,
 } from '@src/modules/users/components/ReasonField';
 import modeLabel from '@src/modules/users/modeLabel';
-import SubscriptionPlanFields, {
-  defaultSubscriptionPlan, isPlanRequired, subscriptionPlanPayload,
-  subscriptionPlanRequiredMessage,
-} from '@src/components/SubscriptionPlanFields';
 import UserPicker from '../components/UserPicker';
 import { useEnrollUserInCourse } from '../data/hooks';
 import messages from '../messages';
@@ -33,15 +29,12 @@ interface EnrollUserModalProps {
   availableModes?: string[];
   /** True while the course's modes load, so a Paid course never flashes honor or audit. */
   modesLoading?: boolean;
-  /** True when the course is part of the subscription: a learner without a live one needs a plan. */
-  isPartOfSubscription?: boolean;
 }
 
 const DEFAULT_MODES = ['honor', 'audit'];
 
 const EnrollUserModal = ({
   isOpen, onClose, courseId, courseName, availableModes = DEFAULT_MODES, modesLoading = false,
-  isPartOfSubscription = false,
 }: EnrollUserModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
@@ -50,7 +43,6 @@ const EnrollUserModal = ({
   const [user, setUser] = useState<UserSummary | null>(null);
   const [mode, setMode] = useState(availableModes[0] ?? 'honor');
   const [reason, setReason] = useState<ReasonValues>(emptyReason);
-  const [plan, setPlan] = useState(defaultSubscriptionPlan);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
   const [conflictMessage, setConflictMessage] = useState('');
 
@@ -60,7 +52,6 @@ const EnrollUserModal = ({
       setUser(null);
       setMode(availableModes[0] ?? 'honor');
       setReason(emptyReason);
-      setPlan(defaultSubscriptionPlan);
       setHasTriedSubmit(false);
       setConflictMessage('');
     }
@@ -76,11 +67,6 @@ const EnrollUserModal = ({
   const userError = hasTriedSubmit && !user
     ? intl.formatMessage(messages.enrollModalUserRequired)
     : undefined;
-  const liveUntil = user?.subscriptionEndsAt ?? null;
-  const planMissing = isPlanRequired(isPartOfSubscription, plan, liveUntil);
-  const planError = hasTriedSubmit && user && planMissing
-    ? intl.formatMessage(subscriptionPlanRequiredMessage)
-    : undefined;
   const reasonError = hasTriedSubmit && !hasReason(reason)
     ? intl.formatMessage(messages.enrollModalReasonRequired)
     : undefined;
@@ -89,20 +75,15 @@ const EnrollUserModal = ({
     event?.preventDefault();
     setHasTriedSubmit(true);
     setConflictMessage('');
-    if (!user || !mode || modesLoading || !hasReason(reason) || planMissing) { return; }
+    if (!user || !mode || modesLoading || !hasReason(reason)) { return; }
 
     try {
-      const result = await mutation.mutateAsync({
+      await mutation.mutateAsync({
         userId: user.id,
         mode,
         reason: resolveReason(reason),
-        ...subscriptionPlanPayload(isPartOfSubscription, plan, liveUntil),
       });
-      showToast(result.subscription?.endsAt
-        ? intl.formatMessage(messages.enrollModalSuccessSubscription, {
-          date: intl.formatDate(result.subscription.endsAt, { dateStyle: 'medium' }),
-        })
-        : intl.formatMessage(messages.enrollModalSuccess));
+      showToast(intl.formatMessage(messages.enrollModalSuccess));
       onClose();
     } catch (error) {
       if (getErrorStatus(error) === 409) {
@@ -128,11 +109,7 @@ const EnrollUserModal = ({
         <p className="text-danger small">{conflictMessage}</p>
       )}
 
-      <UserPicker
-        selected={user}
-        onSelect={(picked) => { setUser(picked); setPlan(defaultSubscriptionPlan); }}
-        error={userError}
-      />
+      <UserPicker selected={user} onSelect={setUser} error={userError} />
 
       {user && !modesLoading && availableModes.length > 0 && (
         <Form.Group>
@@ -147,10 +124,6 @@ const EnrollUserModal = ({
             ))}
           </Form.Control>
         </Form.Group>
-      )}
-
-      {user && isPartOfSubscription && (
-        <SubscriptionPlanFields value={plan} onChange={setPlan} liveUntil={liveUntil} error={planError} />
       )}
 
       <ReasonField values={reason} onChange={setReason} error={reasonError} />
