@@ -21,7 +21,7 @@ import type { AppliedChip } from '@src/components/SearchFilterBar';
 import { getErrorStatus } from '@src/data/httpError';
 import { usePaymentOrders } from '../data/hooks';
 import type {
-  ContentType, OrderListParams, OrderRow, OrderSource,
+  OrderItem, OrderListParams, OrderRow, OrderSource,
 } from '../data/types';
 import messages from '../messages';
 import {
@@ -34,20 +34,31 @@ const boldText = (chunks: ReactNode[]) => <strong>{chunks}</strong>;
 
 const DEFAULT_ORDERING = '-order_date';
 
-/** The existing detail page for a course or program. */
-const contentPath = (type: ContentType, key: string, programUuid: string | null): string | null => {
-  if (type === 'program') { return programUuid ? `/programs/${programUuid}` : null; }
-  return `/courses/${encodeURIComponent(key)}`;
+/** The existing detail page for a course or program. A subscription has none. */
+const contentPath = (item: OrderItem): string | null => {
+  if (item.type === 'subscription' || !item.key) { return null; }
+  if (item.type === 'program') { return item.programUuid ? `/programs/${item.programUuid}` : null; }
+  return `/courses/${encodeURIComponent(item.key)}`;
 };
 
-const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
+interface OrdersTabProps extends ListTabProps {
+  /** Only the payments and grants of this subscription (from the URL). */
+  subscription?: number;
+  onSubscriptionChange?: (id?: number) => void;
+  /** Clears the partner and the subscription in the URL in one update (two separate ones overwrite each other). */
+  onClearUrlFilters?: () => void;
+}
+
+const OrdersTab = ({
+  org, onOrgChange, subscription, onSubscriptionChange, onClearUrlFilters,
+}: OrdersTabProps) => {
   const intl = useIntl();
   const dates = useDateRange();
   const params = { org: org || undefined, startDate: dates.startDate, endDate: dates.endDate };
   const list = useListState(
     DEFAULT_ORDERING,
-    { source: '', coupon: '' },
-    listScope(org, dates.startDate, dates.endDate),
+    { source: '', coupon: '', type: '' },
+    listScope(org, dates.startDate, dates.endDate, subscription ? String(subscription) : ''),
   );
   const partner = usePartnerFilter(params, onOrgChange);
   // Under a partner the backend narrows each order to that partner's items and totals them separately.
@@ -56,6 +67,8 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
     ...params,
     source: (list.filters.source || undefined) as OrderSource | undefined,
     coupon: (list.filters.coupon || undefined) as OrderListParams['coupon'],
+    type: (list.filters.type || undefined) as OrderListParams['type'],
+    subscription,
     search: list.search || undefined,
     ordering: list.ordering,
     page: list.page,
@@ -70,6 +83,25 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
     { value: 'wordpress', label: intl.formatMessage(messages.sourceWordpress) },
     { value: 'admin', label: intl.formatMessage(messages.sourceAdmin) },
   ];
+  const typeOptions = [
+    { value: '', label: intl.formatMessage(messages.filterAll) },
+    { value: 'content', label: intl.formatMessage(messages.typeFilterContent) },
+    { value: 'subscription', label: intl.formatMessage(messages.typeFilterSubscription) },
+  ];
+  const planLabel = (plan: string | null) => {
+    if (plan === 'monthly') { return intl.formatMessage(messages.planMonthly); }
+    if (plan === 'yearly') { return intl.formatMessage(messages.planYearly); }
+    return plan ?? '';
+  };
+  const itemTitle = (item: OrderItem) => (
+    item.type === 'subscription'
+      ? intl.formatMessage(messages.itemSubscription, { plan: planLabel(item.plan) })
+      : item.title
+  );
+  const itemTypeLabel = (item: OrderItem) => intl.formatMessage({
+    program: messages.typeProgram, subscription: messages.typeSubscription, course: messages.typeCourse,
+  }[item.type]);
+  const formatDate = (value: string) => intl.formatDate(value, { dateStyle: 'medium', timeZone: 'UTC' });
   const couponOptions = [
     { value: '', label: intl.formatMessage(messages.couponAny) },
     { value: 'with', label: intl.formatMessage(messages.couponWith) },
@@ -105,6 +137,25 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
       key: 'coupon',
       label: intl.formatMessage(messages.chipCoupon, { label: optionLabel(couponOptions, list.filters.coupon) }),
       onRemove: () => list.setFilter('coupon', ''),
+    });
+  }
+  if (list.filters.type) {
+    chips.push({
+      key: 'type',
+      label: intl.formatMessage(messages.chipType, { label: optionLabel(typeOptions, list.filters.type) }),
+      onRemove: () => list.setFilter('type', ''),
+    });
+  }
+  if (subscription) {
+    // The first row names the learner and plan. Until it loads the chip shows the id.
+    const first = data?.results[0];
+    const firstItem = first?.items.find((item) => item.subscriptionId === subscription);
+    chips.push({
+      key: 'subscription',
+      label: intl.formatMessage(messages.chipSubscription, {
+        label: first && firstItem ? `${first.username}, ${planLabel(firstItem.plan)}` : `#${subscription}`,
+      }),
+      onRemove: () => onSubscriptionChange?.(undefined),
     });
   }
   if (!list.isDefaultOrdering) {
@@ -198,14 +249,14 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
         </thead>
         <tbody>
           {order.items.map((item, index) => {
-            const path = contentPath(item.type, item.key, item.programUuid);
+            const path = contentPath(item);
             return (
               // The same course can appear twice in one order, so the key alone is not unique.
               // eslint-disable-next-line react/no-array-index-key
-              <tr key={`${item.key}-${index}`}>
+              <tr key={`${item.key ?? item.subscriptionId}-${index}`}>
                 <td>
                   <div className="rwaq-user-cell__name">
-                    {path ? <Link to={path}>{item.title}</Link> : item.title}
+                    {path ? <Link to={path}>{itemTitle(item)}</Link> : itemTitle(item)}
                     {item.revokedAt && (
                       <InfoTooltip
                         text={intl.formatMessage(messages.infoRevoked, {
@@ -217,9 +268,15 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
                       </InfoTooltip>
                     )}
                   </div>
-                  <div className="rwaq-user-cell__meta">{item.key}</div>
+                  <div className="rwaq-user-cell__meta">
+                    {item.type === 'subscription' && item.periodStartsAt && item.periodEndsAt
+                      ? intl.formatMessage(messages.itemPeriod, {
+                        start: formatDate(item.periodStartsAt), end: formatDate(item.periodEndsAt),
+                      })
+                      : item.key}
+                  </div>
                 </td>
-                <td>{intl.formatMessage(item.type === 'program' ? messages.typeProgram : messages.typeCourse)}</td>
+                <td>{itemTypeLabel(item)}</td>
                 <td>{item.org}</td>
                 <MoneyTd value={item.actualPrice} />
                 <MoneyTd value={item.discountAmount} />
@@ -286,6 +343,13 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
             onChange: (value) => list.setFilter('source', value),
           },
           {
+            id: 'type',
+            label: intl.formatMessage(messages.typeFilterLabel),
+            value: list.filters.type,
+            options: typeOptions,
+            onChange: (value) => list.setFilter('type', value),
+          },
+          {
             id: 'coupon',
             label: intl.formatMessage(messages.couponFilterLabel),
             value: list.filters.coupon,
@@ -301,7 +365,11 @@ const OrdersTab = ({ org, onOrgChange }: ListTabProps) => {
           },
         ]}
         appliedChips={chips}
-        onClearAll={() => { list.clearAll(); onOrgChange(''); dates.setRange(); }}
+        onClearAll={() => {
+          list.clearAll();
+          if (onClearUrlFilters) { onClearUrlFilters(); } else { onOrgChange(''); }
+          dates.setRange();
+        }}
         actions={(
           <>
             <DateFilter range={dates} />

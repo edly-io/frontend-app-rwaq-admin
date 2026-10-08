@@ -18,6 +18,7 @@ const messages = defineMessages({
   reload: { id: 'rwaq.admin.payments.reload', defaultMessage: 'Reload' },
   tabOverview: { id: 'rwaq.admin.payments.tab.overview', defaultMessage: 'Overview' },
   tabOrders: { id: 'rwaq.admin.payments.tab.orders', defaultMessage: 'Payment history' },
+  tabSubscriptions: { id: 'rwaq.admin.payments.tab.subscriptions', defaultMessage: 'Subscriptions' },
 
   // ── Overview: KPI tiles ────────────────────────────────────────────────────
   kpiOrders: { id: 'rwaq.admin.payments.kpi.orders', defaultMessage: 'Orders' },
@@ -105,6 +106,11 @@ const messages = defineMessages({
   colOrg: { id: 'rwaq.admin.payments.col.org', defaultMessage: 'Organization' },
   typeCourse: { id: 'rwaq.admin.payments.type.course', defaultMessage: 'Course' },
   typeProgram: { id: 'rwaq.admin.payments.type.program', defaultMessage: 'Program' },
+  typeSubscription: { id: 'rwaq.admin.payments.type.subscription', defaultMessage: 'Subscription' },
+  itemSubscription: { id: 'rwaq.admin.payments.orders.item-subscription', defaultMessage: 'Subscription: {plan}' },
+  itemPeriod: { id: 'rwaq.admin.payments.orders.item-period', defaultMessage: 'Period: {start} to {end}' },
+  planMonthly: { id: 'rwaq.admin.payments.plan.monthly', defaultMessage: 'Monthly' },
+  planYearly: { id: 'rwaq.admin.payments.plan.yearly', defaultMessage: 'Yearly' },
 
   // ── By learner ─────────────────────────────────────────────────────────────
 
@@ -168,6 +174,11 @@ const messages = defineMessages({
   sourceLabel: { id: 'rwaq.admin.payments.source', defaultMessage: 'Source' },
   sourceWordpress: { id: 'rwaq.admin.payments.source.wordpress', defaultMessage: 'Purchase' },
   sourceAdmin: { id: 'rwaq.admin.payments.source.admin', defaultMessage: 'Admin grant' },
+  typeFilterLabel: { id: 'rwaq.admin.payments.type-filter', defaultMessage: 'Type' },
+  typeFilterContent: { id: 'rwaq.admin.payments.type-filter.content', defaultMessage: 'Courses and programs' },
+  typeFilterSubscription: { id: 'rwaq.admin.payments.type-filter.subscription', defaultMessage: 'Subscriptions' },
+  chipType: { id: 'rwaq.admin.payments.chip.type', defaultMessage: 'Type: {label}' },
+  chipSubscription: { id: 'rwaq.admin.payments.chip.subscription', defaultMessage: 'Subscription: {label}' },
   chipSource: { id: 'rwaq.admin.payments.chip.source', defaultMessage: 'Source: {label}' },
   couponFilterLabel: { id: 'rwaq.admin.payments.coupon', defaultMessage: 'Coupon' },
   couponAny: { id: 'rwaq.admin.payments.coupon.any', defaultMessage: 'Any' },

@@ -56,14 +56,18 @@ export interface PaymentsSummary {
 
 export type ContentType = 'course' | 'program';
 
+/** What an order item is: content, or a subscription period. */
+export type OrderItemType = ContentType | 'subscription';
+
 export type CouponScope = 'product' | 'cart';
 
 export type OrderSource = 'wordpress' | 'admin';
 export type OrderStatus = 'pending' | 'completed' | 'payment_failed' | 'failed';
 
 export interface OrderItem {
-  type: ContentType;
-  key: string;
+  type: OrderItemType;
+  /** The course or program key. null for a subscription. */
+  key: string | null;
   programUuid: string | null;
   title: string;
   org: string;
@@ -72,6 +76,11 @@ export interface OrderItem {
   pricePaid: string;
   revokedAt: string | null;
   revokeReason: string;
+  /** Set for a subscription item: the subscription, its plan and the period this payment bought. */
+  subscriptionId: number | null;
+  plan: 'monthly' | 'yearly' | null;
+  periodStartsAt: string | null;
+  periodEndsAt: string | null;
 }
 
 export interface OrderCoupon {
@@ -119,7 +128,40 @@ export interface OrderListParams extends ListParams {
   source?: OrderSource;
   status?: OrderStatus;
   coupon?: 'with' | 'without';
+  /** Only orders of content (courses and programs) or of subscriptions. */
+  type?: 'content' | 'subscription';
+  /** Only the payments and grants of this subscription. */
+  subscription?: number;
+}
+
+export type SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'revoked';
+
+export interface SubscriptionRow {
+  id: number;
+  learner: string;
+  email: string;
+  plan: 'monthly' | 'yearly';
+  source: 'wordpress' | 'admin';
+  status: SubscriptionStatus;
+  startsAt: string;
+  endsAt: string;
+  payments: number;
+  netPaid: string;
+  discounts: string;
+}
+
+export interface SubscriptionListParams extends ListParams {
+  status?: SubscriptionStatus | '';
+}
+
+/** GET subscriptions/summary/ — what the tab's tiles show. */
+export interface SubscriptionsSummary {
+  revenue: string;
+  /** The subscriptions in each state today, whatever the date range. */
+  active: number;
+  expired: number;
+  cancelled: number;
 }
 
 /** The lists with a csv/ twin. */
-export type PaymentsReport = 'orders';
+export type PaymentsReport = 'orders' | 'subscriptions';
