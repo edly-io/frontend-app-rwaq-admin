@@ -10,7 +10,7 @@
  * These tests pin the pre-population contract: every field in toFormValues
  * must render with the value from the user prop.
  */
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from '../data/hooks';
 import UserFormModal from './UserFormModal';
@@ -88,5 +88,23 @@ describe('UserFormModal — Bug 2 regression: edit mode pre-populates all fields
     // Email field must be empty and editable in create mode.
     const emailInputs = screen.queryAllByDisplayValue('fatima@rwaq.org');
     expect(emailInputs).toHaveLength(0);
+  });
+});
+
+describe('UserFormModal — create mode clears typed values when closed', () => {
+  beforeEach(() => {
+    (hooks.useUpdateUser as jest.Mock).mockReturnValue(mockMutation);
+    (hooks.useCreateUser as jest.Mock).mockReturnValue(mockMutation);
+  });
+
+  it('opens empty again after the modal was closed with values typed in', () => {
+    const { rerender } = renderWrapper(<UserFormModal isOpen onClose={jest.fn()} user={null} />);
+    fireEvent.change(screen.getByLabelText('Email'), { target: { name: 'email', value: 'new@rwaq.org' } });
+    expect(screen.getByDisplayValue('new@rwaq.org')).toBeInTheDocument();
+
+    rerender(<UserFormModal isOpen={false} onClose={jest.fn()} user={null} />);
+    rerender(<UserFormModal isOpen onClose={jest.fn()} user={null} />);
+
+    expect(screen.queryByDisplayValue('new@rwaq.org')).not.toBeInTheDocument();
   });
 });
