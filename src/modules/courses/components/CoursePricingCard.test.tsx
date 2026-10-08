@@ -48,7 +48,7 @@ describe('CoursePricingCard', () => {
     expect(screen.getByRole('radio', { name: 'Free' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Paid' })).not.toBeChecked();
     expect(screen.getByRole('radio', { name: 'Program-only course' })).not.toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Is part of Subscription' })).not.toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Part of Subscription' })).not.toBeChecked();
     expect(screen.getByText('Learners enroll at no cost.')).toBeInTheDocument();
     expect(screen.getByText('Sold on its own at the price set below.')).toBeInTheDocument();
     expect(screen.getByText('Offered only through the one program it is added to.')).toBeInTheDocument();

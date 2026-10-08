@@ -661,7 +661,7 @@ export const courseRoleMessages = defineMessages({
   },
   pricingSubscription: {
     id: 'rwaq.admin.courses.pricing.subscription',
-    defaultMessage: 'Is part of Subscription',
+    defaultMessage: 'Part of Subscription',
   },
   pricingSubscriptionDescription: {
     id: 'rwaq.admin.courses.pricing.subscription-description',
