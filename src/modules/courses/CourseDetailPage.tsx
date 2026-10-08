@@ -24,11 +24,13 @@ import ProfileAvatar from '@src/components/ProfileAvatar';
 import ErrorState from '@src/components/ErrorState';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorStatus } from '@src/data/httpError';
+import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import { useEnrollableCourses } from '@src/modules/users/data/hooks';
 import modeLabel from '@src/modules/users/modeLabel';
 import {
   useCourse,
   useCourseEnrollments,
+  useCoursePricing,
   useCourseStaff,
   useDownloadCourseEnrollmentsCsv,
   useRemoveCourseStaff,
@@ -99,10 +101,17 @@ const CourseDetailPage = () => {
   // The enroll modal's mode list depends on the course (a Paid course offers only
   // no-id-professional, a Program-only course keeps honor), so it comes from the same endpoint as
   // the Users enroll picker.
+  // Loaded with the page too: its is_part_of_subscription also covers a Program-only course of a
+  // subscription program, which the course's own pricing type does not show.
   const {
     data: enrollableCourses, isLoading: enrollModesLoading,
-  } = useEnrollableCourses(courseId, modal.kind === 'enroll');
-  const enrollModes = enrollableCourses?.find((row) => row.courseId === courseId)?.availableModes;
+  } = useEnrollableCourses(courseId);
+  const enrollableRow = enrollableCourses?.find((row) => row.courseId === courseId);
+  const enrollModes = enrollableRow?.availableModes;
+  const { data: pricing } = useCoursePricing(courseId);
+  // Subscription content is joined only through the learner's own subscription, so no admin enrolls into it.
+  const isSubscription = pricing?.pricingCategory === 'is_part_of_subscription'
+    || enrollableRow?.isPartOfSubscription === true;
 
   const {
     data: enrollmentData,
@@ -343,13 +352,23 @@ const CourseDetailPage = () => {
                 ? intl.formatMessage(messages.downloadingCsv)
                 : intl.formatMessage(messages.downloadCsv)}
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setModal({ kind: 'enroll' })}
-            >
-              {intl.formatMessage(messages.enrollUser)}
-            </Button>
+            {isSubscription ? (
+              <DisabledButtonWithTooltip
+                id="course-enroll-subscription"
+                size="sm"
+                tooltip={intl.formatMessage(messages.enrollSubscriptionNote)}
+              >
+                {intl.formatMessage(messages.enrollUser)}
+              </DisabledButtonWithTooltip>
+            ) : (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setModal({ kind: 'enroll' })}
+              >
+                {intl.formatMessage(messages.enrollUser)}
+              </Button>
+            )}
           </div>
         </div>
 

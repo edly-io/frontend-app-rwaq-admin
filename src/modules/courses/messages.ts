@@ -226,6 +226,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.courseDetail.enrollments.enrollUser',
     defaultMessage: 'Enroll a User',
   },
+  enrollSubscriptionNote: {
+    id: 'rwaq.admin.courseDetail.enrollments.subscriptionNote',
+    defaultMessage: 'Learners join this course through their Rwaq subscription.',
+  },
   enrollmentColUser: {
     id: 'rwaq.admin.courseDetail.enrollments.col.user',
     defaultMessage: 'User',
@@ -654,6 +658,14 @@ export const courseRoleMessages = defineMessages({
   pricingPaidDescription: {
     id: 'rwaq.admin.courses.pricing.paid-description',
     defaultMessage: 'Sold on its own at the price set below.',
+  },
+  pricingSubscription: {
+    id: 'rwaq.admin.courses.pricing.subscription',
+    defaultMessage: 'Part of Subscription',
+  },
+  pricingSubscriptionDescription: {
+    id: 'rwaq.admin.courses.pricing.subscription-description',
+    defaultMessage: 'Learners reach this course through the Rwaq subscription. It has no price of its own.',
   },
   pricingProgramOnly: {
     id: 'rwaq.admin.courses.pricing.program-only',

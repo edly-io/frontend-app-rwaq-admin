@@ -144,7 +144,7 @@ export interface CourseStaffRemoveParams {
 }
 
 /** Mirrors rwaq_features.models.CoursePricing.PRICING_CATEGORY_CHOICES. */
-export type CoursePricingCategory = 'is_free' | 'is_paid' | 'is_program_only';
+export type CoursePricingCategory = 'is_free' | 'is_paid' | 'is_program_only' | 'is_part_of_subscription';
 
 export interface CoursePricing {
   /** null when no type was chosen yet (a legacy course with no pricing row). It behaves as free. */

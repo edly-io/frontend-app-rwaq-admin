@@ -81,6 +81,8 @@ export interface UserEnrollment {
   lastChangeReason: string | null;
   lastChangeBy: string | null;
   lastChangeAt: string | null;
+  /** True for subscription content: admins cannot change the mode or unenroll the learner. */
+  isPartOfSubscription?: boolean;
 }
 
 /** One row of the course picker behind the enroll form. */
@@ -89,6 +91,8 @@ export interface EnrollableCourse {
   displayName: string;
   org: string;
   availableModes: string[];
+  /** True when the course is reached through the subscription. Admins cannot enroll anyone into it. */
+  isPartOfSubscription?: boolean;
   start: string | null;
   end: string | null;
 }

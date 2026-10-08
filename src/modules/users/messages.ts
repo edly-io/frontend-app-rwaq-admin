@@ -310,6 +310,14 @@ const messages = defineMessages({
   },
   enrollSelected: { id: 'rwaq.admin.users.enroll.selected', defaultMessage: 'Selected course' },
   enrollClear: { id: 'rwaq.admin.users.enroll.clear', defaultMessage: 'Change course' },
+  enrollmentSubscriptionNote: {
+    id: 'rwaq.admin.users.enrollments.subscriptionNote',
+    defaultMessage: 'Managed by the learner\'s subscription',
+  },
+  enrollSubscriptionCourse: {
+    id: 'rwaq.admin.users.enroll.subscriptionCourse',
+    defaultMessage: 'Part of the Rwaq subscription. Learners join it through their subscription.',
+  },
   enrollAlready: {
     id: 'rwaq.admin.users.enroll.already',
     defaultMessage: 'Already enrolled in this course.',
