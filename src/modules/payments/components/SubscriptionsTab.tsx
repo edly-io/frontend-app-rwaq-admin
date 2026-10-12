@@ -53,8 +53,8 @@ const messages = defineMessages({
   colPlan: { id: 'rwaq.admin.payments.subscriptions.col.plan', defaultMessage: 'Plan' },
   colSource: { id: 'rwaq.admin.payments.subscriptions.col.source', defaultMessage: 'Source' },
   colStatus: { id: 'rwaq.admin.payments.subscriptions.col.status', defaultMessage: 'Status' },
-  colStarts: { id: 'rwaq.admin.payments.subscriptions.col.starts', defaultMessage: 'Starts' },
-  colEnds: { id: 'rwaq.admin.payments.subscriptions.col.ends', defaultMessage: 'Ends' },
+  colStarts: { id: 'rwaq.admin.payments.subscriptions.col.starts', defaultMessage: 'Starts (UTC)' },
+  colEnds: { id: 'rwaq.admin.payments.subscriptions.col.ends', defaultMessage: 'Ends (UTC)' },
   colPayments: { id: 'rwaq.admin.payments.subscriptions.col.payments', defaultMessage: 'Payments' },
   colCollected: { id: 'rwaq.admin.payments.subscriptions.col.collected', defaultMessage: 'Collected (SAR)' },
   colDiscounts: { id: 'rwaq.admin.payments.subscriptions.col.discounts', defaultMessage: 'Discounts (SAR)' },
@@ -174,7 +174,6 @@ const SubscriptionsTab = () => {
   const label = (key: string) => (key in messages
     ? intl.formatMessage(messages[key as keyof typeof messages])
     : key);
-  const formatDate = (value: string) => intl.formatDate(value, { dateStyle: 'medium' });
   const count = (value: number | undefined) => (
     value !== undefined && !summaryError ? value.toLocaleString(intl.locale) : null
   );
@@ -219,8 +218,8 @@ const SubscriptionsTab = () => {
       key: 'status',
       renderCell: (_value, row) => <Badge variant={STATUS_VARIANT[row.status] ?? 'light'}>{label(row.status)}</Badge>,
     },
-    { label: label('colStarts'), key: 'startsAt', renderCell: (_value, row) => formatDate(row.startsAt) },
-    { label: label('colEnds'), key: 'endsAt', renderCell: (_value, row) => formatDate(row.endsAt) },
+    { label: label('colStarts'), key: 'startsAt', renderCell: (_value, row) => formatDateTime(row.startsAt, intl.locale) },
+    { label: label('colEnds'), key: 'endsAt', renderCell: (_value, row) => formatDateTime(row.endsAt, intl.locale) },
     { label: label('colPayments'), key: 'payments' },
     { label: label('colCollected'), key: 'netPaid', renderCell: (value) => <MoneyCell value={value as string} strong /> },
     { label: label('colDiscounts'), key: 'discounts', renderCell: (value) => <MoneyCell value={value as string} /> },
