@@ -318,6 +318,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.enroll.subscriptionCourse',
     defaultMessage: 'Part of the Rwaq subscription. Learners join it through their subscription.',
   },
+  enrollProgramOnlyCourse: {
+    id: 'rwaq.admin.users.enroll.programOnlyCourse',
+    defaultMessage: 'Program-only course. Enroll the learner in its program instead.',
+  },
   enrollAlready: {
     id: 'rwaq.admin.users.enroll.already',
     defaultMessage: 'Already enrolled in this course.',

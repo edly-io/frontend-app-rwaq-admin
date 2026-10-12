@@ -122,19 +122,23 @@ const CoursePicker = ({
             const isEnrolled = activeCourseIds.includes(course.courseId);
             // Subscription content is reached only through the learner's own subscription.
             const isSubscription = course.isPartOfSubscription === true;
+            // A Program-only course is joined through its program.
+            const isProgramOnly = course.isProgramOnly === true;
+            const isBlocked = isSubscription || isProgramOnly;
+            const blockedNote = isSubscription ? messages.enrollSubscriptionCourse : messages.enrollProgramOnlyCourse;
             return (
               <li key={course.courseId}>
                 <button
                   type="button"
                   className="rwaq-course-picker__option"
-                  disabled={isEnrolled || isSubscription}
+                  disabled={isEnrolled || isBlocked}
                   onClick={() => onSelect(course)}
                 >
                   <span className="rwaq-user-cell__name">{course.displayName}</span>
                   <span className="rwaq-user-cell__meta">{course.courseId}</span>
-                  {(isEnrolled || isSubscription) && (
+                  {(isEnrolled || isBlocked) && (
                     <span className="rwaq-course-picker__option-note">
-                      {intl.formatMessage(isSubscription ? messages.enrollSubscriptionCourse : messages.enrollAlready)}
+                      {intl.formatMessage(isBlocked ? blockedNote : messages.enrollAlready)}
                     </span>
                   )}
                 </button>

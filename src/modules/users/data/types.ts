@@ -93,6 +93,8 @@ export interface EnrollableCourse {
   availableModes: string[];
   /** True when the course is reached through the subscription. Admins cannot enroll anyone into it. */
   isPartOfSubscription?: boolean;
+  /** True for a Program-only course. Admins cannot enroll anyone into it directly, only through its program. */
+  isProgramOnly?: boolean;
   start: string | null;
   end: string | null;
 }

@@ -112,6 +112,14 @@ const CourseDetailPage = () => {
   // Subscription content is joined only through the learner's own subscription, so no admin enrolls into it.
   const isSubscription = pricing?.pricingCategory === 'is_part_of_subscription'
     || enrollableRow?.isPartOfSubscription === true;
+  // A Program-only course is joined through its program, so no admin enrolls into it directly.
+  const isProgramOnly = pricing?.pricingCategory === 'is_program_only' || enrollableRow?.isProgramOnly === true;
+  let enrollBlockedNote = null;
+  if (isSubscription) {
+    enrollBlockedNote = messages.enrollSubscriptionNote;
+  } else if (isProgramOnly) {
+    enrollBlockedNote = messages.enrollProgramOnlyNote;
+  }
 
   const {
     data: enrollmentData,
@@ -352,11 +360,11 @@ const CourseDetailPage = () => {
                 ? intl.formatMessage(messages.downloadingCsv)
                 : intl.formatMessage(messages.downloadCsv)}
             </Button>
-            {isSubscription ? (
+            {enrollBlockedNote ? (
               <DisabledButtonWithTooltip
-                id="course-enroll-subscription"
+                id="course-enroll-blocked"
                 size="sm"
-                tooltip={intl.formatMessage(messages.enrollSubscriptionNote)}
+                tooltip={intl.formatMessage(enrollBlockedNote)}
               >
                 {intl.formatMessage(messages.enrollUser)}
               </DisabledButtonWithTooltip>
