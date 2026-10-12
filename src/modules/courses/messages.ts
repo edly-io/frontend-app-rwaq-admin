@@ -117,7 +117,7 @@ const messages = defineMessages({
   },
   startedAtLabel: {
     id: 'rwaq.admin.courses.startedAt.label',
-    defaultMessage: 'Course Started at',
+    defaultMessage: 'Started at',
   },
   chipStartedAt: {
     id: 'rwaq.admin.courses.chip.startedAt',

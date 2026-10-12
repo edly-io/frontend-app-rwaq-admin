@@ -42,7 +42,7 @@ describe('CoursesListPage period', () => {
   it('has the picker next to the download button, named as a filter on the course start date', () => {
     renderWrapper(<CoursesListPage />);
 
-    expect(screen.getByRole('button', { name: /^Course Started at/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Started at/ })).toBeInTheDocument();
     expect(screen.queryByText(/All time/)).not.toBeInTheDocument();
     expect(screen.getByTestId('csv')).toBeInTheDocument();
   });
