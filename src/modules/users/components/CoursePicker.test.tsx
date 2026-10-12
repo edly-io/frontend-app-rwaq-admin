@@ -28,6 +28,16 @@ describe('CoursePicker', () => {
           start: null,
           end: null,
         },
+        {
+          courseId: 'course-v1:Org+Prog+2026',
+          displayName: 'Program-only course',
+          org: 'Org',
+          availableModes: ['honor'],
+          isPartOfSubscription: false,
+          isProgramOnly: true,
+          start: null,
+          end: null,
+        },
       ],
       isFetching: false,
       isError: false,
@@ -45,6 +55,17 @@ describe('CoursePicker', () => {
     const subscription = screen.getByRole('button', { name: /Subscription course/ });
     expect(subscription).toBeDisabled();
     expect(subscription).toHaveTextContent('Part of the Rwaq subscription. Learners join it through their subscription.');
+    expect(screen.getByRole('button', { name: /Free course/ })).toBeEnabled();
+  });
+
+  it('lists Program-only courses greyed out with a note', () => {
+    renderWrapper(<CoursePicker selected={null} onSelect={jest.fn()} activeCourseIds={[]} />);
+    fireEvent.change(screen.getByRole('textbox', { name: 'Course' }), { target: { value: 'course' } });
+    act(() => { jest.runAllTimers(); });
+
+    const programOnly = screen.getByRole('button', { name: /Program-only course/ });
+    expect(programOnly).toBeDisabled();
+    expect(programOnly).toHaveTextContent('Program-only course. Enroll the learner in its program instead.');
     expect(screen.getByRole('button', { name: /Free course/ })).toBeEnabled();
   });
 });
