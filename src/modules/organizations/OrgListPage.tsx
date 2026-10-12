@@ -15,9 +15,11 @@ import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
+import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
 import OrgFormModal from './modals/OrgFormModal';
+import { getOrganizationsCsvUrl, organizationsCsvParams } from './data/api';
 import { useOrganization, useOrganizations } from './data/hooks';
 import type { OrgFilter, OrgOrdering, OrgSummary } from './data/types';
 import messages from './messages';
@@ -83,15 +85,14 @@ const OrgListPage = () => {
     [setSearchParams],
   );
 
-  const {
-    data, isLoading, isError, error, refetch,
-  } = useOrganizations({
+  const listParams = {
     search: search || undefined,
     filter: filter !== 'all' ? filter : undefined,
     ordering,
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  };
+  const {
+    data, isLoading, isError, error, refetch,
+  } = useOrganizations({ ...listParams, page, pageSize: PAGE_SIZE });
 
   const { data: editingOrg, isLoading: isEditingOrgLoading } = useOrganization(editingShortName ?? '');
 
@@ -251,6 +252,13 @@ const OrgListPage = () => {
           ]}
           appliedChips={appliedChips}
           onClearAll={() => updateParams({ search: '', filter: '', ordering: '' })}
+          actions={(
+            <CsvDownloadButton
+              url={getOrganizationsCsvUrl()}
+              params={organizationsCsvParams(listParams)}
+              fallbackName="organizations"
+            />
+          )}
         />
 
         {isError ? (

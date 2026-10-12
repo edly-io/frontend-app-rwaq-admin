@@ -19,12 +19,14 @@ import type { ColumnDef } from '@src/components/AdminDataTable';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
 import ProfileAvatar from '@src/components/ProfileAvatar';
+import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip, SelectOption } from '@src/components/SearchFilterBar';
 import RoleBadges from './components/RoleBadges';
 import StatusBadges from './components/StatusBadges';
 import EditUserModal from './modals/EditUserModal';
 import UserFormModal from './modals/UserFormModal';
+import { getUsersCsvUrl } from './data/api';
 import { useUsers } from './data/hooks';
 import type {
   RoleBadge, SearchBy, UserFilter, UserOrdering, UserSummary,
@@ -131,16 +133,15 @@ const UsersListPage = () => {
     [setSearchParams],
   );
 
-  const {
-    data, isLoading, isError, error, refetch,
-  } = useUsers({
+  const listParams = {
     searchBy: searchTerm ? searchBy : undefined,
     searchTerm: searchTerm || undefined,
     filter: filter !== 'all' ? filter : undefined,
     ordering,
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  };
+  const {
+    data, isLoading, isError, error, refetch,
+  } = useUsers({ ...listParams, page, pageSize: PAGE_SIZE });
 
   const statusCode = isError ? getErrorStatus(error) : undefined;
 
@@ -340,6 +341,7 @@ const UsersListPage = () => {
           onClearAll={() => updateParams({
             search_by: '', search_term: '', filter: '', ordering: '',
           })}
+          actions={<CsvDownloadButton url={getUsersCsvUrl()} params={listParams} fallbackName="users" />}
         />
 
         {isError ? (

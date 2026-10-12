@@ -44,6 +44,9 @@ export const getPrograms = async (params: ProgramListParams = {}): Promise<Progr
   return camelCaseObject(data) as ProgramListResponse;
 };
 
+/** The list's CSV download: same filters, every row. */
+export const getProgramsCsvUrl = () => `${getProgramsBaseUrl()}/csv/`;
+
 // ── Detail ─────────────────────────────────────────────────────────────────────
 
 /** GET /api/v1/admin/programs/{uuid}/ */
