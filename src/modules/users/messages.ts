@@ -314,6 +314,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.enroll.already',
     defaultMessage: 'Already enrolled in this course.',
   },
+  enrollProgramOnlyCourse: {
+    id: 'rwaq.admin.users.enroll.programOnlyCourse',
+    defaultMessage: 'Program-only course. Enroll the learner in its program instead.',
+  },
   enrollReactivates: {
     id: 'rwaq.admin.users.enroll.reactivates',
     defaultMessage: 'This learner unenrolled from this course before. Enrolling again restores '

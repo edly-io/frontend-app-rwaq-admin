@@ -24,11 +24,13 @@ import ProfileAvatar from '@src/components/ProfileAvatar';
 import ErrorState from '@src/components/ErrorState';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorStatus } from '@src/data/httpError';
+import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import { useEnrollableCourses } from '@src/modules/users/data/hooks';
 import modeLabel from '@src/modules/users/modeLabel';
 import {
   useCourse,
   useCourseEnrollments,
+  useCoursePricing,
   useCourseStaff,
   useDownloadCourseEnrollmentsCsv,
   useRemoveCourseStaff,
@@ -102,7 +104,11 @@ const CourseDetailPage = () => {
   const {
     data: enrollableCourses, isLoading: enrollModesLoading,
   } = useEnrollableCourses(courseId, modal.kind === 'enroll');
-  const enrollModes = enrollableCourses?.find((row) => row.courseId === courseId)?.availableModes;
+  const enrollableRow = enrollableCourses?.find((row) => row.courseId === courseId);
+  const enrollModes = enrollableRow?.availableModes;
+  const { data: pricing } = useCoursePricing(courseId);
+  // A Program-only course is joined through its program, so no admin enrolls into it directly.
+  const isProgramOnly = pricing?.pricingCategory === 'is_program_only' || enrollableRow?.isProgramOnly === true;
 
   const {
     data: enrollmentData,
@@ -343,13 +349,23 @@ const CourseDetailPage = () => {
                 ? intl.formatMessage(messages.downloadingCsv)
                 : intl.formatMessage(messages.downloadCsv)}
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setModal({ kind: 'enroll' })}
-            >
-              {intl.formatMessage(messages.enrollUser)}
-            </Button>
+            {isProgramOnly ? (
+              <DisabledButtonWithTooltip
+                id="course-enroll-blocked"
+                size="sm"
+                tooltip={intl.formatMessage(messages.enrollProgramOnlyNote)}
+              >
+                {intl.formatMessage(messages.enrollUser)}
+              </DisabledButtonWithTooltip>
+            ) : (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setModal({ kind: 'enroll' })}
+              >
+                {intl.formatMessage(messages.enrollUser)}
+              </Button>
+            )}
           </div>
         </div>
 

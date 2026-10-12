@@ -226,6 +226,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.courseDetail.enrollments.enrollUser',
     defaultMessage: 'Enroll a User',
   },
+  enrollProgramOnlyNote: {
+    id: 'rwaq.admin.courseDetail.enrollments.programOnlyNote',
+    defaultMessage: 'This course is offered only through its program. Enroll the learner in the program instead.',
+  },
   enrollmentColUser: {
     id: 'rwaq.admin.courseDetail.enrollments.col.user',
     defaultMessage: 'User',
