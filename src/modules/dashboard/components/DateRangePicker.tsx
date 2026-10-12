@@ -97,7 +97,7 @@ export interface DateRangePickerProps {
   minWidth?: string;
   /** Button size; `sm` by default, `md` to match a neighbouring search box. */
   size?: 'sm' | 'md';
-  /** What the range is a range of, shown before it on the button ("Course Started at: All time"). */
+  /** What the range is a range of. With no range set the button shows just this, otherwise "label: range". */
   label?: string;
 }
 
@@ -146,6 +146,10 @@ const DateRangePicker = ({
     const preset = PRESETS.find((p) => p.key === activePreset);
     return intl.formatMessage(messages[preset?.labelKey ?? 'presetAllTime']);
   })();
+
+  // With a label and no range set the button is just the label ("Course Started at"), which keeps it narrow.
+  let buttonText = activeLabel;
+  if (label) { buttonText = startDate || endDate ? `${label}: ${activeLabel}` : label; }
 
   // Close the panel on outside click or Escape key
   useEffect(() => {
@@ -233,7 +237,7 @@ const DateRangePicker = ({
             } : {}),
           }}
         >
-          {label ? `${label}: ${activeLabel}` : activeLabel}
+          {buttonText}
           <span aria-hidden="true" style={{ marginInlineStart: '0.375rem', opacity: 0.6 }}>▾</span>
         </Button>
       </div>
