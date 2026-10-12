@@ -7,7 +7,7 @@
  */
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Badge, Button, Form } from '@openedx/paragon';
+import { Badge, Button } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { getConfig } from '@edx/frontend-platform';
 import AdminDataTable from '@src/components/AdminDataTable';
@@ -242,12 +242,10 @@ const CoursesListPage = () => {
           onClearAll={() => updateParams({
             search: '', org: '', start_date: '', end_date: '', ordering: '',
           })}
-          actions={<CsvDownloadButton url={getCoursesCsvUrl()} params={listParams} fallbackName="courses" />}
+          downloadAction={<CsvDownloadButton url={getCoursesCsvUrl()} params={listParams} fallbackName="courses" />}
           extraFilters={(
-            <Form.Group className="mb-0">
-              <Form.Label className="rwaq-filterpanel__label">
-                {intl.formatMessage(messages.startedAtLabel)}
-              </Form.Label>
+            <div className="d-flex flex-column">
+              <span className="rwaq-filterpanel__label">{intl.formatMessage(messages.startedAtLabel)}</span>
               <DateRangePicker
                 startDate={startDate}
                 endDate={endDate}
@@ -255,7 +253,7 @@ const CoursesListPage = () => {
                 minWidth="100%"
                 onChange={(from, to) => updateParams({ start_date: from ?? '', end_date: to ?? '' })}
               />
-            </Form.Group>
+            </div>
           )}
         />
 

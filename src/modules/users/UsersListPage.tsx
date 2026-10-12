@@ -341,7 +341,7 @@ const UsersListPage = () => {
           onClearAll={() => updateParams({
             search_by: '', search_term: '', filter: '', ordering: '',
           })}
-          actions={<CsvDownloadButton url={getUsersCsvUrl()} params={listParams} fallbackName="users" />}
+          downloadAction={<CsvDownloadButton url={getUsersCsvUrl()} params={listParams} fallbackName="users" />}
         />
 
         {isError ? (

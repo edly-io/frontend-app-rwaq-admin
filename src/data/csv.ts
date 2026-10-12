@@ -7,6 +7,13 @@ const filenameFrom = (disposition: string | undefined): string | null => {
   return match ? match[1] : null;
 };
 
+/** "2026-10-12_10-15-30" in UTC, the same stamp the backend puts in the file name. */
+const fileStamp = () => new Date()
+  .toISOString()
+  .slice(0, 19)
+  .replace('T', '_')
+  .replace(/:/g, '-');
+
 /**
  * GET a list's csv/ endpoint with the list's filters, minus paging.
  *
@@ -30,6 +37,7 @@ export const downloadCsv = async (
   });
   return {
     blob: response.data as Blob,
-    filename: filenameFrom(response.headers?.['content-disposition']) ?? `${fallbackName}.csv`,
+    // The browser may not be allowed to read the header (CORS), so the name is also built here.
+    filename: filenameFrom(response.headers?.['content-disposition']) ?? `${fallbackName}_${fileStamp()}.csv`,
   };
 };

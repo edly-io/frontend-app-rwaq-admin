@@ -58,14 +58,14 @@ describe('CsvDownloadButton', () => {
     expect(clicked[0]).toEqual({ download: 'courses_2026-10-12.csv', href: 'blob:csv-1' });
   });
 
-  it('falls back to the given name when the response names no file', async () => {
+  it('falls back to the given name with the date and time when the response names no file', async () => {
     get.mockResolvedValue({ data: new Blob(['a']), headers: {} });
     renderButton();
 
     fireEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
 
     await waitFor(() => expect(clicked).toHaveLength(1));
-    expect(clicked[0].download).toBe('courses.csv');
+    expect(clicked[0].download).toMatch(/^courses_\d{4}-\d\d-\d\d_\d\d-\d\d-\d\d\.csv$/);
   });
 
   it('sends the filters in snake case, without paging or empty values, in the page language', async () => {

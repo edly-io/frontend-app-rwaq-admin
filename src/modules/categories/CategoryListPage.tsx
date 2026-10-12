@@ -221,7 +221,7 @@ const CategoryListPage = () => {
           ]}
           appliedChips={appliedChips}
           onClearAll={() => updateParams({ search: '', filter: '', ordering: '' })}
-          actions={<CsvDownloadButton url={getCategoriesCsvUrl()} params={listParams} fallbackName="categories" />}
+          downloadAction={<CsvDownloadButton url={getCategoriesCsvUrl()} params={listParams} fallbackName="categories" />}
         />
 
         {isError ? (

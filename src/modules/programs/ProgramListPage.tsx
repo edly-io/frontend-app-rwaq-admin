@@ -353,7 +353,7 @@ const ProgramListPage = () => {
           onClearAll={() => updateParams({
             search: '', status: '', is_hide: '', is_featured: '', ordering: '',
           })}
-          actions={<CsvDownloadButton url={getProgramsCsvUrl()} params={listParams} fallbackName="programs" />}
+          downloadAction={<CsvDownloadButton url={getProgramsCsvUrl()} params={listParams} fallbackName="programs" />}
         />
 
         {isError ? (

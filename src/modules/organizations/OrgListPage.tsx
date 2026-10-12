@@ -252,7 +252,7 @@ const OrgListPage = () => {
           ]}
           appliedChips={appliedChips}
           onClearAll={() => updateParams({ search: '', filter: '', ordering: '' })}
-          actions={(
+          downloadAction={(
             <CsvDownloadButton
               url={getOrganizationsCsvUrl()}
               params={organizationsCsvParams(listParams)}

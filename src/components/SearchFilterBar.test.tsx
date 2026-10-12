@@ -21,6 +21,23 @@ const filterGroups = (onChange = jest.fn()) => [
 ];
 
 describe('SearchFilterBar', () => {
+  it('puts the download action after the Filters toggle', () => {
+    renderWrapper(
+      <SearchFilterBar
+        searchTerm=""
+        onSearch={jest.fn()}
+        filterGroups={filterGroups()}
+        actions={<button type="button">Other</button>}
+        downloadAction={<button type="button">Download</button>}
+      />,
+    );
+
+    const names = screen.getAllByRole('button').map((button) => button.textContent);
+
+    expect(names.indexOf('Filters')).toBeGreaterThan(names.indexOf('Other'));
+    expect(names.indexOf('Download')).toBe(names.indexOf('Filters') + 1);
+  });
+
   it('shows extra filters only inside the open Filters panel, with a toggle even without selects', () => {
     renderWrapper(<SearchFilterBar searchTerm="" onSearch={jest.fn()} extraFilters={<div>Date range</div>} />);
     expect(screen.queryByText('Date range')).not.toBeInTheDocument();
