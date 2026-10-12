@@ -231,10 +231,6 @@ const SubscriptionsTab = () => {
     <TabCard>
       <TabHeading title={label('title')} info={label('info')} how={label('how')} />
 
-      <div className="rwaq-overview__toolbar rwaq-overview__toolbar--end">
-        <DateFilter range={dates} />
-      </div>
-
       <div className="rwaq-payment-grid rwaq-payment-grid--fit mb-3">
         <PaymentKpi
           label={label('kpiRevenue')}
@@ -289,7 +285,12 @@ const SubscriptionsTab = () => {
         ]}
         appliedChips={chips}
         onClearAll={() => { list.clearAll(); dates.setRange(); }}
-        actions={<CsvButton report="subscriptions" params={listParams} />}
+        actions={(
+          <>
+            <DateFilter range={dates} />
+            <CsvButton report="subscriptions" params={listParams} />
+          </>
+        )}
       />
       {isError ? (
         <ErrorState
