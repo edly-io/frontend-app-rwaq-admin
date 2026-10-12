@@ -97,12 +97,14 @@ export interface DateRangePickerProps {
   minWidth?: string;
   /** Button size; `sm` by default, `md` to match a neighbouring search box. */
   size?: 'sm' | 'md';
+  /** What the range is a range of, shown before it on the button ("Course Started at: All time"). */
+  label?: string;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const DateRangePicker = ({
-  startDate, endDate, onChange, minWidth, size = 'sm',
+  startDate, endDate, onChange, minWidth, size = 'sm', label,
 }: DateRangePickerProps) => {
   const intl = useIntl();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -231,7 +233,7 @@ const DateRangePicker = ({
             } : {}),
           }}
         >
-          {activeLabel}
+          {label ? `${label}: ${activeLabel}` : activeLabel}
           <span aria-hidden="true" style={{ marginInlineStart: '0.375rem', opacity: 0.6 }}>▾</span>
         </Button>
       </div>

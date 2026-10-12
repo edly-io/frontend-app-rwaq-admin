@@ -242,18 +242,17 @@ const CoursesListPage = () => {
           onClearAll={() => updateParams({
             search: '', org: '', start_date: '', end_date: '', ordering: '',
           })}
-          downloadAction={<CsvDownloadButton url={getCoursesCsvUrl()} params={listParams} fallbackName="courses" />}
-          extraFilters={(
-            <div className="d-flex flex-column">
-              <span className="rwaq-filterpanel__label">{intl.formatMessage(messages.startedAtLabel)}</span>
+          downloadAction={(
+            <>
               <DateRangePicker
+                label={intl.formatMessage(messages.startedAtLabel)}
                 startDate={startDate}
                 endDate={endDate}
                 size="md"
-                minWidth="100%"
                 onChange={(from, to) => updateParams({ start_date: from ?? '', end_date: to ?? '' })}
               />
-            </div>
+              <CsvDownloadButton url={getCoursesCsvUrl()} params={listParams} fallbackName="courses" />
+            </>
           )}
         />
 

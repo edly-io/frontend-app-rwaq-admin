@@ -38,17 +38,6 @@ describe('SearchFilterBar', () => {
     expect(names.indexOf('Download')).toBe(names.indexOf('Filters') + 1);
   });
 
-  it('shows extra filters only inside the open Filters panel, with a toggle even without selects', () => {
-    renderWrapper(<SearchFilterBar searchTerm="" onSearch={jest.fn()} extraFilters={<div>Date range</div>} />);
-    expect(screen.queryByText('Date range')).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
-    expect(screen.getByText('Date range')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
-    expect(screen.queryByText('Date range')).not.toBeInTheDocument();
-  });
-
   it('submits the trimmed term when the search icon is clicked', () => {
     const onSearch = jest.fn();
     renderWrapper(<SearchFilterBar searchTerm="" onSearch={onSearch} scopes={scopes} scope="email" />);

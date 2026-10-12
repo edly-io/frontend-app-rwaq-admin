@@ -789,8 +789,6 @@ html[data-paragon-theme-variant='dark'] {
 .rwaq-filterpanel--open {
   max-height: 30rem;
   opacity: 1;
-  // A filter such as the date range opens its own dropdown, which overflow: hidden would clip.
-  overflow: visible;
 }
 
 .rwaq-filterpanel__inner {

@@ -62,8 +62,6 @@ export interface SearchFilterBarProps {
   actions?: ReactNode;
   /** The download button, shown after the Filters toggle so a list is filtered first and downloaded last. */
   downloadAction?: ReactNode;
-  /** More filters for the Filters panel that are not a select, e.g. a date range. Shown while the panel is open. */
-  extraFilters?: ReactNode;
 }
 
 const SearchFilterBar = ({
@@ -80,7 +78,6 @@ const SearchFilterBar = ({
   onClearAll,
   actions,
   downloadAction,
-  extraFilters,
 }: SearchFilterBarProps) => {
   const intl = useIntl();
   const [term, setTerm] = useState(searchTerm);
@@ -190,7 +187,7 @@ const SearchFilterBar = ({
 
         <div className="rwaq-actionbar__actions">
           {actions}
-          {(filterGroups.length > 0 || extraFilters) && (
+          {filterGroups.length > 0 && (
             <Button
               variant="outline-primary"
               // Pressed state comes from the design system rather than
@@ -209,7 +206,7 @@ const SearchFilterBar = ({
         </div>
       </div>
 
-      {(filterGroups.length > 0 || extraFilters) && (
+      {filterGroups.length > 0 && (
         <div
           id="rwaq-filter-panel"
           className={`rwaq-filterpanel${isPanelOpen ? ' rwaq-filterpanel--open' : ''}`}
@@ -233,8 +230,6 @@ const SearchFilterBar = ({
                 </Form.Control>
               </Form.Group>
             ))}
-            {/* Not mounted while collapsed, so its buttons stay out of the tab order. */}
-            {isPanelOpen && extraFilters}
           </div>
         </div>
       )}

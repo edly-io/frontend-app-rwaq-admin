@@ -39,13 +39,11 @@ describe('CoursesListPage period', () => {
     });
   });
 
-  it('has the picker, labeled as a filter on the course start date, inside Filters', () => {
+  it('has the picker next to the download button, named as a filter on the course start date', () => {
     renderWrapper(<CoursesListPage />);
-    expect(screen.queryByText('Course Started at')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
-
-    expect(screen.getByText('Course Started at')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Course Started at: All time/ })).toBeInTheDocument();
+    expect(screen.getByTestId('csv')).toBeInTheDocument();
   });
 
   it('lists every course and sends no period until one is picked', () => {
