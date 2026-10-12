@@ -60,6 +60,8 @@ export interface SearchFilterBarProps {
   onClearAll?: () => void;
   /** Extra buttons rendered to the right of the Filters toggle. */
   actions?: ReactNode;
+  /** More filters for the Filters panel that are not a select, e.g. a date range. Shown while the panel is open. */
+  extraFilters?: ReactNode;
 }
 
 const SearchFilterBar = ({
@@ -75,6 +77,7 @@ const SearchFilterBar = ({
   appliedChips = [],
   onClearAll,
   actions,
+  extraFilters,
 }: SearchFilterBarProps) => {
   const intl = useIntl();
   const [term, setTerm] = useState(searchTerm);
@@ -184,7 +187,7 @@ const SearchFilterBar = ({
 
         <div className="rwaq-actionbar__actions">
           {actions}
-          {filterGroups.length > 0 && (
+          {(filterGroups.length > 0 || extraFilters) && (
             <Button
               variant="outline-primary"
               // Pressed state comes from the design system rather than
@@ -202,7 +205,7 @@ const SearchFilterBar = ({
         </div>
       </div>
 
-      {filterGroups.length > 0 && (
+      {(filterGroups.length > 0 || extraFilters) && (
         <div
           id="rwaq-filter-panel"
           className={`rwaq-filterpanel${isPanelOpen ? ' rwaq-filterpanel--open' : ''}`}
@@ -226,6 +229,8 @@ const SearchFilterBar = ({
                 </Form.Control>
               </Form.Group>
             ))}
+            {/* Not mounted while collapsed, so its buttons stay out of the tab order. */}
+            {isPanelOpen && extraFilters}
           </div>
         </div>
       )}

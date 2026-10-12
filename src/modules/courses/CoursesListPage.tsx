@@ -7,7 +7,7 @@
  */
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Badge, Button } from '@openedx/paragon';
+import { Badge, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { getConfig } from '@edx/frontend-platform';
 import AdminDataTable from '@src/components/AdminDataTable';
@@ -242,22 +242,20 @@ const CoursesListPage = () => {
           onClearAll={() => updateParams({
             search: '', org: '', start_date: '', end_date: '', ordering: '',
           })}
-          actions={(
-            <>
-              <div className="d-flex align-items-center">
-                <span className="small text-gray-700 mr-2 text-nowrap">
-                  {intl.formatMessage(messages.startedAtLabel)}
-                </span>
-                <DateRangePicker
-                  startDate={startDate}
-                  endDate={endDate}
-                  size="md"
-                  minWidth="9.5rem"
-                  onChange={(from, to) => updateParams({ start_date: from ?? '', end_date: to ?? '' })}
-                />
-              </div>
-              <CsvDownloadButton url={getCoursesCsvUrl()} params={listParams} fallbackName="courses" />
-            </>
+          actions={<CsvDownloadButton url={getCoursesCsvUrl()} params={listParams} fallbackName="courses" />}
+          extraFilters={(
+            <Form.Group className="mb-0">
+              <Form.Label className="rwaq-filterpanel__label">
+                {intl.formatMessage(messages.startedAtLabel)}
+              </Form.Label>
+              <DateRangePicker
+                startDate={startDate}
+                endDate={endDate}
+                size="md"
+                minWidth="100%"
+                onChange={(from, to) => updateParams({ start_date: from ?? '', end_date: to ?? '' })}
+              />
+            </Form.Group>
           )}
         />
 

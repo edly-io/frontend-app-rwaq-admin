@@ -39,8 +39,11 @@ describe('CoursesListPage period', () => {
     });
   });
 
-  it('labels the picker as a filter on the course start date', () => {
+  it('has the picker, labeled as a filter on the course start date, inside Filters', () => {
     renderWrapper(<CoursesListPage />);
+    expect(screen.queryByText('Course Started at')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
 
     expect(screen.getByText('Course Started at')).toBeInTheDocument();
   });
