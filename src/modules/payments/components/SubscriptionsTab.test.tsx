@@ -95,6 +95,16 @@ describe('Subscriptions list', () => {
     expect(calls[calls.length - 1][0]).toEqual(expect.objectContaining({ ordering: '-starts_at' }));
   });
 
+  it('shows the start and end with the time in UTC', () => {
+    renderWrapper(<SubscriptionsTab />);
+
+    const cells = within(screen.getAllByRole('row')[1]).getAllByRole('cell');
+    expect(cells.some((cell) => /Aug 10, 2026.*10:00/.test(cell.textContent || ''))).toBe(true);
+    expect(cells.some((cell) => /Oct 10, 2026.*10:00/.test(cell.textContent || ''))).toBe(true);
+    const headers = screen.getAllByRole('columnheader').map((header) => header.textContent);
+    expect(headers).toEqual(expect.arrayContaining([expect.stringMatching(/Starts \(UTC\)/), expect.stringMatching(/Ends \(UTC\)/)]));
+  });
+
   it('shows the status and the source as chips, with the source column last', () => {
     renderWrapper(<SubscriptionsTab />);
 
