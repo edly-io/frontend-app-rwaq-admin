@@ -53,6 +53,9 @@ export const getCourses = async (params: CourseListParams = {}): Promise<CourseL
   return camelCaseObject(data) as CourseListResponse;
 };
 
+/** The list's CSV download: same filters, every row. */
+export const getCoursesCsvUrl = () => `${getCoursesBaseUrl()}/csv/`;
+
 // ── Detail ────────────────────────────────────────────────────────────────────
 
 /** GET /api/v1/admin/courses/{courseId}/ */

@@ -21,6 +21,23 @@ const filterGroups = (onChange = jest.fn()) => [
 ];
 
 describe('SearchFilterBar', () => {
+  it('puts the download action after the Filters toggle', () => {
+    renderWrapper(
+      <SearchFilterBar
+        searchTerm=""
+        onSearch={jest.fn()}
+        filterGroups={filterGroups()}
+        actions={<button type="button">Other</button>}
+        downloadAction={<button type="button">Download</button>}
+      />,
+    );
+
+    const names = screen.getAllByRole('button').map((button) => button.textContent);
+
+    expect(names.indexOf('Filters')).toBeGreaterThan(names.indexOf('Other'));
+    expect(names.indexOf('Download')).toBe(names.indexOf('Filters') + 1);
+  });
+
   it('submits the trimmed term when the search icon is clicked', () => {
     const onSearch = jest.fn();
     renderWrapper(<SearchFilterBar searchTerm="" onSearch={onSearch} scopes={scopes} scope="email" />);

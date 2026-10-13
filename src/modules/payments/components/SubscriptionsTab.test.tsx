@@ -79,12 +79,15 @@ describe('Subscriptions KPI cards', () => {
     expect(document.querySelectorAll('.rwaq-payment-kpi')).toHaveLength(4);
   });
 
-  it('has the date filter above the cards', () => {
+  it('has the date filter beside the Download CSV button, not above the cards', () => {
     const { container } = renderWrapper(<SubscriptionsTab />);
 
-    const toolbar = container.querySelector('.rwaq-overview__toolbar') as HTMLElement;
-    const grid = container.querySelector('.rwaq-payment-grid') as HTMLElement;
-    expect(grid.previousElementSibling).toBe(toolbar);
+    const actions = container.querySelector('.rwaq-actionbar__actions') as HTMLElement;
+    const picker = within(actions).getByRole('button', { name: /All time/ });
+    const csv = within(actions).getByRole('button', { name: 'Download CSV' });
+    // eslint-disable-next-line no-bitwise
+    expect(picker.compareDocumentPosition(csv) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(container.querySelector('.rwaq-overview__toolbar')).toBeNull();
   });
 });
 
