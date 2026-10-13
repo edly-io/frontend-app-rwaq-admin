@@ -92,6 +92,7 @@ const messages = defineMessages({
   chipSearch: { id: 'rwaq.admin.payments.subscriptions.chip.search', defaultMessage: 'Search: {term}' },
   chipStatus: { id: 'rwaq.admin.payments.subscriptions.chip.status', defaultMessage: 'Status: {status}' },
   colPeriod: { id: 'rwaq.admin.payments.subscriptions.col.period', defaultMessage: 'Period' },
+  reasonTitle: { id: 'rwaq.admin.payments.subscriptions.reason-title', defaultMessage: 'Reason' },
   paymentsTitle: { id: 'rwaq.admin.payments.subscriptions.payments-title', defaultMessage: 'Latest payments' },
   noPayments: { id: 'rwaq.admin.payments.subscriptions.no-payments', defaultMessage: 'No payments.' },
   viewAllPayments: { id: 'rwaq.admin.payments.subscriptions.view-all', defaultMessage: 'View all payments' },
@@ -147,6 +148,12 @@ const SubscriptionPayments = ({ subscription }: { subscription: SubscriptionRow 
 
   return (
     <DetailTable>
+      {subscription.reason && (
+        <>
+          <h4 className="rwaq-section-title">{intl.formatMessage(messages.reasonTitle)}</h4>
+          <p>{subscription.reason}</p>
+        </>
+      )}
       <h4 className="rwaq-section-title">{intl.formatMessage(messages.paymentsTitle)}</h4>
       {body}
       <Link to={`/payments?tab=orders&subscription=${subscription.id}`}>

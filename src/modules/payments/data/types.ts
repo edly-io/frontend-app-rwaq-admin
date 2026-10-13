@@ -145,6 +145,8 @@ export interface SubscriptionRow {
   status: SubscriptionStatus;
   startsAt: string;
   endsAt: string;
+  /** Why WordPress cancelled or revoked it. Empty while active. */
+  reason: string;
   payments: number;
   netPaid: string;
   discounts: string;
