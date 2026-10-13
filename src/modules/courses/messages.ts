@@ -115,6 +115,14 @@ const messages = defineMessages({
     id: 'rwaq.admin.courses.chip.sort',
     defaultMessage: 'Sort: {label}',
   },
+  startedAtLabel: {
+    id: 'rwaq.admin.courses.startedAt.label',
+    defaultMessage: 'Started at',
+  },
+  chipStartedAt: {
+    id: 'rwaq.admin.courses.chip.startedAt',
+    defaultMessage: 'Course Started at: {from} – {to}',
+  },
   // Actions
   view: {
     id: 'rwaq.admin.courses.action.view',

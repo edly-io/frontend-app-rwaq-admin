@@ -19,9 +19,11 @@ import ChipOverflowList from '@src/components/ChipOverflowList';
 import type { ChipItem } from '@src/components/ChipOverflowList';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
+import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
 import ProgramImage from './components/ProgramImage';
+import { getProgramsCsvUrl } from './data/api';
 import { usePrograms } from './data/hooks';
 import type { ProgramOrdering, ProgramStatus, ProgramSummary } from './data/types';
 import messages from './messages';
@@ -135,17 +137,16 @@ const ProgramListPage = () => {
   let isHideFilter: boolean | undefined;
   if (isHideRaw === 'true') { isHideFilter = true; } else if (isHideRaw === 'false') { isHideFilter = false; }
 
-  const {
-    data, isLoading, isError, error, refetch,
-  } = usePrograms({
+  const listParams = {
     search: search || undefined,
     status: (searchParams.get('status') as ProgramStatus | null) || undefined,
     isHide: isHideFilter,
     isFeatured: searchParams.get('is_featured') === 'true' ? true : undefined,
     ordering,
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  };
+  const {
+    data, isLoading, isError, error, refetch,
+  } = usePrograms({ ...listParams, page, pageSize: PAGE_SIZE });
 
   const statusCode = isError ? getErrorStatus(error) : undefined;
 
@@ -352,6 +353,7 @@ const ProgramListPage = () => {
           onClearAll={() => updateParams({
             search: '', status: '', is_hide: '', is_featured: '', ordering: '',
           })}
+          downloadAction={<CsvDownloadButton url={getProgramsCsvUrl()} params={listParams} fallbackName="programs" />}
         />
 
         {isError ? (

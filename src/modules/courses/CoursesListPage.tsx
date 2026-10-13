@@ -12,11 +12,14 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import { getConfig } from '@edx/frontend-platform';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
+import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip, SelectOption } from '@src/components/SearchFilterBar';
 import ProfileAvatar from '@src/components/ProfileAvatar';
+import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
+import { getCoursesCsvUrl } from './data/api';
 import { useCourses } from './data/hooks';
 import type { CourseSummary, CourseOrdering } from './data/types';
 import messages from './messages';
@@ -45,6 +48,8 @@ const CoursesListPage = () => {
   const page = Number(searchParams.get('page') ?? 1);
   const search = searchParams.get('search') ?? '';
   const org = searchParams.get('org') ?? '';
+  const startDate = searchParams.get('start_date') || undefined;
+  const endDate = searchParams.get('end_date') || undefined;
   const hasExplicitOrdering = searchParams.get('ordering') !== null;
   const ordering = (searchParams.get('ordering') as CourseOrdering | null) ?? DEFAULT_ORDERING;
 
@@ -73,15 +78,16 @@ const CoursesListPage = () => {
     [setSearchParams],
   );
 
-  const {
-    data, isLoading, isError, error, refetch,
-  } = useCourses({
+  const listParams = {
     search: search || undefined,
     org: org || undefined,
+    startDate,
+    endDate,
     ordering,
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  };
+  const {
+    data, isLoading, isError, error, refetch,
+  } = useCourses({ ...listParams, page, pageSize: PAGE_SIZE });
 
   const statusCode = isError ? getErrorStatus(error) : undefined;
 
@@ -106,6 +112,13 @@ const CoursesListPage = () => {
         onRemove: () => updateParams({ org: '' }),
       });
     }
+    if (startDate) {
+      chips.push({
+        key: 'startedAt',
+        label: intl.formatMessage(messages.chipStartedAt, { from: startDate, to: endDate ?? '…' }),
+        onRemove: () => updateParams({ start_date: '', end_date: '' }),
+      });
+    }
     if (hasExplicitOrdering) {
       chips.push({
         key: 'ordering',
@@ -117,7 +130,7 @@ const CoursesListPage = () => {
     }
     return chips;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, org, ordering, hasExplicitOrdering, intl, updateParams]);
+  }, [search, org, startDate, endDate, ordering, hasExplicitOrdering, intl, updateParams]);
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -226,7 +239,21 @@ const CoursesListPage = () => {
             },
           ]}
           appliedChips={appliedChips}
-          onClearAll={() => updateParams({ search: '', org: '', ordering: '' })}
+          onClearAll={() => updateParams({
+            search: '', org: '', start_date: '', end_date: '', ordering: '',
+          })}
+          downloadAction={(
+            <>
+              <DateRangePicker
+                label={intl.formatMessage(messages.startedAtLabel)}
+                startDate={startDate}
+                endDate={endDate}
+                size="md"
+                onChange={(from, to) => updateParams({ start_date: from ?? '', end_date: to ?? '' })}
+              />
+              <CsvDownloadButton url={getCoursesCsvUrl()} params={listParams} fallbackName="courses" />
+            </>
+          )}
         />
 
         {isError ? (

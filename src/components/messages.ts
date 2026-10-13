@@ -107,3 +107,10 @@ export const searchFilterBarMessages = defineMessages({
   clearAll: { id: 'rwaq.admin.searchFilter.clearAll', defaultMessage: 'Clear all' },
   removeChip: { id: 'rwaq.admin.searchFilter.removeChip', defaultMessage: 'Remove {label}' },
 });
+
+// ── CsvDownloadButton ─────────────────────────────────────────────────────────
+
+export const csvDownloadMessages = defineMessages({
+  download: { id: 'rwaq.admin.csvDownload.download', defaultMessage: 'Download CSV' },
+  failed: { id: 'rwaq.admin.csvDownload.failed', defaultMessage: 'Could not download the CSV.' },
+});

@@ -45,6 +45,9 @@ export const getCategories = async (params: CategoryListParams = {}): Promise<Ca
   return camelCaseObject(data) as CategoryListResponse;
 };
 
+/** The list's CSV download: same filters, every row. */
+export const getCategoriesCsvUrl = () => `${getCategoriesBaseUrl()}/csv/`;
+
 // ── Create ────────────────────────────────────────────────────────────────────
 
 /** POST /rwaq/api/categories/ */
