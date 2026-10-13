@@ -25,6 +25,7 @@ const row = {
   status: 'active',
   startsAt: '2026-08-10T10:00:00Z',
   endsAt: '2026-10-10T10:00:00Z',
+  reason: '',
   payments: 2,
   netPaid: '190.00',
   discounts: '10.00',
@@ -130,6 +131,23 @@ describe('Subscriptions expanded row', () => {
     expect(within(paymentRow).getByText('Sep 5, 2026 – Oct 5, 2026')).toBeInTheDocument();
     const link = screen.getByRole('link', { name: 'View all payments' });
     expect(link).toHaveAttribute('href', '/payments?tab=orders&subscription=4');
+  });
+
+  it('shows no reason block for an active subscription', () => {
+    renderWrapper(<SubscriptionsTab />);
+    expand();
+    expect(screen.queryByText('Reason')).not.toBeInTheDocument();
+  });
+
+  it('shows the cancel reason in the opened row', () => {
+    (hooks.usePaymentSubscriptions as jest.Mock).mockReturnValue(page([
+      { ...row, status: 'cancelled', reason: 'Cancelled by an administrator in WordPress' },
+    ]));
+    renderWrapper(<SubscriptionsTab />);
+    expand();
+
+    expect(screen.getByText('Reason')).toBeInTheDocument();
+    expect(screen.getByText('Cancelled by an administrator in WordPress')).toBeInTheDocument();
   });
 
   it('says so when there are no payments yet', () => {
