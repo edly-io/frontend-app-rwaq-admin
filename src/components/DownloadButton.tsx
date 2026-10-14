@@ -4,7 +4,7 @@
  * until the file has been handed to the browser.
  */
 import { Icon, StatefulButton } from '@openedx/paragon';
-import { Download } from '@openedx/paragon/icons';
+import { Download, SpinnerSimple } from '@openedx/paragon/icons';
 
 // Revoking at once can cancel the download in some browsers.
 const REVOKE_URL_AFTER_MS = 10_000;
@@ -37,7 +37,10 @@ const DownloadButton = ({
     size={size}
     state={isPending ? 'pending' : 'default'}
     labels={{ default: label, pending: pendingLabel }}
-    icons={{ default: <Icon src={Download} /> }}
+    icons={{
+      default: <Icon src={Download} />,
+      pending: <Icon src={SpinnerSimple} className="icon-spin" />,
+    }}
     disabledStates={['pending']}
     disabled={disabled}
     onClick={onClick}

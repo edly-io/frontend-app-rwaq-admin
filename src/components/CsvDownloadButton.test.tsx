@@ -117,6 +117,7 @@ describe('CsvDownloadButton', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
 
     await waitFor(() => expect(screen.getByRole('button', { name: /Downloading/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /Downloading/ }).querySelector('.icon-spin')).not.toBeNull();
     finish({ data: new Blob(['a']), headers: {} });
     await waitFor(() => expect(screen.getByRole('button', { name: 'Download CSV' })).toBeInTheDocument());
   });

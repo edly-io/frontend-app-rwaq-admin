@@ -141,7 +141,7 @@ const UsersListPage = () => {
   };
   const {
     data, isLoading, isPlaceholderData, isError, error, refetch,
-  } = useUsers({ ...listParams, page, pageSize: PAGE_SIZE });
+  } = useUsers({ ...listParams, page, pageSize: PAGE_SIZE }, true, true);
 
   const statusCode = isError ? getErrorStatus(error) : undefined;
 

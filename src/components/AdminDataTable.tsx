@@ -190,7 +190,12 @@ const AdminDataTable = <Row extends object>({
   }
 
   return (
-    <div className={isRefreshing ? 'rwaq-table-shell rwaq-table-shell--refreshing' : 'rwaq-table-shell'} aria-busy={isRefreshing}>
+    <div
+      className={isRefreshing ? 'rwaq-table-shell rwaq-table-shell--refreshing' : 'rwaq-table-shell'}
+      aria-busy={isRefreshing}
+      // Stale rows are not actionable: inert also blocks keyboard focus.
+      {...(isRefreshing ? { inert: '' } : {})}
+    >
       {/* sr-only heading instead of a raw <caption> (which is invalid nested in
           DataTable's wrapper <div> and triggers a DOM-nesting warning). */}
       {caption && <div className="sr-only" role="heading" aria-level={2}>{caption}</div>}
