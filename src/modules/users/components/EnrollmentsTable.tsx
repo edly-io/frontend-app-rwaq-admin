@@ -18,6 +18,7 @@ import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import type { UserEnrollment } from '../data/types';
 import messages from '../messages';
+import modeLabel from '../modeLabel';
 
 /** Matches the user list's page size, so the two tables page identically. */
 const PAGE_SIZE = 10;
@@ -36,8 +37,8 @@ const EnrollmentsTable = ({
   const [page, setPage] = useState(1);
   const pageCount = Math.max(1, Math.ceil(enrollments.length / PAGE_SIZE));
 
-  // Unenrolling the last row of the last page would otherwise leave the table
-  // on a page that no longer exists, showing nothing.
+  // A shrinking list would otherwise leave the table on a page that no longer
+  // exists, showing nothing.
   useEffect(() => {
     setPage((current) => Math.min(current, pageCount));
   }, [pageCount]);
@@ -77,7 +78,7 @@ const EnrollmentsTable = ({
     {
       label: intl.formatMessage(messages.enrollmentMode),
       key: 'mode',
-      renderCell: (value) => <span className="rwaq-enrollments__mode">{value as string}</span>,
+      renderCell: (value) => <span className="rwaq-enrollments__mode">{modeLabel(intl, value as string)}</span>,
     },
     {
       label: intl.formatMessage(messages.enrollmentDate),

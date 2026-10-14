@@ -61,8 +61,20 @@ export interface ProgramDetail extends ProgramSummary {
   longDescription: string;
   introVideoId: string | null;
   introVideoUrl: string | null;
+  pricingCategory: ProgramPricingCategory;
+  /** Decimal strings, not numbers, to avoid float rounding on money. */
+  regularPrice: string | null;
+  salePrice: string | null;
+  /** Read-only, 2 decimals (e.g. "25.13"). null when there is no sale price. */
+  discountPercentage: string | null;
+  /** ISO 4217 code of the regular and sale price. */
+  currency: string;
+  /** When true, Studio shows this program's pricing read-only. Settable only from here. */
   modified: string;
 }
+
+/** Mirrors rwaq_features.programs.models.Program.PRICING_CATEGORY_CHOICES. */
+export type ProgramPricingCategory = 'is_free' | 'is_paid';
 
 /** One row of GET /api/v1/admin/programs/{uuid}/courses/ */
 export interface ProgramCourse {
@@ -121,6 +133,9 @@ export interface ProgramPatch {
   name?: string;
   description?: string;
   longDescription?: string;
+  pricingCategory?: ProgramPricingCategory;
+  regularPrice?: string | null;
+  salePrice?: string | null;
 }
 
 /** One address the bulk-enroll call could act on. */

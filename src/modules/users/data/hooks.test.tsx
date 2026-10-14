@@ -213,9 +213,9 @@ describe('useUpdateUser', () => {
 });
 
 // ── Enrollment writes ─────────────────────────────────────────────────────────
-// These pin the wire contract of the three write endpoints, because each one
-// has a detail that is easy to get wrong and impossible to see from the UI:
-// the course key needs URL-encoding, the mode change has to send old_mode, and
+// These pin the wire contract of the write endpoints, because each one has a
+// detail that is easy to get wrong and impossible to see from the UI: the
+// course key needs URL-encoding, the mode change has to send old_mode, and
 // the unenroll reason travels in a DELETE body.
 
 describe('useEnrollableCourses', () => {

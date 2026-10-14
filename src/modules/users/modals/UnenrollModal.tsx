@@ -6,9 +6,9 @@
  * asking for the reason in a second dialog after the confirmation would make
  * "cancel" ambiguous about what exactly was cancelled.
  *
- * The wording says explicitly that this is reversible and that grades survive,
- * since the platform's unenrollment is a soft delete and an admin who assumes
- * otherwise will avoid a safe action.
+ * The wording says that grades survive, since the platform's unenrollment is a
+ * soft delete, and who can rejoin on their own: anyone for a free course, only
+ * a learner who bought it on the Rwaq website for a paid one.
  */
 import { useEffect, useState } from 'react';
 import { logError } from '@edx/frontend-platform/logging';

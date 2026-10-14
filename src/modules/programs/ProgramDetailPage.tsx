@@ -5,6 +5,7 @@
  * - Overview card: key program facts via DetailGrid
  * - Settings card: immediate-save toggles for is_hide / is_featured /
  *   and a status selector
+ * - Pricing card: free or paid, price and sale price, saved with its own button
  * - Courses tab: the courses linked to this program
  * - Learners tab: the learners enrolled in this program
  *
@@ -25,8 +26,10 @@ import type { ColumnDef } from '@src/components/AdminDataTable';
 import DetailGrid from '@src/components/DetailGrid';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
+import ProgramPricingCard from './components/ProgramPricingCard';
 import ProgramStatusChips from './components/ProgramStatusChips';
 import BulkEnrollModal from './modals/BulkEnrollModal';
+import UnenrollLearnerModal from './modals/UnenrollLearnerModal';
 import type {
   ProgramCourse, ProgramLearner, ProgramPatch, ProgramStatus,
 } from './data/types';
@@ -177,6 +180,7 @@ const CoursesTab = ({ uuid }: { uuid: string }) => {
 const LearnersTab = ({ uuid }: { uuid: string }) => {
   const intl = useIntl();
   const [isEnrollOpen, setEnrollOpen] = useState(false);
+  const [unenrollTarget, setUnenrollTarget] = useState<ProgramLearner | null>(null);
   const dash = intl.formatMessage(messages.detailNone);
   const [page, setPage] = useState(1);
   const { data, isLoading, isError } = useProgramLearners(uuid, page);
@@ -213,6 +217,20 @@ const LearnersTab = ({ uuid }: { uuid: string }) => {
         <span>{intl.formatMessage(value ? messages.yes : messages.no)}</span>
       ),
     },
+    {
+      label: intl.formatMessage(messages.colLearnerActions),
+      key: 'id',
+      renderCell: (_value, row) => (
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          onClick={() => setUnenrollTarget(row)}
+          aria-label={`${intl.formatMessage(messages.unenrollLearnerAction)}, ${row.name}`}
+        >
+          {intl.formatMessage(messages.unenrollLearnerAction)}
+        </Button>
+      ),
+    },
   ];
 
   if (isError) {
@@ -235,6 +253,12 @@ const LearnersTab = ({ uuid }: { uuid: string }) => {
         isOpen={isEnrollOpen}
         onClose={() => setEnrollOpen(false)}
         uuid={uuid}
+      />
+
+      <UnenrollLearnerModal
+        onClose={() => setUnenrollTarget(null)}
+        uuid={uuid}
+        learner={unenrollTarget}
       />
 
       <AdminDataTable
@@ -428,6 +452,9 @@ const ProgramDetailPage = () => {
         isFeatured={program.isFeatured}
         status={program.status}
       />
+
+      {/* Pricing */}
+      <ProgramPricingCard program={program} />
 
       {/* Courses + Learners tabs */}
       <div className="rwaq-card">

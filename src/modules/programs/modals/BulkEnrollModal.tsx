@@ -64,6 +64,7 @@ const BulkEnrollModal = ({
   const intl = useIntl();
   const { showToast } = useToast();
   const [emails, setEmails] = useState('');
+  const [reason, setReason] = useState('');
   const [result, setResult] = useState<BulkEnrollResult | null>(null);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
@@ -74,6 +75,7 @@ const BulkEnrollModal = ({
   useEffect(() => {
     if (isOpen) {
       setEmails('');
+      setReason('');
       setResult(null);
       setError('');
       setProgress(null);
@@ -111,7 +113,7 @@ const BulkEnrollModal = ({
         // into the same courses at once, and pile concurrent writes onto the
         // LMS for no gain in an operation that is already fast per chunk.
         // eslint-disable-next-line no-await-in-loop
-        const res = await mutateAsync(chunk.join(','));
+        const res = await mutateAsync({ emails: chunk.join(','), reason: reason.trim() });
         merged.enrolled.push(...res.enrolled);
         merged.alreadyEnrolled.push(...res.alreadyEnrolled);
         merged.failed.push(...res.failed);
@@ -180,6 +182,21 @@ const BulkEnrollModal = ({
             placeholder={intl.formatMessage(messages.bulkEnrollPlaceholder)}
             onChange={(e) => setEmails(e.target.value)}
           />
+
+          <label className="d-block mt-3 mb-1 font-weight-bold small" htmlFor="bulk-enroll-reason">
+            {intl.formatMessage(messages.bulkEnrollReasonLabel)}
+          </label>
+          <input
+            id="bulk-enroll-reason"
+            type="text"
+            className="form-control"
+            value={reason}
+            disabled={isPending}
+            onChange={(e) => setReason(e.target.value)}
+          />
+          <span className="small text-muted">
+            {intl.formatMessage(messages.bulkEnrollReasonHelp)}
+          </span>
 
           <div className="d-flex justify-content-between align-items-baseline mt-1">
             {/* The cap is stated up front rather than only once it is breached —

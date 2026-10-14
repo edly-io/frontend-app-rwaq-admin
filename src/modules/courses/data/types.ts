@@ -142,3 +142,37 @@ export interface CourseStaffRemoveParams {
   userId: number;
   role: CourseRole;
 }
+
+/** Mirrors rwaq_features.models.CoursePricing.PRICING_CATEGORY_CHOICES. */
+export type CoursePricingCategory = 'is_free' | 'is_paid' | 'is_program_only';
+
+export interface CoursePricing {
+  /** null when no type was chosen yet (a legacy course with no pricing row). It behaves as free. */
+  pricingCategory: CoursePricingCategory | null;
+  /** Decimal strings, not numbers — avoids float rounding on money. */
+  regularPrice: string | null;
+  salePrice: string | null;
+  /** Read-only, 2 decimals (e.g. "25.13"). null when there is no sale price. */
+  discountPercentage: string | null;
+  /** ISO 4217 code of the regular and sale price. null when the course is free. */
+  currency: string | null;
+  /**
+   * When true, Studio renders this course's pricing read-only and the
+   * Studio-facing endpoint refuses writes. Settable only from here.
+   */
+  pricingManagedByAdmin: boolean;
+  /**
+   * program_key of the program the course is in, or null. Only a Program-only
+   * course can be in a program, and its type cannot change while it is in one.
+   */
+  partOfProgram: string | null;
+  partOfProgramName: string | null;
+}
+
+/** Every field optional — the endpoint accepts a partial update. */
+export interface CoursePricingPatch {
+  pricingCategory?: CoursePricingCategory;
+  regularPrice?: string | null;
+  salePrice?: string | null;
+  pricingManagedByAdmin?: boolean;
+}

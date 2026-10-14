@@ -89,7 +89,23 @@ export interface MetricChartProps {
   compact?: boolean;
   /** Hide legend */
   hideLegend?: boolean;
+  /** Tilt the x-axis labels by this many degrees (bar/line), so a long series fits more of them. */
+  xLabelAngle?: number;
+  /** Show at most about this many x-axis labels, skipping evenly. Omit to show every label. */
+  maxXLabels?: number;
+  /** Formats the y-axis ticks and the tooltip values, for money and the like. Omit to show the plain number. */
+  valueFormatter?: (value: number) => string;
+  /** Width in px kept for the y-axis labels. 36 fits small whole numbers, wider figures need more. */
+  yAxisWidth?: number;
 }
+
+/**
+ * Recharts' `interval` for an axis of *count* labels that can show about *max*:
+ * the number of labels to skip between shown ones, 0 to show them all.
+ */
+export const labelInterval = (count: number, max?: number): number => (
+  max && count > max ? Math.ceil(count / max) - 1 : 0
+);
 
 // ── Reduced-motion hook ───────────────────────────────────────────────────────
 
@@ -184,6 +200,10 @@ const MetricChart = ({
   height = 300,
   compact = false,
   hideLegend = false,
+  xLabelAngle,
+  maxXLabels,
+  valueFormatter,
+  yAxisWidth = 36,
 }: MetricChartProps) => {
   const reducedMotion = usePrefersReducedMotion();
   const colors = getChartColors();
@@ -219,6 +239,8 @@ const MetricChart = ({
     return Array.from({ length: TICK_COUNT }, (_, i) => i * step);
   })();
 
+  const xLabelInterval = labelInterval(data.length, maxXLabels);
+
   const axisProps = compact
     ? {}
     : {
@@ -228,8 +250,9 @@ const MetricChart = ({
           tick={mutedTick}
           axisLine={false}
           tickLine={false}
-          dy={6}
-          interval={0}
+          dy={xLabelAngle ? 4 : 6}
+          interval={xLabelInterval}
+          {...(xLabelAngle ? { angle: -xLabelAngle, textAnchor: 'end', height: 64 } : {})}
         />
       ),
       yAxis: (
@@ -238,8 +261,9 @@ const MetricChart = ({
           axisLine={false}
           tickLine={false}
           allowDecimals={false}
-          width={36}
+          width={yAxisWidth}
           ticks={yTicks}
+          {...(valueFormatter ? { tickFormatter: valueFormatter } : {})}
           domain={yTicks ? [0, yTicks[yTicks.length - 1]] : [0, 'auto']}
         />
       ),
@@ -271,6 +295,12 @@ const MetricChart = ({
       color: resolveParagonToken('--rwaq-text', '#1f2937'),
     },
     cursor: { fill: resolveParagonToken('--rwaq-row-hover', 'rgba(0,0,0,0.04)') },
+    // A string back from the formatter replaces only the value: the series name stays.
+    ...(valueFormatter ? {
+      formatter: (value: number | string | (number | string)[]) => (
+        typeof value === 'number' ? valueFormatter(value) : value
+      ),
+    } : {}),
   };
 
   // ChartLegend is defined at module scope above MetricChart (stable reference).

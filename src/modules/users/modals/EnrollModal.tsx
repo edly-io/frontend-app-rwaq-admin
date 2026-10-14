@@ -24,6 +24,7 @@ import ConflictAlert from '../components/ConflictAlert';
 import { useEnrollUser } from '../data/hooks';
 import type { EnrollableCourse, UserEnrollment } from '../data/types';
 import messages from '../messages';
+import modeLabel from '../modeLabel';
 
 interface EnrollModalProps {
   isOpen: boolean;
@@ -141,7 +142,7 @@ const EnrollModal = ({
             onChange={(event: React.ChangeEvent<HTMLSelectElement>) => setMode(event.target.value)}
           >
             {course.availableModes.map((slug) => (
-              <option key={slug} value={slug}>{slug}</option>
+              <option key={slug} value={slug}>{modeLabel(intl, slug)}</option>
             ))}
           </Form.Control>
         </Form.Group>

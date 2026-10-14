@@ -89,6 +89,8 @@ export interface EnrollableCourse {
   displayName: string;
   org: string;
   availableModes: string[];
+  /** True for a Program-only course. Admins cannot enroll anyone into it directly, only through its program. */
+  isProgramOnly?: boolean;
   start: string | null;
   end: string | null;
 }

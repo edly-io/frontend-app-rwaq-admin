@@ -314,6 +314,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.enroll.already',
     defaultMessage: 'Already enrolled in this course.',
   },
+  enrollProgramOnlyCourse: {
+    id: 'rwaq.admin.users.enroll.programOnlyCourse',
+    defaultMessage: 'Program-only course. Enroll the learner in its program instead.',
+  },
   enrollReactivates: {
     id: 'rwaq.admin.users.enroll.reactivates',
     defaultMessage: 'This learner unenrolled from this course before. Enrolling again restores '
@@ -337,6 +341,10 @@ const messages = defineMessages({
     defaultMessage: 'This course offers only one mode, so there is nothing to change it to.',
   },
   modeLabel: { id: 'rwaq.admin.users.modeChange.label', defaultMessage: 'Mode' },
+  modeNoIdProfessional: {
+    id: 'rwaq.admin.users.mode.noIdProfessional',
+    defaultMessage: 'Professional, no ID verification',
+  },
   modeRequired: { id: 'rwaq.admin.users.modeChange.required', defaultMessage: 'Choose a mode.' },
 
   unenrollTitle: { id: 'rwaq.admin.users.unenroll.title', defaultMessage: 'Unenroll from course' },
@@ -345,7 +353,8 @@ const messages = defineMessages({
   unenrollBody: {
     id: 'rwaq.admin.users.unenroll.body',
     defaultMessage: 'Unenroll {name} from {course}? Their grades and any certificate stay on '
-      + 'record, and they can be enrolled again later.',
+      + 'record. A free course can be rejoined at any time. A paid course can only be rejoined by a '
+      + 'learner who bought it on the Rwaq website. Otherwise an admin can enroll them again.',
   },
 
   reasonLabel: { id: 'rwaq.admin.users.reason.label', defaultMessage: 'Reason' },

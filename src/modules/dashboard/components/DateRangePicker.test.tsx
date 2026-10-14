@@ -294,4 +294,34 @@ describe('DateRangePicker', () => {
     expect(diff).toBeGreaterThanOrEqual(29);
     expect(diff).toBeLessThanOrEqual(31);
   });
+
+  // ── size and minWidth (used by the payments tabs to line up with the search box) ──
+
+  describe('button size and width', () => {
+    const toggle = () => screen.getByRole('button', { name: /all time/i });
+
+    it('is the small button with no fixed width by default, as on the dashboard', () => {
+      renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />);
+
+      expect(toggle()).toHaveClass('btn-sm');
+      expect(toggle().style.minWidth).toBe('');
+      expect(toggle().style.display).toBe('');
+      expect(toggle().style.whiteSpace).toBe('nowrap');
+    });
+
+    it('takes the regular size when asked', () => {
+      renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} size="md" />);
+
+      expect(toggle()).not.toHaveClass('btn-sm');
+      expect(toggle()).toHaveClass('btn-md');
+    });
+
+    it('holds a minimum width with the caret at the right edge when given one', () => {
+      renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} minWidth="9.5rem" />);
+
+      expect(toggle().style.minWidth).toBe('9.5rem');
+      expect(toggle().style.display).toBe('inline-flex');
+      expect(toggle().style.justifyContent).toBe('space-between');
+    });
+  });
 });

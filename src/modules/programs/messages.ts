@@ -97,6 +97,53 @@ const messages = defineMessages({
   settingSaved: { id: 'rwaq.admin.programs.settings.saved', defaultMessage: 'Settings saved.' },
   settingError: { id: 'rwaq.admin.programs.settings.error', defaultMessage: 'Could not save settings. Please try again.' },
 
+  // ── Detail — pricing card ──────────────────────────────────────────────────
+  pricingTitle: { id: 'rwaq.admin.programs.pricing.title', defaultMessage: 'Pricing' },
+  pricingDescription: {
+    id: 'rwaq.admin.programs.pricing.description',
+    defaultMessage: 'Set how this program is sold. Prices are published to the marketing site.',
+  },
+  pricingCategoryLabel: { id: 'rwaq.admin.programs.pricing.category-label', defaultMessage: 'Pricing type' },
+  pricingFree: { id: 'rwaq.admin.programs.pricing.free', defaultMessage: 'Free' },
+  pricingPaid: { id: 'rwaq.admin.programs.pricing.paid', defaultMessage: 'Paid' },
+  pricingPriceLabel: { id: 'rwaq.admin.programs.pricing.price-label', defaultMessage: 'Price ({currency})' },
+  pricingSalePriceLabel: {
+    id: 'rwaq.admin.programs.pricing.sale-price-label',
+    defaultMessage: 'Discounted Price / Sale Price ({currency})',
+  },
+  pricingSalePriceHint: {
+    id: 'rwaq.admin.programs.pricing.sale-price-hint',
+    defaultMessage: 'Optional. Leave empty when the program is not on sale.',
+  },
+  pricingDiscountPercentage: {
+    id: 'rwaq.admin.programs.pricing.discount-percentage',
+    defaultMessage: '{percentage}% off',
+  },
+  pricingCoursesNote: {
+    id: 'rwaq.admin.programs.pricing.courses-note',
+    defaultMessage: 'Courses in a paid program are not sold separately. The program is what learners buy.',
+  },
+  pricingSave: { id: 'rwaq.admin.programs.pricing.save', defaultMessage: 'Save pricing' },
+  pricingSaving: { id: 'rwaq.admin.programs.pricing.saving', defaultMessage: 'Saving…' },
+  pricingSaved: { id: 'rwaq.admin.programs.pricing.saved', defaultMessage: 'Pricing saved.' },
+  pricingErrorPriceRequired: {
+    id: 'rwaq.admin.programs.pricing.error-price-required',
+    defaultMessage: 'Enter a price for a paid program.',
+  },
+  pricingErrorPriceNotPositive: {
+    id: 'rwaq.admin.programs.pricing.error-price-not-positive',
+    defaultMessage: 'Price must be greater than 0.',
+  },
+  pricingErrorNegative: { id: 'rwaq.admin.programs.pricing.error-negative', defaultMessage: 'Prices cannot be negative.' },
+  pricingErrorSalePriceNotLower: {
+    id: 'rwaq.admin.programs.pricing.error-sale-price-not-lower',
+    defaultMessage: 'Sale price must be lower than the price.',
+  },
+  pricingErrorSaveFailed: {
+    id: 'rwaq.admin.programs.pricing.error-save-failed',
+    defaultMessage: 'Could not save pricing. Please try again.',
+  },
+
   // ── Detail — courses tab ───────────────────────────────────────────────────
   tabCourses: { id: 'rwaq.admin.programs.tab.courses', defaultMessage: 'Courses' },
   coursesEmpty: { id: 'rwaq.admin.programs.courses.empty', defaultMessage: 'No courses in this program.' },
@@ -115,6 +162,25 @@ const messages = defineMessages({
   colLearnerEnrolled: { id: 'rwaq.admin.programs.learners.col.enrolled', defaultMessage: 'Enrolled' },
   colLearnerCompleted: { id: 'rwaq.admin.programs.learners.col.completed', defaultMessage: 'Completed' },
   colLearnerActive: { id: 'rwaq.admin.programs.learners.col.active', defaultMessage: 'Enrollment' },
+  colLearnerActions: { id: 'rwaq.admin.programs.learners.col.actions', defaultMessage: 'Actions' },
+  unenrollLearnerAction: { id: 'rwaq.admin.programs.learners.unenroll.action', defaultMessage: 'Unenroll' },
+  unenrollLearnerTitle: { id: 'rwaq.admin.programs.learners.unenroll.title', defaultMessage: 'Unenroll from program' },
+  unenrollLearnerBody: {
+    id: 'rwaq.admin.programs.learners.unenroll.body',
+    defaultMessage: 'Unenroll {name} from this program and all its courses? Their grades and any '
+      + 'certificate stay on record. A free program can be rejoined at any time. A paid program can '
+      + 'only be rejoined by a learner who bought it on the Rwaq website. Otherwise an admin can '
+      + 'enroll them again.',
+  },
+  unenrollLearnerSubmit: { id: 'rwaq.admin.programs.learners.unenroll.submit', defaultMessage: 'Unenroll' },
+  unenrollLearnerSuccess: {
+    id: 'rwaq.admin.programs.learners.unenroll.success',
+    defaultMessage: 'Unenrolled {name} from the program.',
+  },
+  unenrollLearnerError: {
+    id: 'rwaq.admin.programs.learners.unenroll.error',
+    defaultMessage: 'Could not unenroll the learner. Try again.',
+  },
 
   // ── Shared ─────────────────────────────────────────────────────────────────
   yes: { id: 'rwaq.admin.programs.yes', defaultMessage: 'Yes' },
@@ -125,6 +191,14 @@ const messages = defineMessages({
   bulkEnrollTitle: { id: 'rwaq.admin.programs.bulkEnroll.title', defaultMessage: 'Enroll learners' },
   bulkEnrollHelp: { id: 'rwaq.admin.programs.bulkEnroll.help', defaultMessage: 'Paste email addresses, separated by commas or new lines. Learners are enrolled in the program and all of its courses.' },
   bulkEnrollLabel: { id: 'rwaq.admin.programs.bulkEnroll.label', defaultMessage: 'Email addresses' },
+  bulkEnrollReasonLabel: {
+    id: 'rwaq.admin.programs.bulkEnroll.reason.label',
+    defaultMessage: 'Reason (optional)',
+  },
+  bulkEnrollReasonHelp: {
+    id: 'rwaq.admin.programs.bulkEnroll.reason.help',
+    defaultMessage: 'For a paid program, kept with each learner\'s enrollment record.',
+  },
   bulkEnrollPlaceholder: { id: 'rwaq.admin.programs.bulkEnroll.placeholder', defaultMessage: 'sara@example.com, omar@example.com' },
   bulkEnrollCount: { id: 'rwaq.admin.programs.bulkEnroll.count', defaultMessage: '{count} of {max}' },
   bulkEnrollProgress: { id: 'rwaq.admin.programs.bulkEnroll.progress', defaultMessage: 'Enrolling {done} of {total}…' },
