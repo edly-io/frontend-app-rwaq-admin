@@ -110,12 +110,16 @@ export type ProgramOrdering =
  * Separate params so they can be combined (e.g. status=active + is_hide=true).
  * Per discovery plan §3.1 and §6.
  */
+export type ProgramPricingFilter = 'free' | 'paid' | 'subscription';
+
 export interface ProgramListParams {
   search?: string;
   /** draft | active | archived */
   status?: ProgramStatus;
   /** Filter by organization short_name */
   org?: string;
+  /** The program's type. */
+  pricing?: ProgramPricingFilter;
   /** true = hidden only, false = visible only */
   isHide?: boolean;
   /** true = featured only */

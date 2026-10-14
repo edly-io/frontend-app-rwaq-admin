@@ -138,6 +138,8 @@ export type SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'revoked';
 
 export interface SubscriptionRow {
   id: number;
+  /** WooCommerce subscription ID. Empty for admin subscriptions. */
+  subscriptionId: string;
   learner: string;
   email: string;
   plan: 'monthly' | 'yearly';

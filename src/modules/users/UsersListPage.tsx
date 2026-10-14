@@ -140,7 +140,7 @@ const UsersListPage = () => {
     ordering,
   };
   const {
-    data, isLoading, isError, error, refetch,
+    data, isLoading, isPlaceholderData, isError, error, refetch,
   } = useUsers({ ...listParams, page, pageSize: PAGE_SIZE });
 
   const statusCode = isError ? getErrorStatus(error) : undefined;
@@ -355,6 +355,7 @@ const UsersListPage = () => {
             columns={columns}
             data={data?.results ?? []}
             isLoading={isLoading}
+            isRefreshing={isPlaceholderData}
             caption={intl.formatMessage(messages.title)}
             pagination={data ? {
               currentPage: page,

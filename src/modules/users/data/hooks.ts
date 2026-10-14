@@ -61,6 +61,8 @@ export const useUsers = (params: UserListParams = {}, enabled = true) => useQuer
   queryKey: userQueryKeys.list(params),
   queryFn: () => getUsers(params),
   enabled,
+  // Keep the current rows on screen while the next page, search or sort loads.
+  placeholderData: keepPreviousData,
 });
 
 /** Single user detail for the View/Edit modals. */

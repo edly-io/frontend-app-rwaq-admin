@@ -112,5 +112,6 @@ export const searchFilterBarMessages = defineMessages({
 
 export const csvDownloadMessages = defineMessages({
   download: { id: 'rwaq.admin.csvDownload.download', defaultMessage: 'Download CSV' },
+  downloading: { id: 'rwaq.admin.csvDownload.downloading', defaultMessage: 'Downloading…' },
   failed: { id: 'rwaq.admin.csvDownload.failed', defaultMessage: 'Could not download the CSV.' },
 });

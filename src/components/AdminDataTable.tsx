@@ -45,6 +45,8 @@ export interface AdminDataTableProps<Row extends object = Record<string, unknown
   columns: ColumnDef<Row>[];
   data: Row[];
   isLoading?: boolean;
+  /** Next page or filter is loading: keep the current rows, dimmed, instead of a spinner. */
+  isRefreshing?: boolean;
   pagination?: ServerPaginationState;
   /** Optional caption for accessibility */
   caption?: string;
@@ -139,6 +141,7 @@ const AdminDataTable = <Row extends object>({
   columns,
   data,
   isLoading = false,
+  isRefreshing = false,
   pagination,
   caption,
   renderRowSubComponent,
@@ -187,7 +190,7 @@ const AdminDataTable = <Row extends object>({
   }
 
   return (
-    <div className="rwaq-table-shell">
+    <div className={isRefreshing ? 'rwaq-table-shell rwaq-table-shell--refreshing' : 'rwaq-table-shell'} aria-busy={isRefreshing}>
       {/* sr-only heading instead of a raw <caption> (which is invalid nested in
           DataTable's wrapper <div> and triggers a DOM-nesting warning). */}
       {caption && <div className="sr-only" role="heading" aria-level={2}>{caption}</div>}

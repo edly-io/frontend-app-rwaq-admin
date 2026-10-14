@@ -45,7 +45,7 @@ const getCoursesBaseUrl = () => getStudioApiUrl('/api/v1/admin/courses');
 
 // ── List ──────────────────────────────────────────────────────────────────────
 
-/** GET /api/v1/admin/courses/?search=&org=&category=&ordering=&page=&page_size= */
+/** GET /api/v1/admin/courses/?search=&org=&category=&course_type=&ordering=&page=&page_size= */
 export const getCourses = async (params: CourseListParams = {}): Promise<CourseListResponse> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getCoursesBaseUrl()}/`, {
     params: snakeCaseObject(params),

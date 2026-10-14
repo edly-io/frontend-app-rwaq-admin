@@ -21,13 +21,20 @@ import ProfileAvatar from '@src/components/ProfileAvatar';
 import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
 import { getCoursesCsvUrl } from './data/api';
 import { useCourses } from './data/hooks';
-import type { CourseSummary, CourseOrdering } from './data/types';
+import type { CourseSummary, CourseOrdering, CourseTypeFilter } from './data/types';
 import messages from './messages';
 
 const PAGE_SIZE = 10;
 const DEFAULT_ORDERING: CourseOrdering = '-start';
 
 type MessageKey = keyof typeof messages;
+
+const COURSE_TYPE_OPTIONS: { value: CourseTypeFilter; label: MessageKey }[] = [
+  { value: 'free', label: 'typeFree' },
+  { value: 'paid', label: 'typePaid' },
+  { value: 'program_only', label: 'typeProgramOnly' },
+  { value: 'subscription', label: 'typeSubscription' },
+];
 
 const SORT_OPTIONS: { value: CourseOrdering; label: MessageKey }[] = [
   { value: '-start', label: 'sortStartDesc' },
@@ -50,6 +57,7 @@ const CoursesListPage = () => {
   const org = searchParams.get('org') ?? '';
   const startDate = searchParams.get('start_date') || undefined;
   const endDate = searchParams.get('end_date') || undefined;
+  const courseType = searchParams.get('type') ?? '';
   const hasExplicitOrdering = searchParams.get('ordering') !== null;
   const ordering = (searchParams.get('ordering') as CourseOrdering | null) ?? DEFAULT_ORDERING;
 
@@ -83,6 +91,7 @@ const CoursesListPage = () => {
     org: org || undefined,
     startDate,
     endDate,
+    courseType: COURSE_TYPE_OPTIONS.find((o) => o.value === courseType)?.value,
     ordering,
   };
   const {
@@ -95,6 +104,11 @@ const CoursesListPage = () => {
     value: opt.value,
     label: intl.formatMessage(messages[opt.label]),
   }));
+
+  const typeOptions: SelectOption[] = [
+    { value: '', label: intl.formatMessage(messages.typeAll) },
+    ...COURSE_TYPE_OPTIONS.map((opt) => ({ value: opt.value, label: intl.formatMessage(messages[opt.label]) })),
+  ];
 
   const appliedChips = useMemo(() => {
     const chips: AppliedChip[] = [];
@@ -119,6 +133,14 @@ const CoursesListPage = () => {
         onRemove: () => updateParams({ start_date: '', end_date: '' }),
       });
     }
+    const typeOption = COURSE_TYPE_OPTIONS.find((o) => o.value === courseType);
+    if (typeOption) {
+      chips.push({
+        key: 'type',
+        label: intl.formatMessage(messages.chipType, { label: intl.formatMessage(messages[typeOption.label]) }),
+        onRemove: () => updateParams({ type: '' }),
+      });
+    }
     if (hasExplicitOrdering) {
       chips.push({
         key: 'ordering',
@@ -130,7 +152,7 @@ const CoursesListPage = () => {
     }
     return chips;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, org, startDate, endDate, ordering, hasExplicitOrdering, intl, updateParams]);
+  }, [search, org, startDate, endDate, courseType, ordering, hasExplicitOrdering, intl, updateParams]);
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -231,6 +253,13 @@ const CoursesListPage = () => {
           searchPlaceholder={intl.formatMessage(messages.searchPlaceholder)}
           filterGroups={[
             {
+              id: 'type',
+              label: intl.formatMessage(messages.typeLabel),
+              value: courseType,
+              options: typeOptions,
+              onChange: (value) => updateParams({ type: value }),
+            },
+            {
               id: 'ordering',
               label: intl.formatMessage(messages.sortLabel),
               value: ordering,
@@ -240,7 +269,7 @@ const CoursesListPage = () => {
           ]}
           appliedChips={appliedChips}
           onClearAll={() => updateParams({
-            search: '', org: '', start_date: '', end_date: '', ordering: '',
+            search: '', org: '', type: '', start_date: '', end_date: '', ordering: '',
           })}
           downloadAction={(
             <>
