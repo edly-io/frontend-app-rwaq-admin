@@ -1,14 +1,10 @@
 import { useState } from 'react';
-import { Button } from '@openedx/paragon';
-import { Download } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
 import { downloadCsv } from '@src/data/csv';
+import DownloadButton, { saveBlob } from './DownloadButton';
 import { useToast } from './ToastContext';
 import { csvDownloadMessages as messages } from './messages';
-
-/** How long a download's blob URL stays valid, so the browser can start reading it before it is revoked. */
-const REVOKE_URL_AFTER_MS = 10_000;
 
 interface CsvDownloadButtonProps {
   /** The list's csv/ endpoint. */
@@ -29,13 +25,7 @@ const CsvDownloadButton = ({ url, params, fallbackName }: CsvDownloadButtonProps
     setIsDownloading(true);
     try {
       const { blob, filename } = await downloadCsv(url, params, fallbackName, intl.locale);
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = filename;
-      link.click();
-      // Revoking at once can cancel the download in some browsers.
-      setTimeout(() => URL.revokeObjectURL(blobUrl), REVOKE_URL_AFTER_MS);
+      saveBlob(blob, filename);
     } catch (err) {
       logError(err);
       showToast(intl.formatMessage(messages.failed));
@@ -45,9 +35,12 @@ const CsvDownloadButton = ({ url, params, fallbackName }: CsvDownloadButtonProps
   };
 
   return (
-    <Button variant="outline-primary" onClick={handleClick} disabled={isDownloading} iconBefore={Download}>
-      {intl.formatMessage(messages.download)}
-    </Button>
+    <DownloadButton
+      label={intl.formatMessage(messages.download)}
+      pendingLabel={intl.formatMessage(messages.downloading)}
+      isPending={isDownloading}
+      onClick={handleClick}
+    />
   );
 };
 

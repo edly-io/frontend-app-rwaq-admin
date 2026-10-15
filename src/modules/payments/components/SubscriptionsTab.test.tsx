@@ -113,7 +113,7 @@ describe('Subscriptions list', () => {
     renderWrapper(<SubscriptionsTab />);
 
     const cells = within(screen.getAllByRole('row')[1]).getAllByRole('cell');
-    const status = within(cells[3]).getByText('Active');
+    const status = within(cells[4]).getByText('Active');
     expect(status).toHaveClass('badge', 'badge-success');
     const source = within(cells[cells.length - 1]).getByText('WordPress');
     expect(source).toHaveClass('badge', 'badge-light');

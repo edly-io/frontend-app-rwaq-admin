@@ -219,13 +219,14 @@ describe('CsvButton', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
 
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Download CSV' })).toBeDisabled());
+    // The label changes and the spinner shows while it runs.
+    await waitFor(() => expect(screen.getByRole('button', { name: /Downloading/ })).toBeInTheDocument());
     // A second click while it runs starts nothing.
-    fireEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
+    fireEvent.click(screen.getByRole('button', { name: /Downloading/ }));
     expect(get).toHaveBeenCalledTimes(1);
 
     await act(async () => { finish({ data: new Blob(['a']), headers: {} }); });
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Download CSV' })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Download CSV' })).toBeInTheDocument());
   });
 
   it('says so in a toast, logs the error and downloads nothing when the request fails', async () => {

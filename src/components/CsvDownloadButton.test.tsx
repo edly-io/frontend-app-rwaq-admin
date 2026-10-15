@@ -109,15 +109,16 @@ describe('CsvDownloadButton', () => {
     expect(screen.getByRole('button', { name: 'Download CSV' })).toBeEnabled();
   });
 
-  it('is disabled while a download is running', async () => {
+  it('shows a spinner and the downloading label while a download is running', async () => {
     let finish: (value: unknown) => void = () => {};
     get.mockReturnValue(new Promise((resolve) => { finish = resolve; }));
     renderButton();
 
     fireEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
 
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Download CSV' })).toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /Downloading/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /Downloading/ }).querySelector('.icon-spin')).not.toBeNull();
     finish({ data: new Blob(['a']), headers: {} });
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Download CSV' })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Download CSV' })).toBeInTheDocument());
   });
 });

@@ -56,11 +56,14 @@ const COURSE_SEARCH_STALE_MS = 60_000;
 
 /** Paginated user list with search/filter/sort/page support.
  *  Pass enabled=false to skip the fetch (e.g. before a search term is entered).
+ *  Pass keepPrevious=true to keep the current rows on screen while the next page,
+ *  search or sort loads. Pickers leave it off so old results are never offered.
  */
-export const useUsers = (params: UserListParams = {}, enabled = true) => useQuery({
+export const useUsers = (params: UserListParams = {}, enabled = true, keepPrevious = false) => useQuery({
   queryKey: userQueryKeys.list(params),
   queryFn: () => getUsers(params),
   enabled,
+  placeholderData: keepPrevious ? keepPreviousData : undefined,
 });
 
 /** Single user detail for the View/Edit modals. */

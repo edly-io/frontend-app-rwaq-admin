@@ -49,6 +49,7 @@ const messages = defineMessages({
   cancelled: { id: 'rwaq.admin.payments.subscriptions.status.cancelled', defaultMessage: 'Cancelled' },
   expired: { id: 'rwaq.admin.payments.subscriptions.status.expired', defaultMessage: 'Expired' },
   revoked: { id: 'rwaq.admin.payments.subscriptions.status.revoked', defaultMessage: 'Revoked' },
+  colSubscriptionId: { id: 'rwaq.admin.payments.subscriptions.col.subscriptionId', defaultMessage: 'Subscription ID' },
   colLearner: { id: 'rwaq.admin.payments.subscriptions.col.learner', defaultMessage: 'Learner' },
   colPlan: { id: 'rwaq.admin.payments.subscriptions.col.plan', defaultMessage: 'Plan' },
   colSource: { id: 'rwaq.admin.payments.subscriptions.col.source', defaultMessage: 'Source' },
@@ -209,6 +210,7 @@ const SubscriptionsTab = () => {
   }
 
   const columns: ColumnDef<SubscriptionRow>[] = [
+    { label: label('colSubscriptionId'), key: 'subscriptionId', renderCell: (_value, row) => row.subscriptionId || '—' },
     {
       label: label('colLearner'),
       key: 'learner',
