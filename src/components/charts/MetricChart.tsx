@@ -24,7 +24,7 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import { useIntl } from '@edx/frontend-platform/i18n';
+import { isRtl, useIntl } from '@edx/frontend-platform/i18n';
 import messages from './messages';
 
 // ── Paragon token resolver ────────────────────────────────────────────────────
@@ -205,6 +205,7 @@ const MetricChart = ({
   valueFormatter,
   yAxisWidth = 36,
 }: MetricChartProps) => {
+  const layoutIntl = useIntl();
   const reducedMotion = usePrefersReducedMotion();
   const colors = getChartColors();
   // Slices of one total read as one hue; independent series need distinct ones.
@@ -241,6 +242,14 @@ const MetricChart = ({
 
   const xLabelInterval = labelInterval(data.length, maxXLabels);
 
+  // Arabic month names are longer than English ones: the last rotated label was
+  // cut off by the right edge of the plot and the longest by the bottom. English
+  // keeps Recharts' defaults and the original label spacing.
+  const rtl = isRtl(layoutIntl.locale);
+  const plotMargin = compact || !rtl ? undefined : { top: 5, right: 28, left: 5, bottom: 0 };
+  const labelDy = rtl ? 8 : 4;
+  const labelAreaHeight = rtl ? 76 : 64;
+
   const axisProps = compact
     ? {}
     : {
@@ -250,9 +259,9 @@ const MetricChart = ({
           tick={mutedTick}
           axisLine={false}
           tickLine={false}
-          dy={xLabelAngle ? 4 : 6}
+          dy={xLabelAngle ? labelDy : 6}
           interval={xLabelInterval}
-          {...(xLabelAngle ? { angle: -xLabelAngle, textAnchor: 'end', height: 64 } : {})}
+          {...(xLabelAngle ? { angle: -xLabelAngle, textAnchor: 'end', height: labelAreaHeight } : {})}
         />
       ),
       yAxis: (
@@ -308,7 +317,7 @@ const MetricChart = ({
   const renderContent = () => {
     if (type === 'line') {
       return (
-        <LineChart data={data}>
+        <LineChart data={data} margin={plotMargin}>
           {!compact && axisProps.grid}
           {!compact && axisProps.xAxis}
           {!compact && axisProps.yAxis}
@@ -334,7 +343,7 @@ const MetricChart = ({
 
     if (type === 'bar') {
       return (
-        <BarChart data={data}>
+        <BarChart data={data} margin={plotMargin}>
           {!compact && axisProps.grid}
           {!compact && axisProps.xAxis}
           {!compact && axisProps.yAxis}

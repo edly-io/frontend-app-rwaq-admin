@@ -65,6 +65,8 @@ export type CourseOrdering =
   | 'org' | '-org'
   | 'enrollment_count' | '-enrollment_count';
 
+export type CourseTypeFilter = 'free' | 'paid' | 'program_only';
+
 export interface CourseListParams {
   search?: string;
   org?: string;
@@ -73,6 +75,8 @@ export interface CourseListParams {
   startDate?: string;
   /** With startDate: and on or before this day, inclusive. */
   endDate?: string;
+  /** The course's stored type. */
+  courseType?: CourseTypeFilter;
   ordering?: CourseOrdering;
   page?: number;
   pageSize?: number;
