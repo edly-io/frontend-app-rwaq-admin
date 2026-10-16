@@ -111,10 +111,22 @@ const messages = defineMessages({
   },
   pricingCategoryLabel: { id: 'rwaq.admin.programs.pricing.category-label', defaultMessage: 'Pricing type' },
   pricingFree: { id: 'rwaq.admin.programs.pricing.free', defaultMessage: 'Free' },
+  pricingFreeDescription: {
+    id: 'rwaq.admin.programs.pricing.free-description',
+    defaultMessage: 'Learners enroll at no cost.',
+  },
   pricingPaid: { id: 'rwaq.admin.programs.pricing.paid', defaultMessage: 'Paid' },
+  pricingPaidDescription: {
+    id: 'rwaq.admin.programs.pricing.paid-description',
+    defaultMessage: 'Sold at the price set below.',
+  },
   pricingSubscription: {
     id: 'rwaq.admin.programs.pricing.subscription',
     defaultMessage: 'Part of Subscription',
+  },
+  pricingSubscriptionDescription: {
+    id: 'rwaq.admin.programs.pricing.subscription-description',
+    defaultMessage: 'Learners reach this program through the Rwaq subscription. It has no price of its own.',
   },
   pricingPriceLabel: { id: 'rwaq.admin.programs.pricing.price-label', defaultMessage: 'Price ({currency})' },
   pricingSalePriceLabel: {
