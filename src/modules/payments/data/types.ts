@@ -33,6 +33,14 @@ export interface SummaryParams extends PaymentsParams {
   granularity?: Granularity;
 }
 
+/** Orders and money of the course and program items, or of the subscription items, in a total or a period. */
+export interface KindTotals {
+  orders: number;
+  gross: string;
+  discounts: string;
+  netPaid: string;
+}
+
 /** One day, Monday-started week or month of the series. Periods without orders are zero. */
 export interface SeriesPoint {
   /** First day of the period, "2026-09-01". */
@@ -41,6 +49,8 @@ export interface SeriesPoint {
   gross: string;
   discounts: string;
   netPaid: string;
+  content: KindTotals;
+  subscriptions: KindTotals;
 }
 
 /** GET /api/v1/admin/payments/summary/ */
@@ -50,6 +60,12 @@ export interface PaymentsSummary {
   netPaid: string;
   orders: number;
   items: number;
+  /**
+   * Course and program items. With the subscriptions its money adds up to the totals above,
+   * but an order with both kinds counts in the orders of each.
+   */
+  content: KindTotals;
+  subscriptions: KindTotals;
   granularity: Granularity;
   series: SeriesPoint[];
 }
@@ -161,7 +177,8 @@ export interface SubscriptionListParams extends ListParams {
 /** GET subscriptions/summary/ — what the tab's tiles show. */
 export interface SubscriptionsSummary {
   revenue: string;
-  /** The subscriptions in each state today, whatever the date range. */
+  /** The subscriptions in each state today, whatever the date range. `total` is active + expired + cancelled. */
+  total: number;
   active: number;
   expired: number;
   cancelled: number;

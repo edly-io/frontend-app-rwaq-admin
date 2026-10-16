@@ -11,6 +11,7 @@ const messages = defineMessages({
   // ── Partner filter ─────────────────────────────────────────────────────────
   partnerLabel: { id: 'rwaq.admin.payments.partner', defaultMessage: 'Partner' },
   allPartners: { id: 'rwaq.admin.payments.partner.all', defaultMessage: 'All partners' },
+  partnerSubscriptions: { id: 'rwaq.admin.payments.partner.subscriptions', defaultMessage: 'Rwaq (subscriptions)' },
   chipPartner: { id: 'rwaq.admin.payments.chip.partner', defaultMessage: 'Partner: {org}' },
 
   // ── Tabs ───────────────────────────────────────────────────────────────────
@@ -24,23 +25,35 @@ const messages = defineMessages({
   kpiOrders: { id: 'rwaq.admin.payments.kpi.orders', defaultMessage: 'Orders' },
   kpiOrderValue: { id: 'rwaq.admin.payments.kpi.orderValue', defaultMessage: 'Order value' },
   kpiDiscounts: { id: 'rwaq.admin.payments.kpi.discounts', defaultMessage: 'Discounts' },
-  kpiCollected: { id: 'rwaq.admin.payments.kpi.collected', defaultMessage: 'Revenue' },
+  kpiCollected: { id: 'rwaq.admin.payments.kpi.collected', defaultMessage: 'Total revenue' },
   infoOrders: {
     id: 'rwaq.admin.payments.info.orders',
-    defaultMessage: 'Completed WordPress orders with at least one paid item.',
+    defaultMessage: 'Completed WordPress orders with at least one paid item, subscription payments included. For a single partner, only its courses and programs count. Rwaq (subscriptions) counts only subscription payments.',
   },
   infoOrderValue: {
     id: 'rwaq.admin.payments.info.orderValue',
-    defaultMessage: 'The list price of every paid item, before coupons.',
+    defaultMessage: 'The list price of every paid item, subscription payments included, before coupons.',
   },
   infoDiscounts: {
     id: 'rwaq.admin.payments.info.discounts',
-    defaultMessage: 'What product and cart coupons took off the paid items. A cart coupon is spread over the items in its cart.',
+    defaultMessage: 'What product and cart coupons took off the paid items, subscription payments included. A cart coupon is spread over the items in its cart.',
   },
   infoCollected: {
     id: 'rwaq.admin.payments.info.collected',
-    defaultMessage: 'What learners paid after coupons, on completed WordPress orders. This is money received from learners, not money paid out. Items an admin later revoked still count. Admin enrollments are free and never count.',
+    defaultMessage: 'What learners paid after coupons, on completed WordPress orders, subscription payments included. This is money received from learners, not money paid out. Items an admin later revoked still count. Admin enrollments are free and never count.',
   },
+  kpiContentRevenue: { id: 'rwaq.admin.payments.kpi.contentRevenue', defaultMessage: 'Courses and Programs revenue' },
+  kpiSubscriptionRevenue: { id: 'rwaq.admin.payments.kpi.subscriptionRevenue', defaultMessage: 'Subscription revenue' },
+  infoContentRevenue: {
+    id: 'rwaq.admin.payments.info.contentRevenue',
+    defaultMessage: 'What learners paid for courses and programs, after coupons. {orders, plural, one {# order} other {# orders}}.',
+  },
+  infoSubscriptionRevenue: {
+    id: 'rwaq.admin.payments.info.subscriptionRevenue',
+    defaultMessage: 'What learners paid for subscriptions, after coupons. It is 0 when a single partner is selected. {orders, plural, one {# order} other {# orders}}.',
+  },
+  seriesContent: { id: 'rwaq.admin.payments.series.content', defaultMessage: 'Courses and Programs' },
+  seriesSubscriptions: { id: 'rwaq.admin.payments.series.subscriptions', defaultMessage: 'Subscriptions' },
 
   // ── Overview: charts ───────────────────────────────────────────────────────
   trendsTitle: { id: 'rwaq.admin.payments.trends.title', defaultMessage: 'Trends' },
@@ -51,19 +64,17 @@ const messages = defineMessages({
   weekOf: { id: 'rwaq.admin.payments.trends.weekOf', defaultMessage: 'Week of {date}' },
   chartCollectedTitle: { id: 'rwaq.admin.payments.chart.collected', defaultMessage: 'Revenue over time' },
   chartOrdersTitle: { id: 'rwaq.admin.payments.chart.orders', defaultMessage: 'Orders over time' },
-  seriesCollected: { id: 'rwaq.admin.payments.series.collected', defaultMessage: 'Revenue (SAR)' },
-  seriesOrders: { id: 'rwaq.admin.payments.series.orders', defaultMessage: 'Orders' },
   chartAllTime: { id: 'rwaq.admin.payments.chart.allTime', defaultMessage: 'All time' },
   chartRange: { id: 'rwaq.admin.payments.chart.range', defaultMessage: 'Selected range' },
   chartEmpty: { id: 'rwaq.admin.payments.chart.empty', defaultMessage: 'No payments in this period.' },
   chartUnavailable: { id: 'rwaq.admin.payments.chart.unavailable', defaultMessage: 'The chart could not be loaded.' },
   infoChartCollected: {
     id: 'rwaq.admin.payments.info.chartCollected',
-    defaultMessage: 'Revenue per day, week or month of the order date, in SAR.',
+    defaultMessage: 'Revenue per day, week or month of the order date, in SAR. Courses and Programs and subscriptions are shown apart, and their sum is the Total revenue tile.',
   },
   infoChartOrders: {
     id: 'rwaq.admin.payments.info.chartOrders',
-    defaultMessage: 'Completed paid orders per day, week or month of the order date.',
+    defaultMessage: 'Completed paid orders per day, week or month of the order date. Courses and Programs and subscriptions are shown apart. An order with both kinds counts in each.',
   },
 
   // ── Tab headings: what the tab counts and how it is calculated ─────────────
