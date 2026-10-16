@@ -49,6 +49,12 @@ const summary = {
   netPaid: '700.00',
   orders: 3,
   items: 4,
+  content: {
+    orders: 2, gross: '600.00', discounts: '100.00', netPaid: '500.00',
+  },
+  subscriptions: {
+    orders: 1, gross: '200.00', discounts: '0.00', netPaid: '200.00',
+  },
   granularity: 'month',
   series: [],
 };

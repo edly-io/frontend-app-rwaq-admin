@@ -162,6 +162,30 @@ describe('Payment history amounts', () => {
   });
 });
 
+describe('Payment history subscriptions entry', () => {
+  it('passes the subscriptions value to the backend as org', () => {
+    mockOrders([wholeOrder]);
+    renderTab('@subscriptions');
+
+    expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({ org: '@subscriptions' }));
+    expect(screen.getByText('Partner: Rwaq (subscriptions)')).toBeInTheDocument();
+  });
+
+  it('offers Rwaq (subscriptions) with its value after the organizations', () => {
+    (orgHooks.useOrganizations as jest.Mock).mockReturnValue({
+      data: { results: [{ shortName: 'TPA', name: 'Org A' }] },
+    });
+    mockOrders([wholeOrder]);
+    renderTab();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+
+    const options = within(screen.getByLabelText('Partner')).getAllByRole('option');
+    expect(options.map((option) => option.textContent)).toEqual(['All partners', 'Org A (TPA)', 'Rwaq (subscriptions)']);
+    expect(options[2]).toHaveValue('@subscriptions');
+  });
+});
+
 describe('Payment history date', () => {
   const zone = process.env.TZ;
   afterEach(() => {

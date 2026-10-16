@@ -2093,6 +2093,9 @@ html[data-paragon-theme-variant='dark'] .rwaq-payments-tabs {
   margin-bottom: var(--rwaq-space-6);
 }
 
+// Six tiles (Overview): three per line, two lines.
+.rwaq-payment-grid--thirds { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
 @media (max-width: 50rem) {
   .rwaq-payment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

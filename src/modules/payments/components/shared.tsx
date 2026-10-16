@@ -19,6 +19,8 @@ import messages from '../messages';
 
 export const PAGE_SIZE = 10;
 export const CURRENCY = 'SAR';
+/** The ?org= value the backend reads as "subscription orders only". No organization can have it. */
+export const SUBSCRIPTIONS_ORG = '@subscriptions';
 
 type Intl = ReturnType<typeof useIntl>;
 
@@ -197,13 +199,16 @@ export const usePartnerFilter = (
       value: partner.shortName,
       label: partner.name === partner.shortName ? partner.name : `${partner.name} (${partner.shortName})`,
     })),
+    { value: SUBSCRIPTIONS_ORG, label: intl.formatMessage(messages.partnerSubscriptions) },
   ];
   // A partner in the URL may be beyond the first 100 options.
   if (org && !options.some((option) => option.value === org)) {
     options.push({ value: org, label: org });
   }
   // The chip names the partner without the slug.
-  const label = partners.find((partner) => partner.shortName === org)?.name ?? org;
+  const label = org === SUBSCRIPTIONS_ORG
+    ? intl.formatMessage(messages.partnerSubscriptions)
+    : partners.find((partner) => partner.shortName === org)?.name ?? org;
   return {
     group: {
       id: 'partner',

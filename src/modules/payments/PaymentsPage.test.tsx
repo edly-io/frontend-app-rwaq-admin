@@ -27,9 +27,11 @@ jest.mock('./data/hooks', () => ({
 jest.mock('@src/components/charts/MetricChart', () => ({
   __esModule: true,
   default: ({
-    ariaLabel, data, valueFormatter, yAxisWidth,
+    ariaLabel, data, valueFormatter, yAxisWidth, hideLegend, series,
   }: {
     ariaLabel: string;
+    hideLegend?: boolean;
+    series: string[];
     data: { name: string }[];
     valueFormatter?: (value: number) => string;
     yAxisWidth?: number;
@@ -38,6 +40,8 @@ jest.mock('@src/components/charts/MetricChart', () => ({
       data-testid="metric-chart"
       aria-label={ariaLabel}
       data-axis-width={yAxisWidth}
+      data-hide-legend={String(!!hideLegend)}
+      data-series={series.join('|')}
       data-axis-sample={valueFormatter ? valueFormatter(1234.5) : undefined}
     >
       {data.map((point) => <span key={point.name}>{point.name}</span>)}
@@ -57,6 +61,12 @@ const summary = {
   netPaid: '700.00',
   orders: 3,
   items: 4,
+  content: {
+    orders: 2, gross: '600.00', discounts: '100.00', netPaid: '500.00',
+  },
+  subscriptions: {
+    orders: 1, gross: '200.00', discounts: '0.00', netPaid: '200.00',
+  },
   granularity: 'month',
   series: [{
     period: '2026-09-01',
@@ -64,6 +74,12 @@ const summary = {
     gross: '700.00',
     discounts: '100.00',
     netPaid: '600.00',
+    content: {
+      orders: 2, gross: '700.00', discounts: '100.00', netPaid: '600.00',
+    },
+    subscriptions: {
+      orders: 0, gross: '0.00', discounts: '0.00', netPaid: '0.00',
+    },
   }],
 };
 
@@ -112,7 +128,7 @@ describe('PaymentsPage', () => {
   it('opens on the Overview with the tiles in order and amounts in SAR', async () => {
     await renderPage();
 
-    const labels = ['Orders', 'Order value', 'Discounts', 'Revenue'].map((label) => screen.getByText(label));
+    const labels = ['Orders', 'Order value', 'Discounts', 'Total revenue'].map((label) => screen.getByText(label));
     labels.slice(1).forEach((label, index) => {
       // eslint-disable-next-line no-bitwise
       expect(labels[index].compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -121,6 +137,79 @@ describe('PaymentsPage', () => {
     expect(screen.queryByText('Payable to partners')).not.toBeInTheDocument();
     expect(screen.queryByText('Rwaq revenue')).not.toBeInTheDocument();
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(2);
+  });
+
+  it('shows six tiles in order: the four combined totals, then content and subscription revenue', async () => {
+    await renderPage();
+
+    const labels = ['Orders', 'Order value', 'Discounts', 'Total revenue', 'Courses and Programs revenue', 'Subscription revenue']
+      .map((label) => screen.getByText(label));
+    labels.slice(1).forEach((label, index) => {
+      // eslint-disable-next-line no-bitwise
+      expect(labels[index].compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+    expect(screen.getByText('500.00')).toBeInTheDocument();
+    expect(screen.getByText('200.00')).toBeInTheDocument();
+  });
+
+  it('says in each revenue tile\'s tooltip how many orders it counts', async () => {
+    await renderPage();
+
+    fireEvent.mouseOver(screen.getByText('Courses and Programs revenue'));
+    expect(await screen.findByText(/2 orders\./)).toBeInTheDocument();
+    fireEvent.mouseOver(screen.getByText('Subscription revenue'));
+    expect(await screen.findByText(/1 order\./)).toBeInTheDocument();
+  });
+
+  it('shows the subscription tile as 0.00 under a real partner', async () => {
+    (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({
+      data: {
+        ...summary,
+        netPaid: '500.00',
+        subscriptions: {
+          orders: 0, gross: '0.00', discounts: '0.00', netPaid: '0.00',
+        },
+      },
+      isLoading: false,
+      isError: false,
+    });
+    await renderPage();
+    fireEvent.change(screen.getByLabelText('Partner'), { target: { value: 'TPA' } });
+
+    const tile = screen.getByText('Subscription revenue').closest('.rwaq-payment-kpi') as HTMLElement;
+    expect(within(tile).getByText('0.00')).toBeInTheDocument();
+    expect(within(tile).getByText('SAR')).toBeInTheDocument();
+  });
+
+  it('shows no figures in the revenue tiles when the totals cannot be loaded', async () => {
+    (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({ data: undefined, isLoading: false, isError: true });
+    await renderPage();
+
+    const tile = screen.getByText('Subscription revenue').closest('.rwaq-payment-kpi') as HTMLElement;
+    expect(within(tile).getByText('—')).toBeInTheDocument();
+  });
+
+  it('draws Courses and Programs and Subscriptions as two series with the legend on, on both charts', async () => {
+    await renderPage();
+
+    const charts = screen.getAllByTestId('metric-chart');
+    expect(charts).toHaveLength(2);
+    charts.forEach((chart) => {
+      expect(chart).toHaveAttribute('data-series', 'Courses and Programs|Subscriptions');
+      expect(chart).toHaveAttribute('data-hide-legend', 'false');
+      expect(chart.getAttribute('aria-label')).toMatch(/Courses and Programs, Subscriptions\.$/);
+    });
+  });
+
+  it('offers Rwaq (subscriptions) after the organizations and asks the summary for it', async () => {
+    await renderPage();
+    const options = within(screen.getByLabelText('Partner')).getAllByRole('option').map((option) => option.textContent);
+    expect(options).toEqual(['All partners', 'Org A (TPA)', 'Rwaq (subscriptions)']);
+
+    fireEvent.change(screen.getByLabelText('Partner'), { target: { value: '@subscriptions' } });
+
+    expect(hooks.usePaymentsSummary).toHaveBeenLastCalledWith(expect.objectContaining({ org: '@subscriptions' }));
+    expect(screen.getByLabelText('Partner')).toHaveValue('@subscriptions');
   });
 
   it('says so when the totals cannot be loaded, instead of showing zero', async () => {
@@ -287,7 +376,7 @@ describe('PaymentsPage', () => {
       await renderPage();
 
       const loaders = screen.getAllByRole('status', { name: 'Loading' });
-      expect(loaders).toHaveLength(4);
+      expect(loaders).toHaveLength(6);
       loaders.forEach((loader) => expect(loader).toHaveAttribute('aria-busy', 'true'));
     });
   });
@@ -311,6 +400,25 @@ describe('PaymentsPage', () => {
       await renderPage();
 
       expect(screen.getByText('Partner: Org A')).toBeInTheDocument();
+    });
+
+    it('names the subscriptions entry on its chip in Payment history, not by its raw value', async () => {
+      window.history.pushState({}, '', '/?tab=orders&org=%40subscriptions');
+      await renderPage();
+
+      expect(lastOrdersParams().org).toBe('@subscriptions');
+      expect(screen.getByText('Partner: Rwaq (subscriptions)')).toBeInTheDocument();
+      expect(screen.queryByText('Partner: @subscriptions')).not.toBeInTheDocument();
+    });
+
+    it('offers the subscriptions entry in the Payment history Partner filter', async () => {
+      window.history.pushState({}, '', '/?tab=orders');
+      await renderPage();
+      fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+
+      expect(
+        within(screen.getByLabelText('Partner')).getByRole('option', { name: 'Rwaq (subscriptions)' }),
+      ).toHaveValue('@subscriptions');
     });
 
     it('falls back to Overview for a tab that no longer exists', async () => {

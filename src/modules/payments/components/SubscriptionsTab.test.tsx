@@ -56,7 +56,7 @@ beforeEach(() => {
   (hooks.usePaymentSubscriptions as jest.Mock).mockReturnValue(page([row]));
   (hooks.useSubscriptionsSummary as jest.Mock).mockReturnValue({
     data: {
-      revenue: '1140.00', active: 5, expired: 2, cancelled: 1,
+      revenue: '1140.00', total: 8, active: 5, expired: 2, cancelled: 1,
     },
     isLoading: false,
     isError: false,
@@ -66,11 +66,12 @@ beforeEach(() => {
 });
 
 describe('Subscriptions KPI cards', () => {
-  it('shows revenue and the active, expired and cancelled subscriptions with their counts', () => {
+  it('shows the total, active, expired and cancelled subscriptions with their counts, and no revenue tile', () => {
     renderWrapper(<SubscriptionsTab />);
 
     const card = (label: string) => (screen.getByText(label).closest('.rwaq-payment-kpi') as HTMLElement);
-    expect(card('Subscription revenue')).toBeInTheDocument();
+    expect(within(card('Total subscriptions')).getByText('8')).toBeInTheDocument();
+    expect(screen.queryByText('Subscription revenue')).not.toBeInTheDocument();
     expect(within(card('Active subscriptions')).getByText('5')).toBeInTheDocument();
     expect(within(card('Expired subscriptions')).getByText('2')).toBeInTheDocument();
     expect(within(card('Cancelled subscriptions')).getByText('1')).toBeInTheDocument();
