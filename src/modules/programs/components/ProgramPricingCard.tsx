@@ -124,21 +124,38 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
         <Alert variant="success" className="mb-3">{intl.formatMessage(messages.pricingSaved)}</Alert>
       )}
 
-      <Form.Group isInvalid={!!fieldErrors.pricingCategory} controlId="program-pricing-category">
-        <Form.Label>{intl.formatMessage(messages.pricingCategoryLabel)}</Form.Label>
-        <Form.Control
-          as="select"
+      <Form.Group isInvalid={!!fieldErrors.pricingCategory}>
+        <Form.Label className="sr-only">{intl.formatMessage(messages.pricingCategoryLabel)}</Form.Label>
+        <Form.RadioSet
+          name="pricingCategory"
           value={category}
-          disabled={isPending}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             setCategory(e.target.value as ProgramPricingCategory);
             touched('pricingCategory');
           }}
         >
-          <option value="is_free">{intl.formatMessage(messages.pricingFree)}</option>
-          <option value="is_paid">{intl.formatMessage(messages.pricingPaid)}</option>
-          <option value="is_part_of_subscription">{intl.formatMessage(messages.pricingSubscription)}</option>
-        </Form.Control>
+          <Form.Radio
+            value="is_free"
+            disabled={isPending}
+            description={intl.formatMessage(messages.pricingFreeDescription)}
+          >
+            {intl.formatMessage(messages.pricingFree)}
+          </Form.Radio>
+          <Form.Radio
+            value="is_paid"
+            disabled={isPending}
+            description={intl.formatMessage(messages.pricingPaidDescription)}
+          >
+            {intl.formatMessage(messages.pricingPaid)}
+          </Form.Radio>
+          <Form.Radio
+            value="is_part_of_subscription"
+            disabled={isPending}
+            description={intl.formatMessage(messages.pricingSubscriptionDescription)}
+          >
+            {intl.formatMessage(messages.pricingSubscription)}
+          </Form.Radio>
+        </Form.RadioSet>
         {fieldErrors.pricingCategory && (
           <Form.Control.Feedback type="invalid">{fieldErrors.pricingCategory}</Form.Control.Feedback>
         )}
