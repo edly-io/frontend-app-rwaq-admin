@@ -141,6 +141,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.dashboard.info.platformTotals',
     defaultMessage: 'All-time figures for the whole platform. The date range does not apply. Counts include deactivated and legacy accounts. Staff and service accounts are excluded.',
   },
+  platformTotalsDivider: {
+    id: 'rwaq.admin.dashboard.platformTotals.divider',
+    defaultMessage: 'All-time figures, not affected by the date range',
+  },
   platformTotalsColMetric: { id: 'rwaq.admin.dashboard.platformTotals.col.metric', defaultMessage: 'Metric' },
   platformTotalsColValue: { id: 'rwaq.admin.dashboard.platformTotals.col.value', defaultMessage: 'Value' },
   totalUsers: { id: 'rwaq.admin.dashboard.platformTotals.users', defaultMessage: 'Total number of users' },

@@ -461,6 +461,14 @@ describe('DashboardPage — platform totals', () => {
   });
 });
 
+describe('DashboardPage — platform totals divider', () => {
+  it('separates the all-time card from the date-filtered figures', () => {
+    setDataState();
+    renderWrapper(<DashboardPage />);
+    expect(screen.getByRole('separator')).toHaveTextContent('All-time figures, not affected by the date range');
+  });
+});
+
 describe('DashboardPage — platform totals tooltips', () => {
   it('has an explanation on every row', () => {
     setDataState();
@@ -487,6 +495,7 @@ describe('DashboardPage — platform totals CSV', () => {
     fireEvent.click(screen.getByRole('button', { name: /download csv/i }));
 
     expect(click).toHaveBeenCalled();
+    expect(click.mock.contexts[0]).toHaveProperty('download', expect.stringMatching(/^users_.*\.csv$/));
     const blob = (createObjectURL.mock.calls[0] as unknown as [Blob])[0];
     const text = await new Promise<string>((resolve) => {
       const reader = new FileReader();

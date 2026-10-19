@@ -621,7 +621,7 @@ const DashboardPage = () => {
         .slice(0, 19)
         .replace('T', '_')
         .replace(/:/g, '-');
-      saveBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `platform_totals_${stamp}.csv`);
+      saveBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `users_${stamp}.csv`);
     };
 
     return (
@@ -969,7 +969,9 @@ const DashboardPage = () => {
 
       {/* ── 4. All-time platform totals ─────────────────────────────────────── */}
       {/* Below a divider, away from the date-filtered figures: the range does not apply here. */}
-      <hr className="my-2" />
+      <div className="rwaq-dash-divider" role="separator">
+        {intl.formatMessage(messages.platformTotalsDivider)}
+      </div>
       {renderPlatformTotals()}
     </div>
   );
