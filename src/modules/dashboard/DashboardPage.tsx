@@ -23,7 +23,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Icon, Skeleton } from '@openedx/paragon';
 import { Refresh } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import DownloadButton, { saveBlob } from '@src/components/DownloadButton';
 import ErrorState from '@src/components/ErrorState';
+import { csvDownloadMessages } from '@src/components/messages';
 import { getErrorStatus } from '@src/data/httpError';
 import InfoTooltip from '@src/components/InfoTooltip';
 import KpiCard from '@src/components/KpiCard';
@@ -93,6 +95,12 @@ const formatCount = (value: number | null | undefined): string => (
 const formatPercent = (value: number | null): string | null => (
   value === null || value === undefined ? null : `${value}%`
 );
+
+/** One CSV cell, quoted when it holds a comma, a quote or a line break. */
+const csvCell = (value: string | number | null | undefined): string => {
+  const text = value === null || value === undefined ? '' : String(value);
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
 
 const DashboardPage = () => {
   const intl = useIntl();
@@ -540,6 +548,34 @@ const DashboardPage = () => {
         value: totals?.averageCoursesPerActiveLearner?.toLocaleString() ?? unavailable,
       },
     ];
+    // The file has the raw figures (no thousands separators), empty where a figure is unavailable.
+    const handleDownload = () => {
+      if (!totals) { return; }
+      const lines = [
+        [intl.formatMessage(messages.platformTotalsTitle)],
+        [intl.formatMessage(messages.platformTotalsColMetric), intl.formatMessage(messages.platformTotalsColValue)],
+        [intl.formatMessage(messages.totalUsers), totals.totalUsers],
+        [intl.formatMessage(messages.totalEnrollments), totals.totalEnrollments],
+        [intl.formatMessage(messages.totalUnenrollments), totals.totalUnenrollments],
+        [intl.formatMessage(messages.averageCompletion), totals.completionPct],
+        [
+          intl.formatMessage(messages.averageProgress),
+          totals.progressComputedAt && totals.averageProgressPct !== null
+            ? intl.formatMessage(messages.averageProgressAsOf, {
+              value: totals.averageProgressPct,
+              date: totals.progressComputedAt.slice(0, 10),
+            })
+            : totals.averageProgressPct,
+        ],
+        [intl.formatMessage(messages.averageCoursesPerLearner), totals.averageCoursesPerActiveLearner],
+      ];
+      // The BOM lets Excel read the Arabic labels as UTF-8.
+      const csv = `\uFEFF${lines.map((line) => line.map(csvCell).join(',')).join('\r\n')}\r\n`;
+      const stamp = new Date().toISOString().slice(0, 19).replace('T', '_')
+        .replace(/:/g, '-');
+      saveBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `platform_totals_${stamp}.csv`);
+    };
+
     return (
       <div className="rwaq-card rwaq-dash-card">
         <div className="rwaq-dash-card__head">
@@ -548,7 +584,17 @@ const DashboardPage = () => {
               {intl.formatMessage(messages.platformTotalsTitle)}
             </h3>
           </InfoTooltip>
-          <span className="rwaq-dash-card__sub">{intl.formatMessage(messages.allTimeBadge)}</span>
+          <div className="d-flex align-items-center" style={{ gap: '0.75rem' }}>
+            <span className="rwaq-dash-card__sub">{intl.formatMessage(messages.allTimeBadge)}</span>
+            <DownloadButton
+              label={intl.formatMessage(csvDownloadMessages.download)}
+              pendingLabel={intl.formatMessage(csvDownloadMessages.downloading)}
+              isPending={false}
+              size="sm"
+              disabled={!totals}
+              onClick={handleDownload}
+            />
+          </div>
         </div>
         <MiniTable
           caption={intl.formatMessage(messages.platformTotalsTitle)}

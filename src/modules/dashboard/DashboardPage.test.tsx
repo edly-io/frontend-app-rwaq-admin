@@ -446,3 +446,35 @@ describe('DashboardPage — platform totals', () => {
     });
   });
 });
+
+describe('DashboardPage — platform totals CSV', () => {
+  it('downloads the raw figures as a CSV', async () => {
+    setDataState();
+    const createObjectURL = jest.fn(() => 'blob:totals');
+    Object.assign(URL, { createObjectURL, revokeObjectURL: jest.fn() });
+    const click = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    renderWrapper(<DashboardPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: /download csv/i }));
+
+    expect(click).toHaveBeenCalled();
+    const blob = (createObjectURL.mock.calls[0] as unknown as [Blob])[0];
+    const text = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsText(blob);
+    });
+    expect(text).toContain('Total number of users,2676992');
+    expect(text).toContain('Total course unenrollments,266822');
+    expect(text).toContain('Average courses per active learner,2.25');
+    expect(text).toMatch(/Average course progress,\r\n/);
+    click.mockRestore();
+  });
+
+  it('disables the download while the totals are unavailable', () => {
+    setDataState();
+    (hooks.useAnalyticsPlatformTotals as jest.Mock).mockReturnValue(errorQuery);
+    renderWrapper(<DashboardPage />);
+    expect(screen.getByRole('button', { name: /download csv/i })).toBeDisabled();
+  });
+});
