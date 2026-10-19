@@ -6,7 +6,9 @@
  * recharts relies on window.matchMedia and ResizeObserver behaviour that differs
  * from how jsdom behaves.
  */
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent, screen, waitFor, within,
+} from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from './data/hooks';
 import * as api from './data/api';
@@ -116,6 +118,10 @@ const mockPlatformTotals = {
   totalUsers: 2676992,
   totalEnrollments: 5597514,
   totalUnenrollments: 266822,
+  enrolledBeforeEnd: 4004094,
+  enrolledAfterEnd: 1580312,
+  averageEnrollmentsEndedCourses: 5919,
+  averageCompletionsEndedCourses: 487.5,
   averageCoursesPerActiveLearner: 2.25,
   completionPct: 22.3,
   averageProgressPct: null,
@@ -394,8 +400,12 @@ describe('DashboardPage — platform totals', () => {
   it('renders every all-time figure', () => {
     setDataState();
     renderWrapper(<DashboardPage />);
-    expect(screen.getByRole('heading', { name: 'Platform totals' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Users' })).toBeInTheDocument();
     expect(screen.getByText('2,676,992')).toBeInTheDocument();
+    expect(screen.getByText('4,004,094')).toBeInTheDocument();
+    expect(screen.getByText('1,580,312')).toBeInTheDocument();
+    expect(screen.getByText('5,919')).toBeInTheDocument();
+    expect(screen.getByText('487.5')).toBeInTheDocument();
     expect(screen.getByText('5,597,514')).toBeInTheDocument();
     expect(screen.getByText('266,822')).toBeInTheDocument();
     expect(screen.getByText('22.3%')).toBeInTheDocument();
@@ -435,14 +445,33 @@ describe('DashboardPage — platform totals', () => {
     renderWrapper(<DashboardPage />);
     [
       'Total number of users',
+      'Total enrollments before the course end date',
+      'Total enrollments after the course end date',
       'Total course enrollments',
       'Total course unenrollments',
+      'Average enrollments per ended course',
+      'Average completions per ended course',
       'Average completion percentage (courses with certificates)',
       'Average course progress',
       'Average courses per active learner',
     ].forEach((label) => {
       const row = screen.getByText(label).closest('tr') as HTMLElement;
       expect(row).toHaveTextContent('Not available');
+    });
+  });
+});
+
+describe('DashboardPage — platform totals tooltips', () => {
+  it('has an explanation on every row', () => {
+    setDataState();
+    renderWrapper(<DashboardPage />);
+    const rows = screen.getAllByRole('row').slice(1).filter((row) => within(row).queryByText(/^(Total|Average)/));
+    expect(rows).toHaveLength(10);
+    rows.forEach((row) => {
+      const label = within(row).getAllByText(/^(Total|Average)/)[0];
+      fireEvent.mouseEnter(label);
+      expect(screen.getAllByRole('tooltip').length).toBeGreaterThan(0);
+      fireEvent.mouseLeave(label);
     });
   });
 });
@@ -465,6 +494,8 @@ describe('DashboardPage — platform totals CSV', () => {
       reader.readAsText(blob);
     });
     expect(text).toContain('Total number of users,2676992');
+    expect(text).toContain('Total enrollments before the course end date,4004094');
+    expect(text).toContain('Average completions per ended course,487.5');
     expect(text).toContain('Total course unenrollments,266822');
     expect(text).toContain('Average courses per active learner,2.25');
     expect(text).toMatch(/Average course progress,\r\n/);

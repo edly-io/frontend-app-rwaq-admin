@@ -120,6 +120,13 @@ export interface PlatformTotals {
   /** Every enrollment ever, unenrollments included. */
   totalEnrollments: number;
   totalUnenrollments: number;
+  /** Enrollments made before the end date of their course. Courses with no end date are in neither split. */
+  enrolledBeforeEnd: number;
+  enrolledAfterEnd: number;
+  /** null when no course has ended. */
+  averageEnrollmentsEndedCourses: number | null;
+  /** null when no course has ended or certificates are unreadable. */
+  averageCompletionsEndedCourses: number | null;
   /** null when no account holds an active enrollment. */
   averageCoursesPerActiveLearner: number | null;
   /** Certificates over enrollments in certificate-enabled courses. null when unreadable. */

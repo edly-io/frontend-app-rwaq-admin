@@ -523,78 +523,126 @@ const DashboardPage = () => {
     const unavailable = intl.formatMessage(messages.unavailable);
     const count = (value: number | undefined) => (value === undefined ? unavailable : formatCount(value));
     const percent = (value: number | null | undefined) => formatPercent(value ?? null) ?? unavailable;
+    // No locale argument, so the digits match the formatCount rows.
+    const decimal = (value: number | null | undefined) => value?.toLocaleString() ?? unavailable;
+    const progressKnown = Boolean(totals?.progressComputedAt) && totals?.averageProgressPct !== null;
     const progress = percent(totals?.averageProgressPct);
+    // `value` is what the table shows, `raw` is what the CSV carries (no separators, empty when unavailable).
     const rows = [
-      { key: 'users', label: messages.totalUsers, value: count(totals?.totalUsers) },
-      { key: 'enrollments', label: messages.totalEnrollments, value: count(totals?.totalEnrollments) },
-      { key: 'unenrollments', label: messages.totalUnenrollments, value: count(totals?.totalUnenrollments) },
-      { key: 'completion', label: messages.averageCompletion, value: percent(totals?.completionPct) },
+      {
+        key: 'users',
+        label: messages.totalUsers,
+        info: messages.infoTotalUsers,
+        value: count(totals?.totalUsers),
+        raw: totals?.totalUsers,
+      },
+      {
+        key: 'enrolledBefore',
+        label: messages.enrolledBeforeEnd,
+        info: messages.infoEnrolledBeforeEnd,
+        value: count(totals?.enrolledBeforeEnd),
+        raw: totals?.enrolledBeforeEnd,
+      },
+      {
+        key: 'enrolledAfter',
+        label: messages.enrolledAfterEnd,
+        info: messages.infoEnrolledAfterEnd,
+        value: count(totals?.enrolledAfterEnd),
+        raw: totals?.enrolledAfterEnd,
+      },
+      {
+        key: 'unenrollments',
+        label: messages.totalUnenrollments,
+        info: messages.infoTotalUnenrollments,
+        value: count(totals?.totalUnenrollments),
+        raw: totals?.totalUnenrollments,
+      },
+      {
+        key: 'enrollments',
+        label: messages.totalEnrollments,
+        info: messages.infoTotalEnrollments,
+        value: count(totals?.totalEnrollments),
+        raw: totals?.totalEnrollments,
+      },
+      {
+        key: 'enrollmentsEnded',
+        label: messages.averageEnrollmentsEnded,
+        info: messages.infoEnrollmentsEnded,
+        value: decimal(totals?.averageEnrollmentsEndedCourses),
+        raw: totals?.averageEnrollmentsEndedCourses,
+      },
+      {
+        key: 'completionsEnded',
+        label: messages.averageCompletionsEnded,
+        info: messages.infoCompletionsEnded,
+        value: decimal(totals?.averageCompletionsEndedCourses),
+        raw: totals?.averageCompletionsEndedCourses,
+      },
+      {
+        key: 'completion',
+        label: messages.averageCompletion,
+        info: messages.infoAverageCompletion,
+        value: percent(totals?.completionPct),
+        raw: totals?.completionPct,
+      },
       {
         key: 'progress',
         label: messages.averageProgress,
-        value: totals?.progressComputedAt && totals.averageProgressPct !== null
+        info: messages.infoAverageProgress,
+        value: progressKnown && totals
           ? intl.formatMessage(messages.averageProgressAsOf, {
             value: progress,
-            date: new Date(totals.progressComputedAt).toLocaleDateString(locale, {
+            date: new Date(totals.progressComputedAt as string).toLocaleDateString(locale, {
               year: 'numeric', month: 'short', day: 'numeric',
             }),
           })
           : progress,
+        raw: totals?.averageProgressPct,
       },
       {
         key: 'coursesPerLearner',
         label: messages.averageCoursesPerLearner,
-        // No locale argument, so its digits match the formatCount rows above.
-        value: totals?.averageCoursesPerActiveLearner?.toLocaleString() ?? unavailable,
+        info: messages.infoCoursesPerLearner,
+        value: decimal(totals?.averageCoursesPerActiveLearner),
+        raw: totals?.averageCoursesPerActiveLearner,
       },
     ];
-    // The file has the raw figures (no thousands separators), empty where a figure is unavailable.
+
     const handleDownload = () => {
       if (!totals) { return; }
       const lines = [
         [intl.formatMessage(messages.platformTotalsTitle)],
         [intl.formatMessage(messages.platformTotalsColMetric), intl.formatMessage(messages.platformTotalsColValue)],
-        [intl.formatMessage(messages.totalUsers), totals.totalUsers],
-        [intl.formatMessage(messages.totalEnrollments), totals.totalEnrollments],
-        [intl.formatMessage(messages.totalUnenrollments), totals.totalUnenrollments],
-        [intl.formatMessage(messages.averageCompletion), totals.completionPct],
-        [
-          intl.formatMessage(messages.averageProgress),
-          totals.progressComputedAt && totals.averageProgressPct !== null
-            ? intl.formatMessage(messages.averageProgressAsOf, {
-              value: totals.averageProgressPct,
-              date: totals.progressComputedAt.slice(0, 10),
-            })
-            : totals.averageProgressPct,
-        ],
-        [intl.formatMessage(messages.averageCoursesPerLearner), totals.averageCoursesPerActiveLearner],
+        ...rows.map((row) => [intl.formatMessage(row.label), row.raw]),
       ];
       // The BOM lets Excel read the Arabic labels as UTF-8.
       const csv = `\uFEFF${lines.map((line) => line.map(csvCell).join(',')).join('\r\n')}\r\n`;
-      const stamp = new Date().toISOString().slice(0, 19).replace('T', '_')
+      const stamp = new Date().toISOString()
+        .slice(0, 19)
+        .replace('T', '_')
         .replace(/:/g, '-');
       saveBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `platform_totals_${stamp}.csv`);
     };
 
     return (
       <div className="rwaq-card rwaq-dash-card">
-        <div className="rwaq-dash-card__head">
-          <InfoTooltip text={intl.formatMessage(messages.infoPlatformTotals)}>
-            <h3 className="rwaq-section-title mb-0">
-              {intl.formatMessage(messages.platformTotalsTitle)}
-            </h3>
-          </InfoTooltip>
-          <div className="d-flex align-items-center" style={{ gap: '0.75rem' }}>
+        <div className="d-flex justify-content-between align-items-center" style={{ gap: '0.75rem' }}>
+          <div className="rwaq-dash-card__head">
+            <InfoTooltip text={intl.formatMessage(messages.infoPlatformTotals)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.platformTotalsTitle)}
+              </h3>
+            </InfoTooltip>
             <span className="rwaq-dash-card__sub">{intl.formatMessage(messages.allTimeBadge)}</span>
-            <DownloadButton
-              label={intl.formatMessage(csvDownloadMessages.download)}
-              pendingLabel={intl.formatMessage(csvDownloadMessages.downloading)}
-              isPending={false}
-              size="sm"
-              disabled={!totals}
-              onClick={handleDownload}
-            />
           </div>
+          <DownloadButton
+            label={intl.formatMessage(csvDownloadMessages.download)}
+            pendingLabel={intl.formatMessage(csvDownloadMessages.downloading)}
+            isPending={false}
+            size="sm"
+            disabled={!totals}
+            onClick={handleDownload}
+          />
         </div>
         <MiniTable
           caption={intl.formatMessage(messages.platformTotalsTitle)}
@@ -604,7 +652,11 @@ const DashboardPage = () => {
           columns={[
             {
               label: intl.formatMessage(messages.platformTotalsColMetric),
-              render: (row) => intl.formatMessage(row.label),
+              render: (row) => (
+                <InfoTooltip text={intl.formatMessage(row.info)}>
+                  <span>{intl.formatMessage(row.label)}</span>
+                </InfoTooltip>
+              ),
             },
             { label: intl.formatMessage(messages.platformTotalsColValue), render: (row) => row.value, isNumeric: true },
           ]}
@@ -850,9 +902,6 @@ const DashboardPage = () => {
         />
       </div>
 
-      {/* All-time platform totals — the date range does not apply. */}
-      {renderPlatformTotals()}
-
       {/* ── 2. Registration chart + Stats ──────────────────────────────────── */}
       {/* Left column (2fr): registration trend. Right column (1fr): 4 stat tiles. */}
       <div className="rwaq-dash-grid rwaq-dash-grid--split">
@@ -917,6 +966,11 @@ const DashboardPage = () => {
       {breakdownsQuery.isError && (
         <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>
       )}
+
+      {/* ── 4. All-time platform totals ─────────────────────────────────────── */}
+      {/* Below a divider, away from the date-filtered figures: the range does not apply here. */}
+      <hr className="my-2" />
+      {renderPlatformTotals()}
     </div>
   );
 };
