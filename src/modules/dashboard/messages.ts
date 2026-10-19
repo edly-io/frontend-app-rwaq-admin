@@ -132,6 +132,33 @@ const messages = defineMessages({
     id: 'rwaq.admin.dashboard.info.registrations',
     defaultMessage: 'New learner accounts registered this calendar month vs last month.',
   },
+  infoRegistrationTrend: {
+    id: 'rwaq.admin.dashboard.info.registrationTrend',
+    defaultMessage: 'Accounts registered per month, including deactivated and legacy accounts. Staff and service accounts are excluded.',
+  },
+  platformTotalsTitle: { id: 'rwaq.admin.dashboard.platformTotals.title', defaultMessage: 'Platform totals' },
+  infoPlatformTotals: {
+    id: 'rwaq.admin.dashboard.info.platformTotals',
+    defaultMessage: 'All-time figures for the whole platform. The date range does not apply. Counts include deactivated and legacy accounts. Staff and service accounts are excluded.',
+  },
+  platformTotalsColMetric: { id: 'rwaq.admin.dashboard.platformTotals.col.metric', defaultMessage: 'Metric' },
+  platformTotalsColValue: { id: 'rwaq.admin.dashboard.platformTotals.col.value', defaultMessage: 'Value' },
+  totalUsers: { id: 'rwaq.admin.dashboard.platformTotals.users', defaultMessage: 'Total number of users' },
+  totalEnrollments: { id: 'rwaq.admin.dashboard.platformTotals.enrollments', defaultMessage: 'Total course enrollments' },
+  totalUnenrollments: { id: 'rwaq.admin.dashboard.platformTotals.unenrollments', defaultMessage: 'Total course unenrollments' },
+  averageCompletion: {
+    id: 'rwaq.admin.dashboard.platformTotals.completion',
+    defaultMessage: 'Average completion percentage (courses with certificates)',
+  },
+  averageProgress: { id: 'rwaq.admin.dashboard.platformTotals.progress', defaultMessage: 'Average course progress' },
+  averageProgressAsOf: {
+    id: 'rwaq.admin.dashboard.platformTotals.progressAsOf',
+    defaultMessage: '{value} (as of {date})',
+  },
+  averageCoursesPerLearner: {
+    id: 'rwaq.admin.dashboard.platformTotals.coursesPerLearner',
+    defaultMessage: 'Average courses per active learner',
+  },
   infoCertCoverage: {
     id: 'rwaq.admin.dashboard.info.certCoverage',
     defaultMessage: 'Published courses with at least one active certificate enabled. Always all-time.',

@@ -5,10 +5,10 @@
  * MetricChart, and the card and table styles the users and organizations
  * screens already use. Nothing new visually, so both themes come for free.
  *
- * Three independent queries, matching the backend's split by cost — the KPI row
+ * Four independent queries, matching the backend's split by cost — the KPI row
  * paints as soon as the cheap counts land instead of waiting on the aggregates.
  * Each band degrades on its own: a failed trends call leaves the KPI row and
- * the breakdowns intact.
+ * the breakdowns intact. Platform totals are all-time and ignore the date range.
  *
  * Two conventions worth keeping if this page grows:
  *   - A metric we cannot read renders "Not available", never 0. Confusing
@@ -36,6 +36,7 @@ import StatTile from './components/StatTile';
 import {
   analyticsQueryKeys,
   useAnalyticsBreakdowns,
+  useAnalyticsPlatformTotals,
   useAnalyticsSummary,
   useAnalyticsTrends,
 } from './data/hooks';
@@ -43,6 +44,7 @@ import {
   getAnalyticsBreakdowns,
   getAnalyticsSummary,
   getAnalyticsTrends,
+  getPlatformTotals,
 } from './data/api';
 import type {
   AnalyticsBreakdowns, AnalyticsParams, OrganizationRow, TopCourse, TrendPoint,
@@ -131,9 +133,10 @@ const DashboardPage = () => {
   const summaryQuery = useAnalyticsSummary(params);
   const trendsQuery = useAnalyticsTrends(trendsParams);
   const breakdownsQuery = useAnalyticsBreakdowns(params);
+  const platformTotalsQuery = useAnalyticsPlatformTotals();
 
   // Show skeletons during refresh by tracking it in local state, then inject
-  // the fresh data atomically into the cache so all three widgets update together.
+  // the fresh data atomically into the cache so every widget updates together.
   const handleRefresh = async () => {
     if (refreshInFlight.current) { return; }
     refreshInFlight.current = true;
@@ -141,14 +144,16 @@ const DashboardPage = () => {
     setRefreshError(null);
     try {
       const forceParams = { forceRefresh: true };
-      const [freshSummary, freshTrends, freshBreakdowns] = await Promise.all([
+      const [freshSummary, freshTrends, freshBreakdowns, freshPlatformTotals] = await Promise.all([
         getAnalyticsSummary({ ...params, ...forceParams }),
         getAnalyticsTrends({ ...trendsParams, ...forceParams }),
         getAnalyticsBreakdowns({ ...params, ...forceParams }),
+        getPlatformTotals(forceParams),
       ]);
       queryClient.setQueryData(analyticsQueryKeys.summary(params), freshSummary);
       queryClient.setQueryData(analyticsQueryKeys.trends(trendsParams), freshTrends);
       queryClient.setQueryData(analyticsQueryKeys.breakdowns(params), freshBreakdowns);
+      queryClient.setQueryData(analyticsQueryKeys.platformTotals(), freshPlatformTotals);
     } catch {
       setRefreshError(intl.formatMessage(messages.errorTitle));
     } finally {
@@ -504,6 +509,64 @@ const DashboardPage = () => {
     </div>
   );
 
+  /** All-time platform totals: one label/value row per figure of the old Rwaq Reports screen. */
+  const renderPlatformTotals = () => {
+    const totals = platformTotalsQuery.isError ? undefined : platformTotalsQuery.data;
+    const unavailable = intl.formatMessage(messages.unavailable);
+    const count = (value: number | undefined) => (value === undefined ? unavailable : formatCount(value));
+    const percent = (value: number | null | undefined) => formatPercent(value ?? null) ?? unavailable;
+    const progress = percent(totals?.averageProgressPct);
+    const rows = [
+      { key: 'users', label: messages.totalUsers, value: count(totals?.totalUsers) },
+      { key: 'enrollments', label: messages.totalEnrollments, value: count(totals?.totalEnrollments) },
+      { key: 'unenrollments', label: messages.totalUnenrollments, value: count(totals?.totalUnenrollments) },
+      { key: 'completion', label: messages.averageCompletion, value: percent(totals?.completionPct) },
+      {
+        key: 'progress',
+        label: messages.averageProgress,
+        value: totals?.progressComputedAt && totals.averageProgressPct !== null
+          ? intl.formatMessage(messages.averageProgressAsOf, {
+            value: progress,
+            date: new Date(totals.progressComputedAt).toLocaleDateString(locale, {
+              year: 'numeric', month: 'short', day: 'numeric',
+            }),
+          })
+          : progress,
+      },
+      {
+        key: 'coursesPerLearner',
+        label: messages.averageCoursesPerLearner,
+        // No locale argument, so its digits match the formatCount rows above.
+        value: totals?.averageCoursesPerActiveLearner?.toLocaleString() ?? unavailable,
+      },
+    ];
+    return (
+      <div className="rwaq-card rwaq-dash-card">
+        <div className="rwaq-dash-card__head">
+          <InfoTooltip text={intl.formatMessage(messages.infoPlatformTotals)}>
+            <h3 className="rwaq-section-title mb-0">
+              {intl.formatMessage(messages.platformTotalsTitle)}
+            </h3>
+          </InfoTooltip>
+          <span className="rwaq-dash-card__sub">{intl.formatMessage(messages.allTimeBadge)}</span>
+        </div>
+        <MiniTable
+          caption={intl.formatMessage(messages.platformTotalsTitle)}
+          rows={rows}
+          rowKey={(row) => row.key}
+          isLoading={platformTotalsQuery.isLoading || isRefreshing}
+          columns={[
+            {
+              label: intl.formatMessage(messages.platformTotalsColMetric),
+              render: (row) => intl.formatMessage(row.label),
+            },
+            { label: intl.formatMessage(messages.platformTotalsColValue), render: (row) => row.value, isNumeric: true },
+          ]}
+        />
+      </div>
+    );
+  };
+
   /** Table breakdowns — rendered after all charts. */
   const renderTables = (data: AnalyticsBreakdowns) => (
     <>
@@ -741,12 +804,15 @@ const DashboardPage = () => {
         />
       </div>
 
+      {/* All-time platform totals — the date range does not apply. */}
+      {renderPlatformTotals()}
+
       {/* ── 2. Registration chart + Stats ──────────────────────────────────── */}
       {/* Left column (2fr): registration trend. Right column (1fr): 4 stat tiles. */}
       <div className="rwaq-dash-grid rwaq-dash-grid--split">
         <div className="rwaq-card rwaq-dash-card rwaq-dash-card--fill">
           <div className="rwaq-dash-card__head">
-            <InfoTooltip text={intl.formatMessage(messages.infoRegistrations)}>
+            <InfoTooltip text={intl.formatMessage(messages.infoRegistrationTrend)}>
               <h3 className="rwaq-section-title mb-0">
                 {intl.formatMessage(messages.registrationTrend)}
               </h3>
@@ -757,7 +823,7 @@ const DashboardPage = () => {
             registrationSeries,
             'registrations',
             intl.formatMessage(messages.seriesRegistrations),
-            'line',
+            'bar',
             intl.formatMessage(messages.registrationTrend),
             true,
           )}

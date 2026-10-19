@@ -5,10 +5,11 @@
  *   GET /api/v1/admin/analytics/summary/
  *   GET /api/v1/admin/analytics/trends/?months=12
  *   GET /api/v1/admin/analytics/breakdowns/
+ *   GET /api/v1/admin/analytics/platform-totals/
  *
- * Three calls rather than one, matching the backend's split by query cost: the
+ * Four calls rather than one, matching the backend's split by query cost: the
  * KPI row renders as soon as the cheap counts land instead of waiting on the
- * grouped aggregates.
+ * grouped aggregates. Platform totals take no date range or org.
  *
  * Host: Studio (CMS), matching the users and organizations modules.
  * Authentication: Superuser only (IsSuperAdmin — is_staff=True without is_superuser returns 403).
@@ -22,6 +23,7 @@ import type {
   AnalyticsParams,
   AnalyticsSummary,
   AnalyticsTrends,
+  PlatformTotals,
 } from './types';
 
 const getAnalyticsBaseUrl = () => getStudioApiUrl('/api/v1/admin/analytics');
@@ -54,4 +56,14 @@ export const getAnalyticsBreakdowns = async (
     params: snakeCaseObject(params),
   });
   return camelCaseObject(data) as AnalyticsBreakdowns;
+};
+
+/** GET platform-totals/ — all-time totals, takes no date range or org. */
+export const getPlatformTotals = async (
+  params: Pick<AnalyticsParams, 'forceRefresh'> = {},
+): Promise<PlatformTotals> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getAnalyticsBaseUrl()}/platform-totals/`, {
+    params: snakeCaseObject(params),
+  });
+  return camelCaseObject(data) as PlatformTotals;
 };
