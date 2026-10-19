@@ -18,12 +18,11 @@ import type { SubscriptionRow, SubscriptionStatus } from '../data/types';
 import paymentMessages from '../messages';
 import PaymentKpi from './PaymentKpi';
 import {
-  CsvButton, DateFilter, DetailTable, MoneyCell, MoneyTd, PAGE_SIZE, TabCard, TabHeading, formatDateTime, formatMoney,
-  formatTileAmount, listScope, tablePagination, useDateRange, useListState,
+  CsvButton, DateFilter, DetailTable, MoneyCell, MoneyTd, PAGE_SIZE, TabCard, TabHeading, formatDateTime,
+  listScope, tablePagination, useDateRange, useListState,
 } from './shared';
 
 const DEFAULT_ORDERING = '-starts_at';
-const CURRENCY = 'SAR';
 const STATUSES: SubscriptionStatus[] = ['active', 'cancelled', 'expired', 'revoked'];
 /** Chip colour of each status: green while live, amber when cancelled but not ended, grey or red when over. */
 const STATUS_VARIANT: Record<SubscriptionStatus, string> = {
@@ -63,13 +62,13 @@ const messages = defineMessages({
   yearly: { id: 'rwaq.admin.payments.subscriptions.plan.yearly', defaultMessage: 'Yearly' },
   wordpress: { id: 'rwaq.admin.payments.subscriptions.source.wordpress', defaultMessage: 'WordPress' },
   admin: { id: 'rwaq.admin.payments.subscriptions.source.admin', defaultMessage: 'Admin' },
-  kpiRevenue: { id: 'rwaq.admin.payments.subscriptions.kpi.revenue', defaultMessage: 'Subscription revenue' },
+  kpiTotal: { id: 'rwaq.admin.payments.subscriptions.kpi.total', defaultMessage: 'Total subscriptions' },
   kpiActive: { id: 'rwaq.admin.payments.subscriptions.kpi.active', defaultMessage: 'Active subscriptions' },
   kpiExpired: { id: 'rwaq.admin.payments.subscriptions.kpi.expired', defaultMessage: 'Expired subscriptions' },
   kpiCancelled: { id: 'rwaq.admin.payments.subscriptions.kpi.cancelled', defaultMessage: 'Cancelled subscriptions' },
-  infoRevenue: {
-    id: 'rwaq.admin.payments.subscriptions.kpi.revenue-info',
-    defaultMessage: 'Amount collected from WordPress subscription payments in the period.',
+  infoTotal: {
+    id: 'rwaq.admin.payments.subscriptions.kpi.total-info',
+    defaultMessage: 'All subscriptions today: active, expired and cancelled. Revoked ones are not counted. A count as of today, not affected by the period.',
   },
   infoActive: {
     id: 'rwaq.admin.payments.subscriptions.kpi.active-info',
@@ -241,11 +240,9 @@ const SubscriptionsTab = () => {
 
       <div className="rwaq-payment-grid rwaq-payment-grid--fit mb-3">
         <PaymentKpi
-          label={label('kpiRevenue')}
-          unit={CURRENCY}
-          value={summary && !summaryError ? formatTileAmount(intl, summary.revenue) : null}
-          exact={summary && !summaryError ? formatMoney(intl, summary.revenue) ?? undefined : undefined}
-          info={label('infoRevenue')}
+          label={label('kpiTotal')}
+          value={count(summary?.total)}
+          info={label('infoTotal')}
           isLoading={summaryLoading}
         />
         <PaymentKpi
