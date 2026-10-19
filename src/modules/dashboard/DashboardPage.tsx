@@ -968,8 +968,13 @@ const DashboardPage = () => {
       )}
 
       {/* ── 4. All-time platform totals ─────────────────────────────────────── */}
-      {/* Below a divider, away from the date-filtered figures: the range does not apply here. */}
-      <div className="rwaq-dash-divider" role="separator">
+      {/* Below a divider, away from the date-filtered figures: the range does not apply here.
+          A separator's children are presentational, so the caption is also its accessible name. */}
+      <div
+        className="rwaq-dash-divider"
+        role="separator"
+        aria-label={intl.formatMessage(messages.platformTotalsDivider)}
+      >
         {intl.formatMessage(messages.platformTotalsDivider)}
       </div>
       {renderPlatformTotals()}

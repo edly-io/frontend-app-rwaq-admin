@@ -465,22 +465,36 @@ describe('DashboardPage — platform totals divider', () => {
   it('separates the all-time card from the date-filtered figures', () => {
     setDataState();
     renderWrapper(<DashboardPage />);
-    expect(screen.getByRole('separator')).toHaveTextContent('All-time figures, not affected by the date range');
+    expect(screen.getByRole('separator', { name: 'All-time figures, not affected by the date range' }))
+      .toHaveTextContent('All-time figures, not affected by the date range');
   });
 });
 
 describe('DashboardPage — platform totals tooltips', () => {
-  it('has an explanation on every row', () => {
+  it('lists the rows in the agreed order, each with its own explanation', () => {
     setDataState();
     renderWrapper(<DashboardPage />);
     const rows = screen.getAllByRole('row').slice(1).filter((row) => within(row).queryByText(/^(Total|Average)/));
-    expect(rows).toHaveLength(10);
-    rows.forEach((row) => {
-      const label = within(row).getAllByText(/^(Total|Average)/)[0];
+    const labels = rows.map((row) => within(row).getAllByText(/^(Total|Average)/)[0]);
+    expect(labels.map((label) => label.textContent)).toEqual([
+      'Total number of users',
+      'Total enrollments before the course end date',
+      'Total enrollments after the course end date',
+      'Total course unenrollments',
+      'Total course enrollments',
+      'Average enrollments per ended course',
+      'Average completions per ended course',
+      'Average completion percentage (courses with certificates)',
+      'Average course progress',
+      'Average courses per active learner',
+    ]);
+    const explanations = labels.map((label) => {
       fireEvent.mouseEnter(label);
-      expect(screen.getAllByRole('tooltip').length).toBeGreaterThan(0);
+      const text = screen.getByRole('tooltip').textContent;
       fireEvent.mouseLeave(label);
+      return text;
     });
+    expect(new Set(explanations).size).toBe(10);
   });
 });
 
