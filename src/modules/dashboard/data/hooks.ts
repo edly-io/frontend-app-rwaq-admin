@@ -2,7 +2,7 @@
  * Dashboard analytics hooks.
  * Components import from this file only — never from api.ts directly.
  *
- * Three independent queries rather than one combined fetch, so a slow
+ * Four independent queries rather than one combined fetch, so a slow
  * aggregate cannot hold up the KPI row. The backend caches for a few minutes
  * and stamps every payload with generatedAt, so a longer staleTime here would
  * only add a second layer of staleness on top of one we already surface.
@@ -13,6 +13,7 @@ import {
   getAnalyticsBreakdowns,
   getAnalyticsSummary,
   getAnalyticsTrends,
+  getPlatformTotals,
 } from './api';
 import type { AnalyticsParams } from './types';
 
@@ -21,6 +22,7 @@ export const analyticsQueryKeys = {
   summary: (params: AnalyticsParams) => [...analyticsQueryKeys.all, 'summary', params] as const,
   trends: (params: AnalyticsParams) => [...analyticsQueryKeys.all, 'trends', params] as const,
   breakdowns: (params: AnalyticsParams) => [...analyticsQueryKeys.all, 'breakdowns', params] as const,
+  platformTotals: () => [...analyticsQueryKeys.all, 'platformTotals'] as const,
 };
 
 // Analytics data is cached server-side for 5 min and stamped with generatedAt.
@@ -50,5 +52,12 @@ export const useAnalyticsTrends = (params: AnalyticsParams = {}) => useQuery({
 export const useAnalyticsBreakdowns = (params: AnalyticsParams = {}) => useQuery({
   queryKey: analyticsQueryKeys.breakdowns(params),
   queryFn: () => getAnalyticsBreakdowns(params),
+  ...ANALYTICS_QUERY_OPTIONS,
+});
+
+/** All-time platform totals. Not tied to the date range, so the key has no params. */
+export const useAnalyticsPlatformTotals = () => useQuery({
+  queryKey: analyticsQueryKeys.platformTotals(),
+  queryFn: () => getPlatformTotals(),
   ...ANALYTICS_QUERY_OPTIONS,
 });
