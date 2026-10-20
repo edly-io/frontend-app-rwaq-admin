@@ -198,10 +198,6 @@ const messages = defineMessages({
     id: 'rwaq.admin.dashboard.platformTotals.info.completion',
     defaultMessage: 'Certificates issued as a share of enrollments, only in courses with certificates enabled. A certificate counts only when the learner has an enrollment in that course.',
   },
-  infoAverageProgress: {
-    id: 'rwaq.admin.dashboard.platformTotals.info.progress',
-    defaultMessage: 'Average share of a course the learner completed, over every enrollment in courses with content. Calculated once a day, so it can be up to a day old.',
-  },
   infoCoursesPerLearner: {
     id: 'rwaq.admin.dashboard.platformTotals.info.coursesPerLearner',
     defaultMessage: 'Active enrollments divided by the number of learners with at least one active enrollment.',
@@ -209,11 +205,6 @@ const messages = defineMessages({
   averageCompletion: {
     id: 'rwaq.admin.dashboard.platformTotals.completion',
     defaultMessage: 'Average completion percentage (courses with certificates)',
-  },
-  averageProgress: { id: 'rwaq.admin.dashboard.platformTotals.progress', defaultMessage: 'Average course progress' },
-  averageProgressAsOf: {
-    id: 'rwaq.admin.dashboard.platformTotals.progressAsOf',
-    defaultMessage: '{value} (as of {date})',
   },
   averageCoursesPerLearner: {
     id: 'rwaq.admin.dashboard.platformTotals.coursesPerLearner',

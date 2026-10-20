@@ -525,8 +525,6 @@ const DashboardPage = () => {
     const percent = (value: number | null | undefined) => formatPercent(value ?? null) ?? unavailable;
     // No locale argument, so the digits match the formatCount rows.
     const decimal = (value: number | null | undefined) => value?.toLocaleString() ?? unavailable;
-    const progressKnown = Boolean(totals?.progressComputedAt) && totals?.averageProgressPct !== null;
-    const progress = percent(totals?.averageProgressPct);
     // `value` is what the table shows, `raw` is what the CSV carries (no separators, empty when unavailable).
     const rows = [
       {
@@ -584,20 +582,6 @@ const DashboardPage = () => {
         info: messages.infoAverageCompletion,
         value: percent(totals?.completionPct),
         raw: totals?.completionPct,
-      },
-      {
-        key: 'progress',
-        label: messages.averageProgress,
-        info: messages.infoAverageProgress,
-        value: progressKnown && totals
-          ? intl.formatMessage(messages.averageProgressAsOf, {
-            value: progress,
-            date: new Date(totals.progressComputedAt as string).toLocaleDateString(locale, {
-              year: 'numeric', month: 'short', day: 'numeric',
-            }),
-          })
-          : progress,
-        raw: totals?.averageProgressPct,
       },
       {
         key: 'coursesPerLearner',
