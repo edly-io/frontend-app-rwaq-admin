@@ -19,6 +19,7 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import { getConfig } from '@edx/frontend-platform';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
+import DownloadButton, { saveBlob } from '@src/components/DownloadButton';
 import DetailGrid from '@src/components/DetailGrid';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import ErrorState from '@src/components/ErrorState';
@@ -132,12 +133,7 @@ const CourseDetailPage = () => {
   const handleDownloadCsv = async () => {
     try {
       const blob = await csvMutation.mutateAsync();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `enrollments-${courseId}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
+      saveBlob(blob, `enrollments-${courseId}.csv`);
     } catch (err) {
       logError(err);
       showToast(intl.formatMessage(messages.downloadCsvFailed));
@@ -339,16 +335,15 @@ const CourseDetailPage = () => {
             {intl.formatMessage(messages.enrollmentsSectionTitle)}
           </h2>
           <div className="rwaq-header-actions">
-            <Button
+            <DownloadButton
               variant="outline-secondary"
               size="sm"
+              label={intl.formatMessage(messages.downloadCsv)}
+              pendingLabel={intl.formatMessage(messages.downloadingCsv)}
+              isPending={csvMutation.isPending}
               onClick={handleDownloadCsv}
-              disabled={csvMutation.isPending || !enrollmentData?.pagination?.count}
-            >
-              {csvMutation.isPending
-                ? intl.formatMessage(messages.downloadingCsv)
-                : intl.formatMessage(messages.downloadCsv)}
-            </Button>
+              disabled={!enrollmentData?.pagination?.count}
+            />
             {isProgramOnly ? (
               <DisabledButtonWithTooltip
                 id="course-enroll-blocked"

@@ -48,6 +48,9 @@ export const getUsers = async (params: UserListParams = {}): Promise<UserListRes
   return camelCaseObject(data) as UserListResponse;
 };
 
+/** The list's CSV download: same filters, every row. */
+export const getUsersCsvUrl = () => `${getUsersBaseUrl()}/csv/`;
+
 // ── Detail ─────────────────────────────────────────────────────────────────────
 
 /** GET /api/v1/admin/users/{id}/ */

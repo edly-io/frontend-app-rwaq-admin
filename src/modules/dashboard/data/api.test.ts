@@ -11,6 +11,7 @@ import {
   getAnalyticsBreakdowns,
   getAnalyticsSummary,
   getAnalyticsTrends,
+  getPlatformTotals,
 } from './api';
 
 // ── Module mocks ──────────────────────────────────────────────────────────────
@@ -194,5 +195,36 @@ describe('getAnalyticsBreakdowns', () => {
 
     const [url] = mockGet.mock.calls[0];
     expect(url).toContain('/api/v1/admin/analytics/breakdowns/');
+  });
+});
+
+// ── getPlatformTotals ─────────────────────────────────────────────────────────
+
+describe('getPlatformTotals', () => {
+  it('calls the platform-totals endpoint and returns camelCase keys', async () => {
+    mockGet.mockResolvedValue({
+      data: {
+        total_users: 10,
+        total_enrollments: 8,
+        total_unenrollments: 2,
+        average_courses_per_active_learner: 1.5,
+        completion_pct: 25,
+        generated_at: '2026-10-19T00:00:00Z',
+      },
+    });
+    const result = await getPlatformTotals();
+
+    const [url] = mockGet.mock.calls[0];
+    expect(url).toContain('/api/v1/admin/analytics/platform-totals/');
+    expect(result).toHaveProperty('totalUnenrollments', 2);
+    expect(result).toHaveProperty('averageCoursesPerActiveLearner', 1.5);
+  });
+
+  it('sends forceRefresh as force_refresh', async () => {
+    mockGet.mockResolvedValue({ data: {} });
+    await getPlatformTotals({ forceRefresh: true });
+
+    const [, config] = mockGet.mock.calls[0];
+    expect(config.params).toHaveProperty('force_refresh', true);
   });
 });

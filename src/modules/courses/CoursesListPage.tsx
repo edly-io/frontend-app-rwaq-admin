@@ -12,19 +12,28 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import { getConfig } from '@edx/frontend-platform';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
+import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip, SelectOption } from '@src/components/SearchFilterBar';
 import ProfileAvatar from '@src/components/ProfileAvatar';
+import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
+import { getCoursesCsvUrl } from './data/api';
 import { useCourses } from './data/hooks';
-import type { CourseSummary, CourseOrdering } from './data/types';
+import type { CourseSummary, CourseOrdering, CourseTypeFilter } from './data/types';
 import messages from './messages';
 
 const PAGE_SIZE = 10;
 const DEFAULT_ORDERING: CourseOrdering = '-start';
 
 type MessageKey = keyof typeof messages;
+
+const COURSE_TYPE_OPTIONS: { value: CourseTypeFilter; label: MessageKey }[] = [
+  { value: 'free', label: 'typeFree' },
+  { value: 'paid', label: 'typePaid' },
+  { value: 'program_only', label: 'typeProgramOnly' },
+];
 
 const SORT_OPTIONS: { value: CourseOrdering; label: MessageKey }[] = [
   { value: '-start', label: 'sortStartDesc' },
@@ -45,6 +54,9 @@ const CoursesListPage = () => {
   const page = Number(searchParams.get('page') ?? 1);
   const search = searchParams.get('search') ?? '';
   const org = searchParams.get('org') ?? '';
+  const startDate = searchParams.get('start_date') || undefined;
+  const endDate = searchParams.get('end_date') || undefined;
+  const courseType = searchParams.get('type') ?? '';
   const hasExplicitOrdering = searchParams.get('ordering') !== null;
   const ordering = (searchParams.get('ordering') as CourseOrdering | null) ?? DEFAULT_ORDERING;
 
@@ -73,15 +85,17 @@ const CoursesListPage = () => {
     [setSearchParams],
   );
 
-  const {
-    data, isLoading, isError, error, refetch,
-  } = useCourses({
+  const listParams = {
     search: search || undefined,
     org: org || undefined,
+    startDate,
+    endDate,
+    courseType: COURSE_TYPE_OPTIONS.find((o) => o.value === courseType)?.value,
     ordering,
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  };
+  const {
+    data, isLoading, isError, error, refetch,
+  } = useCourses({ ...listParams, page, pageSize: PAGE_SIZE });
 
   const statusCode = isError ? getErrorStatus(error) : undefined;
 
@@ -89,6 +103,11 @@ const CoursesListPage = () => {
     value: opt.value,
     label: intl.formatMessage(messages[opt.label]),
   }));
+
+  const typeOptions: SelectOption[] = [
+    { value: '', label: intl.formatMessage(messages.typeAll) },
+    ...COURSE_TYPE_OPTIONS.map((opt) => ({ value: opt.value, label: intl.formatMessage(messages[opt.label]) })),
+  ];
 
   const appliedChips = useMemo(() => {
     const chips: AppliedChip[] = [];
@@ -106,6 +125,21 @@ const CoursesListPage = () => {
         onRemove: () => updateParams({ org: '' }),
       });
     }
+    if (startDate) {
+      chips.push({
+        key: 'startedAt',
+        label: intl.formatMessage(messages.chipStartedAt, { from: startDate, to: endDate ?? '…' }),
+        onRemove: () => updateParams({ start_date: '', end_date: '' }),
+      });
+    }
+    const typeOption = COURSE_TYPE_OPTIONS.find((o) => o.value === courseType);
+    if (typeOption) {
+      chips.push({
+        key: 'type',
+        label: intl.formatMessage(messages.chipType, { label: intl.formatMessage(messages[typeOption.label]) }),
+        onRemove: () => updateParams({ type: '' }),
+      });
+    }
     if (hasExplicitOrdering) {
       chips.push({
         key: 'ordering',
@@ -117,7 +151,7 @@ const CoursesListPage = () => {
     }
     return chips;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, org, ordering, hasExplicitOrdering, intl, updateParams]);
+  }, [search, org, startDate, endDate, courseType, ordering, hasExplicitOrdering, intl, updateParams]);
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -218,6 +252,13 @@ const CoursesListPage = () => {
           searchPlaceholder={intl.formatMessage(messages.searchPlaceholder)}
           filterGroups={[
             {
+              id: 'type',
+              label: intl.formatMessage(messages.typeLabel),
+              value: courseType,
+              options: typeOptions,
+              onChange: (value) => updateParams({ type: value }),
+            },
+            {
               id: 'ordering',
               label: intl.formatMessage(messages.sortLabel),
               value: ordering,
@@ -226,7 +267,21 @@ const CoursesListPage = () => {
             },
           ]}
           appliedChips={appliedChips}
-          onClearAll={() => updateParams({ search: '', org: '', ordering: '' })}
+          onClearAll={() => updateParams({
+            search: '', org: '', type: '', start_date: '', end_date: '', ordering: '',
+          })}
+          downloadAction={(
+            <>
+              <DateRangePicker
+                label={intl.formatMessage(messages.startedAtLabel)}
+                startDate={startDate}
+                endDate={endDate}
+                size="md"
+                onChange={(from, to) => updateParams({ start_date: from ?? '', end_date: to ?? '' })}
+              />
+              <CsvDownloadButton url={getCoursesCsvUrl()} params={listParams} fallbackName="courses" />
+            </>
+          )}
         />
 
         {isError ? (

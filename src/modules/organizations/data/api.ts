@@ -56,6 +56,15 @@ export const getOrganizations = async (params: OrgListParams = {}): Promise<OrgL
   return camelCaseObject(data) as OrgListResponse;
 };
 
+/** The list's CSV download: same filters, every row. */
+export const getOrganizationsCsvUrl = () => `${getOrgsBaseUrl()}/csv/`;
+
+/** The list's filters as the CSV endpoint takes them (the UI filter becomes the backend's own params). */
+export const organizationsCsvParams = (params: OrgListParams): Record<string, unknown> => {
+  const { filter, ...rest } = params;
+  return { ...rest, ...filterParams(filter) };
+};
+
 // ── Create ───────────────────────────────────────────────────────────────────
 
 /** POST /rwaq/api/organizations/ — the new org is immediately course-creatable. */

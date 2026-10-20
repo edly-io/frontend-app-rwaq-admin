@@ -8,7 +8,7 @@ import { useState } from 'react';
 import {
   Alert, Button, ButtonGroup, Form,
 } from '@openedx/paragon';
-import { useIntl } from '@edx/frontend-platform/i18n';
+import { isRtl, useIntl } from '@edx/frontend-platform/i18n';
 import InfoTooltip from '@src/components/InfoTooltip';
 import MetricChart from '@src/components/charts/MetricChart';
 import { usePaymentsSummary } from '../data/hooks';
@@ -26,6 +26,8 @@ const LABEL_ANGLE = 60;
 const HALF_WIDTH_LABELS = 28;
 // Room for y-axis labels of money: "1,250,000.00" at the axis' 11px font.
 const MONEY_AXIS_WIDTH = 72;
+/** Arabic is set a little wider, so the full figure fits. */
+const MONEY_AXIS_WIDTH_RTL = 88;
 
 /** "2026-09-10" → a label for the x axis that suits the granularity. */
 const periodLabel = (
@@ -99,7 +101,7 @@ const TrendChart = ({
           hideLegend={hideLegend}
           xLabelAngle={LABEL_ANGLE}
           maxXLabels={maxLabels}
-          {...(formatValue ? { valueFormatter: formatValue, yAxisWidth: MONEY_AXIS_WIDTH } : {})}
+          {...(formatValue ? { valueFormatter: formatValue, yAxisWidth: isRtl(intl.locale) ? MONEY_AXIS_WIDTH_RTL : MONEY_AXIS_WIDTH } : {})}
         />
       </div>
     );

@@ -60,6 +60,8 @@ export interface SearchFilterBarProps {
   onClearAll?: () => void;
   /** Extra buttons rendered to the right of the Filters toggle. */
   actions?: ReactNode;
+  /** The download button, shown after the Filters toggle so a list is filtered first and downloaded last. */
+  downloadAction?: ReactNode;
 }
 
 const SearchFilterBar = ({
@@ -75,6 +77,7 @@ const SearchFilterBar = ({
   appliedChips = [],
   onClearAll,
   actions,
+  downloadAction,
 }: SearchFilterBarProps) => {
   const intl = useIntl();
   const [term, setTerm] = useState(searchTerm);
@@ -199,6 +202,7 @@ const SearchFilterBar = ({
               {intl.formatMessage(messages.filtersButton)}
             </Button>
           )}
+          {downloadAction}
         </div>
       </div>
 

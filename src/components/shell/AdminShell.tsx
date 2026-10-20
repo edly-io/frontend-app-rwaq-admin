@@ -20,7 +20,7 @@ import {
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Container, Skeleton } from '@openedx/paragon';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
-import { useIntl } from '@edx/frontend-platform/i18n';
+import { getLocale, isRtl, useIntl } from '@edx/frontend-platform/i18n';
 import { useAdminCapabilities } from '@src/data/whoami';
 import SideNav from './SideNav';
 import TopBar from './TopBar';
@@ -83,6 +83,9 @@ interface OverlaySidebarProps {
 
 const OverlaySidebar = ({ open, onClose }: OverlaySidebarProps) => {
   const overlayRef = useRef<HTMLDivElement>(null);
+  // insetInlineStart flips the drawer to the right edge in RTL, so the closed
+  // position has to be pushed off the right edge too.
+  const rtl = isRtl(getLocale());
 
   useEffect(() => {
     if (!open) { return undefined; }
@@ -119,7 +122,7 @@ const OverlaySidebar = ({ open, onClose }: OverlaySidebarProps) => {
           insetInlineStart: 0,
           height: '100vh',
           zIndex: 1050,
-          transform: open ? 'translateX(0)' : 'translateX(-100%)',
+          transform: open ? 'translateX(0)' : `translateX(${rtl ? '' : '-'}100%)`,
           transition: 'transform 250ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >

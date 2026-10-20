@@ -5,10 +5,10 @@
  * MetricChart, and the card and table styles the users and organizations
  * screens already use. Nothing new visually, so both themes come for free.
  *
- * Three independent queries, matching the backend's split by cost — the KPI row
+ * Four independent queries, matching the backend's split by cost — the KPI row
  * paints as soon as the cheap counts land instead of waiting on the aggregates.
  * Each band degrades on its own: a failed trends call leaves the KPI row and
- * the breakdowns intact.
+ * the breakdowns intact. Platform totals are all-time and ignore the date range.
  *
  * Two conventions worth keeping if this page grows:
  *   - A metric we cannot read renders "Not available", never 0. Confusing
@@ -23,7 +23,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Icon, Skeleton } from '@openedx/paragon';
 import { Refresh } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import DownloadButton, { saveBlob } from '@src/components/DownloadButton';
 import ErrorState from '@src/components/ErrorState';
+import { csvDownloadMessages } from '@src/components/messages';
 import { getErrorStatus } from '@src/data/httpError';
 import InfoTooltip from '@src/components/InfoTooltip';
 import KpiCard from '@src/components/KpiCard';
@@ -36,6 +38,7 @@ import StatTile from './components/StatTile';
 import {
   analyticsQueryKeys,
   useAnalyticsBreakdowns,
+  useAnalyticsPlatformTotals,
   useAnalyticsSummary,
   useAnalyticsTrends,
 } from './data/hooks';
@@ -43,6 +46,7 @@ import {
   getAnalyticsBreakdowns,
   getAnalyticsSummary,
   getAnalyticsTrends,
+  getPlatformTotals,
 } from './data/api';
 import type {
   AnalyticsBreakdowns, AnalyticsParams, OrganizationRow, TopCourse, TrendPoint,
@@ -92,6 +96,12 @@ const formatPercent = (value: number | null): string | null => (
   value === null || value === undefined ? null : `${value}%`
 );
 
+/** One CSV cell, quoted when it holds a comma, a quote or a line break. */
+const csvCell = (value: string | number | null | undefined): string => {
+  const text = value === null || value === undefined ? '' : String(value);
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
+
 const DashboardPage = () => {
   const intl = useIntl();
 
@@ -131,9 +141,10 @@ const DashboardPage = () => {
   const summaryQuery = useAnalyticsSummary(params);
   const trendsQuery = useAnalyticsTrends(trendsParams);
   const breakdownsQuery = useAnalyticsBreakdowns(params);
+  const platformTotalsQuery = useAnalyticsPlatformTotals();
 
   // Show skeletons during refresh by tracking it in local state, then inject
-  // the fresh data atomically into the cache so all three widgets update together.
+  // the fresh data atomically into the cache so every widget updates together.
   const handleRefresh = async () => {
     if (refreshInFlight.current) { return; }
     refreshInFlight.current = true;
@@ -141,14 +152,16 @@ const DashboardPage = () => {
     setRefreshError(null);
     try {
       const forceParams = { forceRefresh: true };
-      const [freshSummary, freshTrends, freshBreakdowns] = await Promise.all([
+      const [freshSummary, freshTrends, freshBreakdowns, freshPlatformTotals] = await Promise.all([
         getAnalyticsSummary({ ...params, ...forceParams }),
         getAnalyticsTrends({ ...trendsParams, ...forceParams }),
         getAnalyticsBreakdowns({ ...params, ...forceParams }),
+        getPlatformTotals(forceParams),
       ]);
       queryClient.setQueryData(analyticsQueryKeys.summary(params), freshSummary);
       queryClient.setQueryData(analyticsQueryKeys.trends(trendsParams), freshTrends);
       queryClient.setQueryData(analyticsQueryKeys.breakdowns(params), freshBreakdowns);
+      queryClient.setQueryData(analyticsQueryKeys.platformTotals(), freshPlatformTotals);
     } catch {
       setRefreshError(intl.formatMessage(messages.errorTitle));
     } finally {
@@ -504,6 +517,138 @@ const DashboardPage = () => {
     </div>
   );
 
+  /** All-time platform totals: one label/value row per figure of the old Rwaq Reports screen. */
+  const renderPlatformTotals = () => {
+    const totals = platformTotalsQuery.isError ? undefined : platformTotalsQuery.data;
+    const unavailable = intl.formatMessage(messages.unavailable);
+    const count = (value: number | undefined) => (value === undefined ? unavailable : formatCount(value));
+    const percent = (value: number | null | undefined) => formatPercent(value ?? null) ?? unavailable;
+    // No locale argument, so the digits match the formatCount rows.
+    const decimal = (value: number | null | undefined) => value?.toLocaleString() ?? unavailable;
+    // `value` is what the table shows, `raw` is what the CSV carries (no separators, empty when unavailable).
+    const rows = [
+      {
+        key: 'users',
+        label: messages.totalUsers,
+        info: messages.infoTotalUsers,
+        value: count(totals?.totalUsers),
+        raw: totals?.totalUsers,
+      },
+      {
+        key: 'enrolledBefore',
+        label: messages.enrolledBeforeEnd,
+        info: messages.infoEnrolledBeforeEnd,
+        value: count(totals?.enrolledBeforeEnd),
+        raw: totals?.enrolledBeforeEnd,
+      },
+      {
+        key: 'enrolledAfter',
+        label: messages.enrolledAfterEnd,
+        info: messages.infoEnrolledAfterEnd,
+        value: count(totals?.enrolledAfterEnd),
+        raw: totals?.enrolledAfterEnd,
+      },
+      {
+        key: 'unenrollments',
+        label: messages.totalUnenrollments,
+        info: messages.infoTotalUnenrollments,
+        value: count(totals?.totalUnenrollments),
+        raw: totals?.totalUnenrollments,
+      },
+      {
+        key: 'enrollments',
+        label: messages.totalEnrollments,
+        info: messages.infoTotalEnrollments,
+        value: count(totals?.totalEnrollments),
+        raw: totals?.totalEnrollments,
+      },
+      {
+        key: 'enrollmentsEnded',
+        label: messages.averageEnrollmentsEnded,
+        info: messages.infoEnrollmentsEnded,
+        value: decimal(totals?.averageEnrollmentsEndedCourses),
+        raw: totals?.averageEnrollmentsEndedCourses,
+      },
+      {
+        key: 'completionsEnded',
+        label: messages.averageCompletionsEnded,
+        info: messages.infoCompletionsEnded,
+        value: decimal(totals?.averageCompletionsEndedCourses),
+        raw: totals?.averageCompletionsEndedCourses,
+      },
+      {
+        key: 'completion',
+        label: messages.averageCompletion,
+        info: messages.infoAverageCompletion,
+        value: percent(totals?.completionPct),
+        raw: totals?.completionPct,
+      },
+      {
+        key: 'coursesPerLearner',
+        label: messages.averageCoursesPerLearner,
+        info: messages.infoCoursesPerLearner,
+        value: decimal(totals?.averageCoursesPerActiveLearner),
+        raw: totals?.averageCoursesPerActiveLearner,
+      },
+    ];
+
+    const handleDownload = () => {
+      if (!totals) { return; }
+      const lines = [
+        [intl.formatMessage(messages.platformTotalsTitle)],
+        [intl.formatMessage(messages.platformTotalsColMetric), intl.formatMessage(messages.platformTotalsColValue)],
+        ...rows.map((row) => [intl.formatMessage(row.label), row.raw]),
+      ];
+      // The BOM lets Excel read the Arabic labels as UTF-8.
+      const csv = `\uFEFF${lines.map((line) => line.map(csvCell).join(',')).join('\r\n')}\r\n`;
+      const stamp = new Date().toISOString()
+        .slice(0, 19)
+        .replace('T', '_')
+        .replace(/:/g, '-');
+      saveBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `users_${stamp}.csv`);
+    };
+
+    return (
+      <div className="rwaq-card rwaq-dash-card">
+        <div className="d-flex justify-content-between align-items-center" style={{ gap: '0.75rem' }}>
+          <div className="rwaq-dash-card__head">
+            <InfoTooltip text={intl.formatMessage(messages.infoPlatformTotals)}>
+              <h3 className="rwaq-section-title mb-0">
+                {intl.formatMessage(messages.platformTotalsTitle)}
+              </h3>
+            </InfoTooltip>
+            <span className="rwaq-dash-card__sub">{intl.formatMessage(messages.allTimeBadge)}</span>
+          </div>
+          <DownloadButton
+            label={intl.formatMessage(csvDownloadMessages.download)}
+            pendingLabel={intl.formatMessage(csvDownloadMessages.downloading)}
+            isPending={false}
+            size="sm"
+            disabled={!totals}
+            onClick={handleDownload}
+          />
+        </div>
+        <MiniTable
+          caption={intl.formatMessage(messages.platformTotalsTitle)}
+          rows={rows}
+          rowKey={(row) => row.key}
+          isLoading={platformTotalsQuery.isLoading || isRefreshing}
+          columns={[
+            {
+              label: intl.formatMessage(messages.platformTotalsColMetric),
+              render: (row) => (
+                <InfoTooltip text={intl.formatMessage(row.info)}>
+                  <span>{intl.formatMessage(row.label)}</span>
+                </InfoTooltip>
+              ),
+            },
+            { label: intl.formatMessage(messages.platformTotalsColValue), render: (row) => row.value, isNumeric: true },
+          ]}
+        />
+      </div>
+    );
+  };
+
   /** Table breakdowns — rendered after all charts. */
   const renderTables = (data: AnalyticsBreakdowns) => (
     <>
@@ -746,7 +891,7 @@ const DashboardPage = () => {
       <div className="rwaq-dash-grid rwaq-dash-grid--split">
         <div className="rwaq-card rwaq-dash-card rwaq-dash-card--fill">
           <div className="rwaq-dash-card__head">
-            <InfoTooltip text={intl.formatMessage(messages.infoRegistrations)}>
+            <InfoTooltip text={intl.formatMessage(messages.infoRegistrationTrend)}>
               <h3 className="rwaq-section-title mb-0">
                 {intl.formatMessage(messages.registrationTrend)}
               </h3>
@@ -757,7 +902,7 @@ const DashboardPage = () => {
             registrationSeries,
             'registrations',
             intl.formatMessage(messages.seriesRegistrations),
-            'line',
+            'bar',
             intl.formatMessage(messages.registrationTrend),
             true,
           )}
@@ -805,6 +950,18 @@ const DashboardPage = () => {
       {breakdownsQuery.isError && (
         <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>
       )}
+
+      {/* ── 4. All-time platform totals ─────────────────────────────────────── */}
+      {/* Below a divider, away from the date-filtered figures: the range does not apply here.
+          A separator's children are presentational, so the caption is also its accessible name. */}
+      <div
+        className="rwaq-dash-divider"
+        role="separator"
+        aria-label={intl.formatMessage(messages.platformTotalsDivider)}
+      >
+        {intl.formatMessage(messages.platformTotalsDivider)}
+      </div>
+      {renderPlatformTotals()}
     </div>
   );
 };

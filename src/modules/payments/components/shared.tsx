@@ -3,13 +3,12 @@
  * button, the tab heading and the partner filter.
  */
 import { ReactNode, useState } from 'react';
-import { Button } from '@openedx/paragon';
-import { Download } from '@openedx/paragon/icons';
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import InfoTooltip from '@src/components/InfoTooltip';
 import type { AppliedChip, FilterGroup } from '@src/components/SearchFilterBar';
 import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
+import DownloadButton, { saveBlob } from '@src/components/DownloadButton';
 import { useToast } from '@src/components/ToastContext';
 import { useOrganizations } from '@src/modules/organizations/data/hooks';
 import { useDownloadPaymentsCsv } from '../data/hooks';
@@ -20,8 +19,6 @@ import messages from '../messages';
 
 export const PAGE_SIZE = 10;
 export const CURRENCY = 'SAR';
-/** How long a download's blob URL stays valid, so the browser can start reading it before it is revoked. */
-const REVOKE_URL_AFTER_MS = 10_000;
 
 type Intl = ReturnType<typeof useIntl>;
 
@@ -237,13 +234,7 @@ export const CsvButton = ({ report, params }: CsvButtonProps) => {
   const handleClick = async () => {
     try {
       const { blob, filename } = await mutation.mutateAsync({ report, params, language: intl.locale });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
-      // Revoking at once can cancel the download in some browsers.
-      setTimeout(() => URL.revokeObjectURL(url), REVOKE_URL_AFTER_MS);
+      saveBlob(blob, filename);
     } catch (err) {
       logError(err);
       showToast(intl.formatMessage(messages.downloadCsvFailed));
@@ -252,14 +243,12 @@ export const CsvButton = ({ report, params }: CsvButtonProps) => {
 
   // Default size, like the Filters toggle beside it, so the two line up.
   return (
-    <Button
-      variant="outline-primary"
+    <DownloadButton
+      label={intl.formatMessage(messages.downloadCsv)}
+      pendingLabel={intl.formatMessage(messages.downloadingCsv)}
+      isPending={mutation.isPending}
       onClick={handleClick}
-      disabled={mutation.isPending}
-      iconBefore={Download}
-    >
-      {intl.formatMessage(messages.downloadCsv)}
-    </Button>
+    />
   );
 };
 

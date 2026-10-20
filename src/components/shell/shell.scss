@@ -1296,6 +1296,22 @@ html[data-paragon-theme-variant='dark'] {
   width: 100%;
 }
 
+// Plots stay left-to-right in Arabic. In an RTL page SVG text-anchor 'end' flips to
+// the other side, so the rotated x labels landed on the wrong side of their
+// ticks and ran into each other. Tooltip and legend text go back to the page
+// direction.
+// The build flips direction values for RTL (rtlcss), which turned this rule
+// into direction: rtl under [dir='rtl']. The ignore comments stop that.
+.rwaq-chart {
+  /* rtl:ignore */
+  direction: ltr;
+}
+[dir='rtl'] .rwaq-chart .recharts-tooltip-wrapper,
+[dir='rtl'] .rwaq-chart .recharts-legend-wrapper {
+  /* rtl:ignore */
+  direction: rtl;
+}
+
 .rwaq-chart > * { margin-inline: auto; }
 .rwaq-chart .recharts-wrapper { margin-inline: auto; }
 
@@ -1363,6 +1379,11 @@ body {
 .rwaq-card--fit > .rwaq-actionbar { flex: 0 0 auto; }
 
 // ── Table shell: scrolling body, pinned footer ───────────────────────────────
+.rwaq-table-shell--refreshing {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
 .rwaq-table-shell {
   display: flex;
   flex-direction: column;
@@ -1498,6 +1519,25 @@ body {
   font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: -0.005em;
+}
+
+// A visible break before figures the date range does not touch. A bare <hr> is
+// drawn at about 10% opacity and disappears next to the card borders.
+.rwaq-dash-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0 0.25rem;
+  font-size: 0.75rem;
+  color: var(--rwaq-muted);
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-top: 2px solid var(--rwaq-muted);
+    opacity: 0.35;
+  }
 }
 
 .rwaq-dash-card__sub {

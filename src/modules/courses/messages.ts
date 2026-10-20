@@ -111,9 +111,24 @@ const messages = defineMessages({
     id: 'rwaq.admin.courses.chip.filter',
     defaultMessage: 'Filter: {label}',
   },
+  // Type filter
+  typeLabel: { id: 'rwaq.admin.courses.type.label', defaultMessage: 'Type' },
+  typeAll: { id: 'rwaq.admin.courses.type.all', defaultMessage: 'All types' },
+  typeFree: { id: 'rwaq.admin.courses.type.free', defaultMessage: 'Free' },
+  typePaid: { id: 'rwaq.admin.courses.type.paid', defaultMessage: 'Paid' },
+  typeProgramOnly: { id: 'rwaq.admin.courses.type.programOnly', defaultMessage: 'Program-only' },
+  chipType: { id: 'rwaq.admin.courses.chip.type', defaultMessage: 'Type: {label}' },
   chipSort: {
     id: 'rwaq.admin.courses.chip.sort',
     defaultMessage: 'Sort: {label}',
+  },
+  startedAtLabel: {
+    id: 'rwaq.admin.courses.startedAt.label',
+    defaultMessage: 'Started at',
+  },
+  chipStartedAt: {
+    id: 'rwaq.admin.courses.chip.startedAt',
+    defaultMessage: 'Course Started at: {from} – {to}',
   },
   // Actions
   view: {

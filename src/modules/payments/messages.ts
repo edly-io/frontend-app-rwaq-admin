@@ -81,6 +81,7 @@ const messages = defineMessages({
   chipSort: { id: 'rwaq.admin.payments.chip.sort', defaultMessage: 'Sort: {label}' },
   filterAll: { id: 'rwaq.admin.payments.filter.all', defaultMessage: 'All' },
   downloadCsv: { id: 'rwaq.admin.payments.csv', defaultMessage: 'Download CSV' },
+  downloadingCsv: { id: 'rwaq.admin.payments.csv.downloading', defaultMessage: 'Downloading…' },
   downloadCsvFailed: { id: 'rwaq.admin.payments.csv.failed', defaultMessage: 'Could not download the CSV.' },
 
   sortDateDesc: { id: 'rwaq.admin.payments.sort.dateDesc', defaultMessage: 'Newest first' },

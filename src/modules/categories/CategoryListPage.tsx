@@ -12,8 +12,10 @@ import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
+import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
+import { getCategoriesCsvUrl } from './data/api';
 import { useCategory, useCategories } from './data/hooks';
 import type {
   CategorySummary, CategoryDetail, CategoryFilter, CategoryOrdering,
@@ -77,15 +79,14 @@ const CategoryListPage = () => {
     [setSearchParams],
   );
 
-  const {
-    data, isLoading, isError, error, refetch,
-  } = useCategories({
+  const listParams = {
     search: search || undefined,
     filter: filter !== 'all' ? filter : undefined,
     ordering,
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  };
+  const {
+    data, isLoading, isError, error, refetch,
+  } = useCategories({ ...listParams, page, pageSize: PAGE_SIZE });
 
   // Fetch the full detail only when editing a row — the list row doesn't carry
   // enough info to pre-populate the form reliably (same pattern as OrgListPage).
@@ -220,6 +221,7 @@ const CategoryListPage = () => {
           ]}
           appliedChips={appliedChips}
           onClearAll={() => updateParams({ search: '', filter: '', ordering: '' })}
+          downloadAction={<CsvDownloadButton url={getCategoriesCsvUrl()} params={listParams} fallbackName="categories" />}
         />
 
         {isError ? (

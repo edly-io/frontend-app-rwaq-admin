@@ -29,6 +29,11 @@ const messages = defineMessages({
   sortStartDateAsc: { id: 'rwaq.admin.programs.sort.startDateAsc', defaultMessage: 'Start date (oldest first)' },
   sortStartDateDesc: { id: 'rwaq.admin.programs.sort.startDateDesc', defaultMessage: 'Start date (newest first)' },
 
+  typeLabel: { id: 'rwaq.admin.programs.type.label', defaultMessage: 'Type' },
+  typeAll: { id: 'rwaq.admin.programs.type.all', defaultMessage: 'All types' },
+  typeFree: { id: 'rwaq.admin.programs.type.free', defaultMessage: 'Free' },
+  typePaid: { id: 'rwaq.admin.programs.type.paid', defaultMessage: 'Paid' },
+  chipType: { id: 'rwaq.admin.programs.chip.type', defaultMessage: 'Type: {label}' },
   chipSearch: { id: 'rwaq.admin.programs.chip.search', defaultMessage: 'Search: {term}' },
   chipFilter: { id: 'rwaq.admin.programs.chip.filter', defaultMessage: 'Filter: {label}' },
   chipSort: { id: 'rwaq.admin.programs.chip.sort', defaultMessage: 'Sorted by: {label}' },

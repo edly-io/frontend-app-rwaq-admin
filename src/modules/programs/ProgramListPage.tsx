@@ -19,11 +19,15 @@ import ChipOverflowList from '@src/components/ChipOverflowList';
 import type { ChipItem } from '@src/components/ChipOverflowList';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
+import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
 import ProgramImage from './components/ProgramImage';
+import { getProgramsCsvUrl } from './data/api';
 import { usePrograms } from './data/hooks';
-import type { ProgramOrdering, ProgramStatus, ProgramSummary } from './data/types';
+import type {
+  ProgramOrdering, ProgramPricingFilter, ProgramStatus, ProgramSummary,
+} from './data/types';
 import messages from './messages';
 
 const PAGE_SIZE = 10;
@@ -51,6 +55,11 @@ const FILTER_OPTIONS: FilterOption[] = [
   { id: 'hidden', label: 'filterHidden', params: { status: '', is_hide: 'true', is_featured: '' } },
   { id: 'visible', label: 'filterVisible', params: { status: '', is_hide: 'false', is_featured: '' } },
   { id: 'featured', label: 'filterFeatured', params: { status: '', is_hide: '', is_featured: 'true' } },
+];
+
+const TYPE_OPTIONS: { value: ProgramPricingFilter; label: MessageKey }[] = [
+  { value: 'free', label: 'typeFree' },
+  { value: 'paid', label: 'typePaid' },
 ];
 
 const SORT_OPTIONS: { value: ProgramOrdering; label: MessageKey }[] = [
@@ -103,6 +112,7 @@ const ProgramListPage = () => {
   const search = searchParams.get('search') ?? '';
   const hasExplicitOrdering = searchParams.get('ordering') !== null;
   const ordering = (searchParams.get('ordering') as ProgramOrdering | null) ?? DEFAULT_ORDERING;
+  const programType = searchParams.get('type') ?? '';
   const currentFilterId = activeFilterId(searchParams);
   const hasActiveFilter = currentFilterId !== 'all';
 
@@ -135,17 +145,17 @@ const ProgramListPage = () => {
   let isHideFilter: boolean | undefined;
   if (isHideRaw === 'true') { isHideFilter = true; } else if (isHideRaw === 'false') { isHideFilter = false; }
 
-  const {
-    data, isLoading, isError, error, refetch,
-  } = usePrograms({
+  const listParams = {
     search: search || undefined,
     status: (searchParams.get('status') as ProgramStatus | null) || undefined,
+    pricing: TYPE_OPTIONS.find((o) => o.value === programType)?.value,
     isHide: isHideFilter,
     isFeatured: searchParams.get('is_featured') === 'true' ? true : undefined,
     ordering,
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  };
+  const {
+    data, isLoading, isError, error, refetch,
+  } = usePrograms({ ...listParams, page, pageSize: PAGE_SIZE });
 
   const statusCode = isError ? getErrorStatus(error) : undefined;
 
@@ -187,6 +197,15 @@ const ProgramListPage = () => {
       });
     }
 
+    const typeOption = TYPE_OPTIONS.find((o) => o.value === programType);
+    if (typeOption) {
+      chips.push({
+        key: 'type',
+        label: intl.formatMessage(messages.chipType, { label: intl.formatMessage(messages[typeOption.label]) }),
+        onRemove: () => updateParams({ type: '' }),
+      });
+    }
+
     if (hasExplicitOrdering) {
       chips.push({
         key: 'ordering',
@@ -198,7 +217,10 @@ const ProgramListPage = () => {
     }
 
     return chips;
-  }, [search, currentFilterId, hasActiveFilter, ordering, hasExplicitOrdering, intl, updateParams, sortOptions]);
+  }, [
+    search, programType, currentFilterId, hasActiveFilter, ordering, hasExplicitOrdering, intl, updateParams,
+    sortOptions,
+  ]);
 
   const columns = useMemo<ColumnDef<ProgramSummary>[]>(() => [
     {
@@ -341,6 +363,16 @@ const ProgramListPage = () => {
               },
             },
             {
+              id: 'type',
+              label: intl.formatMessage(messages.typeLabel),
+              value: programType,
+              options: [
+                { value: '', label: intl.formatMessage(messages.typeAll) },
+                ...TYPE_OPTIONS.map((opt) => ({ value: opt.value, label: intl.formatMessage(messages[opt.label]) })),
+              ],
+              onChange: (value) => updateParams({ type: value }),
+            },
+            {
               id: 'ordering',
               label: intl.formatMessage(messages.sortLabel),
               value: ordering,
@@ -350,8 +382,9 @@ const ProgramListPage = () => {
           ]}
           appliedChips={appliedChips}
           onClearAll={() => updateParams({
-            search: '', status: '', is_hide: '', is_featured: '', ordering: '',
+            search: '', status: '', type: '', is_hide: '', is_featured: '', ordering: '',
           })}
+          downloadAction={<CsvDownloadButton url={getProgramsCsvUrl()} params={listParams} fallbackName="programs" />}
         />
 
         {isError ? (
