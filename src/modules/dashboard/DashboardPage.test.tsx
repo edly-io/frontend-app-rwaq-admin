@@ -6,7 +6,9 @@
  * recharts relies on window.matchMedia and ResizeObserver behaviour that differs
  * from how jsdom behaves.
  */
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent, screen, waitFor, within,
+} from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from './data/hooks';
 import * as api from './data/api';
@@ -19,16 +21,19 @@ jest.mock('./data/hooks', () => ({
     summary: (params: unknown) => ['summary', params],
     trends: (params: unknown) => ['trends', params],
     breakdowns: (params: unknown) => ['breakdowns', params],
+    platformTotals: () => ['platformTotals'],
   },
   useAnalyticsSummary: jest.fn(),
   useAnalyticsTrends: jest.fn(),
   useAnalyticsBreakdowns: jest.fn(),
+  useAnalyticsPlatformTotals: jest.fn(),
 }));
 
 jest.mock('./data/api', () => ({
   getAnalyticsSummary: jest.fn(),
   getAnalyticsTrends: jest.fn(),
   getAnalyticsBreakdowns: jest.fn(),
+  getPlatformTotals: jest.fn(),
 }));
 
 const mockSetQueryData = jest.fn();
@@ -109,6 +114,21 @@ const mockBreakdowns = {
   dateRangeEnd: null,
 };
 
+const mockPlatformTotals = {
+  totalUsers: 2676992,
+  totalEnrollments: 5597514,
+  totalUnenrollments: 266822,
+  enrolledBeforeEnd: 4004094,
+  enrolledAfterEnd: 1580312,
+  averageEnrollmentsEndedCourses: 5919,
+  averageCompletionsEndedCourses: 487.5,
+  averageCoursesPerActiveLearner: 2.25,
+  completionPct: 22.3,
+  averageProgressPct: null,
+  progressComputedAt: null,
+  generatedAt: new Date().toISOString(),
+};
+
 const loadingQuery = {
   isLoading: true, isError: false, data: undefined, error: undefined, refetch: jest.fn(),
 };
@@ -122,12 +142,14 @@ const setLoadingState = () => {
   (hooks.useAnalyticsSummary as jest.Mock).mockReturnValue(loadingQuery);
   (hooks.useAnalyticsTrends as jest.Mock).mockReturnValue(loadingQuery);
   (hooks.useAnalyticsBreakdowns as jest.Mock).mockReturnValue(loadingQuery);
+  (hooks.useAnalyticsPlatformTotals as jest.Mock).mockReturnValue(loadingQuery);
 };
 
 const setErrorState = () => {
   (hooks.useAnalyticsSummary as jest.Mock).mockReturnValue(errorQuery);
   (hooks.useAnalyticsTrends as jest.Mock).mockReturnValue(errorQuery);
   (hooks.useAnalyticsBreakdowns as jest.Mock).mockReturnValue(errorQuery);
+  (hooks.useAnalyticsPlatformTotals as jest.Mock).mockReturnValue(errorQuery);
 };
 
 const setDataState = () => {
@@ -139,6 +161,9 @@ const setDataState = () => {
   });
   (hooks.useAnalyticsBreakdowns as jest.Mock).mockReturnValue({
     isLoading: false, isError: false, data: mockBreakdowns, error: null, refetch: jest.fn(),
+  });
+  (hooks.useAnalyticsPlatformTotals as jest.Mock).mockReturnValue({
+    isLoading: false, isError: false, data: mockPlatformTotals, error: null, refetch: jest.fn(),
   });
 };
 
@@ -274,6 +299,7 @@ describe('DashboardPage — handleRefresh', () => {
     (api.getAnalyticsSummary as jest.Mock).mockResolvedValue(freshSummary);
     (api.getAnalyticsTrends as jest.Mock).mockResolvedValue(freshTrends);
     (api.getAnalyticsBreakdowns as jest.Mock).mockResolvedValue(freshBreakdowns);
+    (api.getPlatformTotals as jest.Mock).mockResolvedValue(mockPlatformTotals);
 
     renderWrapper(<DashboardPage />);
     fireEvent.click(screen.getByRole('button', { name: /refresh dashboard/i }));
@@ -288,20 +314,22 @@ describe('DashboardPage — handleRefresh', () => {
       expect(api.getAnalyticsBreakdowns).toHaveBeenCalledWith(
         expect.objectContaining({ forceRefresh: true }),
       );
+      expect(api.getPlatformTotals).toHaveBeenCalledWith({ forceRefresh: true });
     });
   });
 
-  it('calls queryClient.setQueryData three times after a successful refresh', async () => {
+  it('calls queryClient.setQueryData four times after a successful refresh', async () => {
     setDataState();
     (api.getAnalyticsSummary as jest.Mock).mockResolvedValue(mockSummary);
     (api.getAnalyticsTrends as jest.Mock).mockResolvedValue(mockTrends);
     (api.getAnalyticsBreakdowns as jest.Mock).mockResolvedValue(mockBreakdowns);
+    (api.getPlatformTotals as jest.Mock).mockResolvedValue(mockPlatformTotals);
 
     renderWrapper(<DashboardPage />);
     fireEvent.click(screen.getByRole('button', { name: /refresh dashboard/i }));
 
     await waitFor(() => {
-      expect(mockSetQueryData).toHaveBeenCalledTimes(3);
+      expect(mockSetQueryData).toHaveBeenCalledTimes(4);
     });
   });
 
@@ -310,6 +338,7 @@ describe('DashboardPage — handleRefresh', () => {
     (api.getAnalyticsSummary as jest.Mock).mockRejectedValue(new Error('network error'));
     (api.getAnalyticsTrends as jest.Mock).mockResolvedValue(mockTrends);
     (api.getAnalyticsBreakdowns as jest.Mock).mockResolvedValue(mockBreakdowns);
+    (api.getPlatformTotals as jest.Mock).mockResolvedValue(mockPlatformTotals);
 
     renderWrapper(<DashboardPage />);
     fireEvent.click(screen.getByRole('button', { name: /refresh dashboard/i }));
@@ -364,5 +393,142 @@ describe('DashboardPage — handleRefresh', () => {
     expect(api.getAnalyticsBreakdowns).toHaveBeenCalledTimes(1);
 
     resolvePending(mockSummary);
+  });
+});
+
+describe('DashboardPage — platform totals', () => {
+  it('renders every all-time figure', () => {
+    setDataState();
+    renderWrapper(<DashboardPage />);
+    expect(screen.getByRole('heading', { name: 'Users' })).toBeInTheDocument();
+    expect(screen.getByText('2,676,992')).toBeInTheDocument();
+    expect(screen.getByText('4,004,094')).toBeInTheDocument();
+    expect(screen.getByText('1,580,312')).toBeInTheDocument();
+    expect(screen.getByText('5,919')).toBeInTheDocument();
+    expect(screen.getByText('487.5')).toBeInTheDocument();
+    expect(screen.getByText('5,597,514')).toBeInTheDocument();
+    expect(screen.getByText('266,822')).toBeInTheDocument();
+    expect(screen.getByText('22.3%')).toBeInTheDocument();
+    expect(screen.getByText('2.25')).toBeInTheDocument();
+  });
+
+  it('requests the totals without the date range or org', () => {
+    setDataState();
+    renderWrapper(<DashboardPage />);
+    expect(hooks.useAnalyticsPlatformTotals).toHaveBeenCalledWith();
+  });
+
+  it('shows Not available for progress before the nightly command has run', () => {
+    setDataState();
+    renderWrapper(<DashboardPage />);
+    const row = screen.getByText('Average course progress').closest('tr') as HTMLElement;
+    expect(row).toHaveTextContent('Not available');
+  });
+
+  it('shows progress with its computed-at date once a snapshot exists', () => {
+    setDataState();
+    (hooks.useAnalyticsPlatformTotals as jest.Mock).mockReturnValue({
+      isLoading: false,
+      isError: false,
+      data: { ...mockPlatformTotals, averageProgressPct: 41.5, progressComputedAt: '2026-10-18T02:00:00Z' },
+      error: null,
+      refetch: jest.fn(),
+    });
+    renderWrapper(<DashboardPage />);
+    const row = screen.getByText('Average course progress').closest('tr') as HTMLElement;
+    expect(row).toHaveTextContent(/41\.5% \(as of .*2026\)/);
+  });
+
+  it('shows Not available for every figure when the totals request fails', () => {
+    setDataState();
+    (hooks.useAnalyticsPlatformTotals as jest.Mock).mockReturnValue(errorQuery);
+    renderWrapper(<DashboardPage />);
+    [
+      'Total number of users',
+      'Total enrollments before the course end date',
+      'Total enrollments after the course end date',
+      'Total course enrollments',
+      'Total course unenrollments',
+      'Average enrollments per ended course',
+      'Average completions per ended course',
+      'Average completion percentage (courses with certificates)',
+      'Average course progress',
+      'Average courses per active learner',
+    ].forEach((label) => {
+      const row = screen.getByText(label).closest('tr') as HTMLElement;
+      expect(row).toHaveTextContent('Not available');
+    });
+  });
+});
+
+describe('DashboardPage — platform totals divider', () => {
+  it('separates the all-time card from the date-filtered figures', () => {
+    setDataState();
+    renderWrapper(<DashboardPage />);
+    expect(screen.getByRole('separator', { name: 'All-time figures, not affected by the date range' }))
+      .toHaveTextContent('All-time figures, not affected by the date range');
+  });
+});
+
+describe('DashboardPage — platform totals tooltips', () => {
+  it('lists the rows in the agreed order, each with its own explanation', () => {
+    setDataState();
+    renderWrapper(<DashboardPage />);
+    const rows = screen.getAllByRole('row').slice(1).filter((row) => within(row).queryByText(/^(Total|Average)/));
+    const labels = rows.map((row) => within(row).getAllByText(/^(Total|Average)/)[0]);
+    expect(labels.map((label) => label.textContent)).toEqual([
+      'Total number of users',
+      'Total enrollments before the course end date',
+      'Total enrollments after the course end date',
+      'Total course unenrollments',
+      'Total course enrollments',
+      'Average enrollments per ended course',
+      'Average completions per ended course',
+      'Average completion percentage (courses with certificates)',
+      'Average course progress',
+      'Average courses per active learner',
+    ]);
+    const explanations = labels.map((label) => {
+      fireEvent.mouseEnter(label);
+      const text = screen.getByRole('tooltip').textContent;
+      fireEvent.mouseLeave(label);
+      return text;
+    });
+    expect(new Set(explanations).size).toBe(10);
+  });
+});
+
+describe('DashboardPage — platform totals CSV', () => {
+  it('downloads the raw figures as a CSV', async () => {
+    setDataState();
+    const createObjectURL = jest.fn(() => 'blob:totals');
+    Object.assign(URL, { createObjectURL, revokeObjectURL: jest.fn() });
+    const click = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    renderWrapper(<DashboardPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: /download csv/i }));
+
+    expect(click).toHaveBeenCalled();
+    expect(click.mock.contexts[0]).toHaveProperty('download', expect.stringMatching(/^users_.*\.csv$/));
+    const blob = (createObjectURL.mock.calls[0] as unknown as [Blob])[0];
+    const text = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsText(blob);
+    });
+    expect(text).toContain('Total number of users,2676992');
+    expect(text).toContain('Total enrollments before the course end date,4004094');
+    expect(text).toContain('Average completions per ended course,487.5');
+    expect(text).toContain('Total course unenrollments,266822');
+    expect(text).toContain('Average courses per active learner,2.25');
+    expect(text).toMatch(/Average course progress,\r\n/);
+    click.mockRestore();
+  });
+
+  it('disables the download while the totals are unavailable', () => {
+    setDataState();
+    (hooks.useAnalyticsPlatformTotals as jest.Mock).mockReturnValue(errorQuery);
+    renderWrapper(<DashboardPage />);
+    expect(screen.getByRole('button', { name: /download csv/i })).toBeDisabled();
   });
 });

@@ -109,6 +109,34 @@ export interface AnalyticsBreakdowns {
   generatedAt: string;
 }
 
+/**
+ * GET /api/v1/admin/analytics/platform-totals/
+ *
+ * All-time and platform-wide: the dashboard date range never applies. Counts
+ * include deactivated and legacy accounts (staff and service accounts excluded).
+ */
+export interface PlatformTotals {
+  totalUsers: number;
+  /** Every enrollment ever, unenrollments included. */
+  totalEnrollments: number;
+  totalUnenrollments: number;
+  /** Enrollments made before the end date of their course. Courses with no end date are in neither split. */
+  enrolledBeforeEnd: number;
+  enrolledAfterEnd: number;
+  /** null when no course has ended. */
+  averageEnrollmentsEndedCourses: number | null;
+  /** null when no course has ended or certificates are unreadable. */
+  averageCompletionsEndedCourses: number | null;
+  /** null when no account holds an active enrollment. */
+  averageCoursesPerActiveLearner: number | null;
+  /** Certificates over enrollments in certificate-enabled courses. null when unreadable. */
+  completionPct: number | null;
+  /** null until the nightly compute_course_progress command has run. */
+  averageProgressPct: number | null;
+  progressComputedAt: string | null;
+  generatedAt: string;
+}
+
 /** Shared query params. Every endpoint accepts an optional org scope. */
 export interface AnalyticsParams {
   org?: string;

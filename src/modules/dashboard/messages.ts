@@ -132,6 +132,93 @@ const messages = defineMessages({
     id: 'rwaq.admin.dashboard.info.registrations',
     defaultMessage: 'New learner accounts registered this calendar month vs last month.',
   },
+  infoRegistrationTrend: {
+    id: 'rwaq.admin.dashboard.info.registrationTrend',
+    defaultMessage: 'Accounts registered per month, including deactivated and legacy accounts. Staff and service accounts are excluded.',
+  },
+  platformTotalsTitle: { id: 'rwaq.admin.dashboard.platformTotals.title', defaultMessage: 'Users' },
+  infoPlatformTotals: {
+    id: 'rwaq.admin.dashboard.info.platformTotals',
+    defaultMessage: 'All-time figures for the whole platform. The date range does not apply. Counts include deactivated and legacy accounts. Staff and service accounts are excluded.',
+  },
+  platformTotalsDivider: {
+    id: 'rwaq.admin.dashboard.platformTotals.divider',
+    defaultMessage: 'All-time figures, not affected by the date range',
+  },
+  platformTotalsColMetric: { id: 'rwaq.admin.dashboard.platformTotals.col.metric', defaultMessage: 'Metric' },
+  platformTotalsColValue: { id: 'rwaq.admin.dashboard.platformTotals.col.value', defaultMessage: 'Value' },
+  totalUsers: { id: 'rwaq.admin.dashboard.platformTotals.users', defaultMessage: 'Total number of users' },
+  totalEnrollments: { id: 'rwaq.admin.dashboard.platformTotals.enrollments', defaultMessage: 'Total course enrollments' },
+  totalUnenrollments: { id: 'rwaq.admin.dashboard.platformTotals.unenrollments', defaultMessage: 'Total course unenrollments' },
+  enrolledBeforeEnd: {
+    id: 'rwaq.admin.dashboard.platformTotals.enrolledBeforeEnd',
+    defaultMessage: 'Total enrollments before the course end date',
+  },
+  enrolledAfterEnd: {
+    id: 'rwaq.admin.dashboard.platformTotals.enrolledAfterEnd',
+    defaultMessage: 'Total enrollments after the course end date',
+  },
+  averageEnrollmentsEnded: {
+    id: 'rwaq.admin.dashboard.platformTotals.enrollmentsEnded',
+    defaultMessage: 'Average enrollments per ended course',
+  },
+  averageCompletionsEnded: {
+    id: 'rwaq.admin.dashboard.platformTotals.completionsEnded',
+    defaultMessage: 'Average completions per ended course',
+  },
+  infoTotalUsers: {
+    id: 'rwaq.admin.dashboard.platformTotals.info.users',
+    defaultMessage: 'Every account, active or deactivated, legacy or new. Staff and service accounts are excluded.',
+  },
+  infoTotalEnrollments: {
+    id: 'rwaq.admin.dashboard.platformTotals.info.enrollments',
+    defaultMessage: 'Every enrollment ever made, including the ones since cancelled.',
+  },
+  infoTotalUnenrollments: {
+    id: 'rwaq.admin.dashboard.platformTotals.info.unenrollments',
+    defaultMessage: 'Enrollments that were cancelled. They are also part of the total enrollments.',
+  },
+  infoEnrolledBeforeEnd: {
+    id: 'rwaq.admin.dashboard.platformTotals.info.enrolledBeforeEnd',
+    defaultMessage: 'Enrollments made before the end date of their course. Courses with no end date are not counted here or after the end date.',
+  },
+  infoEnrolledAfterEnd: {
+    id: 'rwaq.admin.dashboard.platformTotals.info.enrolledAfterEnd',
+    defaultMessage: 'Enrollments made on or after the end date of their course. Courses with no end date are not counted here or before the end date.',
+  },
+  infoEnrollmentsEnded: {
+    id: 'rwaq.admin.dashboard.platformTotals.info.enrollmentsEnded',
+    defaultMessage: 'Enrollments in courses whose end date has passed, divided by the number of those courses.',
+  },
+  infoCompletionsEnded: {
+    id: 'rwaq.admin.dashboard.platformTotals.info.completionsEnded',
+    defaultMessage: 'Certificates issued in courses whose end date has passed, divided by the number of those courses. A certificate counts only when the learner has an enrollment in that course.',
+  },
+  infoAverageCompletion: {
+    id: 'rwaq.admin.dashboard.platformTotals.info.completion',
+    defaultMessage: 'Certificates issued as a share of enrollments, only in courses with certificates enabled. A certificate counts only when the learner has an enrollment in that course.',
+  },
+  infoAverageProgress: {
+    id: 'rwaq.admin.dashboard.platformTotals.info.progress',
+    defaultMessage: 'Average share of a course the learner completed, over every enrollment in courses with content. Calculated once a day, so it can be up to a day old.',
+  },
+  infoCoursesPerLearner: {
+    id: 'rwaq.admin.dashboard.platformTotals.info.coursesPerLearner',
+    defaultMessage: 'Active enrollments divided by the number of learners with at least one active enrollment.',
+  },
+  averageCompletion: {
+    id: 'rwaq.admin.dashboard.platformTotals.completion',
+    defaultMessage: 'Average completion percentage (courses with certificates)',
+  },
+  averageProgress: { id: 'rwaq.admin.dashboard.platformTotals.progress', defaultMessage: 'Average course progress' },
+  averageProgressAsOf: {
+    id: 'rwaq.admin.dashboard.platformTotals.progressAsOf',
+    defaultMessage: '{value} (as of {date})',
+  },
+  averageCoursesPerLearner: {
+    id: 'rwaq.admin.dashboard.platformTotals.coursesPerLearner',
+    defaultMessage: 'Average courses per active learner',
+  },
   infoCertCoverage: {
     id: 'rwaq.admin.dashboard.info.certCoverage',
     defaultMessage: 'Published courses with at least one active certificate enabled. Always all-time.',
