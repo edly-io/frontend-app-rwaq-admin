@@ -101,7 +101,6 @@ const OrdersTab = ({
   const itemTypeLabel = (item: OrderItem) => intl.formatMessage({
     program: messages.typeProgram, subscription: messages.typeSubscription, course: messages.typeCourse,
   }[item.type]);
-  const formatDate = (value: string) => intl.formatDate(value, { dateStyle: 'medium', timeZone: 'UTC' });
   const couponOptions = [
     { value: '', label: intl.formatMessage(messages.couponAny) },
     { value: 'with', label: intl.formatMessage(messages.couponWith) },
@@ -271,7 +270,8 @@ const OrdersTab = ({
                   <div className="rwaq-user-cell__meta">
                     {item.type === 'subscription' && item.periodStartsAt && item.periodEndsAt
                       ? intl.formatMessage(messages.itemPeriod, {
-                        start: formatDate(item.periodStartsAt), end: formatDate(item.periodEndsAt),
+                        start: formatDateTime(item.periodStartsAt, intl.locale),
+                        end: formatDateTime(item.periodEndsAt, intl.locale),
                       })
                       : item.key}
                   </div>

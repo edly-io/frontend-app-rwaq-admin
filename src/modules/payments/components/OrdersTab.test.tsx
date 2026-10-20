@@ -323,7 +323,7 @@ describe('Payment history subscription orders', () => {
     fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
 
     const itemRow = screen.getByText('Subscription: Monthly').closest('tr') as HTMLElement;
-    expect(within(itemRow).getByText('Period: Sep 10, 2026 to Oct 10, 2026')).toBeInTheDocument();
+    expect(within(itemRow).getByText('Period: Sep 10, 2026, 10:00 to Oct 10, 2026, 10:00')).toBeInTheDocument();
     expect(within(itemRow).getByText('Subscription')).toBeInTheDocument();
     expect(within(itemRow).queryByRole('link')).not.toBeInTheDocument();
   });
