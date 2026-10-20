@@ -124,8 +124,6 @@ const mockPlatformTotals = {
   averageCompletionsEndedCourses: 487.5,
   averageCoursesPerActiveLearner: 2.25,
   completionPct: 22.3,
-  averageProgressPct: null,
-  progressComputedAt: null,
   generatedAt: new Date().toISOString(),
 };
 
@@ -418,27 +416,6 @@ describe('DashboardPage — platform totals', () => {
     expect(hooks.useAnalyticsPlatformTotals).toHaveBeenCalledWith();
   });
 
-  it('shows Not available for progress before the nightly command has run', () => {
-    setDataState();
-    renderWrapper(<DashboardPage />);
-    const row = screen.getByText('Average course progress').closest('tr') as HTMLElement;
-    expect(row).toHaveTextContent('Not available');
-  });
-
-  it('shows progress with its computed-at date once a snapshot exists', () => {
-    setDataState();
-    (hooks.useAnalyticsPlatformTotals as jest.Mock).mockReturnValue({
-      isLoading: false,
-      isError: false,
-      data: { ...mockPlatformTotals, averageProgressPct: 41.5, progressComputedAt: '2026-10-18T02:00:00Z' },
-      error: null,
-      refetch: jest.fn(),
-    });
-    renderWrapper(<DashboardPage />);
-    const row = screen.getByText('Average course progress').closest('tr') as HTMLElement;
-    expect(row).toHaveTextContent(/41\.5% \(as of .*2026\)/);
-  });
-
   it('shows Not available for every figure when the totals request fails', () => {
     setDataState();
     (hooks.useAnalyticsPlatformTotals as jest.Mock).mockReturnValue(errorQuery);
@@ -452,7 +429,6 @@ describe('DashboardPage — platform totals', () => {
       'Average enrollments per ended course',
       'Average completions per ended course',
       'Average completion percentage (courses with certificates)',
-      'Average course progress',
       'Average courses per active learner',
     ].forEach((label) => {
       const row = screen.getByText(label).closest('tr') as HTMLElement;
@@ -485,7 +461,6 @@ describe('DashboardPage — platform totals tooltips', () => {
       'Average enrollments per ended course',
       'Average completions per ended course',
       'Average completion percentage (courses with certificates)',
-      'Average course progress',
       'Average courses per active learner',
     ]);
     const explanations = labels.map((label) => {
@@ -494,7 +469,7 @@ describe('DashboardPage — platform totals tooltips', () => {
       fireEvent.mouseLeave(label);
       return text;
     });
-    expect(new Set(explanations).size).toBe(10);
+    expect(new Set(explanations).size).toBe(9);
   });
 });
 
@@ -521,7 +496,6 @@ describe('DashboardPage — platform totals CSV', () => {
     expect(text).toContain('Average completions per ended course,487.5');
     expect(text).toContain('Total course unenrollments,266822');
     expect(text).toContain('Average courses per active learner,2.25');
-    expect(text).toMatch(/Average course progress,\r\n/);
     click.mockRestore();
   });
 

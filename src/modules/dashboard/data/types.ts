@@ -131,9 +131,6 @@ export interface PlatformTotals {
   averageCoursesPerActiveLearner: number | null;
   /** Certificates over enrollments in certificate-enabled courses. null when unreadable. */
   completionPct: number | null;
-  /** null until the nightly compute_course_progress command has run. */
-  averageProgressPct: number | null;
-  progressComputedAt: string | null;
   generatedAt: string;
 }
 

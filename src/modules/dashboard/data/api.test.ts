@@ -209,8 +209,6 @@ describe('getPlatformTotals', () => {
         total_unenrollments: 2,
         average_courses_per_active_learner: 1.5,
         completion_pct: 25,
-        average_progress_pct: null,
-        progress_computed_at: null,
         generated_at: '2026-10-19T00:00:00Z',
       },
     });
