@@ -142,7 +142,7 @@ describe('Subscriptions expanded row', () => {
 
     expect(screen.getByText('wp-12')).toBeInTheDocument();
     const paymentRow = screen.getByText('wp-11').closest('tr') as HTMLElement;
-    expect(within(paymentRow).getByText('Sep 5, 2026 – Oct 5, 2026')).toBeInTheDocument();
+    expect(within(paymentRow).getByText('Sep 5, 2026, 10:00 – Oct 5, 2026, 10:00')).toBeInTheDocument();
     const link = screen.getByRole('link', { name: 'View all payments' });
     expect(link).toHaveAttribute('href', '/payments?tab=orders&subscription=4');
   });

@@ -107,7 +107,6 @@ const SubscriptionPayments = ({ subscription }: { subscription: SubscriptionRow 
     subscription: subscription.id, ordering: '-order_date', page: 1, pageSize: PAYMENTS_SHOWN,
   });
   const orders = data?.results ?? [];
-  const formatPeriodDate = (value: string) => intl.formatDate(value, { dateStyle: 'medium', timeZone: 'UTC' });
 
   let body;
   if (isError) {
@@ -135,7 +134,7 @@ const SubscriptionPayments = ({ subscription }: { subscription: SubscriptionRow 
                 <MoneyTd value={item?.pricePaid ?? order.pricePaid} />
                 <td>
                   {item?.periodStartsAt && item.periodEndsAt
-                    ? `${formatPeriodDate(item.periodStartsAt)} – ${formatPeriodDate(item.periodEndsAt)}`
+                    ? `${formatDateTime(item.periodStartsAt, intl.locale)} – ${formatDateTime(item.periodEndsAt, intl.locale)}`
                     : ''}
                 </td>
               </tr>
