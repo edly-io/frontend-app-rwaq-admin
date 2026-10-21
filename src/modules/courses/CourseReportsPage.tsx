@@ -130,9 +130,15 @@ const ReportTriggerRow = ({
     ? (downloads ?? []).find((r) => r.taskId === trackedTaskId) ?? null
     : null;
 
+  // A task of this type that is still running. Read from the list, not from trackedTaskId, so the spinner also
+  // shows after a page reload or when the report was started elsewhere (the instructor dashboard, another tab).
+  const runningTask = (downloads ?? []).find(
+    (r) => r.reportType === def.type && (r.state === 'QUEUING' || r.state === 'IN_PROGRESS'),
+  ) ?? null;
+
   // True while mutation has resolved but the downloads list hasn't caught up yet
   const isWaitingForPoll = !isPending && trackedTaskId !== null && trackedTask === null;
-  const isRunning = trackedTask?.state === 'QUEUING' || trackedTask?.state === 'IN_PROGRESS';
+  const isRunning = runningTask !== null;
   const isSuccess = trackedTask?.state === 'SUCCESS';
   const isFailed = trackedTask?.state === 'FAILURE' || trackedTask?.state === 'REVOKED';
 
@@ -159,10 +165,10 @@ const ReportTriggerRow = ({
   if (triggerError) {
     statusText = <div className="text-danger small mt-1">{triggerError}</div>;
   } else if (isRunning) {
-    const progress = (trackedTask?.total != null && trackedTask?.succeeded != null)
-      ? ` (${trackedTask.succeeded} / ${trackedTask.total})`
+    const progress = (runningTask?.total != null && runningTask?.succeeded != null)
+      ? ` (${runningTask.succeeded} / ${runningTask.total})`
       : '';
-    const label = trackedTask?.state === 'QUEUING'
+    const label = runningTask?.state === 'QUEUING'
       ? intl.formatMessage(messages.statusQueued)
       : intl.formatMessage(messages.statusGenerating, { progress });
     statusText = <div className="text-muted small mt-1">{label}</div>;
