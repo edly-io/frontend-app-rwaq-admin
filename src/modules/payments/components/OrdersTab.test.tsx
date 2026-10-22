@@ -328,6 +328,27 @@ describe('Payment history subscription orders', () => {
     expect(within(itemRow).queryByRole('link')).not.toBeInTheDocument();
   });
 
+  it('names the first column Subscription and drops the Organization column', () => {
+    mockOrders([subscriptionOrder]);
+    renderTab();
+    fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
+
+    const itemRow = screen.getByText('Subscription: Monthly').closest('tr') as HTMLElement;
+    const headers = within(itemRow.closest('table') as HTMLElement).getAllByRole('columnheader');
+    expect(headers.map((header) => header.textContent)).toEqual([
+      'Subscription', 'Type', 'Price (SAR)', 'Discount (SAR)', 'Paid (SAR)',
+    ]);
+  });
+
+  it('keeps Course or program and Organization for orders of courses', () => {
+    mockOrders([wholeOrder]);
+    renderTab();
+    fireEvent.click(screen.getAllByRole('button', { name: /expand/i })[0]);
+
+    const headers = screen.getAllByRole('columnheader').map((header) => header.textContent);
+    expect(headers).toEqual(expect.arrayContaining(['Course or program', 'Organization']));
+  });
+
   it('asks for the chosen type', () => {
     mockOrders([subscriptionOrder]);
     renderTab();

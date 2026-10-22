@@ -34,6 +34,11 @@ const boldText = (chunks: ReactNode[]) => <strong>{chunks}</strong>;
 
 const DEFAULT_ORDERING = '-order_date';
 
+/** An order of subscriptions only. A subscription has no organization, so its detail drops that column. */
+const isSubscriptionOrder = (order: OrderRow): boolean => (
+  order.items.length > 0 && order.items.every((item) => item.type === 'subscription')
+);
+
 /** The existing detail page for a course or program. A subscription has none. */
 const contentPath = (item: OrderItem): string | null => {
   if (item.type === 'subscription' || !item.key) { return null; }
@@ -238,9 +243,9 @@ const OrdersTab = ({
       <table className="table table-sm mb-3">
         <thead>
           <tr>
-            <th>{intl.formatMessage(messages.colContent)}</th>
+            <th>{intl.formatMessage(isSubscriptionOrder(order) ? messages.typeSubscription : messages.colContent)}</th>
             <th>{intl.formatMessage(messages.colType)}</th>
-            <th>{intl.formatMessage(messages.colOrg)}</th>
+            {!isSubscriptionOrder(order) && <th>{intl.formatMessage(messages.colOrg)}</th>}
             <th>{intl.formatMessage(messages.colPrice)}</th>
             <th>{intl.formatMessage(messages.colDiscount)}</th>
             <th>{intl.formatMessage(messages.colPaid)}</th>
@@ -277,7 +282,7 @@ const OrdersTab = ({
                   </div>
                 </td>
                 <td>{itemTypeLabel(item)}</td>
-                <td>{item.org}</td>
+                {!isSubscriptionOrder(order) && <td>{item.org}</td>}
                 <MoneyTd value={item.actualPrice} />
                 <MoneyTd value={item.discountAmount} />
                 <MoneyTd value={item.pricePaid} />
