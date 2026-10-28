@@ -112,7 +112,10 @@ const EnrollmentsTable = ({
       // `actions` is not a field on the row, so it needs an explicit id or
       // react-table treats the duplicate accessor as a duplicate column.
       id: 'actions',
-      renderCell: (_value, row) => (
+      // Subscription content: only the learner's subscription enrolls or unenrolls them.
+      renderCell: (_value, row) => (row.isPartOfSubscription ? (
+        <span className="text-muted small">{intl.formatMessage(messages.enrollmentSubscriptionNote)}</span>
+      ) : (
         <div className="rwaq-row-actions">
           <Button
             variant="outline-primary"
@@ -133,7 +136,7 @@ const EnrollmentsTable = ({
             {intl.formatMessage(messages.unenrollAction)}
           </Button>
         </div>
-      ),
+      )),
     },
   ];
 

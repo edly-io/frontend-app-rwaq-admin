@@ -33,6 +33,7 @@ const messages = defineMessages({
   typeAll: { id: 'rwaq.admin.programs.type.all', defaultMessage: 'All types' },
   typeFree: { id: 'rwaq.admin.programs.type.free', defaultMessage: 'Free' },
   typePaid: { id: 'rwaq.admin.programs.type.paid', defaultMessage: 'Paid' },
+  typeSubscription: { id: 'rwaq.admin.programs.type.subscription', defaultMessage: 'Part of Subscription' },
   chipType: { id: 'rwaq.admin.programs.chip.type', defaultMessage: 'Type: {label}' },
   chipSearch: { id: 'rwaq.admin.programs.chip.search', defaultMessage: 'Search: {term}' },
   chipFilter: { id: 'rwaq.admin.programs.chip.filter', defaultMessage: 'Filter: {label}' },
@@ -110,7 +111,23 @@ const messages = defineMessages({
   },
   pricingCategoryLabel: { id: 'rwaq.admin.programs.pricing.category-label', defaultMessage: 'Pricing type' },
   pricingFree: { id: 'rwaq.admin.programs.pricing.free', defaultMessage: 'Free' },
+  pricingFreeDescription: {
+    id: 'rwaq.admin.programs.pricing.free-description',
+    defaultMessage: 'Learners enroll at no cost.',
+  },
   pricingPaid: { id: 'rwaq.admin.programs.pricing.paid', defaultMessage: 'Paid' },
+  pricingPaidDescription: {
+    id: 'rwaq.admin.programs.pricing.paid-description',
+    defaultMessage: 'Sold at the price set below.',
+  },
+  pricingSubscription: {
+    id: 'rwaq.admin.programs.pricing.subscription',
+    defaultMessage: 'Part of Subscription',
+  },
+  pricingSubscriptionDescription: {
+    id: 'rwaq.admin.programs.pricing.subscription-description',
+    defaultMessage: 'Learners reach this program through the Rwaq subscription. It has no price of its own.',
+  },
   pricingPriceLabel: { id: 'rwaq.admin.programs.pricing.price-label', defaultMessage: 'Price ({currency})' },
   pricingSalePriceLabel: {
     id: 'rwaq.admin.programs.pricing.sale-price-label',
@@ -192,6 +209,10 @@ const messages = defineMessages({
   no: { id: 'rwaq.admin.programs.no', defaultMessage: 'No' },
 
   // ── Bulk enroll ─────────────────────────────────────────────────────────────
+  learnersSubscriptionNote: {
+    id: 'rwaq.admin.programs.learners.subscriptionNote',
+    defaultMessage: 'Learners join and leave this program through their Rwaq subscription.',
+  },
   bulkEnrollButton: { id: 'rwaq.admin.programs.bulkEnroll.button', defaultMessage: 'Bulk enroll' },
   bulkEnrollTitle: { id: 'rwaq.admin.programs.bulkEnroll.title', defaultMessage: 'Enroll learners' },
   bulkEnrollHelp: { id: 'rwaq.admin.programs.bulkEnroll.help', defaultMessage: 'Paste email addresses, separated by commas or new lines. Learners are enrolled in the program and all of its courses.' },

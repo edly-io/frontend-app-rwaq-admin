@@ -102,14 +102,25 @@ const CourseDetailPage = () => {
   // The enroll modal's mode list depends on the course (a Paid course offers only
   // no-id-professional, a Program-only course keeps honor), so it comes from the same endpoint as
   // the Users enroll picker.
+  // Loaded with the page too: its is_part_of_subscription also covers a Program-only course of a
+  // subscription program, which the course's own pricing type does not show.
   const {
     data: enrollableCourses, isLoading: enrollModesLoading,
-  } = useEnrollableCourses(courseId, modal.kind === 'enroll');
+  } = useEnrollableCourses(courseId);
   const enrollableRow = enrollableCourses?.find((row) => row.courseId === courseId);
   const enrollModes = enrollableRow?.availableModes;
   const { data: pricing } = useCoursePricing(courseId);
+  // Subscription content is joined only through the learner's own subscription, so no admin enrolls into it.
+  const isSubscription = pricing?.pricingCategory === 'is_part_of_subscription'
+    || enrollableRow?.isPartOfSubscription === true;
   // A Program-only course is joined through its program, so no admin enrolls into it directly.
   const isProgramOnly = pricing?.pricingCategory === 'is_program_only' || enrollableRow?.isProgramOnly === true;
+  let enrollBlockedNote = null;
+  if (isSubscription) {
+    enrollBlockedNote = messages.enrollSubscriptionNote;
+  } else if (isProgramOnly) {
+    enrollBlockedNote = messages.enrollProgramOnlyNote;
+  }
 
   const {
     data: enrollmentData,
@@ -344,11 +355,11 @@ const CourseDetailPage = () => {
               onClick={handleDownloadCsv}
               disabled={!enrollmentData?.pagination?.count}
             />
-            {isProgramOnly ? (
+            {enrollBlockedNote ? (
               <DisabledButtonWithTooltip
                 id="course-enroll-blocked"
                 size="sm"
-                tooltip={intl.formatMessage(messages.enrollProgramOnlyNote)}
+                tooltip={intl.formatMessage(enrollBlockedNote)}
               >
                 {intl.formatMessage(messages.enrollUser)}
               </DisabledButtonWithTooltip>

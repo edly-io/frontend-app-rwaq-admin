@@ -117,6 +117,7 @@ const messages = defineMessages({
   typeFree: { id: 'rwaq.admin.courses.type.free', defaultMessage: 'Free' },
   typePaid: { id: 'rwaq.admin.courses.type.paid', defaultMessage: 'Paid' },
   typeProgramOnly: { id: 'rwaq.admin.courses.type.programOnly', defaultMessage: 'Program-only' },
+  typeSubscription: { id: 'rwaq.admin.courses.type.subscription', defaultMessage: 'Part of Subscription' },
   chipType: { id: 'rwaq.admin.courses.chip.type', defaultMessage: 'Type: {label}' },
   chipSort: {
     id: 'rwaq.admin.courses.chip.sort',
@@ -240,6 +241,10 @@ const messages = defineMessages({
   enrollUser: {
     id: 'rwaq.admin.courseDetail.enrollments.enrollUser',
     defaultMessage: 'Enroll a User',
+  },
+  enrollSubscriptionNote: {
+    id: 'rwaq.admin.courseDetail.enrollments.subscriptionNote',
+    defaultMessage: 'Learners join this course through their Rwaq subscription.',
   },
   enrollProgramOnlyNote: {
     id: 'rwaq.admin.courseDetail.enrollments.programOnlyNote',
@@ -673,6 +678,14 @@ export const courseRoleMessages = defineMessages({
   pricingPaidDescription: {
     id: 'rwaq.admin.courses.pricing.paid-description',
     defaultMessage: 'Sold on its own at the price set below.',
+  },
+  pricingSubscription: {
+    id: 'rwaq.admin.courses.pricing.subscription',
+    defaultMessage: 'Part of Subscription',
+  },
+  pricingSubscriptionDescription: {
+    id: 'rwaq.admin.courses.pricing.subscription-description',
+    defaultMessage: 'Learners reach this course through the Rwaq subscription. It has no price of its own.',
   },
   pricingProgramOnly: {
     id: 'rwaq.admin.courses.pricing.program-only',

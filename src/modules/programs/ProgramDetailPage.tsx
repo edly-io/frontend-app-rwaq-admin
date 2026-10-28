@@ -24,6 +24,7 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import DetailGrid from '@src/components/DetailGrid';
+import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
 import ProgramPricingCard from './components/ProgramPricingCard';
@@ -177,7 +178,7 @@ const CoursesTab = ({ uuid }: { uuid: string }) => {
 
 // ── Learners tab ──────────────────────────────────────────────────────────────
 
-const LearnersTab = ({ uuid }: { uuid: string }) => {
+const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: boolean }) => {
   const intl = useIntl();
   const [isEnrollOpen, setEnrollOpen] = useState(false);
   const [unenrollTarget, setUnenrollTarget] = useState<ProgramLearner | null>(null);
@@ -220,7 +221,18 @@ const LearnersTab = ({ uuid }: { uuid: string }) => {
     {
       label: intl.formatMessage(messages.colLearnerActions),
       key: 'id',
-      renderCell: (_value, row) => (
+      // A subscription program is joined and left only through the learner's own subscription.
+      renderCell: (_value, row) => (isSubscription ? (
+        <DisabledButtonWithTooltip
+          id={`program-unenroll-subscription-${row.id}`}
+          variant="outline-secondary"
+          size="sm"
+          tooltip={intl.formatMessage(messages.learnersSubscriptionNote)}
+          ariaLabel={`${intl.formatMessage(messages.unenrollLearnerAction)}, ${row.name}`}
+        >
+          {intl.formatMessage(messages.unenrollLearnerAction)}
+        </DisabledButtonWithTooltip>
+      ) : (
         <Button
           variant="outline-secondary"
           size="sm"
@@ -229,7 +241,7 @@ const LearnersTab = ({ uuid }: { uuid: string }) => {
         >
           {intl.formatMessage(messages.unenrollLearnerAction)}
         </Button>
-      ),
+      )),
     },
   ];
 
@@ -244,9 +256,18 @@ const LearnersTab = ({ uuid }: { uuid: string }) => {
   return (
     <>
       <div className="d-flex justify-content-end mb-3">
-        <Button variant="primary" onClick={() => setEnrollOpen(true)}>
-          {intl.formatMessage(messages.bulkEnrollButton)}
-        </Button>
+        {isSubscription ? (
+          <DisabledButtonWithTooltip
+            id="program-bulk-enroll-subscription"
+            tooltip={intl.formatMessage(messages.learnersSubscriptionNote)}
+          >
+            {intl.formatMessage(messages.bulkEnrollButton)}
+          </DisabledButtonWithTooltip>
+        ) : (
+          <Button variant="primary" onClick={() => setEnrollOpen(true)}>
+            {intl.formatMessage(messages.bulkEnrollButton)}
+          </Button>
+        )}
       </div>
 
       <BulkEnrollModal
@@ -473,7 +494,7 @@ const ProgramDetailPage = () => {
           <CoursesTab uuid={program.uuid} />
         </div>
         <div id="tabpanel-learners" role="tabpanel" aria-labelledby="tab-learners" hidden={activeTab !== 'learners'}>
-          <LearnersTab uuid={program.uuid} />
+          <LearnersTab uuid={program.uuid} isSubscription={program.pricingCategory === 'is_part_of_subscription'} />
         </div>
       </div>
     </div>

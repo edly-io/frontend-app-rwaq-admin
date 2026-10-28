@@ -42,12 +42,13 @@ beforeEach(() => {
 });
 
 describe('CoursePricingCard', () => {
-  it('shows the title, three types with descriptions and the lock help text', () => {
+  it('shows the title, four types with descriptions and the lock help text', () => {
     renderCard();
     expect(screen.getByRole('heading', { name: 'Type of course' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Free' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Paid' })).not.toBeChecked();
     expect(screen.getByRole('radio', { name: 'Program-only course' })).not.toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Part of Subscription' })).not.toBeChecked();
     expect(screen.getByText('Learners enroll at no cost.')).toBeInTheDocument();
     expect(screen.getByText('Sold on its own at the price set below.')).toBeInTheDocument();
     expect(screen.getByText('Offered only through the one program it is added to.')).toBeInTheDocument();

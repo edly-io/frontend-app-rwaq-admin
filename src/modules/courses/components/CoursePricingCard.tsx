@@ -192,6 +192,13 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
           >
             {intl.formatMessage(messages.pricingProgramOnly)}
           </Form.Radio>
+          <Form.Radio
+            value="is_part_of_subscription"
+            disabled={isBusy || inProgram}
+            description={intl.formatMessage(messages.pricingSubscriptionDescription)}
+          >
+            {intl.formatMessage(messages.pricingSubscription)}
+          </Form.Radio>
         </Form.RadioSet>
         {fieldErrors.pricingCategory && (
           <Form.Control.Feedback type="invalid">{fieldErrors.pricingCategory}</Form.Control.Feedback>

@@ -87,7 +87,7 @@ describe('ProgramPricingCard', () => {
 
   it('saves a paid program', async () => {
     renderCard();
-    fireEvent.change(screen.getByLabelText('Pricing type'), { target: { value: 'is_paid' } });
+    fireEvent.click(screen.getByRole('radio', { name: 'Paid' }));
     fireEvent.change(screen.getByLabelText('Price (SAR)'), { target: { value: '500' } });
     save();
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({
@@ -103,11 +103,26 @@ describe('ProgramPricingCard', () => {
       + 'Create a new program to make it paid.';
     mockUpdate.mockRejectedValue({ response: { status: 409, data: { pricing_category: [message] } } });
     renderCard();
-    fireEvent.change(screen.getByLabelText('Pricing type'), { target: { value: 'is_paid' } });
+    fireEvent.click(screen.getByRole('radio', { name: 'Paid' }));
     fireEvent.change(screen.getByLabelText('Price (SAR)'), { target: { value: '500' } });
     save();
     const error = await screen.findByText(message);
-    expect(error.closest('.pgn__form-group')).toContainElement(screen.getByLabelText('Pricing type'));
+    expect(error.closest('.pgn__form-group')).toContainElement(screen.getByRole('radio', { name: 'Paid' }));
+  });
+
+  it('checks the radio of the stored type', () => {
+    renderCard({ pricingCategory: 'is_part_of_subscription' });
+    expect(screen.getByRole('radio', { name: 'Part of Subscription' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Free' })).not.toBeChecked();
+    expect(screen.queryByLabelText('Price (SAR)')).not.toBeInTheDocument();
+  });
+
+  it('disables the radios while saving', () => {
+    (hooks.useUpdateProgram as jest.Mock).mockReturnValue({ mutateAsync: mockUpdate, isPending: true });
+    renderCard();
+    ['Free', 'Paid', 'Part of Subscription'].forEach((name) => {
+      expect(screen.getByRole('radio', { name })).toBeDisabled();
+    });
   });
 
   it('shows other backend errors as a banner', async () => {

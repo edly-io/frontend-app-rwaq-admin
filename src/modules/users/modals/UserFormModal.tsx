@@ -9,7 +9,9 @@
  * re-asserted and the backend's audit log stays honest about what an admin
  * actually did.
  */
-import { useContext, useRef, useState } from 'react';
+import {
+  useContext, useEffect, useRef, useState,
+} from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -175,6 +177,17 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
       }
     },
   });
+
+  // The modal stays mounted while closed, so Formik would hand the previous
+  // values back on the next open. Clear them whenever it closes.
+  const { resetForm } = formik;
+  useEffect(() => {
+    if (isOpen) { return; }
+    resetForm();
+    setAvatarFile(null);
+    setAvatarTypeError(null);
+    setAvatarPreview((prev) => { if (prev) { URL.revokeObjectURL(prev); } return null; });
+  }, [isOpen, resetForm]);
 
   const fieldError = (field: keyof FormValues) => (
     formik.touched[field] && formik.errors[field] ? String(formik.errors[field]) : ''

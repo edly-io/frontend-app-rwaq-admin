@@ -33,8 +33,9 @@ import messages from './messages';
 // others download the first time they are opened.
 const OverviewTab = lazy(() => import('./components/OverviewTab'));
 const OrdersTab = lazy(() => import('./components/OrdersTab'));
+const SubscriptionsTab = lazy(() => import('./components/SubscriptionsTab'));
 
-const TABS = ['overview', 'orders'] as const;
+const TABS = ['overview', 'orders', 'subscriptions'] as const;
 type PaymentsTab = typeof TABS[number];
 
 /** What a tab shows when its code fails to load (a dropped connection, a new deploy) or its render throws. */
@@ -117,6 +118,8 @@ const PaymentsDashboard = () => {
   const tabParam = searchParams.get('tab') as PaymentsTab | null;
   const tab: PaymentsTab = tabParam && TABS.includes(tabParam) ? tabParam : 'overview';
   const org = (searchParams.get('org') ?? '').trim();
+  const subscriptionParam = Number(searchParams.get('subscription'));
+  const subscription = Number.isInteger(subscriptionParam) && subscriptionParam > 0 ? subscriptionParam : undefined;
 
   const updateParams = useCallback((updates: Record<string, string | undefined>) => {
     setSearchParams((prev) => {
@@ -129,6 +132,7 @@ const PaymentsDashboard = () => {
   }, [setSearchParams]);
 
   const setOrg = (value: string) => updateParams({ org: value || undefined });
+  const setSubscription = (value?: number) => updateParams({ subscription: value ? String(value) : undefined });
 
   return (
     <div className="rwaq-page">
@@ -145,7 +149,9 @@ const PaymentsDashboard = () => {
           onSelect={(key: string | null) => {
             // Clicking the tab already open must not clear the partner or focus it is showing.
             if ((key ?? 'overview') === tab) { return; }
-            updateParams({ tab: key && key !== 'overview' ? key : undefined, org: undefined });
+            updateParams({
+              tab: key && key !== 'overview' ? key : undefined, org: undefined, subscription: undefined,
+            });
           }}
           mountOnEnter
         >
@@ -156,7 +162,18 @@ const PaymentsDashboard = () => {
           </Tab>
           <Tab eventKey="orders" title={intl.formatMessage(messages.tabOrders)}>
             <TabPanel active={tab === 'orders'}>
-              <OrdersTab org={org} onOrgChange={setOrg} />
+              <OrdersTab
+                org={org}
+                onOrgChange={setOrg}
+                subscription={subscription}
+                onSubscriptionChange={setSubscription}
+                onClearUrlFilters={() => updateParams({ org: undefined, subscription: undefined })}
+              />
+            </TabPanel>
+          </Tab>
+          <Tab eventKey="subscriptions" title={intl.formatMessage(messages.tabSubscriptions)}>
+            <TabPanel active={tab === 'subscriptions'}>
+              <SubscriptionsTab />
             </TabPanel>
           </Tab>
         </Tabs>
