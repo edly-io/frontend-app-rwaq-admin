@@ -19,7 +19,11 @@ import type {
   OrderRow,
   Paginated,
   PaymentsReport,
+  PaymentsParams,
   PaymentsSummary,
+  SubscriptionListParams,
+  SubscriptionRow,
+  SubscriptionsSummary,
   SummaryParams,
 } from './types';
 
@@ -46,6 +50,17 @@ export const getPaymentsSummary = async (params: SummaryParams = {}): Promise<Pa
 };
 
 export const getPaymentOrders = (params: OrderListParams) => getList<OrderRow>('orders', params);
+export const getPaymentSubscriptions = (params: SubscriptionListParams) => (
+  getList<SubscriptionRow>('subscriptions', params)
+);
+
+/** GET subscriptions/summary/ — revenue in the range, and the active, expired and cancelled subscriptions today. */
+export const getSubscriptionsSummary = async (params: PaymentsParams = {}): Promise<SubscriptionsSummary> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getPaymentsBaseUrl()}/subscriptions/summary/`, {
+    params: toQuery(params),
+  });
+  return camelCaseObject(data) as SubscriptionsSummary;
+};
 
 /** The filename the backend sent, or null when the header isn't readable (CORS). */
 const filenameFrom = (disposition: string | undefined): string | null => {

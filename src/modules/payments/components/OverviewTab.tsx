@@ -52,7 +52,6 @@ interface TrendChartProps {
   isLoading: boolean;
   isError: boolean;
   series: { key: string; value: (point: SeriesPoint) => number }[];
-  hideLegend?: boolean;
   granularity: Granularity;
   maxLabels: number;
   /** For money series: formats the y-axis ticks and the tooltip, and widens the axis to fit. */
@@ -60,7 +59,7 @@ interface TrendChartProps {
 }
 
 const TrendChart = ({
-  title, info, subtitle, summary, isLoading, isError, series, hideLegend, granularity, maxLabels, formatValue,
+  title, info, subtitle, summary, isLoading, isError, series, granularity, maxLabels, formatValue,
 }: TrendChartProps) => {
   const intl = useIntl();
   const data = (summary?.series ?? []).map((point) => ({
@@ -98,7 +97,6 @@ const TrendChart = ({
           series={series.map(({ key }) => key)}
           ariaLabel={`${title}. ${series.map(({ key }) => key).join(', ')}.`}
           height={CHART_HEIGHT}
-          hideLegend={hideLegend}
           xLabelAngle={LABEL_ANGLE}
           maxXLabels={maxLabels}
           {...(formatValue ? { valueFormatter: formatValue, yAxisWidth: isRtl(intl.locale) ? MONEY_AXIS_WIDTH_RTL : MONEY_AXIS_WIDTH } : {})}
@@ -181,7 +179,7 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
 
       {isError && <Alert variant="danger">{intl.formatMessage(messages.errorTitle)}</Alert>}
 
-      <div className="rwaq-payment-grid">
+      <div className="rwaq-payment-grid rwaq-payment-grid--thirds">
         <PaymentKpi
           label={intl.formatMessage(messages.kpiOrders)}
           value={summary && !isError ? summary.orders.toLocaleString(intl.locale) : null}
@@ -195,6 +193,16 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
           intl.formatMessage(messages.infoDiscounts),
         )}
         {money(intl.formatMessage(messages.kpiCollected), summary?.netPaid, intl.formatMessage(messages.infoCollected))}
+        {money(
+          intl.formatMessage(messages.kpiContentRevenue),
+          summary?.content.netPaid,
+          intl.formatMessage(messages.infoContentRevenue, { orders: summary?.content.orders ?? 0 }),
+        )}
+        {money(
+          intl.formatMessage(messages.kpiSubscriptionRevenue),
+          summary?.subscriptions.netPaid,
+          intl.formatMessage(messages.infoSubscriptionRevenue, { orders: summary?.subscriptions.orders ?? 0 }),
+        )}
       </div>
 
       <div className="rwaq-overview__trends-head">
@@ -222,17 +230,24 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
           maxLabels={HALF_WIDTH_LABELS}
           title={intl.formatMessage(messages.chartCollectedTitle)}
           info={intl.formatMessage(messages.infoChartCollected)}
-          series={[{ key: intl.formatMessage(messages.seriesCollected), value: (point) => Number(point.netPaid) }]}
+          series={[
+            { key: intl.formatMessage(messages.seriesContent), value: (point) => Number(point.content.netPaid) },
+            {
+              key: intl.formatMessage(messages.seriesSubscriptions),
+              value: (point) => Number(point.subscriptions.netPaid),
+            },
+          ]}
           formatValue={formatMoneyValue}
-          hideLegend
         />
         <TrendChart
           {...chartProps}
           maxLabels={HALF_WIDTH_LABELS}
           title={intl.formatMessage(messages.chartOrdersTitle)}
           info={intl.formatMessage(messages.infoChartOrders)}
-          series={[{ key: intl.formatMessage(messages.seriesOrders), value: (point) => point.orders }]}
-          hideLegend
+          series={[
+            { key: intl.formatMessage(messages.seriesContent), value: (point) => point.content.orders },
+            { key: intl.formatMessage(messages.seriesSubscriptions), value: (point) => point.subscriptions.orders },
+          ]}
         />
       </div>
     </div>

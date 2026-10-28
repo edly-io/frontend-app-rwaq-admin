@@ -14,11 +14,15 @@ import {
   downloadPaymentsCsv,
   getPaymentOrders,
   getPaymentsSummary,
+  getPaymentSubscriptions,
+  getSubscriptionsSummary,
 } from './api';
 import type {
   ListParams,
   OrderListParams,
+  PaymentsParams,
   PaymentsReport,
+  SubscriptionListParams,
   SummaryParams,
 } from './types';
 
@@ -48,6 +52,18 @@ export const usePaymentsSummary = (params: SummaryParams = {}) => useQuery({
 export const usePaymentOrders = (params: OrderListParams) => useQuery({
   queryKey: paymentsQueryKeys.list('orders', params),
   queryFn: () => getPaymentOrders(params),
+  ...useListOptions(),
+});
+
+export const usePaymentSubscriptions = (params: SubscriptionListParams) => useQuery({
+  queryKey: paymentsQueryKeys.list('subscriptions', params),
+  queryFn: () => getPaymentSubscriptions(params),
+  ...useListOptions(),
+});
+
+export const useSubscriptionsSummary = (params: PaymentsParams = {}) => useQuery({
+  queryKey: [...paymentsQueryKeys.all, 'subscriptions-summary', params],
+  queryFn: () => getSubscriptionsSummary(params),
   ...useListOptions(),
 });
 

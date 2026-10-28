@@ -60,6 +60,7 @@ const FILTER_OPTIONS: FilterOption[] = [
 const TYPE_OPTIONS: { value: ProgramPricingFilter; label: MessageKey }[] = [
   { value: 'free', label: 'typeFree' },
   { value: 'paid', label: 'typePaid' },
+  { value: 'subscription', label: 'typeSubscription' },
 ];
 
 const SORT_OPTIONS: { value: ProgramOrdering; label: MessageKey }[] = [
