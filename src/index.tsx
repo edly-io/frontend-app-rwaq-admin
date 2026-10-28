@@ -11,6 +11,7 @@ import { ToastProvider } from './components/ToastContext';
 
 import messages from './i18n';
 import LoadingPage from './components/LoadingPage';
+import Head from './components/Head';
 
 import './index.scss';
 
@@ -50,6 +51,7 @@ subscribe(APP_READY, () => {
         {/* AppProvider already supplies a BrowserRouter (basename from PUBLIC_PATH);
             do NOT add another Router here or React Router throws "Router inside Router". */}
         <AppProvider>
+          <Head />
           <ToastProvider>
             <Suspense fallback={<LoadingPage />}>
               <Routes>
