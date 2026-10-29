@@ -9,6 +9,7 @@
  * a free course that learners already joined. Those refusals come back as
  * `{ detail, field? }` and are shown as they are.
  */
+import { getSiteName } from '@src/data/siteName';
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -195,7 +196,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
           <Form.Radio
             value="is_part_of_subscription"
             disabled={isBusy || inProgram}
-            description={intl.formatMessage(messages.pricingSubscriptionDescription)}
+            description={intl.formatMessage(messages.pricingSubscriptionDescription, { siteName: getSiteName() })}
           >
             {intl.formatMessage(messages.pricingSubscription)}
           </Form.Radio>

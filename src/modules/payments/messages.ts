@@ -5,13 +5,13 @@ const messages = defineMessages({
   errorTitle: { id: 'rwaq.admin.payments.error', defaultMessage: 'Could not load payments.' },
   forbiddenTitle: {
     id: 'rwaq.admin.payments.forbidden',
-    defaultMessage: 'Orders & Payments are visible to Rwaq superadmins only.',
+    defaultMessage: 'Orders & Payments are visible to {siteName} superadmins only.',
   },
 
   // ── Partner filter ─────────────────────────────────────────────────────────
   partnerLabel: { id: 'rwaq.admin.payments.partner', defaultMessage: 'Partner' },
   allPartners: { id: 'rwaq.admin.payments.partner.all', defaultMessage: 'All partners' },
-  partnerSubscriptions: { id: 'rwaq.admin.payments.partner.subscriptions', defaultMessage: 'Rwaq (subscriptions)' },
+  partnerSubscriptions: { id: 'rwaq.admin.payments.partner.subscriptions', defaultMessage: '{siteName} (subscriptions)' },
   chipPartner: { id: 'rwaq.admin.payments.chip.partner', defaultMessage: 'Partner: {org}' },
 
   // ── Tabs ───────────────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ const messages = defineMessages({
   kpiCollected: { id: 'rwaq.admin.payments.kpi.collected', defaultMessage: 'Total revenue' },
   infoOrders: {
     id: 'rwaq.admin.payments.info.orders',
-    defaultMessage: 'Completed WordPress orders with at least one paid item, subscription payments included. For a single partner, only its courses and programs count. Rwaq (subscriptions) counts only subscription payments.',
+    defaultMessage: 'Completed WordPress orders with at least one paid item, subscription payments included. For a single partner, only its courses and programs count. {siteName} (subscriptions) counts only subscription payments.',
   },
   infoOrderValue: {
     id: 'rwaq.admin.payments.info.orderValue',

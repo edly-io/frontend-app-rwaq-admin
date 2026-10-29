@@ -126,7 +126,7 @@ const messages = defineMessages({
   },
   pricingSubscriptionDescription: {
     id: 'rwaq.admin.programs.pricing.subscription-description',
-    defaultMessage: 'Learners reach this program through the Rwaq subscription. It has no price of its own.',
+    defaultMessage: 'Learners reach this program through the {siteName} subscription. It has no price of its own.',
   },
   pricingPriceLabel: { id: 'rwaq.admin.programs.pricing.price-label', defaultMessage: 'Price ({currency})' },
   pricingSalePriceLabel: {
@@ -191,7 +191,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.programs.learners.unenroll.body',
     defaultMessage: 'Unenroll {name} from this program and all its courses? Their grades and any '
       + 'certificate stay on record. A free program can be rejoined at any time. A paid program can '
-      + 'only be rejoined by a learner who bought it on the Rwaq website. Otherwise an admin can '
+      + 'only be rejoined by a learner who bought it on the {siteName} website. Otherwise an admin can '
       + 'enroll them again.',
   },
   unenrollLearnerSubmit: { id: 'rwaq.admin.programs.learners.unenroll.submit', defaultMessage: 'Unenroll' },
@@ -211,7 +211,7 @@ const messages = defineMessages({
   // ── Bulk enroll ─────────────────────────────────────────────────────────────
   learnersSubscriptionNote: {
     id: 'rwaq.admin.programs.learners.subscriptionNote',
-    defaultMessage: 'Learners join and leave this program through their Rwaq subscription.',
+    defaultMessage: 'Learners join and leave this program through their {siteName} subscription.',
   },
   bulkEnrollButton: { id: 'rwaq.admin.programs.bulkEnroll.button', defaultMessage: 'Bulk enroll' },
   bulkEnrollTitle: { id: 'rwaq.admin.programs.bulkEnroll.title', defaultMessage: 'Enroll learners' },

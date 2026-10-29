@@ -244,7 +244,7 @@ const messages = defineMessages({
   },
   enrollSubscriptionNote: {
     id: 'rwaq.admin.courseDetail.enrollments.subscriptionNote',
-    defaultMessage: 'Learners join this course through their Rwaq subscription.',
+    defaultMessage: 'Learners join this course through their {siteName} subscription.',
   },
   enrollProgramOnlyNote: {
     id: 'rwaq.admin.courseDetail.enrollments.programOnlyNote',
@@ -685,7 +685,7 @@ export const courseRoleMessages = defineMessages({
   },
   pricingSubscriptionDescription: {
     id: 'rwaq.admin.courses.pricing.subscription-description',
-    defaultMessage: 'Learners reach this course through the Rwaq subscription. It has no price of its own.',
+    defaultMessage: 'Learners reach this course through the {siteName} subscription. It has no price of its own.',
   },
   pricingProgramOnly: {
     id: 'rwaq.admin.courses.pricing.program-only',

@@ -7,7 +7,7 @@ describe('DisabledButtonWithTooltip', () => {
     const onSubmit = jest.fn();
     renderWrapper(
       <form onSubmit={onSubmit}>
-        <DisabledButtonWithTooltip id="why" tooltip="Learners join this course through their Rwaq subscription.">
+        <DisabledButtonWithTooltip id="why" tooltip="Learners join this course through their Arbisoft subscription.">
           Enroll a User
         </DisabledButtonWithTooltip>
       </form>,
@@ -18,7 +18,7 @@ describe('DisabledButtonWithTooltip', () => {
     expect(onSubmit).not.toHaveBeenCalled();
     fireEvent.mouseOver(button);
     await waitFor(() => expect(screen.getByRole('tooltip')).toHaveTextContent(
-      'Learners join this course through their Rwaq subscription.',
+      'Learners join this course through their Arbisoft subscription.',
     ));
   });
 });

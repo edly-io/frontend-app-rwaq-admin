@@ -5,6 +5,7 @@
  * - Collapsible "Settings" section (caret)
  * - "Coming soon" badge on the not-yet-built modules
  */
+import { getSiteName } from '@src/data/siteName';
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Icon } from '@openedx/paragon';
@@ -206,7 +207,7 @@ const SideNav = ({ onNavigate }: SideNavProps) => {
               letterSpacing: '-0.02em',
             }}
           >
-            Rwaq
+            {getSiteName()}
           </span>
         )}
       </div>

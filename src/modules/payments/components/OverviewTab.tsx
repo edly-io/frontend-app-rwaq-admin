@@ -4,6 +4,7 @@
  *
  * The date range is this tab's own, like every tab's.
  */
+import { getSiteName } from '@src/data/siteName';
 import { useState } from 'react';
 import {
   Alert, Button, ButtonGroup, Form,
@@ -184,7 +185,7 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
           label={intl.formatMessage(messages.kpiOrders)}
           value={summary && !isError ? summary.orders.toLocaleString(intl.locale) : null}
           isLoading={isLoading}
-          info={intl.formatMessage(messages.infoOrders)}
+          info={intl.formatMessage(messages.infoOrders, { siteName: getSiteName() })}
         />
         {money(intl.formatMessage(messages.kpiOrderValue), summary?.gross, intl.formatMessage(messages.infoOrderValue))}
         {money(

@@ -54,7 +54,7 @@ describe('CoursePicker', () => {
 
     const subscription = screen.getByRole('button', { name: /Subscription course/ });
     expect(subscription).toBeDisabled();
-    expect(subscription).toHaveTextContent('Part of the Rwaq subscription. Learners join it through their subscription.');
+    expect(subscription).toHaveTextContent('Part of the Arbisoft subscription. Learners join it through their subscription.');
     expect(screen.getByRole('button', { name: /Free course/ })).toBeEnabled();
   });
 

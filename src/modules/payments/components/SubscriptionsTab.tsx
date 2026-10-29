@@ -1,9 +1,10 @@
 /**
- * Subscriptions — one row per Rwaq subscription paid or granted in the date range, with KPI tiles.
+ * Subscriptions — one row per subscription paid or granted in the date range, with KPI tiles.
  *
- * Subscription payments are not part of the other tabs: they are all Rwaq's, with no partner
+ * Subscription payments are not part of the other tabs: they are all the platform's, with no partner
  * share. An admin grant lists the subscription but never counts as revenue.
  */
+import { getSiteName } from '@src/data/siteName';
 import { Link } from 'react-router-dom';
 import { Badge } from '@openedx/paragon';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
@@ -35,7 +36,7 @@ const messages = defineMessages({
   title: { id: 'rwaq.admin.payments.subscriptions.title', defaultMessage: 'Subscriptions' },
   info: {
     id: 'rwaq.admin.payments.subscriptions.info',
-    defaultMessage: 'Rwaq subscriptions paid or granted in the date range. All subscription revenue is Rwaq\'s.',
+    defaultMessage: '{siteName} subscriptions paid or granted in the date range. All subscription revenue is {siteName}\'s.',
   },
   how: {
     id: 'rwaq.admin.payments.subscriptions.how',
@@ -178,7 +179,7 @@ const SubscriptionsTab = () => {
 
   // A plan, source or status this page has no text for shows as sent instead of throwing.
   const label = (key: string) => (key in messages
-    ? intl.formatMessage(messages[key as keyof typeof messages])
+    ? intl.formatMessage(messages[key as keyof typeof messages], { siteName: getSiteName() })
     : key);
   const count = (value: number | undefined) => (
     value !== undefined && !summaryError ? value.toLocaleString(intl.locale) : null
