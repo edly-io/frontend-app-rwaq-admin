@@ -24,7 +24,7 @@ import { getConfig } from '@edx/frontend-platform';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { RWAQ_LOGO } from '@src/assets/rwaqLogo';
 import { useThemeVariant } from './useThemeVariant';
-import { topBarMessages as messages } from './messages';
+import { topBarMessages as messages, sideNavMessages } from './messages';
 
 export interface TopBarProps {
   onMenuToggle?: () => void;
@@ -60,7 +60,7 @@ const AccountToggle = forwardRef<HTMLButtonElement, AccountToggleProps>(
       aria-label={label}
       style={{
         ...circleBtn,
-        background: 'var(--pgn-color-primary-500, #449cc2)',
+        background: 'var(--pgn-color-primary-500, #0A76DB)',
         color: '#fff',
         border: 'none',
         fontSize: '0.875rem',
@@ -132,7 +132,7 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
             >
               <Icon src={MenuIcon} />
             </button>
-            {logoUrl && <img src={logoUrl} alt="Rwaq" style={{ height: '28px', objectFit: 'contain' }} />}
+            {logoUrl && <img src={logoUrl} alt={intl.formatMessage(sideNavMessages.logoAlt)} style={{ height: '28px', objectFit: 'contain' }} />}
           </>
         )}
         {!isMobile && (

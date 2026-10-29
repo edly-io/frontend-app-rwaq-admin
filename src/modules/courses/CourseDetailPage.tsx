@@ -7,6 +7,7 @@
  *   2. Student Management — paginated enrollment table, CSV download, Enroll a User
  *   3. Course Team — staff table, Add Member, Remove per row
  */
+import { getSiteName } from '@src/data/siteName';
 import { useCallback, useState } from 'react';
 import {
   Link, useNavigate, useParams, useSearchParams,
@@ -359,7 +360,7 @@ const CourseDetailPage = () => {
               <DisabledButtonWithTooltip
                 id="course-enroll-blocked"
                 size="sm"
-                tooltip={intl.formatMessage(enrollBlockedNote)}
+                tooltip={intl.formatMessage(enrollBlockedNote, { siteName: getSiteName() })}
               >
                 {intl.formatMessage(messages.enrollUser)}
               </DisabledButtonWithTooltip>

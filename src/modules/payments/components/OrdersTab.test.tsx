@@ -168,10 +168,10 @@ describe('Payment history subscriptions entry', () => {
     renderTab('@subscriptions');
 
     expect(hooks.usePaymentOrders).toHaveBeenCalledWith(expect.objectContaining({ org: '@subscriptions' }));
-    expect(screen.getByText('Partner: Rwaq (subscriptions)')).toBeInTheDocument();
+    expect(screen.getByText('Partner: Arbisoft (subscriptions)')).toBeInTheDocument();
   });
 
-  it('offers Rwaq (subscriptions) with its value after the organizations', () => {
+  it('offers Arbisoft (subscriptions) with its value after the organizations', () => {
     (orgHooks.useOrganizations as jest.Mock).mockReturnValue({
       data: { results: [{ shortName: 'TPA', name: 'Org A' }] },
     });
@@ -181,7 +181,7 @@ describe('Payment history subscriptions entry', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
 
     const options = within(screen.getByLabelText('Partner')).getAllByRole('option');
-    expect(options.map((option) => option.textContent)).toEqual(['All partners', 'Org A (TPA)', 'Rwaq (subscriptions)']);
+    expect(options.map((option) => option.textContent)).toEqual(['All partners', 'Org A (TPA)', 'Arbisoft (subscriptions)']);
     expect(options[2]).toHaveValue('@subscriptions');
   });
 });

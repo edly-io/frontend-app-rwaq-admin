@@ -316,7 +316,7 @@ const messages = defineMessages({
   },
   enrollSubscriptionCourse: {
     id: 'rwaq.admin.users.enroll.subscriptionCourse',
-    defaultMessage: 'Part of the Rwaq subscription. Learners join it through their subscription.',
+    defaultMessage: 'Part of the {siteName} subscription. Learners join it through their subscription.',
   },
   enrollProgramOnlyCourse: {
     id: 'rwaq.admin.users.enroll.programOnlyCourse',
@@ -362,7 +362,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.unenroll.body',
     defaultMessage: 'Unenroll {name} from {course}? Their grades and any certificate stay on '
       + 'record. A free course can be rejoined at any time. A paid course can only be rejoined by a '
-      + 'learner who bought it on the Rwaq website. Otherwise an admin can enroll them again.',
+      + 'learner who bought it on the {siteName} website. Otherwise an admin can enroll them again.',
   },
 
   reasonLabel: { id: 'rwaq.admin.users.reason.label', defaultMessage: 'Reason' },

@@ -10,6 +10,7 @@
  * soft delete, and who can rejoin on their own: anyone for a free course, only
  * a learner who bought it on the Rwaq website for a paid one.
  */
+import { getSiteName } from '@src/data/siteName';
 import { useEffect, useState } from 'react';
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -102,6 +103,7 @@ const UnenrollModal = ({
         {intl.formatMessage(messages.unenrollBody, {
           name: userName,
           course: enrollment.courseName,
+          siteName: getSiteName(),
         })}
       </p>
 

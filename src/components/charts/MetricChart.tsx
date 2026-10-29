@@ -50,7 +50,7 @@ export const resolveParagonToken = (token: string, fallback: string): string => 
  * one hue stepping down in weight.
  */
 export const getSequentialChartColors = (): string[] => [
-  resolveParagonToken('--rwaq-accent', '#449cc2'),
+  resolveParagonToken('--rwaq-accent', '#0A76DB'),
   'rgba(68, 156, 194, 0.72)',
   'rgba(68, 156, 194, 0.48)',
   'rgba(68, 156, 194, 0.26)',

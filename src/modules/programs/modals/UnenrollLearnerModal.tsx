@@ -6,6 +6,7 @@
  * wording says who can come back on their own: anyone for a free program, only
  * a learner who bought it on the Rwaq website for a paid one.
  */
+import { getSiteName } from '@src/data/siteName';
 import { useEffect, useState } from 'react';
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -52,7 +53,7 @@ const UnenrollLearnerModal = ({ onClose, uuid, learner }: UnenrollLearnerModalPr
     if (!hasReason(reason)) { return; }
     try {
       await mutation.mutateAsync({ userId: learner.id, reason: resolveReason(reason) });
-      showToast(intl.formatMessage(messages.unenrollLearnerSuccess, { name: learner.name }));
+      showToast(intl.formatMessage(messages.unenrollLearnerSuccess, { name: learner.name, siteName: getSiteName() }));
       onClose();
     } catch (error) {
       logError(error);
@@ -72,7 +73,7 @@ const UnenrollLearnerModal = ({ onClose, uuid, learner }: UnenrollLearnerModalPr
       size="md"
       submitVariant="danger"
     >
-      <p>{intl.formatMessage(messages.unenrollLearnerBody, { name: learner.name })}</p>
+      <p>{intl.formatMessage(messages.unenrollLearnerBody, { name: learner.name, siteName: getSiteName() })}</p>
       <ReasonField values={reason} onChange={setReason} error={reasonError} />
     </FormModal>
   );

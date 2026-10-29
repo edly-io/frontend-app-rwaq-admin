@@ -12,6 +12,7 @@
  * The UUID (not program_key) is used in the URL because program_key contains
  * ':' and '+' that would require URL encoding.
  */
+import { getSiteName } from '@src/data/siteName';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -227,7 +228,7 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
           id={`program-unenroll-subscription-${row.id}`}
           variant="outline-secondary"
           size="sm"
-          tooltip={intl.formatMessage(messages.learnersSubscriptionNote)}
+          tooltip={intl.formatMessage(messages.learnersSubscriptionNote, { siteName: getSiteName() })}
           ariaLabel={`${intl.formatMessage(messages.unenrollLearnerAction)}, ${row.name}`}
         >
           {intl.formatMessage(messages.unenrollLearnerAction)}
@@ -259,7 +260,7 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
         {isSubscription ? (
           <DisabledButtonWithTooltip
             id="program-bulk-enroll-subscription"
-            tooltip={intl.formatMessage(messages.learnersSubscriptionNote)}
+            tooltip={intl.formatMessage(messages.learnersSubscriptionNote, { siteName: getSiteName() })}
           >
             {intl.formatMessage(messages.bulkEnrollButton)}
           </DisabledButtonWithTooltip>

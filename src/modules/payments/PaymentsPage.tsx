@@ -13,6 +13,7 @@
  * A tab stays mounted once opened, so it keeps its search, sort and page when
  * the user comes back. While hidden it does not query (ActiveTabContext).
  */
+import { getSiteName } from '@src/data/siteName';
 import {
   Component, Suspense, lazy, useCallback, useEffect, useState,
 } from 'react';
@@ -194,7 +195,7 @@ const PaymentsPage = () => {
   if (!capabilities?.isSuperuser) {
     return (
       <div className="rwaq-page">
-        <ErrorState statusCode={403} title={intl.formatMessage(messages.forbiddenTitle)} />
+        <ErrorState statusCode={403} title={intl.formatMessage(messages.forbiddenTitle, { siteName: getSiteName() })} />
       </div>
     );
   }

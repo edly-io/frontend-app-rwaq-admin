@@ -6,6 +6,7 @@
  * below it. Switching back to Free clears both prices. The backend reports
  * refusals as DRF field errors, shown on the field they name.
  */
+import { getSiteName } from '@src/data/siteName';
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -151,7 +152,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
           <Form.Radio
             value="is_part_of_subscription"
             disabled={isPending}
-            description={intl.formatMessage(messages.pricingSubscriptionDescription)}
+            description={intl.formatMessage(messages.pricingSubscriptionDescription, { siteName: getSiteName() })}
           >
             {intl.formatMessage(messages.pricingSubscription)}
           </Form.Radio>

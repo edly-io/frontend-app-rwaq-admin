@@ -71,7 +71,7 @@ const messages = defineMessages({
   modeColShare: { id: 'rwaq.admin.dashboard.modes.colShare', defaultMessage: 'Share' },
   modesHint: {
     id: 'rwaq.admin.dashboard.modes.hint',
-    defaultMessage: 'Rwaq runs its access model on honor, so a drift toward audit is worth checking.',
+    defaultMessage: '{siteName} runs its access model on honor, so a drift toward audit is worth checking.',
   },
 
   // ── Tables ─────────────────────────────────────────────────────────────────

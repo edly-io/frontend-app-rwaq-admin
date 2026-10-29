@@ -2,6 +2,7 @@
  * Pieces the payments tabs share: money formatting, list state, the CSV
  * button, the tab heading and the partner filter.
  */
+import { getSiteName } from '@src/data/siteName';
 import { ReactNode, useState } from 'react';
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -199,7 +200,7 @@ export const usePartnerFilter = (
       value: partner.shortName,
       label: partner.name === partner.shortName ? partner.name : `${partner.name} (${partner.shortName})`,
     })),
-    { value: SUBSCRIPTIONS_ORG, label: intl.formatMessage(messages.partnerSubscriptions) },
+    { value: SUBSCRIPTIONS_ORG, label: intl.formatMessage(messages.partnerSubscriptions, { siteName: getSiteName() }) },
   ];
   // A partner in the URL may be beyond the first 100 options.
   if (org && !options.some((option) => option.value === org)) {
@@ -207,7 +208,7 @@ export const usePartnerFilter = (
   }
   // The chip names the partner without the slug.
   const label = org === SUBSCRIPTIONS_ORG
-    ? intl.formatMessage(messages.partnerSubscriptions)
+    ? intl.formatMessage(messages.partnerSubscriptions, { siteName: getSiteName() })
     : partners.find((partner) => partner.shortName === org)?.name ?? org;
   return {
     group: {

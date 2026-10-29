@@ -11,6 +11,7 @@
  * responses race: "cla" can resolve after "class" and repopulate the list with
  * the wrong matches.
  */
+import { getSiteName } from '@src/data/siteName';
 import { useEffect, useState } from 'react';
 import {
   Alert, Button, Form, Icon, Spinner,
@@ -138,7 +139,10 @@ const CoursePicker = ({
                   <span className="rwaq-user-cell__meta">{course.courseId}</span>
                   {(isEnrolled || isBlocked) && (
                     <span className="rwaq-course-picker__option-note">
-                      {intl.formatMessage(isBlocked ? blockedNote : messages.enrollAlready)}
+                      {intl.formatMessage(
+                        isBlocked ? blockedNote : messages.enrollAlready,
+                        { siteName: getSiteName() },
+                      )}
                     </span>
                   )}
                 </button>

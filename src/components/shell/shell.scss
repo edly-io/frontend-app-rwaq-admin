@@ -35,10 +35,10 @@
   --rwaq-row-stripe: transparent;
   --rwaq-page-bg: transparent;
   --rwaq-surface-raised: #ffffff;
-  --rwaq-accent: #449cc2; // Rwaq primary (brand light theme --pgn-color-primary-base)
-  --rwaq-accent-hover: #3a86a7;
+  --rwaq-accent: #0A76DB; // Arbisoft primary
+  --rwaq-accent-hover: #0861bc;
   --rwaq-accent-contrast: #ffffff;
-  --rwaq-accent-soft: rgba(68, 156, 194, 0.12);
+  --rwaq-accent-soft: rgba(10, 118, 219, 0.12);
   --rwaq-error: #d92d20;
 }
 
@@ -69,13 +69,13 @@ html[data-paragon-theme-variant='dark'] {
   // borders. Alternating tones on a near-black table is noise, and it was the
   // black/white banding in the screenshots.
   --rwaq-row-stripe: transparent;
-  // The accent stays in the Rwaq teal family in both themes rather than
+  // The accent stays in the Arbisoft blue family in both themes rather than
   // switching to the brand's pale periwinkle, which read as a washed-out
   // lavender button against near-black.
-  --rwaq-accent: #4aa3c9;
-  --rwaq-accent-hover: #63b4d6;
-  --rwaq-accent-contrast: #08222c;
-  --rwaq-accent-soft: rgba(74, 163, 201, 0.16);
+  --rwaq-accent: #4d9fe8;
+  --rwaq-accent-hover: #78b6ef;
+  --rwaq-accent-contrast: #04182f;
+  --rwaq-accent-soft: rgba(77, 159, 232, 0.16);
   --rwaq-error: #f97066;
 }
 
@@ -92,45 +92,45 @@ html[data-paragon-theme-variant='dark'] {
 // Values are the brand package's own (dist/light.min.css, dist/dark.min.css) —
 // not invented.
 :root {
-  --pgn-color-primary-base: #449cc2;
-  --pgn-color-primary-100: #eaf4f8;
-  --pgn-color-primary-200: #c5e1eb;
-  --pgn-color-primary-300: #9bcbdd;
-  --pgn-color-primary-400: #6fb4cf;
-  --pgn-color-primary-500: #449cc2;
-  --pgn-color-primary-600: #3a86a7;
-  --pgn-color-primary-700: #2f6d89;
-  --pgn-color-primary-800: #24546b;
-  --pgn-color-primary-900: #1a3d4e;
+  --pgn-color-primary-base: #0A76DB;
+  --pgn-color-primary-100: #e6f1fc;
+  --pgn-color-primary-200: #bfdcf7;
+  --pgn-color-primary-300: #8dc1f0;
+  --pgn-color-primary-400: #4fa2e6;
+  --pgn-color-primary-500: #0A76DB;
+  --pgn-color-primary-600: #0861bc;
+  --pgn-color-primary-700: #0a52a3;
+  --pgn-color-primary-800: #0D3F8A;
+  --pgn-color-primary-900: #0a2d63;
 
-  --pgn-color-btn-bg-primary: #449cc2;
-  --pgn-color-btn-border-primary: #449cc2;
-  --pgn-color-btn-hover-bg-primary: #3a86a7;
-  --pgn-color-btn-active-bg-primary: #2f6d89;
-  --pgn-color-link-base: #2f6d89;
+  --pgn-color-btn-bg-primary: #0A76DB;
+  --pgn-color-btn-border-primary: #0A76DB;
+  --pgn-color-btn-hover-bg-primary: #0861bc;
+  --pgn-color-btn-active-bg-primary: #0a52a3;
+  --pgn-color-link-base: #0a52a3;
 }
 
 // Dark uses the brand's own dark accent (#AEC7F6): the light theme's #449CC2
 // does not carry enough contrast on a #0D0D0E surface.
-// Dark keeps the same teal family, one step brighter so it holds up against
+// Dark keeps the same blue family, one step brighter so it holds up against
 // a near-black surface. The brand's pale periwinkle (#AEC7F6) is reserved for
 // links and soft tints — as a button fill it read as washed-out lavender.
 html[data-paragon-theme-variant='dark'] {
-  --pgn-color-primary-base: #4aa3c9;
-  --pgn-color-primary-100: #12222a;
-  --pgn-color-primary-200: #1a3540;
-  --pgn-color-primary-300: #276578;
-  --pgn-color-primary-400: #38879f;
-  --pgn-color-primary-500: #4aa3c9;
-  --pgn-color-primary-600: #63b4d6;
-  --pgn-color-primary-700: #85c7e3;
-  --pgn-color-btn-bg-primary: #4aa3c9;
-  --pgn-color-btn-border-primary: #4aa3c9;
-  --pgn-color-btn-hover-bg-primary: #63b4d6;
-  --pgn-color-btn-active-bg-primary: #38879f;
-  --pgn-color-btn-text-primary: #08222c;
-  --pgn-color-btn-hover-text-primary: #08222c;
-  --pgn-color-link-base: #85c7e3;
+  --pgn-color-primary-base: #4d9fe8;
+  --pgn-color-primary-100: #0e1b2b;
+  --pgn-color-primary-200: #14304f;
+  --pgn-color-primary-300: #1d4f86;
+  --pgn-color-primary-400: #2f7fd0;
+  --pgn-color-primary-500: #4d9fe8;
+  --pgn-color-primary-600: #78b6ef;
+  --pgn-color-primary-700: #a6cdf5;
+  --pgn-color-btn-bg-primary: #4d9fe8;
+  --pgn-color-btn-border-primary: #4d9fe8;
+  --pgn-color-btn-hover-bg-primary: #78b6ef;
+  --pgn-color-btn-active-bg-primary: #2f7fd0;
+  --pgn-color-btn-text-primary: #04182f;
+  --pgn-color-btn-hover-text-primary: #04182f;
+  --pgn-color-link-base: #a6cdf5;
 }
 
 // ── Dark mode: Paragon's own tokens ──────────────────────────────────────────
@@ -869,7 +869,7 @@ html[data-paragon-theme-variant='dark'] {
 }
 
 .rwaq-chip--info.pgn__chip {
-  background: rgba(68, 156, 194, 0.12);
+  background: rgba(10, 118, 219, 0.12);
   border-color: rgba(68, 156, 194, 0.4);
   color: #10648a;
 }
@@ -1230,7 +1230,7 @@ html[data-paragon-theme-variant='dark'] {
 // rather than plain white so the accent still reads.
 html:not([data-paragon-theme-variant='dark']) .rwaq-navitem--active {
   background: #ffffff;
-  color: #2f6d89;
+  color: #0a52a3;
   box-shadow: inset 3px 0 0 0 var(--rwaq-accent), 0 1px 4px rgba(16, 24, 40, 0.08);
 }
 

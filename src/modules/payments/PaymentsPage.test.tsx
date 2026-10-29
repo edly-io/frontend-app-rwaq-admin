@@ -113,7 +113,7 @@ describe('PaymentsPage', () => {
     setCapabilities(false);
     renderWrapper(<PaymentsPage />);
 
-    expect(screen.getByText('Orders & Payments are visible to Rwaq superadmins only.')).toBeInTheDocument();
+    expect(screen.getByText('Orders & Payments are visible to Arbisoft superadmins only.')).toBeInTheDocument();
     expect(hooks.usePaymentsSummary).not.toHaveBeenCalled();
   });
 
@@ -135,7 +135,7 @@ describe('PaymentsPage', () => {
     });
     expect(screen.getByText('700.00')).toBeInTheDocument();
     expect(screen.queryByText('Payable to partners')).not.toBeInTheDocument();
-    expect(screen.queryByText('Rwaq revenue')).not.toBeInTheDocument();
+    expect(screen.queryByText('Arbisoft revenue')).not.toBeInTheDocument();
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(2);
   });
 
@@ -201,10 +201,10 @@ describe('PaymentsPage', () => {
     });
   });
 
-  it('offers Rwaq (subscriptions) after the organizations and asks the summary for it', async () => {
+  it('offers Arbisoft (subscriptions) after the organizations and asks the summary for it', async () => {
     await renderPage();
     const options = within(screen.getByLabelText('Partner')).getAllByRole('option').map((option) => option.textContent);
-    expect(options).toEqual(['All partners', 'Org A (TPA)', 'Rwaq (subscriptions)']);
+    expect(options).toEqual(['All partners', 'Org A (TPA)', 'Arbisoft (subscriptions)']);
 
     fireEvent.change(screen.getByLabelText('Partner'), { target: { value: '@subscriptions' } });
 
@@ -407,7 +407,7 @@ describe('PaymentsPage', () => {
       await renderPage();
 
       expect(lastOrdersParams().org).toBe('@subscriptions');
-      expect(screen.getByText('Partner: Rwaq (subscriptions)')).toBeInTheDocument();
+      expect(screen.getByText('Partner: Arbisoft (subscriptions)')).toBeInTheDocument();
       expect(screen.queryByText('Partner: @subscriptions')).not.toBeInTheDocument();
     });
 
@@ -417,7 +417,7 @@ describe('PaymentsPage', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
 
       expect(
-        within(screen.getByLabelText('Partner')).getByRole('option', { name: 'Rwaq (subscriptions)' }),
+        within(screen.getByLabelText('Partner')).getByRole('option', { name: 'Arbisoft (subscriptions)' }),
       ).toHaveValue('@subscriptions');
     });
 

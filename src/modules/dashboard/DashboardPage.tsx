@@ -16,6 +16,7 @@
  *   - Every figure is stamped with the backend's generatedAt, because these
  *     numbers are cached and pretending otherwise would be dishonest.
  */
+import { getSiteName } from '@src/data/siteName';
 import {
   useEffect, useMemo, useRef, useState,
 } from 'react';
@@ -675,7 +676,7 @@ const DashboardPage = () => {
                 {intl.formatMessage(messages.modesTitle)}
               </h3>
             </InfoTooltip>
-            <span className="rwaq-dash-card__sub">{intl.formatMessage(messages.modesHint)}</span>
+            <span className="rwaq-dash-card__sub">{intl.formatMessage(messages.modesHint, { siteName: getSiteName() })}</span>
           </div>
           {data.enrollmentModes.length > 0 ? (
             <MiniTable

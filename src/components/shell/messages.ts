@@ -27,7 +27,7 @@ export const adminShellMessages = defineMessages({
 // ── SideNav ───────────────────────────────────────────────────────────────────
 
 export const sideNavMessages = defineMessages({
-  logoAlt: { id: 'rwaq.admin.sidenav.logoAlt', defaultMessage: 'Rwaq' },
+  logoAlt: { id: 'rwaq.admin.sidenav.logoAlt', defaultMessage: 'Logo' },
   dashboard: { id: 'rwaq.admin.sidenav.dashboard', defaultMessage: 'Dashboard' },
   users: { id: 'rwaq.admin.sidenav.users', defaultMessage: 'Users' },
   organizations: { id: 'rwaq.admin.sidenav.organizations', defaultMessage: 'Organizations' },

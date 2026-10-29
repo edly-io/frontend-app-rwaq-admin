@@ -4,7 +4,10 @@ import { ReactNode } from 'react';
 import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AppContext } from '@edx/frontend-platform/react';
+import { mergeConfig } from '@edx/frontend-platform';
 import { IntlProvider } from '@edx/frontend-platform/i18n';
+
+mergeConfig({ SITE_NAME: 'Arbisoft' });
 
 const mockAppContext = {
   authenticatedUser: {
