@@ -11,6 +11,7 @@ import { ToastProvider } from './components/ToastContext';
 
 import messages from './i18n';
 import LoadingPage from './components/LoadingPage';
+import { sendLanguageWithRequests } from './data/language';
 import Head from './components/Head';
 
 import './index.scss';
@@ -43,6 +44,7 @@ const queryClient = new QueryClient({
 });
 
 subscribe(APP_READY, () => {
+  sendLanguageWithRequests();
   const root = createRoot(document.getElementById('root') as HTMLElement);
 
   root.render(
