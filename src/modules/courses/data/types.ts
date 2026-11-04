@@ -26,6 +26,9 @@ export interface CourseSummary {
   courseId: string;
   displayName: string;
   org: string;
+  /** The organization's names, null when the org has no Organization row. */
+  organizationName: string | null;
+  organizationArabicName: string | null;
   /** Relative URL — needs LMS_BASE_URL prefix to resolve. */
   courseImageUrl: string | null;
   start: string | null;

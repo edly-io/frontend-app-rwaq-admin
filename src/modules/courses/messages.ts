@@ -103,9 +103,11 @@ const messages = defineMessages({
     id: 'rwaq.admin.courses.chip.search',
     defaultMessage: 'Search: {term}',
   },
+  orgLabel: { id: 'rwaq.admin.courses.org.label', defaultMessage: 'Organization' },
+  orgAll: { id: 'rwaq.admin.courses.org.all', defaultMessage: 'All organizations' },
   chipOrg: {
     id: 'rwaq.admin.courses.chip.org',
-    defaultMessage: 'Org: {org}',
+    defaultMessage: 'Organization: {org}',
   },
   chipFilter: {
     id: 'rwaq.admin.courses.chip.filter',
