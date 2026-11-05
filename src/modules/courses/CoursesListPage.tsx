@@ -18,6 +18,7 @@ import { getErrorStatus } from '@src/data/httpError';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip, SelectOption } from '@src/components/SearchFilterBar';
 import ProfileAvatar from '@src/components/ProfileAvatar';
+import { localizedName } from '@src/data/localizedName';
 import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
 import { getCoursesCsvUrl } from './data/api';
 import { useCourses } from './data/hooks';
@@ -189,7 +190,10 @@ const CoursesListPage = () => {
     {
       label: intl.formatMessage(messages.colOrg),
       key: 'org',
-      renderCell: (value) => <span>{value as string}</span>,
+      renderCell: (value, row) => {
+        const { organizationName, organizationArabicName } = row as CourseSummary;
+        return <span>{localizedName(intl.locale, organizationName, organizationArabicName) || (value as string)}</span>;
+      },
     },
     {
       label: intl.formatMessage(messages.colCategory),
@@ -202,7 +206,7 @@ const CoursesListPage = () => {
         return (
           <div className="d-flex flex-wrap rwaq-gap-xs">
             {cats.map((cat) => (
-              <Badge key={cat.slug} variant="light">{cat.name}</Badge>
+              <Badge key={cat.slug} variant="light">{localizedName(intl.locale, cat.name, cat.arabicName)}</Badge>
             ))}
           </div>
         );

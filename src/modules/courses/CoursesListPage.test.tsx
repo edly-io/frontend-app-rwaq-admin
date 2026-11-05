@@ -4,7 +4,9 @@
  * The data hook is mocked, as in the payments test, so this runs without a
  * QueryClient or network. The CSV button is stubbed to show what it would send.
  */
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import { IntlProvider } from '@edx/frontend-platform/i18n';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from './data/hooks';
 import CoursesListPage from './CoursesListPage';
@@ -74,5 +76,69 @@ describe('CoursesListPage period', () => {
 
     expect(window.location.search).toBe('');
     expect(lastCall().startDate).toBeUndefined();
+  });
+});
+
+const COURSE = {
+  courseId: 'course-v1:ARB+AI101+2026',
+  displayName: 'Intro to AI',
+  org: 'ARB',
+  organizationName: 'Arbisoft Academy',
+  organizationArabicName: 'أكاديمية أربيسوفت',
+  courseImageUrl: null,
+  start: null,
+  end: null,
+  categories: [
+    { slug: 'tech', name: 'Technology', arabicName: 'التقنية' },
+    { slug: 'misc', name: 'Misc', arabicName: '' },
+  ],
+  enrollmentCount: 0,
+  unenrolledCount: 0,
+};
+
+const withCourses = (...courses: object[]) => (hooks.useCourses as jest.Mock).mockReturnValue({
+  data: { results: courses, pagination: { count: courses.length, numPages: 1 } },
+  isLoading: false,
+  isError: false,
+  error: null,
+  refetch: jest.fn(),
+});
+
+describe('CoursesListPage organization column', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    window.history.pushState({}, '', '/');
+  });
+
+  it('shows the English name in English, the code when the organization has no name', () => {
+    withCourses(COURSE, {
+      ...COURSE, courseId: 'course-v1:ZZZ+X+1', displayName: 'Other', org: 'ZZZ', organizationName: null,
+    });
+    renderWrapper(<CoursesListPage />);
+
+    expect(screen.getByText('Arbisoft Academy')).toBeInTheDocument();
+    expect(screen.queryByText('أكاديمية أربيسوفت')).not.toBeInTheDocument();
+    expect(screen.getByText('ZZZ')).toBeInTheDocument();
+    expect(screen.getAllByText('Technology')).not.toHaveLength(0);
+    expect(screen.queryByText('التقنية')).not.toBeInTheDocument();
+  });
+
+  it('shows the Arabic name in an Arabic panel, the English name when there is none', () => {
+    withCourses(COURSE, {
+      ...COURSE, courseId: 'course-v1:ARB+B+1', displayName: 'Second', organizationArabicName: '',
+    });
+    render(
+      <BrowserRouter>
+        <IntlProvider locale="ar">
+          <CoursesListPage />
+        </IntlProvider>
+      </BrowserRouter>,
+    );
+
+    expect(screen.getByText('أكاديمية أربيسوفت')).toBeInTheDocument();
+    expect(screen.getByText('Arbisoft Academy')).toBeInTheDocument();
+    expect(screen.getAllByText('التقنية')).not.toHaveLength(0);
+    expect(screen.queryByText('Technology')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Misc')).not.toHaveLength(0);
   });
 });
