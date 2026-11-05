@@ -20,6 +20,7 @@ import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useCourses } from '@src/data/hooks';
 import type { CourseSummary } from '@src/data/hooks';
 import OrgAdminTable from './components/OrgAdminTable';
+import OrgReportList from './components/OrgReportList';
 import AddOrgAdminModal from './modals/AddOrgAdminModal';
 import OrgFormModal from './modals/OrgFormModal';
 import { useOrganization } from './data/hooks';
@@ -229,6 +230,11 @@ const OrgDetailPage = () => {
       <div className="rwaq-card">
         <h2 className="rwaq-section-title mb-4">{intl.formatMessage(messages.detailCourses)}</h2>
         <OrgCoursesTable org={organization.shortName} />
+      </div>
+
+      <div className="rwaq-card">
+        <h2 className="rwaq-section-title mb-4">{intl.formatMessage(messages.reportsTitle)}</h2>
+        <OrgReportList org={organization.shortName} />
       </div>
 
       <AddOrgAdminModal

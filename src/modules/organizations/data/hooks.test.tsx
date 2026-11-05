@@ -9,14 +9,17 @@ import { ReactNode } from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
+import { IntlProvider } from '@edx/frontend-platform/i18n';
 import {
   useAddOrgAdmin,
   useCreateOrganization,
+  useOrgFilterOptions,
   useOrganization,
   useOrganizations,
   useRemoveOrgAdmin,
   useUpdateOrganization,
 } from './hooks';
+import { getOrgReportCsvUrl } from './api';
 
 jest.mock('@edx/frontend-platform/auth', () => ({
   getAuthenticatedHttpClient: jest.fn(),
@@ -116,6 +119,71 @@ describe('useOrganizations', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(get).toHaveBeenCalledWith(`${BASE}/`, { params: { active: 'false' } });
+  });
+});
+
+describe('useOrgFilterOptions', () => {
+  it('offers the first 100 organizations by name, and the one in the URL when it is not among them', async () => {
+    const get = jest.fn().mockResolvedValue({ data: mockOrgList });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
+
+    const queryWrapper = createWrapper();
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <IntlProvider locale="en">{queryWrapper({ children })}</IntlProvider>
+    );
+    const { result } = renderHook(() => useOrgFilterOptions('Elsewhere'), { wrapper });
+
+    await waitFor(() => expect(result.current).toHaveLength(2));
+    expect(result.current).toEqual([
+      { value: 'Rwaq', label: 'Rwaq' },
+      { value: 'Elsewhere', label: 'Elsewhere' },
+    ]);
+    expect(get).toHaveBeenCalledWith(`${BASE}/`, { params: { ordering: 'name', page_size: 100 } });
+  });
+});
+
+describe('useOrgFilterOptions language', () => {
+  const list = {
+    results: [
+      {
+        id: 1, name: 'Arbisoft Academy', short_name: 'ARB', arabic_name: 'أكاديمية أربيسوفت',
+      },
+      {
+        id: 2, name: 'No Arabic Org', short_name: 'NOAR', arabic_name: '',
+      },
+    ],
+    pagination: {
+      next: null, previous: null, count: 2, num_pages: 1,
+    },
+  };
+
+  const labelsIn = async (locale: string) => {
+    const get = jest.fn().mockResolvedValue({ data: list });
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get });
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <IntlProvider locale={locale}>{children}</IntlProvider>
+      </QueryClientProvider>
+    );
+    const { result } = renderHook(() => useOrgFilterOptions(), { wrapper });
+    await waitFor(() => expect(result.current).toHaveLength(2));
+    return result.current.map((option) => option.label);
+  };
+
+  it('labels with the English names in English', async () => {
+    expect(await labelsIn('en')).toEqual(['Arbisoft Academy', 'No Arabic Org']);
+  });
+
+  it('labels with the Arabic name in Arabic when there is one, else the English name', async () => {
+    expect(await labelsIn('ar')).toEqual(['أكاديمية أربيسوفت', 'No Arabic Org']);
+  });
+});
+
+describe('getOrgReportCsvUrl', () => {
+  it('builds the csv url of each report on the Studio host', () => {
+    expect(getOrgReportCsvUrl('courses')).toBe('http://studio.local:8001/api/v1/admin/org-reports/courses/csv/');
+    expect(getOrgReportCsvUrl('certificates'))
+      .toBe('http://studio.local:8001/api/v1/admin/org-reports/certificates/csv/');
   });
 });
 
