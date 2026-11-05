@@ -92,3 +92,6 @@ export interface OrgListParams {
   page?: number;
   pageSize?: number;
 }
+
+/** The six org reports, named as in the API path (`<name>/csv/`). */
+export type OrgReportName = 'courses' | 'learners' | 'revenue' | 'funnel' | 'lifecycle' | 'certificates';

@@ -18,7 +18,9 @@ import { getErrorStatus } from '@src/data/httpError';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip, SelectOption } from '@src/components/SearchFilterBar';
 import ProfileAvatar from '@src/components/ProfileAvatar';
+import { localizedName } from '@src/data/localizedName';
 import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
+import { useOrgFilterOptions } from '@src/modules/organizations/data/hooks';
 import { getCoursesCsvUrl } from './data/api';
 import { useCourses } from './data/hooks';
 import type { CourseSummary, CourseOrdering, CourseTypeFilter } from './data/types';
@@ -99,11 +101,17 @@ const CoursesListPage = () => {
   } = useCourses({ ...listParams, page, pageSize: PAGE_SIZE });
 
   const statusCode = isError ? getErrorStatus(error) : undefined;
+  const orgFilterOptions = useOrgFilterOptions(org);
 
   const sortOptions: SelectOption[] = SORT_OPTIONS.map((opt) => ({
     value: opt.value,
     label: intl.formatMessage(messages[opt.label]),
   }));
+
+  const orgOptions: SelectOption[] = [
+    { value: '', label: intl.formatMessage(messages.orgAll) },
+    ...orgFilterOptions,
+  ];
 
   const typeOptions: SelectOption[] = [
     { value: '', label: intl.formatMessage(messages.typeAll) },
@@ -189,7 +197,10 @@ const CoursesListPage = () => {
     {
       label: intl.formatMessage(messages.colOrg),
       key: 'org',
-      renderCell: (value) => <span>{value as string}</span>,
+      renderCell: (value, row) => {
+        const { organizationName, organizationArabicName } = row as CourseSummary;
+        return <span>{localizedName(intl.locale, organizationName, organizationArabicName) || (value as string)}</span>;
+      },
     },
     {
       label: intl.formatMessage(messages.colCategory),
@@ -202,7 +213,7 @@ const CoursesListPage = () => {
         return (
           <div className="d-flex flex-wrap rwaq-gap-xs">
             {cats.map((cat) => (
-              <Badge key={cat.slug} variant="light">{cat.name}</Badge>
+              <Badge key={cat.slug} variant="light">{localizedName(intl.locale, cat.name, cat.arabicName)}</Badge>
             ))}
           </div>
         );
@@ -252,6 +263,13 @@ const CoursesListPage = () => {
           onSearch={(term) => updateParams({ search: term })}
           searchPlaceholder={intl.formatMessage(messages.searchPlaceholder)}
           filterGroups={[
+            {
+              id: 'org',
+              label: intl.formatMessage(messages.orgLabel),
+              value: org,
+              options: orgOptions,
+              onChange: (value) => updateParams({ org: value }),
+            },
             {
               id: 'type',
               label: intl.formatMessage(messages.typeLabel),

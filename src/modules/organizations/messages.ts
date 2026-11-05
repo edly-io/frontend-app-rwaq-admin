@@ -150,6 +150,42 @@ const messages = defineMessages({
   orgCoursesViewAriaLabel: { id: 'rwaq.admin.orgs.courses.viewAriaLabel', defaultMessage: 'View {name}' },
   orgCoursesView: { id: 'rwaq.admin.orgs.courses.view', defaultMessage: 'View' },
   orgCoursesError: { id: 'rwaq.admin.orgs.courses.error', defaultMessage: 'Could not load courses for this organization.' },
+  // ── Organization reports card (EDLYCSRWAQ-368) ──────────────────────────────────────
+  reportsTitle: { id: 'rwaq.admin.orgs.reports.title', defaultMessage: 'Organization reports' },
+  reportsColumnReport: { id: 'rwaq.admin.orgs.reports.column.report', defaultMessage: 'Report' },
+  reportsColumnDetails: { id: 'rwaq.admin.orgs.reports.column.details', defaultMessage: 'Details' },
+  reportsColumnDownload: { id: 'rwaq.admin.orgs.reports.column.download', defaultMessage: 'Download' },
+  reportsCaption: { id: 'rwaq.admin.orgs.reports.caption', defaultMessage: 'Reports of the organization' },
+  reportsCoursesTitle: { id: 'rwaq.admin.orgs.reports.courses.title', defaultMessage: 'Courses' },
+  reportsCoursesDetails: {
+    id: 'rwaq.admin.orgs.reports.courses.details',
+    defaultMessage: 'One row per course: enrolled and passed learners, pass rate, average grade and certificates.',
+  },
+  reportsLearnersTitle: { id: 'rwaq.admin.orgs.reports.learners.title', defaultMessage: 'Learners' },
+  reportsLearnersDetails: {
+    id: 'rwaq.admin.orgs.reports.learners.details',
+    defaultMessage: 'One row per learner: courses enrolled and passed, average grade and certificates earned.',
+  },
+  reportsRevenueTitle: { id: 'rwaq.admin.orgs.reports.revenue.title', defaultMessage: 'Revenue' },
+  reportsRevenueDetails: {
+    id: 'rwaq.admin.orgs.reports.revenue.details',
+    defaultMessage: 'One row per order item: buyer, course or program, price, discount and amount paid.',
+  },
+  reportsFunnelTitle: { id: 'rwaq.admin.orgs.reports.funnel.title', defaultMessage: 'Program funnel' },
+  reportsFunnelDetails: {
+    id: 'rwaq.admin.orgs.reports.funnel.details',
+    defaultMessage: 'Programs, program enrollments and completions, and the completion rate.',
+  },
+  reportsLifecycleTitle: { id: 'rwaq.admin.orgs.reports.lifecycle.title', defaultMessage: 'Course lifecycle' },
+  reportsLifecycleDetails: {
+    id: 'rwaq.admin.orgs.reports.lifecycle.details',
+    defaultMessage: 'How many courses are upcoming, running or ended today, and how many have no dates.',
+  },
+  reportsCertificatesTitle: { id: 'rwaq.admin.orgs.reports.certificates.title', defaultMessage: 'Certificates' },
+  reportsCertificatesDetails: {
+    id: 'rwaq.admin.orgs.reports.certificates.details',
+    defaultMessage: 'Courses with a certificate, certificates issued and the issuance rate.',
+  },
 });
 
 export default messages;
