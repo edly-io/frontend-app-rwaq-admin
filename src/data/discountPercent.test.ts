@@ -1,4 +1,4 @@
-import { getDiscountPercent } from './discountPercent';
+import { getDiscountPercent, getPriceWithVat } from './discountPercent';
 
 describe('getDiscountPercent', () => {
   it('rounds to a whole number', () => {
@@ -12,5 +12,36 @@ describe('getDiscountPercent', () => {
     ['100', '0'], ['100', '100'], ['100', '120'], ['100', '-1'], ['Infinity', '5'],
   ])('is null for %j and %j', (regular, sale) => {
     expect(getDiscountPercent(regular, sale)).toBeNull();
+  });
+});
+
+describe('getPriceWithVat', () => {
+  it('adds VAT to the regular price', () => {
+    expect(getPriceWithVat('30', '', '15.00')).toBe(34.5);
+  });
+
+  it('prefers a valid sale price', () => {
+    expect(getPriceWithVat('100', '30', '15.00')).toBe(34.5);
+  });
+
+  it.each(['100', '120', '0', '-1', 'abc'])('falls back to the regular price for sale %j', (sale) => {
+    expect(getPriceWithVat('100', sale, '15')).toBe(115);
+  });
+
+  it('rounds half up on the cent', () => {
+    expect(getPriceWithVat('0.10', '', '15')).toBe(0.12);
+    expect(getPriceWithVat('0.30', '', '15')).toBe(0.35);
+  });
+
+  it('supports a fractional rate', () => {
+    expect(getPriceWithVat('100', '', '15.5')).toBe(115.5);
+  });
+
+  it.each(['', ' ', '0', '-5', 'abc', 'Infinity'])('is null for regular price %j', (regular) => {
+    expect(getPriceWithVat(regular, '', '15')).toBeNull();
+  });
+
+  it.each(['0.00', '0', '', '  ', null, undefined, 'x', '-1'])('is null for rate %j', (rate) => {
+    expect(getPriceWithVat('100', '', rate as string | null | undefined)).toBeNull();
   });
 });

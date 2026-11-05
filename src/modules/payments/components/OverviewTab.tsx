@@ -186,22 +186,34 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
           isLoading={isLoading}
           info={intl.formatMessage(messages.infoOrders)}
         />
-        {money(intl.formatMessage(messages.kpiOrderValue), summary?.gross, intl.formatMessage(messages.infoOrderValue))}
+        <PaymentKpi
+          label={intl.formatMessage(messages.kpiAdminEnrollments)}
+          value={summary && !isError ? summary.adminEnrollments.toLocaleString(intl.locale) : null}
+          isLoading={isLoading}
+          info={intl.formatMessage(messages.infoAdminEnrollments)}
+        />
+        {money(intl.formatMessage(messages.kpiGross), summary?.gross, intl.formatMessage(messages.infoGross))}
         {money(
           intl.formatMessage(messages.kpiDiscounts),
           summary?.discounts,
           intl.formatMessage(messages.infoDiscounts),
         )}
-        {money(intl.formatMessage(messages.kpiCollected), summary?.netPaid, intl.formatMessage(messages.infoCollected))}
+        {money(intl.formatMessage(messages.kpiNetSales), summary?.netSales, intl.formatMessage(messages.infoNetSales))}
+        {money(intl.formatMessage(messages.kpiVat), summary?.tax, intl.formatMessage(messages.infoVat))}
         {money(
-          intl.formatMessage(messages.kpiContentRevenue),
-          summary?.content.netPaid,
-          intl.formatMessage(messages.infoContentRevenue, { orders: summary?.content.orders ?? 0 }),
+          intl.formatMessage(messages.kpiTotalCollected),
+          summary?.totalCollected,
+          intl.formatMessage(messages.infoTotalCollected),
         )}
         {money(
-          intl.formatMessage(messages.kpiSubscriptionRevenue),
-          summary?.subscriptions.netPaid,
-          intl.formatMessage(messages.infoSubscriptionRevenue, { orders: summary?.subscriptions.orders ?? 0 }),
+          intl.formatMessage(messages.kpiContentNetSales),
+          summary?.content.netSales,
+          intl.formatMessage(messages.infoContentNetSales, { orders: summary?.content.orders ?? 0 }),
+        )}
+        {money(
+          intl.formatMessage(messages.kpiSubscriptionNetSales),
+          summary?.subscriptions.netSales,
+          intl.formatMessage(messages.infoSubscriptionNetSales, { orders: summary?.subscriptions.orders ?? 0 }),
         )}
       </div>
 
@@ -231,10 +243,10 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
           title={intl.formatMessage(messages.chartCollectedTitle)}
           info={intl.formatMessage(messages.infoChartCollected)}
           series={[
-            { key: intl.formatMessage(messages.seriesContent), value: (point) => Number(point.content.netPaid) },
+            { key: intl.formatMessage(messages.seriesContent), value: (point) => Number(point.content.netSales) },
             {
               key: intl.formatMessage(messages.seriesSubscriptions),
-              value: (point) => Number(point.subscriptions.netPaid),
+              value: (point) => Number(point.subscriptions.netSales),
             },
           ]}
           formatValue={formatMoneyValue}
