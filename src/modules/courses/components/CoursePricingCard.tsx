@@ -14,7 +14,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
-import { getDiscountPercent } from '@src/data/discountPercent';
+import { getDiscountPercent, getPriceWithVat } from '@src/data/discountPercent';
 import { useCoursePricing, useUpdateCoursePricing } from '../data/hooks';
 import type { CoursePricingCategory } from '../data/types';
 import { courseRoleMessages as messages } from '../messages';
@@ -59,6 +59,8 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   const showPriceFields = category === 'is_paid';
   // Live from the inputs, before saving.
   const discountPercent = getDiscountPercent(regularPrice, salePrice);
+  const vatRate = pricing?.vatRate;
+  const priceWithVat = getPriceWithVat(regularPrice, salePrice, vatRate);
   const currency = pricing?.currency ?? 'SAR';
   // The backend refuses a type change while the course is in a program.
   const inProgram = !!pricing?.partOfProgram;
@@ -241,6 +243,15 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
             {fieldErrors.salePrice
               ? <Form.Control.Feedback type="invalid">{fieldErrors.salePrice}</Form.Control.Feedback>
               : <Form.Text muted>{intl.formatMessage(messages.pricingSalePriceHint)}</Form.Text>}
+            {priceWithVat !== null && (
+              <Form.Text className="font-weight-bold" data-testid="price-with-vat">
+                {intl.formatMessage(messages.pricingPriceWithVat, {
+                  amount: intl.formatNumber(priceWithVat, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+                  currency,
+                  rate: Number(vatRate),
+                })}
+              </Form.Text>
+            )}
             {discountPercent !== null && (
               <Form.Text data-testid="discount-percentage">
                 {intl.formatMessage(messages.pricingDiscountPercentage, { percentage: discountPercent })}

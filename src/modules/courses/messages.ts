@@ -703,15 +703,19 @@ export const courseRoleMessages = defineMessages({
   },
   pricingPriceLabel: {
     id: 'rwaq.admin.courses.pricing.price-label',
-    defaultMessage: 'Price ({currency})',
+    defaultMessage: 'Price before VAT ({currency})',
   },
   pricingSalePriceLabel: {
     id: 'rwaq.admin.courses.pricing.sale-price-label',
-    defaultMessage: 'Discounted Price / Sale Price ({currency})',
+    defaultMessage: 'Discounted Price / Sale Price before VAT ({currency})',
   },
   pricingSalePriceHint: {
     id: 'rwaq.admin.courses.pricing.sale-price-hint',
     defaultMessage: 'Optional. Leave empty when the course is not on sale.',
+  },
+  pricingPriceWithVat: {
+    id: 'rwaq.admin.courses.pricing.price-with-vat',
+    defaultMessage: 'Learner pays {amount} {currency} including {rate}% VAT',
   },
   pricingDiscountPercentage: {
     id: 'rwaq.admin.courses.pricing.discount-percentage',

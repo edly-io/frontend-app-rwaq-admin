@@ -2,7 +2,7 @@
  * Subscriptions — one row per subscription paid or granted in the date range, with KPI tiles.
  *
  * Subscription payments are not part of the other tabs: they are all the platform's, with no partner
- * share. An admin grant lists the subscription but never counts as revenue.
+ * share. An admin grant lists the subscription but carries no amounts.
  */
 import { getSiteName } from '@src/data/siteName';
 import { Link } from 'react-router-dom';
@@ -36,11 +36,11 @@ const messages = defineMessages({
   title: { id: 'rwaq.admin.payments.subscriptions.title', defaultMessage: 'Subscriptions' },
   info: {
     id: 'rwaq.admin.payments.subscriptions.info',
-    defaultMessage: '{siteName} subscriptions paid or granted in the date range. All subscription revenue is {siteName}\'s.',
+    defaultMessage: '{siteName} subscriptions paid or granted in the date range. All subscription sales are {siteName}\'s.',
   },
   how: {
     id: 'rwaq.admin.payments.subscriptions.how',
-    defaultMessage: 'Amounts count WordPress payments in the range. Admin grants are listed but never count as revenue.',
+    defaultMessage: 'Amounts count WordPress payments in the range. Admin grants are listed but carry no amounts.',
   },
   search: { id: 'rwaq.admin.payments.subscriptions.search', defaultMessage: 'Search by username or email' },
   statusLabel: { id: 'rwaq.admin.payments.subscriptions.status', defaultMessage: 'Status' },
@@ -57,7 +57,9 @@ const messages = defineMessages({
   colStarts: { id: 'rwaq.admin.payments.subscriptions.col.starts', defaultMessage: 'Starts (UTC)' },
   colEnds: { id: 'rwaq.admin.payments.subscriptions.col.ends', defaultMessage: 'Ends (UTC)' },
   colPayments: { id: 'rwaq.admin.payments.subscriptions.col.payments', defaultMessage: 'Payments' },
-  colCollected: { id: 'rwaq.admin.payments.subscriptions.col.collected', defaultMessage: 'Collected (SAR)' },
+  colNetSales: { id: 'rwaq.admin.payments.subscriptions.col.netSales', defaultMessage: 'Net sales (SAR)' },
+  colVat: { id: 'rwaq.admin.payments.subscriptions.col.vat', defaultMessage: 'VAT (SAR)' },
+  colCollected: { id: 'rwaq.admin.payments.subscriptions.col.collected', defaultMessage: 'Total collected (SAR)' },
   colDiscounts: { id: 'rwaq.admin.payments.subscriptions.col.discounts', defaultMessage: 'Discounts (SAR)' },
   monthly: { id: 'rwaq.admin.payments.subscriptions.plan.monthly', defaultMessage: 'Monthly' },
   yearly: { id: 'rwaq.admin.payments.subscriptions.plan.yearly', defaultMessage: 'Yearly' },
@@ -87,7 +89,8 @@ const messages = defineMessages({
   sortStartsAsc: { id: 'rwaq.admin.payments.subscriptions.sort.starts-asc', defaultMessage: 'Starts, earliest first' },
   sortEndsDesc: { id: 'rwaq.admin.payments.subscriptions.sort.ends-desc', defaultMessage: 'Ends, latest first' },
   sortEndsAsc: { id: 'rwaq.admin.payments.subscriptions.sort.ends-asc', defaultMessage: 'Ends, earliest first' },
-  sortCollectedDesc: { id: 'rwaq.admin.payments.subscriptions.sort.collected', defaultMessage: 'Collected, highest first' },
+  sortNetDesc: { id: 'rwaq.admin.payments.subscriptions.sort.net', defaultMessage: 'Net sales, highest first' },
+  sortCollectedDesc: { id: 'rwaq.admin.payments.subscriptions.sort.collected', defaultMessage: 'Total collected, highest first' },
   sortLearner: { id: 'rwaq.admin.payments.subscriptions.sort.learner', defaultMessage: 'Learner A to Z' },
   sortLabel: { id: 'rwaq.admin.payments.subscriptions.sort.label', defaultMessage: 'Sort by' },
   chipSearch: { id: 'rwaq.admin.payments.subscriptions.chip.search', defaultMessage: 'Search: {term}' },
@@ -132,7 +135,7 @@ const SubscriptionPayments = ({ subscription }: { subscription: SubscriptionRow 
               <tr key={order.id}>
                 <td>{order.wordpressOrderId ?? intl.formatMessage(paymentMessages.adminOrder, { id: order.id })}</td>
                 <td>{formatDateTime(order.orderDate, intl.locale)}</td>
-                <MoneyTd value={item?.pricePaid ?? order.pricePaid} />
+                <MoneyTd value={item?.amountPaid ?? order.amountPaid} />
                 <td>
                   {item?.periodStartsAt && item.periodEndsAt
                     ? `${formatDateTime(item.periodStartsAt, intl.locale)} – ${formatDateTime(item.periodEndsAt, intl.locale)}`
@@ -190,7 +193,8 @@ const SubscriptionsTab = () => {
     { value: 'starts_at', label: label('sortStartsAsc') },
     { value: '-ends_at', label: label('sortEndsDesc') },
     { value: 'ends_at', label: label('sortEndsAsc') },
-    { value: '-net_paid', label: label('sortCollectedDesc') },
+    { value: '-net_sales', label: label('sortNetDesc') },
+    { value: '-total_collected', label: label('sortCollectedDesc') },
     { value: 'learner', label: label('sortLearner') },
   ];
 
@@ -229,7 +233,9 @@ const SubscriptionsTab = () => {
     { label: label('colStarts'), key: 'startsAt', renderCell: (_value, row) => formatDateTime(row.startsAt, intl.locale) },
     { label: label('colEnds'), key: 'endsAt', renderCell: (_value, row) => formatDateTime(row.endsAt, intl.locale) },
     { label: label('colPayments'), key: 'payments' },
-    { label: label('colCollected'), key: 'netPaid', renderCell: (value) => <MoneyCell value={value as string} strong /> },
+    { label: label('colNetSales'), key: 'netSales', renderCell: (value) => <MoneyCell value={value as string} /> },
+    { label: label('colVat'), key: 'tax', renderCell: (value) => <MoneyCell value={value as string} /> },
+    { label: label('colCollected'), key: 'totalCollected', renderCell: (value) => <MoneyCell value={value as string} strong /> },
     { label: label('colDiscounts'), key: 'discounts', renderCell: (value) => <MoneyCell value={value as string} /> },
     { label: label('colSource'), key: 'source', renderCell: (_value, row) => <Badge variant="light">{label(row.source)}</Badge> },
   ];

@@ -20,15 +20,18 @@ jest.mock('../data/hooks', () => ({
   useDownloadPaymentsCsv: jest.fn(),
 }));
 
-const item = (key: string, pricePaid: string, extra = {}) => ({
+// Test amounts carry no VAT, so net sales and total collected are the same figure.
+const item = (key: string, amountPaid: string, extra = {}) => ({
   type: 'course',
   key,
   programUuid: null,
   title: `Title of ${key}`,
   org: 'TPA',
-  actualPrice: pricePaid,
+  actualPrice: amountPaid,
   discountAmount: '0.00',
-  pricePaid,
+  netAmount: amountPaid,
+  taxAmount: '0.00',
+  amountPaid,
   revokedAt: null,
   revokeReason: '',
   ...extra,
@@ -60,10 +63,16 @@ const wholeOrder = {
   orderBy: 'buyer5@example.com',
   actualPrice: '150.00',
   discountTotal: '10.00',
-  pricePaid: '140.00',
+  netAmount: '140.00',
+  taxLabel: '',
+  taxRate: null,
+  taxAmount: '0.00',
+  amountPaid: '140.00',
   partnerActualPrice: null,
   partnerDiscountAmount: null,
-  partnerPricePaid: null,
+  partnerNetAmount: null,
+  partnerTaxAmount: null,
+  partnerAmountPaid: null,
   reason: '',
   enrolledBy: null,
   coupons: [cartCoupon],
@@ -78,7 +87,9 @@ const tpaOrder = {
   ...wholeOrder,
   partnerActualPrice: '100.00',
   partnerDiscountAmount: '6.67',
-  partnerPricePaid: '93.33',
+  partnerNetAmount: '93.33',
+  partnerTaxAmount: '0.00',
+  partnerAmountPaid: '93.33',
   coupons: [{ ...cartCoupon, partnerDiscountAmount: '6.67' }],
   items: [wholeOrder.items[0]],
 };
@@ -121,7 +132,7 @@ describe('Payment history amounts', () => {
     expect(row.Items).toBe('2');
     expect(row['Order value (SAR)']).toBe('150.00');
     expect(row['Discount (SAR)']).toBe('10.00');
-    expect(row['Revenue (SAR)']).toBe('140.00');
+    expect(row['Total collected (SAR)']).toBe('140.00');
     expect(screen.queryByText(/this partner/)).not.toBeInTheDocument();
   });
 
@@ -133,7 +144,7 @@ describe('Payment history amounts', () => {
     expect(row.Items).toBe('1');
     expect(row['Order value (SAR)']).toBe('100.00');
     expect(row['Discount (SAR)']).toBe('6.67');
-    expect(row['Revenue (SAR)']).toBe('93.33');
+    expect(row['Total collected (SAR)']).toBe('93.33');
     // Nothing of the whole order is left in the row.
     expect(Object.values(row)).not.toContain('150.00');
     expect(Object.values(row)).not.toContain('140.00');
@@ -145,13 +156,66 @@ describe('Payment history amounts', () => {
       items: [item('course-v1:TPA+C1+2026', '0.00', { actualPrice: '100.00', discountAmount: '100.00' })],
       partnerActualPrice: '100.00',
       partnerDiscountAmount: '100.00',
-      partnerPricePaid: '0.00',
+      partnerNetAmount: '0.00',
+      partnerTaxAmount: '0.00',
+      partnerAmountPaid: '0.00',
     }]);
     renderTab('TPA');
 
     const row = firstRow();
-    expect(row['Revenue (SAR)']).toBe('0.00');
+    expect(row['Total collected (SAR)']).toBe('0.00');
     expect(row['Discount (SAR)']).toBe('100.00');
+  });
+
+  it('shows net sales, VAT and total collected as separate columns', () => {
+    mockOrders([{
+      ...wholeOrder,
+      netAmount: '140.00',
+      taxLabel: 'VAT',
+      taxRate: '15.00',
+      taxAmount: '21.00',
+      amountPaid: '161.00',
+    }]);
+    renderTab();
+
+    const row = firstRow();
+    expect(row['Net sales (SAR)']).toBe('140.00');
+    expect(row['VAT (SAR)']).toBe('21.00');
+    expect(row['Total collected (SAR)']).toBe('161.00');
+  });
+
+  it('shows the partner\'s net sales, VAT and total collected under a partner', () => {
+    mockOrders([{
+      ...tpaOrder,
+      partnerNetAmount: '93.33',
+      partnerTaxAmount: '14.00',
+      partnerAmountPaid: '107.33',
+      taxAmount: '21.00',
+      amountPaid: '161.00',
+    }]);
+    renderTab('TPA');
+
+    const row = firstRow();
+    expect(row['Net sales (SAR)']).toBe('93.33');
+    expect(row['VAT (SAR)']).toBe('14.00');
+    expect(row['Total collected (SAR)']).toBe('107.33');
+    expect(Object.values(row)).not.toContain('21.00');
+    expect(Object.values(row)).not.toContain('161.00');
+  });
+
+  it.each([
+    ['Total collected, highest first', '-amount_paid'],
+    ['Net sales, highest first', '-net_amount'],
+    ['Order value, highest first', '-actual_price'],
+  ])('asks the backend to sort by %s', (label, ordering) => {
+    mockOrders([wholeOrder]);
+    renderTab();
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+    fireEvent.change(screen.getByLabelText('Sort by'), { target: { value: ordering } });
+
+    const { calls } = (hooks.usePaymentOrders as jest.Mock).mock;
+    expect(calls[calls.length - 1][0]).toEqual(expect.objectContaining({ ordering }));
+    expect(screen.getByText(`Sort: ${label}`)).toBeInTheDocument();
   });
 
   it('asks the backend for the partner', () => {
@@ -336,7 +400,7 @@ describe('Payment history subscription orders', () => {
     const itemRow = screen.getByText('Subscription: Monthly').closest('tr') as HTMLElement;
     const headers = within(itemRow.closest('table') as HTMLElement).getAllByRole('columnheader');
     expect(headers.map((header) => header.textContent)).toEqual([
-      'Subscription', 'Type', 'Price (SAR)', 'Discount (SAR)', 'Paid (SAR)',
+      'Subscription', 'Type', 'Price (SAR)', 'Discount (SAR)', 'Net (SAR)', 'VAT (SAR)', 'Total (SAR)',
     ]);
   });
 

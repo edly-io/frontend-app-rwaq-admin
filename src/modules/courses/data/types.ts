@@ -167,6 +167,8 @@ export interface CoursePricing {
   discountPercentage: string | null;
   /** ISO 4217 code of the regular and sale price. null when the course is free. */
   currency: string | null;
+  /** VAT rate in percent ("15.00") for the price preview. The prices stay without VAT. */
+  vatRate?: string | null;
   /**
    * When true, Studio renders this course's pricing read-only and the
    * Studio-facing endpoint refuses writes. Settable only from here.
