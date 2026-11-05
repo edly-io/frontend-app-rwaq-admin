@@ -27,7 +27,9 @@ const row = {
   endsAt: '2026-10-10T10:00:00Z',
   reason: '',
   payments: 2,
-  netPaid: '190.00',
+  netSales: '190.00',
+  tax: '28.50',
+  totalCollected: '218.50',
   discounts: '10.00',
 };
 
@@ -35,10 +37,10 @@ const payment = (id: number, day: number) => ({
   id,
   wordpressOrderId: `wp-${id}`,
   orderDate: `2026-09-${String(day).padStart(2, '0')}T10:00:00Z`,
-  pricePaid: '90.00',
+  amountPaid: '90.00',
   items: [{
     subscriptionId: 4,
-    pricePaid: '90.00',
+    amountPaid: '90.00',
     periodStartsAt: `2026-09-${String(day).padStart(2, '0')}T10:00:00Z`,
     periodEndsAt: `2026-10-${String(day).padStart(2, '0')}T10:00:00Z`,
   }],
@@ -56,7 +58,7 @@ beforeEach(() => {
   (hooks.usePaymentSubscriptions as jest.Mock).mockReturnValue(page([row]));
   (hooks.useSubscriptionsSummary as jest.Mock).mockReturnValue({
     data: {
-      revenue: '1140.00', total: 8, active: 5, expired: 2, cancelled: 1,
+      netSales: '1140.00', tax: '171.00', totalCollected: '1311.00', total: 8, active: 5, expired: 2, cancelled: 1,
     },
     isLoading: false,
     isError: false,
@@ -66,12 +68,12 @@ beforeEach(() => {
 });
 
 describe('Subscriptions KPI cards', () => {
-  it('shows the total, active, expired and cancelled subscriptions with their counts, and no revenue tile', () => {
+  it('shows the total, active, expired and cancelled subscriptions with their counts, and no net sales tile', () => {
     renderWrapper(<SubscriptionsTab />);
 
     const card = (label: string) => (screen.getByText(label).closest('.rwaq-payment-kpi') as HTMLElement);
     expect(within(card('Total subscriptions')).getByText('8')).toBeInTheDocument();
-    expect(screen.queryByText('Subscription revenue')).not.toBeInTheDocument();
+    expect(screen.queryByText('Subscription net sales')).not.toBeInTheDocument();
     expect(within(card('Active subscriptions')).getByText('5')).toBeInTheDocument();
     expect(within(card('Expired subscriptions')).getByText('2')).toBeInTheDocument();
     expect(within(card('Cancelled subscriptions')).getByText('1')).toBeInTheDocument();
@@ -108,6 +110,18 @@ describe('Subscriptions list', () => {
     expect(cells.some((cell) => /Oct 10, 2026.*10:00/.test(cell.textContent || ''))).toBe(true);
     const headers = screen.getAllByRole('columnheader').map((header) => header.textContent);
     expect(headers).toEqual(expect.arrayContaining([expect.stringMatching(/Starts \(UTC\)/), expect.stringMatching(/Ends \(UTC\)/)]));
+  });
+
+  it('shows net sales, VAT and total collected of the subscription', () => {
+    renderWrapper(<SubscriptionsTab />);
+
+    const headers = screen.getAllByRole('columnheader').map((header) => header.textContent);
+    const cells = within(screen.getAllByRole('row')[1]).getAllByRole('cell').map((cell) => cell.textContent);
+    const at = (label: string) => cells[headers.findIndex((header) => header?.includes(label))];
+    expect(at('Net sales (SAR)')).toBe('190.00');
+    expect(at('VAT (SAR)')).toBe('28.50');
+    expect(at('Total collected (SAR)')).toBe('218.50');
+    expect(headers.join('|')).not.toMatch(/revenue/i);
   });
 
   it('shows the status and the source as chips, with the source column last', () => {

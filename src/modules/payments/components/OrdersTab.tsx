@@ -114,7 +114,9 @@ const OrdersTab = ({
   const sortOptions = [
     { value: '-order_date', label: intl.formatMessage(messages.sortDateDesc) },
     { value: 'order_date', label: intl.formatMessage(messages.sortDateAsc) },
-    { value: '-price_paid', label: intl.formatMessage(messages.sortPaidDesc) },
+    { value: '-actual_price', label: intl.formatMessage(messages.sortGrossDesc) },
+    { value: '-net_amount', label: intl.formatMessage(messages.sortNetDesc) },
+    { value: '-amount_paid', label: intl.formatMessage(messages.sortCollectedDesc) },
   ];
   const optionLabel = (options: { value: string; label: string }[], value: string) => (
     options.find((o) => o.value === value)?.label ?? value
@@ -176,7 +178,7 @@ const OrdersTab = ({
       info: intl.formatMessage(messages.infoColOrder),
       key: 'wordpressOrderId',
       renderCell: (_value, row) => (
-        <span className="rwaq-user-cell__name">
+        <span className="rwaq-user-cell__name rwaq-order-cell">
           {row.wordpressOrderId ?? intl.formatMessage(messages.adminOrder, { id: row.id })}
         </span>
       ),
@@ -223,10 +225,23 @@ const OrdersTab = ({
       renderCell: (value) => <MoneyCell value={value as string} />,
     },
     {
+      label: intl.formatMessage(messages.colNetSales),
+      info: intl.formatMessage(hasPartner ? messages.infoColOrderNetPartner : messages.infoColOrderNet),
+      headerClassName: 'rwaq-th--wrap',
+      key: hasPartner ? 'partnerNetAmount' : 'netAmount',
+      renderCell: (value) => <MoneyCell value={value as string} />,
+    },
+    {
+      label: intl.formatMessage(messages.colVat),
+      info: intl.formatMessage(hasPartner ? messages.infoColOrderVatPartner : messages.infoColOrderVat),
+      key: hasPartner ? 'partnerTaxAmount' : 'taxAmount',
+      renderCell: (value) => <MoneyCell value={value as string} />,
+    },
+    {
       label: intl.formatMessage(messages.colCollected),
       info: intl.formatMessage(hasPartner ? messages.infoColOrderPaidPartner : messages.infoColOrderPaid),
       headerClassName: 'rwaq-th--wrap',
-      key: hasPartner ? 'partnerPricePaid' : 'pricePaid',
+      key: hasPartner ? 'partnerAmountPaid' : 'amountPaid',
       renderCell: (value) => <MoneyCell value={value as string} strong />,
     },
     {
@@ -248,6 +263,8 @@ const OrdersTab = ({
             {!isSubscriptionOrder(order) && <th>{intl.formatMessage(messages.colOrg)}</th>}
             <th>{intl.formatMessage(messages.colPrice)}</th>
             <th>{intl.formatMessage(messages.colDiscount)}</th>
+            <th>{intl.formatMessage(messages.colNet)}</th>
+            <th>{intl.formatMessage(messages.colVat)}</th>
             <th>{intl.formatMessage(messages.colPaid)}</th>
           </tr>
         </thead>
@@ -285,7 +302,9 @@ const OrdersTab = ({
                 {!isSubscriptionOrder(order) && <td>{item.org}</td>}
                 <MoneyTd value={item.actualPrice} />
                 <MoneyTd value={item.discountAmount} />
-                <MoneyTd value={item.pricePaid} />
+                <MoneyTd value={item.netAmount} />
+                <MoneyTd value={item.taxAmount} />
+                <MoneyTd value={item.amountPaid} />
               </tr>
             );
           })}

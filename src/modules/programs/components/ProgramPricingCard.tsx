@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
-import { getDiscountPercent } from '@src/data/discountPercent';
+import { getDiscountPercent, getPriceWithVat } from '@src/data/discountPercent';
 import { getErrorReason } from '@src/data/httpError';
 import { useUpdateProgram } from '../data/hooks';
 import type { ProgramDetail, ProgramPricingCategory } from '../data/types';
@@ -50,6 +50,8 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   const isPaid = category === 'is_paid';
   // Live from the inputs, before saving.
   const discountPercent = getDiscountPercent(regularPrice, salePrice);
+  const { vatRate, vatLabel } = program;
+  const priceWithVat = getPriceWithVat(regularPrice, salePrice, vatRate);
   const currency = program.currency || 'SAR';
 
   const validateRegularPrice = (): string => {
@@ -196,6 +198,16 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
             {fieldErrors.salePrice
               ? <Form.Control.Feedback type="invalid">{fieldErrors.salePrice}</Form.Control.Feedback>
               : <Form.Text muted>{intl.formatMessage(messages.pricingSalePriceHint)}</Form.Text>}
+            {priceWithVat !== null && (
+              <Form.Text className="font-weight-bold" data-testid="price-with-vat">
+                {intl.formatMessage(messages.pricingPriceWithVat, {
+                  amount: intl.formatNumber(priceWithVat, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+                  currency,
+                  rate: Number(vatRate),
+                  label: vatLabel?.trim() || intl.formatMessage(messages.pricingVatFallbackLabel),
+                })}
+              </Form.Text>
+            )}
             {discountPercent !== null && (
               <Form.Text data-testid="discount-percentage">
                 {intl.formatMessage(messages.pricingDiscountPercentage, { percentage: discountPercent })}

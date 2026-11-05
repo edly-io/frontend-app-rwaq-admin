@@ -22,35 +22,50 @@ const messages = defineMessages({
   tabSubscriptions: { id: 'rwaq.admin.payments.tab.subscriptions', defaultMessage: 'Subscriptions' },
 
   // ── Overview: KPI tiles ────────────────────────────────────────────────────
-  kpiOrders: { id: 'rwaq.admin.payments.kpi.orders', defaultMessage: 'Orders' },
-  kpiOrderValue: { id: 'rwaq.admin.payments.kpi.orderValue', defaultMessage: 'Order value' },
+  kpiOrders: { id: 'rwaq.admin.payments.kpi.orders', defaultMessage: 'Total orders' },
+  kpiAdminEnrollments: { id: 'rwaq.admin.payments.kpi.adminEnrollments', defaultMessage: 'Admin grant orders' },
+  kpiGross: { id: 'rwaq.admin.payments.kpi.gross', defaultMessage: 'Gross sales' },
   kpiDiscounts: { id: 'rwaq.admin.payments.kpi.discounts', defaultMessage: 'Discounts' },
-  kpiCollected: { id: 'rwaq.admin.payments.kpi.collected', defaultMessage: 'Total revenue' },
+  kpiNetSales: { id: 'rwaq.admin.payments.kpi.netSales', defaultMessage: 'Net sales' },
+  kpiVat: { id: 'rwaq.admin.payments.kpi.vat', defaultMessage: 'VAT collected' },
+  kpiTotalCollected: { id: 'rwaq.admin.payments.kpi.totalCollected', defaultMessage: 'Total collected' },
   infoOrders: {
     id: 'rwaq.admin.payments.info.orders',
-    defaultMessage: 'Completed WordPress orders with at least one paid item, subscription payments included. For a single partner, only its courses and programs count. Rwaq (subscriptions) counts only subscription payments.',
+    defaultMessage: 'Every completed order, subscription payments, free orders and admin grant orders included. For a single partner, only orders with its courses and programs count. Rwaq (subscriptions) counts only subscription payments.',
   },
-  infoOrderValue: {
-    id: 'rwaq.admin.payments.info.orderValue',
-    defaultMessage: 'The list price of every paid item, subscription payments included, before coupons.',
+  infoAdminEnrollments: {
+    id: 'rwaq.admin.payments.info.adminEnrollments',
+    defaultMessage: 'How many of the orders are free enrollments by an admin. They carry no money, so they add to the Orders count only.',
+  },
+  infoGross: {
+    id: 'rwaq.admin.payments.info.gross',
+    defaultMessage: 'The list price of every item, subscription payments included, before coupons and VAT.',
   },
   infoDiscounts: {
     id: 'rwaq.admin.payments.info.discounts',
-    defaultMessage: 'What product and cart coupons took off the paid items, subscription payments included. A cart coupon is spread over the items in its cart.',
+    defaultMessage: 'What product and cart coupons took off the items, subscription payments included. A cart coupon is spread over the items in its cart.',
   },
-  infoCollected: {
-    id: 'rwaq.admin.payments.info.collected',
-    defaultMessage: 'What learners paid after coupons, on completed WordPress orders, subscription payments included. This is money received from learners, not money paid out. Items an admin later revoked still count. Admin enrollments are free and never count.',
+  infoNetSales: {
+    id: 'rwaq.admin.payments.info.netSales',
+    defaultMessage: 'Gross sales minus discounts, before VAT. For a single partner, only its courses and programs count. Items an admin later revoked still count.',
   },
-  kpiContentRevenue: { id: 'rwaq.admin.payments.kpi.contentRevenue', defaultMessage: 'Courses and Programs revenue' },
-  kpiSubscriptionRevenue: { id: 'rwaq.admin.payments.kpi.subscriptionRevenue', defaultMessage: 'Subscription revenue' },
-  infoContentRevenue: {
-    id: 'rwaq.admin.payments.info.contentRevenue',
-    defaultMessage: 'What learners paid for courses and programs, after coupons. {orders, plural, one {# order} other {# orders}}.',
+  infoVat: {
+    id: 'rwaq.admin.payments.info.vat',
+    defaultMessage: 'The VAT WooCommerce charged on the orders, at the rate of each order. For a single partner, only the VAT on its items.',
   },
-  infoSubscriptionRevenue: {
-    id: 'rwaq.admin.payments.info.subscriptionRevenue',
-    defaultMessage: 'What learners paid for subscriptions, after coupons. It is 0 when a single partner is selected. {orders, plural, one {# order} other {# orders}}.',
+  infoTotalCollected: {
+    id: 'rwaq.admin.payments.info.totalCollected',
+    defaultMessage: 'Net sales plus VAT: what learners paid on completed orders. This is money received from learners, not money paid out. For a single partner, only what was paid for its items.',
+  },
+  kpiContentNetSales: { id: 'rwaq.admin.payments.kpi.contentNetSales', defaultMessage: 'Courses and Programs net sales' },
+  kpiSubscriptionNetSales: { id: 'rwaq.admin.payments.kpi.subscriptionNetSales', defaultMessage: 'Subscription net sales' },
+  infoContentNetSales: {
+    id: 'rwaq.admin.payments.info.contentNetSales',
+    defaultMessage: 'Net sales of courses and programs: after coupons, before VAT. {orders, plural, one {# order} other {# orders}}.',
+  },
+  infoSubscriptionNetSales: {
+    id: 'rwaq.admin.payments.info.subscriptionNetSales',
+    defaultMessage: 'Net sales of subscriptions: after coupons, before VAT. It is 0 when a single partner is selected. {orders, plural, one {# order} other {# orders}}.',
   },
   seriesContent: { id: 'rwaq.admin.payments.series.content', defaultMessage: 'Courses and Programs' },
   seriesSubscriptions: { id: 'rwaq.admin.payments.series.subscriptions', defaultMessage: 'Subscriptions' },
@@ -62,7 +77,7 @@ const messages = defineMessages({
   granWeek: { id: 'rwaq.admin.payments.trends.week', defaultMessage: 'Weekly' },
   granMonth: { id: 'rwaq.admin.payments.trends.month', defaultMessage: 'Monthly' },
   weekOf: { id: 'rwaq.admin.payments.trends.weekOf', defaultMessage: 'Week of {date}' },
-  chartCollectedTitle: { id: 'rwaq.admin.payments.chart.collected', defaultMessage: 'Revenue over time' },
+  chartCollectedTitle: { id: 'rwaq.admin.payments.chart.collected', defaultMessage: 'Net sales over time' },
   chartOrdersTitle: { id: 'rwaq.admin.payments.chart.orders', defaultMessage: 'Orders over time' },
   chartAllTime: { id: 'rwaq.admin.payments.chart.allTime', defaultMessage: 'All time' },
   chartRange: { id: 'rwaq.admin.payments.chart.range', defaultMessage: 'Selected range' },
@@ -70,11 +85,11 @@ const messages = defineMessages({
   chartUnavailable: { id: 'rwaq.admin.payments.chart.unavailable', defaultMessage: 'The chart could not be loaded.' },
   infoChartCollected: {
     id: 'rwaq.admin.payments.info.chartCollected',
-    defaultMessage: 'Revenue per day, week or month of the order date, in SAR. Courses and Programs and subscriptions are shown apart, and their sum is the Total revenue tile.',
+    defaultMessage: 'Net sales per day, week or month of the order date, in SAR, before VAT. Courses and Programs and subscriptions are shown apart, and their sum is the Net sales tile.',
   },
   infoChartOrders: {
     id: 'rwaq.admin.payments.info.chartOrders',
-    defaultMessage: 'Completed paid orders per day, week or month of the order date. Courses and Programs and subscriptions are shown apart. An order with both kinds counts in each.',
+    defaultMessage: 'Completed orders per day, week or month of the order date. Courses and Programs and subscriptions are shown apart. An order with both kinds counts in each.',
   },
 
   // ── Tab headings: what the tab counts and how it is calculated ─────────────
@@ -84,7 +99,7 @@ const messages = defineMessages({
   },
   howOrders: {
     id: 'rwaq.admin.payments.how.orders',
-    defaultMessage: 'Revenue is what the learner paid after coupons. Purchases are WordPress payments. Admin grants are free enrollments and are not revenue.',
+    defaultMessage: 'Net sales are the price after coupons, before VAT. Total collected adds the VAT. Purchases are WordPress payments. Admin grants are free enrollments with no amounts.',
   },
 
   // ── Shared list controls ───────────────────────────────────────────────────
@@ -98,11 +113,15 @@ const messages = defineMessages({
 
   sortDateDesc: { id: 'rwaq.admin.payments.sort.dateDesc', defaultMessage: 'Newest first' },
   sortDateAsc: { id: 'rwaq.admin.payments.sort.dateAsc', defaultMessage: 'Oldest first' },
-  sortPaidDesc: { id: 'rwaq.admin.payments.sort.paidDesc', defaultMessage: 'Revenue, highest first' },
+  sortCollectedDesc: { id: 'rwaq.admin.payments.sort.collectedDesc', defaultMessage: 'Total collected, highest first' },
+  sortNetDesc: { id: 'rwaq.admin.payments.sort.netDesc', defaultMessage: 'Net sales, highest first' },
+  sortGrossDesc: { id: 'rwaq.admin.payments.sort.grossDesc', defaultMessage: 'Order value, highest first' },
 
-  // ── Revenue columns: one set of labels, with hover text per tab ────────────
+  // ── Money columns: one set of labels, with hover text per tab ────────────
   colOrderValue: { id: 'rwaq.admin.payments.col.orderValue', defaultMessage: 'Order value (SAR)' },
-  colCollected: { id: 'rwaq.admin.payments.col.collected', defaultMessage: 'Revenue (SAR)' },
+  colNetSales: { id: 'rwaq.admin.payments.col.netSales', defaultMessage: 'Net sales (SAR)' },
+  colVat: { id: 'rwaq.admin.payments.col.vat', defaultMessage: 'VAT (SAR)' },
+  colCollected: { id: 'rwaq.admin.payments.col.collected', defaultMessage: 'Total collected (SAR)' },
 
   // By partner (a row is one partner)
 
@@ -139,11 +158,12 @@ const messages = defineMessages({
   colCourses: { id: 'rwaq.admin.payments.col.courses', defaultMessage: 'Items' },
   colPrice: { id: 'rwaq.admin.payments.col.price', defaultMessage: 'Price (SAR)' },
   colDiscount: { id: 'rwaq.admin.payments.col.discount', defaultMessage: 'Discount (SAR)' },
-  colPaid: { id: 'rwaq.admin.payments.col.paid', defaultMessage: 'Paid (SAR)' },
+  colNet: { id: 'rwaq.admin.payments.col.net', defaultMessage: 'Net (SAR)' },
+  colPaid: { id: 'rwaq.admin.payments.col.paid', defaultMessage: 'Total (SAR)' },
   colSource: { id: 'rwaq.admin.payments.col.source', defaultMessage: 'Source' },
   infoColOrder: {
     id: 'rwaq.admin.payments.info.col.order',
-    defaultMessage: 'The WordPress order ID. Admin grants have no WordPress order and show as Admin enrollment.',
+    defaultMessage: 'The WordPress order ID. Admin grants have no WordPress order and show as Admin grant order.',
   },
   infoColDate: {
     id: 'rwaq.admin.payments.info.col.date',
@@ -170,19 +190,35 @@ const messages = defineMessages({
     id: 'rwaq.admin.payments.info.col.orderDiscountPartner',
     defaultMessage: 'Coupon money taken off this partner\'s items. A cart coupon counts only the part that fell on them.',
   },
+  infoColOrderNet: {
+    id: 'rwaq.admin.payments.info.col.orderNet',
+    defaultMessage: 'Order value minus discounts, before VAT.',
+  },
+  infoColOrderNetPartner: {
+    id: 'rwaq.admin.payments.info.col.orderNetPartner',
+    defaultMessage: 'This partner\'s items minus their discounts, before VAT. Other partners\' items in the same order are left out.',
+  },
+  infoColOrderVat: {
+    id: 'rwaq.admin.payments.info.col.orderVat',
+    defaultMessage: 'The VAT charged on the order.',
+  },
+  infoColOrderVatPartner: {
+    id: 'rwaq.admin.payments.info.col.orderVatPartner',
+    defaultMessage: 'The VAT charged on this partner\'s items. Other partners\' items in the same order are left out.',
+  },
   infoColOrderPaid: {
     id: 'rwaq.admin.payments.info.col.orderPaid',
-    defaultMessage: 'What the learner paid for the order after coupons.',
+    defaultMessage: 'What the learner paid for the order: net sales plus VAT.',
   },
   infoColOrderPaidPartner: {
     id: 'rwaq.admin.payments.info.col.orderPaidPartner',
-    defaultMessage: 'What the learner paid for this partner\'s items after coupons. Other partners\' items in the same order are left out.',
+    defaultMessage: 'What the learner paid for this partner\'s items: net sales plus VAT. Other partners\' items in the same order are left out.',
   },
   infoColSource: {
     id: 'rwaq.admin.payments.info.col.source',
-    defaultMessage: 'Purchase is a WordPress payment. Admin grant is a free enrollment by an admin and never counts as revenue.',
+    defaultMessage: 'Purchase is a WordPress payment. Admin grant is a free enrollment by an admin, with no amounts.',
   },
-  adminOrder: { id: 'rwaq.admin.payments.orders.admin', defaultMessage: 'Admin enrollment #{id}' },
+  adminOrder: { id: 'rwaq.admin.payments.orders.admin', defaultMessage: 'Admin grant order #{id}' },
   sourceLabel: { id: 'rwaq.admin.payments.source', defaultMessage: 'Source' },
   sourceWordpress: { id: 'rwaq.admin.payments.source.wordpress', defaultMessage: 'Purchase' },
   sourceAdmin: { id: 'rwaq.admin.payments.source.admin', defaultMessage: 'Admin grant' },
@@ -208,7 +244,7 @@ const messages = defineMessages({
   revoked: { id: 'rwaq.admin.payments.orders.revoked', defaultMessage: 'Revoked' },
   infoRevoked: {
     id: 'rwaq.admin.payments.info.revoked',
-    defaultMessage: 'An admin unenrolled the learner on {date}. Reason: {reason}. The payment still counts as revenue.',
+    defaultMessage: 'An admin unenrolled the learner on {date}. Reason: {reason}. The payment still counts in the totals.',
   },
   adminReason: { id: 'rwaq.admin.payments.orders.reason', defaultMessage: '<b>Reason:</b> {reason}' },
   adminEnrolledBy: { id: 'rwaq.admin.payments.orders.enrolledBy', defaultMessage: '<b>Enrolled by:</b> {admin}' },

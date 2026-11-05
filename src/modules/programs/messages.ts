@@ -131,14 +131,25 @@ const messages = defineMessages({
     id: 'rwaq.admin.programs.pricing.subscription-description',
     defaultMessage: 'Learners reach this program through the Rwaq subscription. It has no price of its own.',
   },
-  pricingPriceLabel: { id: 'rwaq.admin.programs.pricing.price-label', defaultMessage: 'Price ({currency})' },
+  pricingPriceLabel: {
+    id: 'rwaq.admin.programs.pricing.price-label',
+    defaultMessage: 'Price before VAT ({currency})',
+  },
   pricingSalePriceLabel: {
     id: 'rwaq.admin.programs.pricing.sale-price-label',
-    defaultMessage: 'Discounted Price / Sale Price ({currency})',
+    defaultMessage: 'Discounted Price / Sale Price before VAT ({currency})',
   },
   pricingSalePriceHint: {
     id: 'rwaq.admin.programs.pricing.sale-price-hint',
     defaultMessage: 'Optional. Leave empty when the program is not on sale.',
+  },
+  pricingPriceWithVat: {
+    id: 'rwaq.admin.programs.pricing.price-with-vat',
+    defaultMessage: 'Learner pays {amount} {currency} including {rate}% {label}',
+  },
+  pricingVatFallbackLabel: {
+    id: 'rwaq.admin.programs.pricing.vat-fallback-label',
+    defaultMessage: 'VAT',
   },
   pricingDiscountPercentage: {
     id: 'rwaq.admin.programs.pricing.discount-percentage',

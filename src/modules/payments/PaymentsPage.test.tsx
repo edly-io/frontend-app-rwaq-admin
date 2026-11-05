@@ -58,14 +58,17 @@ const emptyPage = {
 const summary = {
   gross: '800.00',
   discounts: '100.00',
-  netPaid: '700.00',
+  netSales: '700.00',
+  tax: '105.00',
+  totalCollected: '805.00',
   orders: 3,
+  adminEnrollments: 1,
   items: 4,
   content: {
-    orders: 2, gross: '600.00', discounts: '100.00', netPaid: '500.00',
+    orders: 2, gross: '600.00', discounts: '100.00', netSales: '500.00',
   },
   subscriptions: {
-    orders: 1, gross: '200.00', discounts: '0.00', netPaid: '200.00',
+    orders: 1, gross: '200.00', discounts: '0.00', netSales: '200.00',
   },
   granularity: 'month',
   series: [{
@@ -73,12 +76,12 @@ const summary = {
     orders: 2,
     gross: '700.00',
     discounts: '100.00',
-    netPaid: '600.00',
+    netSales: '600.00',
     content: {
-      orders: 2, gross: '700.00', discounts: '100.00', netPaid: '600.00',
+      orders: 2, gross: '700.00', discounts: '100.00', netSales: '600.00',
     },
     subscriptions: {
-      orders: 0, gross: '0.00', discounts: '0.00', netPaid: '0.00',
+      orders: 0, gross: '0.00', discounts: '0.00', netSales: '0.00',
     },
   }],
 };
@@ -128,21 +131,21 @@ describe('PaymentsPage', () => {
   it('opens on the Overview with the tiles in order and amounts in SAR', async () => {
     await renderPage();
 
-    const labels = ['Orders', 'Order value', 'Discounts', 'Total revenue'].map((label) => screen.getByText(label));
+    const labels = ['Total orders', 'Gross sales', 'Discounts', 'Net sales', 'VAT collected', 'Total collected'].map((label) => screen.getByText(label));
     labels.slice(1).forEach((label, index) => {
       // eslint-disable-next-line no-bitwise
       expect(labels[index].compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
     expect(screen.getByText('700.00')).toBeInTheDocument();
     expect(screen.queryByText('Payable to partners')).not.toBeInTheDocument();
-    expect(screen.queryByText('Rwaq revenue')).not.toBeInTheDocument();
+    expect(screen.queryByText(/revenue/i)).not.toBeInTheDocument();
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(2);
   });
 
-  it('shows six tiles in order: the four combined totals, then content and subscription revenue', async () => {
+  it('shows the combined totals in order, then content and subscription net sales', async () => {
     await renderPage();
 
-    const labels = ['Orders', 'Order value', 'Discounts', 'Total revenue', 'Courses and Programs revenue', 'Subscription revenue']
+    const labels = ['Total orders', 'Admin grant orders', 'Gross sales', 'Discounts', 'Net sales', 'VAT collected', 'Total collected', 'Courses and Programs net sales', 'Subscription net sales']
       .map((label) => screen.getByText(label));
     labels.slice(1).forEach((label, index) => {
       // eslint-disable-next-line no-bitwise
@@ -152,12 +155,41 @@ describe('PaymentsPage', () => {
     expect(screen.getByText('200.00')).toBeInTheDocument();
   });
 
-  it('says in each revenue tile\'s tooltip how many orders it counts', async () => {
+  it('shows the count of admin enrollments and the VAT and total collected amounts', async () => {
     await renderPage();
 
-    fireEvent.mouseOver(screen.getByText('Courses and Programs revenue'));
+    const card = (label: string) => (screen.getByText(label).closest('.rwaq-payment-kpi') as HTMLElement);
+    expect(within(card('Admin grant orders')).getByText('1')).toBeInTheDocument();
+    expect(within(card('VAT collected')).getByText('105.00')).toBeInTheDocument();
+    expect(within(card('Total collected')).getByText('805.00')).toBeInTheDocument();
+    expect(within(card('Net sales')).getByText('700.00')).toBeInTheDocument();
+    expect(within(card('Gross sales')).getByText('800.00')).toBeInTheDocument();
+  });
+
+  it('shows a dash in the VAT and total collected tiles when the summary fails', async () => {
+    (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({ data: undefined, isLoading: false, isError: true });
+    await renderPage();
+
+    const card = (label: string) => (screen.getByText(label).closest('.rwaq-payment-kpi') as HTMLElement);
+    expect(within(card('VAT collected')).queryByText('105.00')).not.toBeInTheDocument();
+    expect(within(card('Admin grant orders')).queryByText('1')).not.toBeInTheDocument();
+  });
+
+  it('explains in the tooltips that admin enrollments carry no money and VAT is per order', async () => {
+    await renderPage();
+
+    fireEvent.mouseOver(screen.getByText('Admin grant orders'));
+    expect(await screen.findByText(/free enrollments by an admin/)).toBeInTheDocument();
+    fireEvent.mouseOver(screen.getByText('VAT collected'));
+    expect(await screen.findByText(/at the rate of each order/)).toBeInTheDocument();
+  });
+
+  it('says in each net sales tile\'s tooltip how many orders it counts', async () => {
+    await renderPage();
+
+    fireEvent.mouseOver(screen.getByText('Courses and Programs net sales'));
     expect(await screen.findByText(/2 orders\./)).toBeInTheDocument();
-    fireEvent.mouseOver(screen.getByText('Subscription revenue'));
+    fireEvent.mouseOver(screen.getByText('Subscription net sales'));
     expect(await screen.findByText(/1 order\./)).toBeInTheDocument();
   });
 
@@ -165,9 +197,9 @@ describe('PaymentsPage', () => {
     (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({
       data: {
         ...summary,
-        netPaid: '500.00',
+        netSales: '500.00',
         subscriptions: {
-          orders: 0, gross: '0.00', discounts: '0.00', netPaid: '0.00',
+          orders: 0, gross: '0.00', discounts: '0.00', netSales: '0.00',
         },
       },
       isLoading: false,
@@ -176,16 +208,16 @@ describe('PaymentsPage', () => {
     await renderPage();
     fireEvent.change(screen.getByLabelText('Partner'), { target: { value: 'TPA' } });
 
-    const tile = screen.getByText('Subscription revenue').closest('.rwaq-payment-kpi') as HTMLElement;
+    const tile = screen.getByText('Subscription net sales').closest('.rwaq-payment-kpi') as HTMLElement;
     expect(within(tile).getByText('0.00')).toBeInTheDocument();
     expect(within(tile).getByText('SAR')).toBeInTheDocument();
   });
 
-  it('shows no figures in the revenue tiles when the totals cannot be loaded', async () => {
+  it('shows no figures in the net sales tiles when the totals cannot be loaded', async () => {
     (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({ data: undefined, isLoading: false, isError: true });
     await renderPage();
 
-    const tile = screen.getByText('Subscription revenue').closest('.rwaq-payment-kpi') as HTMLElement;
+    const tile = screen.getByText('Subscription net sales').closest('.rwaq-payment-kpi') as HTMLElement;
     expect(within(tile).getByText('—')).toBeInTheDocument();
   });
 
@@ -273,7 +305,7 @@ describe('PaymentsPage', () => {
 
   it('shows a million or more in short form with the exact amount on hover', async () => {
     (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({
-      data: { ...summary, netPaid: '12345678.90' },
+      data: { ...summary, netSales: '12345678.90' },
       isLoading: false,
       isError: false,
     });
@@ -298,10 +330,10 @@ describe('PaymentsPage', () => {
           email: 'buyer5@example.com',
           actualPrice: '99999.99',
           discountTotal: '0.00',
-          pricePaid: '45000000.00',
+          amountPaid: '45000000.00',
           partnerActualPrice: null,
           partnerDiscountAmount: null,
-          partnerPricePaid: null,
+          partnerAmountPaid: null,
           reason: '',
           enrolledBy: null,
           coupons: [],
@@ -317,7 +349,7 @@ describe('PaymentsPage', () => {
     expect(screen.getByText('45M')).toBeInTheDocument();
     expect(screen.getByLabelText('SAR 45,000,000.00')).toBeInTheDocument();
     // The currency is in the header, not repeated in every cell.
-    expect(screen.getByText('Revenue (SAR)')).toBeInTheDocument();
+    expect(screen.getByText('Total collected (SAR)')).toBeInTheDocument();
     expect(screen.queryByText(/^SAR /)).not.toBeInTheDocument();
     // Under 100,000 stays exact.
     expect(screen.getByText('99,999.99')).toBeInTheDocument();
@@ -360,7 +392,7 @@ describe('PaymentsPage', () => {
 
       const charts = screen.getAllByTestId('metric-chart');
       const byTitle = (title: string) => charts.find((chart) => chart.getAttribute('aria-label')?.startsWith(title));
-      const collected = byTitle('Revenue over time') as HTMLElement;
+      const collected = byTitle('Net sales over time') as HTMLElement;
       const orders = byTitle('Orders over time') as HTMLElement;
 
       expect(collected).toHaveAttribute('data-axis-sample', '1,234.50');
@@ -376,7 +408,7 @@ describe('PaymentsPage', () => {
       await renderPage();
 
       const loaders = screen.getAllByRole('status', { name: 'Loading' });
-      expect(loaders).toHaveLength(6);
+      expect(loaders).toHaveLength(9);
       loaders.forEach((loader) => expect(loader).toHaveAttribute('aria-busy', 'true'));
     });
   });
