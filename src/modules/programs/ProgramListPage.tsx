@@ -22,6 +22,7 @@ import { getErrorStatus } from '@src/data/httpError';
 import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
+import { localizedName } from '@src/data/localizedName';
 import ProgramImage from './components/ProgramImage';
 import { getProgramsCsvUrl } from './data/api';
 import { usePrograms } from './data/hooks';
@@ -259,8 +260,10 @@ const ProgramListPage = () => {
       renderCell: (_value, row) => (
         <div>
           <span className="d-block">{row.organization}</span>
-          {row.organizationName && (
-            <span className="text-muted small">{row.organizationName}</span>
+          {(row.organizationName || row.organizationArabicName) && (
+            <span className="text-muted small">
+              {localizedName(intl.locale, row.organizationName, row.organizationArabicName)}
+            </span>
           )}
         </div>
       ),
