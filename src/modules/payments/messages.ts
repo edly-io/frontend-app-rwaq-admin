@@ -22,8 +22,8 @@ const messages = defineMessages({
   tabSubscriptions: { id: 'rwaq.admin.payments.tab.subscriptions', defaultMessage: 'Subscriptions' },
 
   // ── Overview: KPI tiles ────────────────────────────────────────────────────
-  kpiOrders: { id: 'rwaq.admin.payments.kpi.orders', defaultMessage: 'Orders' },
-  kpiAdminEnrollments: { id: 'rwaq.admin.payments.kpi.adminEnrollments', defaultMessage: 'Admin enrollments' },
+  kpiOrders: { id: 'rwaq.admin.payments.kpi.orders', defaultMessage: 'Total orders' },
+  kpiAdminEnrollments: { id: 'rwaq.admin.payments.kpi.adminEnrollments', defaultMessage: 'Admin grant orders' },
   kpiGross: { id: 'rwaq.admin.payments.kpi.gross', defaultMessage: 'Gross sales' },
   kpiDiscounts: { id: 'rwaq.admin.payments.kpi.discounts', defaultMessage: 'Discounts' },
   kpiNetSales: { id: 'rwaq.admin.payments.kpi.netSales', defaultMessage: 'Net sales' },
@@ -31,7 +31,7 @@ const messages = defineMessages({
   kpiTotalCollected: { id: 'rwaq.admin.payments.kpi.totalCollected', defaultMessage: 'Total collected' },
   infoOrders: {
     id: 'rwaq.admin.payments.info.orders',
-    defaultMessage: 'Every completed order, subscription payments, free orders and admin enrollments included. For a single partner, only orders with its courses and programs count. {siteName} (subscriptions) counts only subscription payments.',
+    defaultMessage: 'Every completed order, subscription payments, free orders and admin grant orders included. For a single partner, only orders with its courses and programs count. {siteName} (subscriptions) counts only subscription payments.',
   },
   infoAdminEnrollments: {
     id: 'rwaq.admin.payments.info.adminEnrollments',
@@ -163,7 +163,7 @@ const messages = defineMessages({
   colSource: { id: 'rwaq.admin.payments.col.source', defaultMessage: 'Source' },
   infoColOrder: {
     id: 'rwaq.admin.payments.info.col.order',
-    defaultMessage: 'The WordPress order ID. Admin grants have no WordPress order and show as Admin enrollment.',
+    defaultMessage: 'The WordPress order ID. Admin grants have no WordPress order and show as Admin grant order.',
   },
   infoColDate: {
     id: 'rwaq.admin.payments.info.col.date',
@@ -218,7 +218,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.payments.info.col.source',
     defaultMessage: 'Purchase is a WordPress payment. Admin grant is a free enrollment by an admin, with no amounts.',
   },
-  adminOrder: { id: 'rwaq.admin.payments.orders.admin', defaultMessage: 'Admin enrollment #{id}' },
+  adminOrder: { id: 'rwaq.admin.payments.orders.admin', defaultMessage: 'Admin grant order #{id}' },
   sourceLabel: { id: 'rwaq.admin.payments.source', defaultMessage: 'Source' },
   sourceWordpress: { id: 'rwaq.admin.payments.source.wordpress', defaultMessage: 'Purchase' },
   sourceAdmin: { id: 'rwaq.admin.payments.source.admin', defaultMessage: 'Admin grant' },

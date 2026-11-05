@@ -14,7 +14,7 @@ jest.mock('@src/components/DownloadButton', () => ({
   saveBlob: jest.fn(),
 }));
 
-const TITLES = ['Courses', 'Learners', 'Revenue', 'Program funnel', 'Course lifecycle', 'Certificates'];
+const TITLES = ['Courses', 'Learners', 'Net sales','Program funnel', 'Course lifecycle', 'Certificates'];
 
 describe('OrgReportList', () => {
   beforeEach(() => {
