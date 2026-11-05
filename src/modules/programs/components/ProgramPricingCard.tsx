@@ -51,7 +51,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   const isPaid = category === 'is_paid';
   // Live from the inputs, before saving.
   const discountPercent = getDiscountPercent(regularPrice, salePrice);
-  const { vatRate } = program;
+  const { vatRate, vatLabel } = program;
   const priceWithVat = getPriceWithVat(regularPrice, salePrice, vatRate);
   const currency = program.currency || 'SAR';
 
@@ -205,6 +205,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
                   amount: intl.formatNumber(priceWithVat, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
                   currency,
                   rate: Number(vatRate),
+                  label: vatLabel?.trim() || intl.formatMessage(messages.pricingVatFallbackLabel),
                 })}
               </Form.Text>
             )}

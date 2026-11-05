@@ -60,6 +60,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   // Live from the inputs, before saving.
   const discountPercent = getDiscountPercent(regularPrice, salePrice);
   const vatRate = pricing?.vatRate;
+  const vatLabel = pricing?.vatLabel;
   const priceWithVat = getPriceWithVat(regularPrice, salePrice, vatRate);
   const currency = pricing?.currency ?? 'SAR';
   // The backend refuses a type change while the course is in a program.
@@ -249,6 +250,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
                   amount: intl.formatNumber(priceWithVat, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
                   currency,
                   rate: Number(vatRate),
+                  label: vatLabel?.trim() || intl.formatMessage(messages.pricingVatFallbackLabel),
                 })}
               </Form.Text>
             )}
