@@ -5,6 +5,7 @@
  *   GET|POST         /rwaq/api/organizations/
  *   GET|PATCH        /rwaq/api/organizations/<short_name>/
  *   GET|POST|DELETE  /rwaq/api/organizations/<short_name>/members/<email>/
+ *   GET              /api/v1/admin/org-reports/<name>/csv/?org=<short_name>   (superusers only)
  *
  * Host: **Studio (CMS)**, matching the users module. Not cosmetic — granting
  * Organization Admin provisions course creation through
@@ -24,6 +25,7 @@ import type {
   OrgListParams,
   OrgListResponse,
   OrgProfilePatch,
+  OrgReportName,
 } from './types';
 
 const getOrgsBaseUrl = () => getStudioApiUrl('/rwaq/api/organizations');
@@ -131,3 +133,8 @@ export const removeOrgAdmin = async (shortName: string, email: string): Promise<
     `${getOrgsBaseUrl()}/${shortName}/members/${encodeURIComponent(email)}/`,
   );
 };
+
+/** The URL of one org report's CSV file. The organization goes in `params`, not in the URL. */
+export const getOrgReportCsvUrl = (name: OrgReportName): string => (
+  getStudioApiUrl(`/api/v1/admin/org-reports/${name}/csv/`)
+);

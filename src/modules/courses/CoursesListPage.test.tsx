@@ -12,6 +12,12 @@ import * as hooks from './data/hooks';
 import CoursesListPage from './CoursesListPage';
 
 jest.mock('./data/hooks', () => ({ useCourses: jest.fn() }));
+jest.mock('@src/modules/organizations/data/hooks', () => ({
+  useOrgFilterOptions: jest.fn(() => [
+    { value: 'QAOrg', label: 'QA Org' },
+    { value: 'QAOrg2', label: 'QA Org Two' },
+  ]),
+}));
 
 jest.mock('@src/components/CsvDownloadButton', () => ({
   __esModule: true,
@@ -27,6 +33,118 @@ jest.mock('@edx/frontend-platform', () => {
 
 const lastCall = () => (hooks.useCourses as jest.Mock).mock.calls.at(-1)[0];
 const csvParams = () => JSON.parse(screen.getByTestId('csv').dataset.params as string);
+
+const COURSE = {
+  courseId: 'course-v1:ARB+AI101+2026',
+  displayName: 'Intro to AI',
+  org: 'ARB',
+  organizationName: 'Arbisoft Academy',
+  organizationArabicName: 'أكاديمية أربيسوفت',
+  courseImageUrl: null,
+  start: null,
+  end: null,
+  categories: [
+    { slug: 'tech', name: 'Technology', arabicName: 'التقنية' },
+    { slug: 'misc', name: 'Misc', arabicName: '' },
+  ],
+  enrollmentCount: 0,
+  unenrolledCount: 0,
+};
+
+const withCourses = (...courses: object[]) => (hooks.useCourses as jest.Mock).mockReturnValue({
+  data: { results: courses, pagination: { count: courses.length, numPages: 1 } },
+  isLoading: false,
+  isError: false,
+  error: null,
+  refetch: jest.fn(),
+});
+
+describe('CoursesListPage organization column', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    window.history.pushState({}, '', '/');
+  });
+
+  it('shows the English name in English, the code when the organization has no name', () => {
+    withCourses(COURSE, {
+      ...COURSE, courseId: 'course-v1:ZZZ+X+1', displayName: 'Other', org: 'ZZZ', organizationName: null,
+    });
+    renderWrapper(<CoursesListPage />);
+
+    expect(screen.getByText('Arbisoft Academy')).toBeInTheDocument();
+    expect(screen.queryByText('أكاديمية أربيسوفت')).not.toBeInTheDocument();
+    expect(screen.getByText('ZZZ')).toBeInTheDocument();
+    expect(screen.getAllByText('Technology')).not.toHaveLength(0);
+    expect(screen.queryByText('التقنية')).not.toBeInTheDocument();
+  });
+
+  it('shows the Arabic name in an Arabic panel, the English name when there is none', () => {
+    withCourses(COURSE, {
+      ...COURSE, courseId: 'course-v1:ARB+B+1', displayName: 'Second', organizationArabicName: '',
+    });
+    render(
+      <BrowserRouter>
+        <IntlProvider locale="ar">
+          <CoursesListPage />
+        </IntlProvider>
+      </BrowserRouter>,
+    );
+
+    expect(screen.getByText('أكاديمية أربيسوفت')).toBeInTheDocument();
+    expect(screen.getByText('Arbisoft Academy')).toBeInTheDocument();
+    // Categories follow the same rule: Arabic when there is one, else English.
+    expect(screen.getAllByText('التقنية')).not.toHaveLength(0);
+    expect(screen.queryByText('Technology')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Misc')).not.toHaveLength(0);
+  });
+});
+
+describe('CoursesListPage organization filter', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    window.history.pushState({}, '', '/');
+    (hooks.useCourses as jest.Mock).mockReturnValue({
+      data: { results: [], pagination: { count: 0, numPages: 1 } },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+  });
+
+  it('offers every organization by name, with All organizations first', () => {
+    renderWrapper(<CoursesListPage />);
+
+    const options = Array.from((screen.getByLabelText('Organization') as HTMLSelectElement).options);
+    expect(options.map((option) => option.textContent)).toEqual(['All organizations', 'QA Org', 'QA Org Two']);
+    expect(lastCall().org).toBeUndefined();
+  });
+
+  it('filters the list and the CSV by the chosen organization, and keeps it in the URL', () => {
+    renderWrapper(<CoursesListPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+    fireEvent.change(screen.getByLabelText('Organization'), { target: { value: 'QAOrg' } });
+
+    expect(window.location.search).toBe('?org=QAOrg');
+    expect(lastCall().org).toBe('QAOrg');
+    expect(csvParams()).toMatchObject({ org: 'QAOrg' });
+    expect(screen.getByText('Organization: QAOrg')).toBeInTheDocument();
+  });
+
+  it('starts from the organization in the URL, and clears it with its chip or Clear all', () => {
+    window.history.pushState({}, '', '/?org=QAOrg2&page=2');
+    renderWrapper(<CoursesListPage />);
+
+    expect((screen.getByLabelText('Organization') as HTMLSelectElement).value).toBe('QAOrg2');
+    expect(lastCall().org).toBe('QAOrg2');
+
+    fireEvent.click(screen.getByRole('button', { name: /Remove Organization/ }));
+
+    expect(window.location.search).toBe('');
+    expect(lastCall().org).toBeUndefined();
+  });
+});
 
 describe('CoursesListPage period', () => {
   beforeEach(() => {
