@@ -56,7 +56,7 @@ describe('CoursePricingCard', () => {
       'When enabled, course authors see the pricing fields in Studio but cannot change them. '
       + 'Org admin can still change them.',
     )).toBeInTheDocument();
-    expect(screen.queryByLabelText('Price (SAR)')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Price before VAT (SAR)')).not.toBeInTheDocument();
   });
 
   it('shows an error and no form when pricing fails to load', () => {
@@ -75,16 +75,16 @@ describe('CoursePricingCard', () => {
   it('shows price fields only for Paid', () => {
     renderCard();
     fireEvent.click(screen.getByRole('radio', { name: 'Paid' }));
-    expect(screen.getByLabelText('Price (SAR)')).toBeInTheDocument();
-    expect(screen.getByLabelText('Discounted Price / Sale Price (SAR)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Price before VAT (SAR)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Discounted Price / Sale Price before VAT (SAR)')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('radio', { name: 'Program-only course' }));
-    expect(screen.queryByLabelText('Price (SAR)')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Price before VAT (SAR)')).not.toBeInTheDocument();
   });
 
   it('computes the discount percentage live from the inputs', () => {
     renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00' });
-    const price = screen.getByLabelText('Price (SAR)');
-    const sale = screen.getByLabelText('Discounted Price / Sale Price (SAR)');
+    const price = screen.getByLabelText('Price before VAT (SAR)');
+    const sale = screen.getByLabelText('Discounted Price / Sale Price before VAT (SAR)');
     expect(screen.queryByTestId('discount-percentage')).not.toBeInTheDocument();
     fireEvent.change(price, { target: { value: '200' } });
     fireEvent.change(sale, { target: { value: '150' } });
@@ -102,9 +102,78 @@ describe('CoursePricingCard', () => {
     expect(screen.queryByTestId('discount-percentage')).not.toBeInTheDocument();
   });
 
+  describe('price with VAT line', () => {
+    const line = () => screen.queryByTestId('price-with-vat');
+    const priceInput = () => screen.getByLabelText('Price before VAT (SAR)');
+    const saleInput = () => screen.getByLabelText('Discounted Price / Sale Price before VAT (SAR)');
+
+    it('shows the regular price with VAT', () => {
+      renderCard({ pricingCategory: 'is_paid', regularPrice: '30.00', vatRate: '15.00' });
+      expect(line()).toHaveTextContent('Learner pays 34.50 SAR including 15% VAT');
+      expect(line()).toHaveClass('font-weight-bold');
+    });
+
+    it('uses the sale price when it is set and valid', () => {
+      renderCard({
+        pricingCategory: 'is_paid', regularPrice: '100.00', salePrice: '30.00', vatRate: '15.00',
+      });
+      expect(line()).toHaveTextContent('Learner pays 34.50 SAR including 15% VAT');
+    });
+
+    it('falls back to the regular price when the sale price is not lower', () => {
+      renderCard({
+        pricingCategory: 'is_paid', regularPrice: '100.00', salePrice: '100.00', vatRate: '15.00',
+      });
+      expect(line()).toHaveTextContent('Learner pays 115.00 SAR including 15% VAT');
+    });
+
+    it('updates live while typing and hides when the price is emptied or invalid', () => {
+      renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00', vatRate: '15.00' });
+      fireEvent.change(saleInput(), { target: { value: '30' } });
+      expect(line()).toHaveTextContent('Learner pays 34.50 SAR including 15% VAT');
+      fireEvent.change(saleInput(), { target: { value: '' } });
+      expect(line()).toHaveTextContent('Learner pays 115.00 SAR including 15% VAT');
+      fireEvent.change(priceInput(), { target: { value: 'abc' } });
+      expect(line()).not.toBeInTheDocument();
+      fireEvent.change(priceInput(), { target: { value: '' } });
+      expect(line()).not.toBeInTheDocument();
+    });
+
+    it('ends with the label from the API', () => {
+      renderCard({
+        pricingCategory: 'is_paid', regularPrice: '30.00', vatRate: '15.00', vatLabel: 'Tax',
+      });
+      expect(line()).toHaveTextContent('Learner pays 34.50 SAR including 15% Tax');
+    });
+
+    it.each(['', '  '])('falls back to VAT when the label is %j', (vatLabel) => {
+      renderCard({
+        pricingCategory: 'is_paid', regularPrice: '30.00', vatRate: '15.00', vatLabel,
+      });
+      expect(line()).toHaveTextContent('Learner pays 34.50 SAR including 15% VAT');
+    });
+
+    it('stays hidden with a label but rate 0', () => {
+      renderCard({
+        pricingCategory: 'is_paid', regularPrice: '100.00', vatRate: '0.00', vatLabel: 'Tax',
+      });
+      expect(line()).not.toBeInTheDocument();
+    });
+
+    it('is hidden when the VAT rate is 0', () => {
+      renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00', vatRate: '0.00' });
+      expect(line()).not.toBeInTheDocument();
+    });
+
+    it('is hidden when the VAT rate is missing', () => {
+      renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00' });
+      expect(line()).not.toBeInTheDocument();
+    });
+  });
+
   it('validates price and sale price on blur', () => {
     renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00' });
-    const price = screen.getByLabelText('Price (SAR)');
+    const price = screen.getByLabelText('Price before VAT (SAR)');
     fireEvent.change(price, { target: { value: '0' } });
     fireEvent.blur(price);
     expect(screen.getByText('Price must be greater than 0.')).toBeInTheDocument();
@@ -113,7 +182,7 @@ describe('CoursePricingCard', () => {
     fireEvent.blur(price);
     expect(screen.queryByText('Price must be greater than 0.')).not.toBeInTheDocument();
 
-    const salePrice = screen.getByLabelText('Discounted Price / Sale Price (SAR)');
+    const salePrice = screen.getByLabelText('Discounted Price / Sale Price before VAT (SAR)');
     fireEvent.change(salePrice, { target: { value: '100' } });
     fireEvent.blur(salePrice);
     expect(screen.getByText('Sale price must be lower than the price.')).toBeInTheDocument();
@@ -140,8 +209,8 @@ describe('CoursePricingCard', () => {
   it('saves a paid course with its prices and the lock', async () => {
     renderCard();
     fireEvent.click(screen.getByRole('radio', { name: 'Paid' }));
-    fireEvent.change(screen.getByLabelText('Price (SAR)'), { target: { value: '200' } });
-    fireEvent.change(screen.getByLabelText('Discounted Price / Sale Price (SAR)'), { target: { value: '150' } });
+    fireEvent.change(screen.getByLabelText('Price before VAT (SAR)'), { target: { value: '200' } });
+    fireEvent.change(screen.getByLabelText('Discounted Price / Sale Price before VAT (SAR)'), { target: { value: '150' } });
     fireEvent.click(screen.getByRole('checkbox', { name: /Manage pricing from the admin panel/ }));
     save();
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({
@@ -155,7 +224,7 @@ describe('CoursePricingCard', () => {
   it('keeps the card editable when the lock is on', () => {
     renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00', pricingManagedByAdmin: true });
     expect(screen.getByRole('radio', { name: 'Free' })).toBeEnabled();
-    expect(screen.getByLabelText('Price (SAR)')).toBeEnabled();
+    expect(screen.getByLabelText('Price before VAT (SAR)')).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Save pricing' })).toBeEnabled();
   });
 
@@ -189,6 +258,6 @@ describe('CoursePricingCard', () => {
     renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00' });
     save();
     const message = await screen.findByText('Sale price must be lower than the price.');
-    expect(message.closest('.pgn__form-group')).toContainElement(screen.getByLabelText('Discounted Price / Sale Price (SAR)'));
+    expect(message.closest('.pgn__form-group')).toContainElement(screen.getByLabelText('Discounted Price / Sale Price before VAT (SAR)'));
   });
 });

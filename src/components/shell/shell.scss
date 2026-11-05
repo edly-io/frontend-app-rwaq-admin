@@ -998,6 +998,14 @@ html[data-paragon-theme-variant='dark'] {
   overflow-wrap: anywhere;
 }
 
+// An order id such as "Admin grant order #94" stays on one line in Payment history.
+.rwaq-order-cell {
+  display: inline-block;
+  min-width: 9rem;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
 .rwaq-user-cell__meta {
   font-size: 0.8125rem;
   color: var(--rwaq-muted);

@@ -69,6 +69,10 @@ export interface ProgramDetail extends ProgramSummary {
   discountPercentage: string | null;
   /** ISO 4217 code of the regular and sale price. */
   currency: string;
+  /** VAT rate in percent ("15.00") for the price preview. The prices stay without VAT. */
+  vatRate?: string | null;
+  /** Tax name from WordPress ("" when none) shown after the rate. Empty falls back to the word VAT. */
+  vatLabel?: string | null;
   /** When true, Studio shows this program's pricing read-only. Settable only from here. */
   modified: string;
 }

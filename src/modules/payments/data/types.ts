@@ -38,7 +38,12 @@ export interface KindTotals {
   orders: number;
   gross: string;
   discounts: string;
-  netPaid: string;
+  /** Net sales: after coupons, before VAT. */
+  netSales: string;
+  /** VAT collected. */
+  tax: string;
+  /** Net sales plus VAT: what learners paid. */
+  totalCollected: string;
 }
 
 /** One day, Monday-started week or month of the series. Periods without orders are zero. */
@@ -48,7 +53,9 @@ export interface SeriesPoint {
   orders: number;
   gross: string;
   discounts: string;
-  netPaid: string;
+  netSales: string;
+  tax: string;
+  totalCollected: string;
   content: KindTotals;
   subscriptions: KindTotals;
 }
@@ -57,8 +64,12 @@ export interface SeriesPoint {
 export interface PaymentsSummary {
   gross: string;
   discounts: string;
-  netPaid: string;
+  netSales: string;
+  tax: string;
+  totalCollected: string;
   orders: number;
+  /** How many of the orders are admin enrollments (free grants). */
+  adminEnrollments: number;
   items: number;
   /**
    * Course and program items. With the subscriptions its money adds up to the totals above,
@@ -89,7 +100,9 @@ export interface OrderItem {
   org: string;
   actualPrice: string;
   discountAmount: string;
-  pricePaid: string;
+  netAmount: string;
+  taxAmount: string;
+  amountPaid: string;
   revokedAt: string | null;
   revokeReason: string;
   /** Set for a subscription item: the subscription, its plan and the period this payment bought. */
@@ -125,14 +138,21 @@ export interface OrderRow {
   orderBy: string;
   actualPrice: string;
   discountTotal: string;
-  pricePaid: string;
+  netAmount: string;
+  taxLabel: string;
+  /** The rate WooCommerce charged, "15.00". null on orders saved before VAT. */
+  taxRate: string | null;
+  taxAmount: string;
+  amountPaid: string;
   /**
    * Narrowed to a partner, `items` and `coupons` hold only that partner's part and these are the
-   * totals of it. The three above stay whole-order. null when the list is not narrowed to a partner.
+   * totals of it. The order amounts above stay whole-order. null when the list is not narrowed to a partner.
    */
   partnerActualPrice: string | null;
   partnerDiscountAmount: string | null;
-  partnerPricePaid: string | null;
+  partnerNetAmount: string | null;
+  partnerTaxAmount: string | null;
+  partnerAmountPaid: string | null;
   reason: string;
   /** The admin who enrolled the learner. null for WordPress orders. */
   enrolledBy: { id: number; username: string; email: string } | null;
@@ -166,7 +186,9 @@ export interface SubscriptionRow {
   /** Why WordPress cancelled or revoked it. Empty while active. */
   reason: string;
   payments: number;
-  netPaid: string;
+  netSales: string;
+  tax: string;
+  totalCollected: string;
   discounts: string;
 }
 
@@ -176,7 +198,9 @@ export interface SubscriptionListParams extends ListParams {
 
 /** GET subscriptions/summary/ — what the tab's tiles show. */
 export interface SubscriptionsSummary {
-  revenue: string;
+  netSales: string;
+  tax: string;
+  totalCollected: string;
   /** The subscriptions in each state today, whatever the date range. `total` is active + expired + cancelled. */
   total: number;
   active: number;
