@@ -145,7 +145,11 @@ const messages = defineMessages({
   },
   pricingPriceWithVat: {
     id: 'rwaq.admin.programs.pricing.price-with-vat',
-    defaultMessage: 'Learner pays {amount} {currency} including {rate}% VAT',
+    defaultMessage: 'Learner pays {amount} {currency} including {rate}% {label}',
+  },
+  pricingVatFallbackLabel: {
+    id: 'rwaq.admin.programs.pricing.vat-fallback-label',
+    defaultMessage: 'VAT',
   },
   pricingDiscountPercentage: {
     id: 'rwaq.admin.programs.pricing.discount-percentage',

@@ -169,6 +169,8 @@ export interface CoursePricing {
   currency: string | null;
   /** VAT rate in percent ("15.00") for the price preview. The prices stay without VAT. */
   vatRate?: string | null;
+  /** Tax name from WordPress ("" when none) shown after the rate. Empty falls back to the word VAT. */
+  vatLabel?: string | null;
   /**
    * When true, Studio renders this course's pricing read-only and the
    * Studio-facing endpoint refuses writes. Settable only from here.

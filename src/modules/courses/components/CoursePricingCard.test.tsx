@@ -139,6 +139,27 @@ describe('CoursePricingCard', () => {
       expect(line()).not.toBeInTheDocument();
     });
 
+    it('ends with the label from the API', () => {
+      renderCard({
+        pricingCategory: 'is_paid', regularPrice: '30.00', vatRate: '15.00', vatLabel: 'Tax',
+      });
+      expect(line()).toHaveTextContent('Learner pays 34.50 SAR including 15% Tax');
+    });
+
+    it.each(['', '  '])('falls back to VAT when the label is %j', (vatLabel) => {
+      renderCard({
+        pricingCategory: 'is_paid', regularPrice: '30.00', vatRate: '15.00', vatLabel,
+      });
+      expect(line()).toHaveTextContent('Learner pays 34.50 SAR including 15% VAT');
+    });
+
+    it('stays hidden with a label but rate 0', () => {
+      renderCard({
+        pricingCategory: 'is_paid', regularPrice: '100.00', vatRate: '0.00', vatLabel: 'Tax',
+      });
+      expect(line()).not.toBeInTheDocument();
+    });
+
     it('is hidden when the VAT rate is 0', () => {
       renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00', vatRate: '0.00' });
       expect(line()).not.toBeInTheDocument();
