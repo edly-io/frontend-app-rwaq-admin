@@ -131,7 +131,7 @@ describe('PaymentsPage', () => {
   it('opens on the Overview with the tiles in order and amounts in SAR', async () => {
     await renderPage();
 
-    const labels = ['Orders', 'Gross sales', 'Discounts', 'Net sales', 'VAT collected', 'Total collected'].map((label) => screen.getByText(label));
+    const labels = ['Total orders', 'Gross sales', 'Discounts', 'Net sales', 'VAT collected', 'Total collected'].map((label) => screen.getByText(label));
     labels.slice(1).forEach((label, index) => {
       // eslint-disable-next-line no-bitwise
       expect(labels[index].compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -145,7 +145,7 @@ describe('PaymentsPage', () => {
   it('shows the combined totals in order, then content and subscription net sales', async () => {
     await renderPage();
 
-    const labels = ['Orders', 'Admin enrollments', 'Gross sales', 'Discounts', 'Net sales', 'VAT collected', 'Total collected', 'Courses and Programs net sales', 'Subscription net sales']
+    const labels = ['Total orders', 'Admin grant orders', 'Gross sales', 'Discounts', 'Net sales', 'VAT collected', 'Total collected', 'Courses and Programs net sales', 'Subscription net sales']
       .map((label) => screen.getByText(label));
     labels.slice(1).forEach((label, index) => {
       // eslint-disable-next-line no-bitwise
@@ -159,7 +159,7 @@ describe('PaymentsPage', () => {
     await renderPage();
 
     const card = (label: string) => (screen.getByText(label).closest('.rwaq-payment-kpi') as HTMLElement);
-    expect(within(card('Admin enrollments')).getByText('1')).toBeInTheDocument();
+    expect(within(card('Admin grant orders')).getByText('1')).toBeInTheDocument();
     expect(within(card('VAT collected')).getByText('105.00')).toBeInTheDocument();
     expect(within(card('Total collected')).getByText('805.00')).toBeInTheDocument();
     expect(within(card('Net sales')).getByText('700.00')).toBeInTheDocument();
@@ -172,13 +172,13 @@ describe('PaymentsPage', () => {
 
     const card = (label: string) => (screen.getByText(label).closest('.rwaq-payment-kpi') as HTMLElement);
     expect(within(card('VAT collected')).queryByText('105.00')).not.toBeInTheDocument();
-    expect(within(card('Admin enrollments')).queryByText('1')).not.toBeInTheDocument();
+    expect(within(card('Admin grant orders')).queryByText('1')).not.toBeInTheDocument();
   });
 
   it('explains in the tooltips that admin enrollments carry no money and VAT is per order', async () => {
     await renderPage();
 
-    fireEvent.mouseOver(screen.getByText('Admin enrollments'));
+    fireEvent.mouseOver(screen.getByText('Admin grant orders'));
     expect(await screen.findByText(/free enrollments by an admin/)).toBeInTheDocument();
     fireEvent.mouseOver(screen.getByText('VAT collected'));
     expect(await screen.findByText(/at the rate of each order/)).toBeInTheDocument();

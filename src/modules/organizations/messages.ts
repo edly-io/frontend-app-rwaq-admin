@@ -166,7 +166,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.reports.learners.details',
     defaultMessage: 'One row per learner: courses enrolled and passed, average grade and certificates earned.',
   },
-  reportsRevenueTitle: { id: 'rwaq.admin.orgs.reports.revenue.title', defaultMessage: 'Revenue' },
+  reportsRevenueTitle: { id: 'rwaq.admin.orgs.reports.revenue.title', defaultMessage: 'Net sales' },
   reportsRevenueDetails: {
     id: 'rwaq.admin.orgs.reports.revenue.details',
     defaultMessage: 'One row per order item: buyer, course or program, price, discount and amount paid.',

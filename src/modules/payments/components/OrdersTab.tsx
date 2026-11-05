@@ -178,7 +178,7 @@ const OrdersTab = ({
       info: intl.formatMessage(messages.infoColOrder),
       key: 'wordpressOrderId',
       renderCell: (_value, row) => (
-        <span className="rwaq-user-cell__name">
+        <span className="rwaq-user-cell__name rwaq-order-cell">
           {row.wordpressOrderId ?? intl.formatMessage(messages.adminOrder, { id: row.id })}
         </span>
       ),
