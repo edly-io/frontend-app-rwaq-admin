@@ -23,6 +23,7 @@ import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
 import { localizedName } from '@src/data/localizedName';
+import { useOrgFilterOptions } from '@src/modules/organizations/data/hooks';
 import ProgramImage from './components/ProgramImage';
 import { getProgramsCsvUrl } from './data/api';
 import { usePrograms } from './data/hooks';
@@ -115,6 +116,7 @@ const ProgramListPage = () => {
   const hasExplicitOrdering = searchParams.get('ordering') !== null;
   const ordering = (searchParams.get('ordering') as ProgramOrdering | null) ?? DEFAULT_ORDERING;
   const programType = searchParams.get('type') ?? '';
+  const org = searchParams.get('org') ?? '';
   const currentFilterId = activeFilterId(searchParams);
   const hasActiveFilter = currentFilterId !== 'all';
 
@@ -149,6 +151,7 @@ const ProgramListPage = () => {
 
   const listParams = {
     search: search || undefined,
+    org: org || undefined,
     status: (searchParams.get('status') as ProgramStatus | null) || undefined,
     pricing: TYPE_OPTIONS.find((o) => o.value === programType)?.value,
     isHide: isHideFilter,
@@ -160,6 +163,7 @@ const ProgramListPage = () => {
   } = usePrograms({ ...listParams, page, pageSize: PAGE_SIZE });
 
   const statusCode = isError ? getErrorStatus(error) : undefined;
+  const orgFilterOptions = useOrgFilterOptions(org);
 
   const filterOptions = useMemo(
     () => FILTER_OPTIONS.map((option) => ({
@@ -185,6 +189,14 @@ const ProgramListPage = () => {
         key: 'search',
         label: intl.formatMessage(messages.chipSearch, { term: search }),
         onRemove: () => updateParams({ search: '' }),
+      });
+    }
+
+    if (org) {
+      chips.push({
+        key: 'org',
+        label: intl.formatMessage(messages.chipOrg, { org }),
+        onRemove: () => updateParams({ org: '' }),
       });
     }
 
@@ -220,7 +232,7 @@ const ProgramListPage = () => {
 
     return chips;
   }, [
-    search, programType, currentFilterId, hasActiveFilter, ordering, hasExplicitOrdering, intl, updateParams,
+    search, org, programType, currentFilterId, hasActiveFilter, ordering, hasExplicitOrdering, intl, updateParams,
     sortOptions,
   ]);
 
@@ -357,6 +369,13 @@ const ProgramListPage = () => {
           searchPlaceholder={intl.formatMessage(messages.searchPlaceholder)}
           filterGroups={[
             {
+              id: 'org',
+              label: intl.formatMessage(messages.orgLabel),
+              value: org,
+              options: [{ value: '', label: intl.formatMessage(messages.orgAll) }, ...orgFilterOptions],
+              onChange: (value) => updateParams({ org: value }),
+            },
+            {
               id: 'filter',
               label: intl.formatMessage(messages.filterGroupLabel),
               value: currentFilterId,
@@ -386,7 +405,7 @@ const ProgramListPage = () => {
           ]}
           appliedChips={appliedChips}
           onClearAll={() => updateParams({
-            search: '', status: '', type: '', is_hide: '', is_featured: '', ordering: '',
+            search: '', org: '', status: '', type: '', is_hide: '', is_featured: '', ordering: '',
           })}
           downloadAction={<CsvDownloadButton url={getProgramsCsvUrl()} params={listParams} fallbackName="programs" />}
         />

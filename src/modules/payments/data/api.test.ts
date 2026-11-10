@@ -34,7 +34,10 @@ describe('payments api', () => {
   it('sends snake_case filters, drops empty ones, and camelCases the summary', async () => {
     get.mockResolvedValue({
       data: {
-        net_paid: '700.00', series: [{ period: '2026-09-01', net_paid: '600.00' }],
+        net_sales: '700.00',
+        total_collected: '805.00',
+        admin_enrollments: 1,
+        series: [{ period: '2026-09-01', net_sales: '600.00' }],
       },
     });
 
@@ -45,8 +48,10 @@ describe('payments api', () => {
     expect(get).toHaveBeenCalledWith(`${BASE}/summary/`, {
       params: { start_date: '2026-09-01', granularity: 'week' },
     });
-    expect(summary.netPaid).toBe('700.00');
-    expect(summary.series[0].netPaid).toBe('600.00');
+    expect(summary.netSales).toBe('700.00');
+    expect(summary.totalCollected).toBe('805.00');
+    expect(summary.adminEnrollments).toBe(1);
+    expect(summary.series[0].netSales).toBe('600.00');
   });
 
   it('lists orders with paging, search and filters', async () => {
@@ -91,7 +96,9 @@ describe('payments api', () => {
         results: [{
           partner_actual_price: '100.00',
           partner_discount_amount: '6.67',
-          partner_price_paid: '93.33',
+          partner_net_amount: '93.33',
+          partner_tax_amount: '14.00',
+          partner_amount_paid: '107.33',
           coupons: [{ code: 'SAVE10', discount_amount: '10.00', partner_discount_amount: '6.67' }],
           items: [],
         }],
@@ -100,7 +107,9 @@ describe('payments api', () => {
 
     const page = await getPaymentOrders({ org: 'TPA' });
 
-    expect(page.results[0].partnerPricePaid).toBe('93.33');
+    expect(page.results[0].partnerNetAmount).toBe('93.33');
+    expect(page.results[0].partnerTaxAmount).toBe('14.00');
+    expect(page.results[0].partnerAmountPaid).toBe('107.33');
     expect(page.results[0].partnerActualPrice).toBe('100.00');
     expect(page.results[0].partnerDiscountAmount).toBe('6.67');
     expect(page.results[0].coupons[0].partnerDiscountAmount).toBe('6.67');

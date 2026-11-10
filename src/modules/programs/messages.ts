@@ -34,6 +34,9 @@ const messages = defineMessages({
   typeFree: { id: 'rwaq.admin.programs.type.free', defaultMessage: 'Free' },
   typePaid: { id: 'rwaq.admin.programs.type.paid', defaultMessage: 'Paid' },
   typeSubscription: { id: 'rwaq.admin.programs.type.subscription', defaultMessage: 'Part of Subscription' },
+  orgLabel: { id: 'rwaq.admin.programs.org.label', defaultMessage: 'Organization' },
+  orgAll: { id: 'rwaq.admin.programs.org.all', defaultMessage: 'All organizations' },
+  chipOrg: { id: 'rwaq.admin.programs.chip.org', defaultMessage: 'Organization: {org}' },
   chipType: { id: 'rwaq.admin.programs.chip.type', defaultMessage: 'Type: {label}' },
   chipSearch: { id: 'rwaq.admin.programs.chip.search', defaultMessage: 'Search: {term}' },
   chipFilter: { id: 'rwaq.admin.programs.chip.filter', defaultMessage: 'Filter: {label}' },
@@ -128,14 +131,25 @@ const messages = defineMessages({
     id: 'rwaq.admin.programs.pricing.subscription-description',
     defaultMessage: 'Learners reach this program through the {siteName} subscription. It has no price of its own.',
   },
-  pricingPriceLabel: { id: 'rwaq.admin.programs.pricing.price-label', defaultMessage: 'Price ({currency})' },
+  pricingPriceLabel: {
+    id: 'rwaq.admin.programs.pricing.price-label',
+    defaultMessage: 'Price before VAT ({currency})',
+  },
   pricingSalePriceLabel: {
     id: 'rwaq.admin.programs.pricing.sale-price-label',
-    defaultMessage: 'Discounted Price / Sale Price ({currency})',
+    defaultMessage: 'Discounted Price / Sale Price before VAT ({currency})',
   },
   pricingSalePriceHint: {
     id: 'rwaq.admin.programs.pricing.sale-price-hint',
     defaultMessage: 'Optional. Leave empty when the program is not on sale.',
+  },
+  pricingPriceWithVat: {
+    id: 'rwaq.admin.programs.pricing.price-with-vat',
+    defaultMessage: 'Learner pays {amount} {currency} including {rate}% {label}',
+  },
+  pricingVatFallbackLabel: {
+    id: 'rwaq.admin.programs.pricing.vat-fallback-label',
+    defaultMessage: 'VAT',
   },
   pricingDiscountPercentage: {
     id: 'rwaq.admin.programs.pricing.discount-percentage',

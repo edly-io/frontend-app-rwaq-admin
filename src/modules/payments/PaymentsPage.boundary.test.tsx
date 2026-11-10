@@ -46,14 +46,17 @@ const emptyPage = {
 const summary = {
   gross: '800.00',
   discounts: '100.00',
-  netPaid: '700.00',
+  netSales: '700.00',
+  tax: '105.00',
+  totalCollected: '805.00',
   orders: 3,
+  adminEnrollments: 1,
   items: 4,
   content: {
-    orders: 2, gross: '600.00', discounts: '100.00', netPaid: '500.00',
+    orders: 2, gross: '600.00', discounts: '100.00', netSales: '500.00',
   },
   subscriptions: {
-    orders: 1, gross: '200.00', discounts: '0.00', netPaid: '200.00',
+    orders: 1, gross: '200.00', discounts: '0.00', netSales: '200.00',
   },
   granularity: 'month',
   series: [],
