@@ -78,7 +78,7 @@ const EnrollmentsTable = ({
       label: intl.formatMessage(messages.enrollmentCourse),
       key: 'courseName',
       renderCell: (value, row) => (
-        <div className="min-width-0">
+        <div className="rwaq-enrollments__course">
           <div className="rwaq-user-cell__name">{value as string}</div>
           <div className="rwaq-user-cell__meta">{row.courseId}</div>
           {/* The last admin change, on the row it belongs to. An enrollment
@@ -120,8 +120,8 @@ const EnrollmentsTable = ({
     {
       label: intl.formatMessage(messages.enrollmentCertificate),
       key: 'certificateStatus',
-      renderCell: (value) => (value
-        ? <span className="rwaq-enrollments__cert">{value as string}</span>
+      renderCell: (value) => (value === 'downloadable'
+        ? <span className="rwaq-enrollments__cert">{intl.formatMessage(messages.enrollmentCertificateEarned)}</span>
         : (
           <span className="rwaq-enrollments__cert--none">
             {intl.formatMessage(messages.enrollmentNoCertificate)}
@@ -229,19 +229,21 @@ const EnrollmentsTable = ({
   ];
 
   return (
-    <AdminDataTable
-      columns={columns}
-      data={rows}
-      isLoading={isLoading}
-      caption={intl.formatMessage(messages.tabEnrollments)}
-      pagination={{
-        currentPage: page,
-        pageCount,
-        itemCount: enrollments.length,
-        pageSize: PAGE_SIZE,
-        onPageChange: setPage,
-      }}
-    />
+    <div className="rwaq-enrollments-table">
+      <AdminDataTable
+        columns={columns}
+        data={rows}
+        isLoading={isLoading}
+        caption={intl.formatMessage(messages.tabEnrollments)}
+        pagination={{
+          currentPage: page,
+          pageCount,
+          itemCount: enrollments.length,
+          pageSize: PAGE_SIZE,
+          onPageChange: setPage,
+        }}
+      />
+    </div>
   );
 };
 
