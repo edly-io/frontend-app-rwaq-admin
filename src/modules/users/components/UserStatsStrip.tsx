@@ -163,6 +163,7 @@ const UserStatsStrip = ({
           info={intl.formatMessage(messages.statsEnrollmentsMonthInfo)}
           type="bar"
           data={monthSeries}
+          maxXLabels={6}
           series={['enrollments']}
           isLoading={isEnrollmentsLoading}
           isEmpty={isEmptySeries(monthSeries, 'enrollments')}

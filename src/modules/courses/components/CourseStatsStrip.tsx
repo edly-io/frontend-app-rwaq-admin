@@ -86,6 +86,7 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
           info={intl.formatMessage(messages.statsEnrollmentsInfo)}
           type="bar"
           data={enrollmentSeries}
+          maxXLabels={4}
           series={['enrollments']}
           isLoading={isLoading}
           isUnavailable={query.isError}
@@ -105,6 +106,7 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
           type="bar"
           data={funnel}
           series={['people']}
+          horizontalBars
           isLoading={isLoading}
           isUnavailable={query.isError || funnelUnavailable}
         />
