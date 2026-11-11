@@ -106,7 +106,7 @@ const CourseListStatsStrip = () => {
           series={['enrollments']}
           isLoading={isLoading}
           isUnavailable={query.isError}
-          horizontalBars
+          categoryLabels
         />
         <StatsChartCard
           title={intl.formatMessage(statsMessages.enrollmentsPerMonthTitle)}

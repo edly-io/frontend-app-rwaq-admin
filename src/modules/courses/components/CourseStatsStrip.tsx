@@ -106,7 +106,7 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
           type="bar"
           data={funnel}
           series={['people']}
-          horizontalBars
+          categoryLabels
           isLoading={isLoading}
           isUnavailable={query.isError || funnelUnavailable}
         />
