@@ -58,7 +58,7 @@ const OrgListStatsStrip = () => {
     >
       <StatsTiles>
         {tile('listStatsActive', 'listStatsActiveInfo', tiles?.activeOrganizations)}
-        {tile('listStatsNoAdmins', 'listStatsNoAdminsInfo', tiles?.organizationsWithoutAdmins)}
+        {tile('listStatsWithCourses', 'listStatsWithCoursesInfo', tiles?.organizationsWithCourses)}
         {tile('listStatsCourses', 'listStatsCoursesInfo', tiles?.courses)}
         {tile('listStatsPrograms', 'listStatsProgramsInfo', tiles?.programs)}
         {tile('listStatsEnrollments', 'listStatsEnrollmentsInfo', tiles?.enrollments)}

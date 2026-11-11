@@ -104,7 +104,7 @@ export type OrgReportName = 'courses' | 'learners' | 'revenue' | 'funnel' | 'lif
 export interface OrgListStats {
   tiles: {
     activeOrganizations: number;
-    organizationsWithoutAdmins: number;
+    organizationsWithCourses: number;
     courses: number;
     programs: number;
     enrollments: number;

@@ -21,7 +21,7 @@ jest.mock('@src/components/charts/MetricChart', () => ({
 const stats = {
   tiles: {
     activeOrganizations: 12,
-    organizationsWithoutAdmins: 3,
+    organizationsWithCourses: 3,
     courses: 140,
     programs: 18,
     enrollments: 5200,
@@ -48,6 +48,8 @@ describe('OrgListStatsStrip', () => {
     renderWrapper(<OrgListStatsStrip />);
 
     expect(screen.getByText('12')).toBeInTheDocument();
+    expect(screen.getByText('Organizations with courses')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
     expect(screen.getByText('140')).toBeInTheDocument();
     expect(screen.getByText('5,200')).toBeInTheDocument();
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(1);
