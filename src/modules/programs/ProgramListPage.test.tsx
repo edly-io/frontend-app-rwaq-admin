@@ -11,6 +11,7 @@ import * as hooks from './data/hooks';
 import ProgramListPage from './ProgramListPage';
 
 jest.mock('./data/hooks', () => ({ usePrograms: jest.fn() }));
+jest.mock('./components/ProgramListStatsStrip', () => ({ __esModule: true, default: () => null }));
 jest.mock('@src/modules/organizations/data/hooks', () => ({
   useOrgFilterOptions: jest.fn(() => [
     { value: 'QAOrg', label: 'QA Org' },

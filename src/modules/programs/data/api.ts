@@ -23,7 +23,9 @@ import type {
   ProgramLearner,
   ProgramListParams,
   ProgramListResponse,
+  ProgramListStats,
   ProgramPatch,
+  ProgramStats,
   ProgramSubPage,
 } from './types';
 import type {
@@ -146,4 +148,18 @@ export const triggerProgramReport = async (
     snakeCaseObject({ reportType }),
   );
   return camelCaseObject(data) as TriggerProgramReportResponse;
+};
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+
+/** GET /api/v1/admin/programs/stats/ — tiles and series of the Programs list strip. */
+export const getProgramListStats = async (): Promise<ProgramListStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/stats/`);
+  return camelCaseObject(data) as ProgramListStats;
+};
+
+/** GET /api/v1/admin/programs/{uuid}/stats/ — tiles and series of one program. */
+export const getProgramStats = async (uuid: string): Promise<ProgramStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/stats/`);
+  return camelCaseObject(data) as ProgramStats;
 };

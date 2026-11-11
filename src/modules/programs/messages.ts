@@ -255,6 +255,54 @@ const messages = defineMessages({
   bulkEnrollFailedTitle: { id: 'rwaq.admin.programs.bulkEnroll.failed.title', defaultMessage: '{count, plural, one {# address could not be enrolled} other {# addresses could not be enrolled}}' },
   bulkEnrollCourseFailedTitle: { id: 'rwaq.admin.programs.bulkEnroll.courseFailed.title', defaultMessage: 'Enrolled in the program, but not in every course' },
   bulkEnrollError: { id: 'rwaq.admin.programs.bulkEnroll.error', defaultMessage: 'Could not enroll these learners. Please try again.' },
+
+  // ── Programs list stats strip (EDLYCSRWAQ-380) ─────────────────────────────
+  listStatsActive: { id: 'rwaq.admin.programs.listStats.active', defaultMessage: 'Active programs' },
+  listStatsActiveInfo: {
+    id: 'rwaq.admin.programs.listStats.active.info',
+    defaultMessage: 'Programs with status Active, hidden ones included.',
+  },
+  listStatsDraft: { id: 'rwaq.admin.programs.listStats.draft', defaultMessage: 'Draft programs' },
+  listStatsDraftInfo: {
+    id: 'rwaq.admin.programs.listStats.draft.info',
+    defaultMessage: 'Programs with status Draft, hidden ones included.',
+  },
+  listStatsArchived: { id: 'rwaq.admin.programs.listStats.archived', defaultMessage: 'Archived programs' },
+  listStatsArchivedInfo: {
+    id: 'rwaq.admin.programs.listStats.archived.info',
+    defaultMessage: 'Programs with status Archived, hidden ones included.',
+  },
+  listStatsEnrollments: { id: 'rwaq.admin.programs.listStats.enrollments', defaultMessage: 'Program enrollments' },
+  listStatsEnrollmentsInfo: {
+    id: 'rwaq.admin.programs.listStats.enrollments.info',
+    defaultMessage: 'Active enrollments in programs that are not hidden, the same figure as the Dashboard. A learner in two programs counts twice.',
+  },
+  listStatsEnrollmentsHint: {
+    id: 'rwaq.admin.programs.listStats.enrollments.hint',
+    defaultMessage: '{count} learners',
+  },
+  listStatsCompletion: { id: 'rwaq.admin.programs.listStats.completion', defaultMessage: 'Completion rate' },
+  listStatsCompletionInfo: {
+    id: 'rwaq.admin.programs.listStats.completion.info',
+    defaultMessage: 'Completed program enrollments over all active program enrollments, the same figure as the Dashboard.',
+  },
+  listStatsAverage: { id: 'rwaq.admin.programs.listStats.average', defaultMessage: 'Courses passed per learner' },
+  listStatsAverageInfo: {
+    id: 'rwaq.admin.programs.listStats.average.info',
+    defaultMessage: 'The courses of their program a learner passed, averaged over all learners. A course is passed with a passing grade or a certificate.',
+  },
+  listStatsFunnelTitle: { id: 'rwaq.admin.programs.listStats.funnel.title', defaultMessage: 'Program funnel' },
+  listStatsFunnelInfo: {
+    id: 'rwaq.admin.programs.listStats.funnel.info',
+    defaultMessage: 'Enrolled learners, those who passed at least one course of their program or completed it, and those who completed it.',
+  },
+  listStatsFunnelEnrolled: { id: 'rwaq.admin.programs.listStats.funnel.enrolled', defaultMessage: 'Enrolled' },
+  listStatsFunnelStarted: { id: 'rwaq.admin.programs.listStats.funnel.started', defaultMessage: 'Started' },
+  listStatsFunnelCompleted: { id: 'rwaq.admin.programs.listStats.funnel.completed', defaultMessage: 'Completed' },
+  listStatsEnrollmentsMonthInfo: {
+    id: 'rwaq.admin.programs.listStats.enrollmentsMonth.info',
+    defaultMessage: 'Program enrollments by the month of their enrollment date, active ones only.',
+  },
 });
 
 export default messages;

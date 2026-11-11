@@ -175,3 +175,50 @@ export interface BulkEnrollResult {
   failed: BulkEnrollFailure[];
   courseFailures: BulkEnrollCourseFailure[];
 }
+
+// ── Stats strips (EDLYCSRWAQ-380) ─────────────────────────────────────────────
+
+/** One month of a zero-filled series. */
+export interface ProgramStatsSeriesPoint {
+  period: string;
+  value: number;
+}
+
+/**
+ * GET /api/v1/admin/programs/stats/ — global, the table's filters do not apply.
+ *
+ * A null figure could not be read on the server. It is shown as "Not available", never as zero.
+ */
+export interface ProgramListStats {
+  tiles: {
+    programs: { active: number; draft: number; archived: number };
+    /** Active program enrollments, the Dashboard's program funnel figure. Hidden programs are left out. */
+    enrollments: number;
+    learners: number;
+    completionPct: number | null;
+    averageCoursesPassed: number | null;
+  };
+  funnel: { enrolled: number; started: number | null; completed: number };
+  series: { enrollmentsByMonth: ProgramStatsSeriesPoint[] };
+  generatedAt: string;
+}
+
+/** GET /api/v1/admin/programs/{uuid}/stats/ */
+export interface ProgramStats {
+  tiles: {
+    enrolled: number;
+    completed: number;
+    inProgress: number | null;
+    notStarted: number | null;
+    completionPct: number | null;
+    averageCoursesPassed: number | null;
+    averageDaysToComplete: number | null;
+  };
+  series: {
+    enrollmentsByMonth: ProgramStatsSeriesPoint[];
+    completionsByMonth: ProgramStatsSeriesPoint[];
+  };
+  /** One entry per course of the program. null when grades or certificates cannot be read. */
+  courses: { courseId: string; courseName: string; passed: number }[] | null;
+  generatedAt: string;
+}
