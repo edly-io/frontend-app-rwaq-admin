@@ -83,6 +83,43 @@ export interface UserEnrollment {
   lastChangeAt: string | null;
   /** True for subscription content: admins cannot change the mode or unenroll the learner. */
   isPartOfSubscription?: boolean;
+  /**
+   * Progress columns (EDLYCSRWAQ-380). Each is null when its source cannot be read on the server or the
+   * learner has none, and shows "Not available" or a dash, never zero. Optional so a row returned by an
+   * older server still fits.
+   */
+  status?: EnrollmentProgressStatus | null;
+  gradePercent?: number | null;
+  lastActivityAt?: string | null;
+  certificateIssuedAt?: string | null;
+  courseStatus?: 'upcoming' | 'running' | 'ended' | null;
+  courseEnd?: string | null;
+}
+
+export type EnrollmentProgressStatus = 'passed' | 'in_progress' | 'not_started';
+
+/** One row of GET /api/v1/admin/users/{id}/enrollments/progress/, loaded after the table. */
+export interface EnrollmentProgress {
+  courseId: string;
+  /** Whole percent, null when it could not be worked out for this course. */
+  progressPercent: number | null;
+}
+
+export type SubscriptionState = 'none' | 'active' | 'cancelled' | 'expired' | 'revoked';
+
+/** GET /api/v1/admin/users/{id}/stats/ — what the enrollments list does not carry. */
+export interface UserStats {
+  tiles: {
+    certificatesEarned: number | null;
+    programsEnrolled: number;
+    programsCompleted: number;
+    /** False when neither completions nor courseware activity can be read. */
+    lastActivityAvailable: boolean;
+    lastActivityAt: string | null;
+    subscriptionStatus: SubscriptionState;
+    subscriptionEndsAt: string | null;
+  };
+  generatedAt: string;
 }
 
 /** One row of the course picker behind the enroll form. */
@@ -198,4 +235,33 @@ export interface UserListParams {
   ordering?: UserOrdering;
   page?: number;
   pageSize?: number;
+}
+
+/** One month of a zero-filled series. */
+export interface UserStatsSeriesPoint {
+  period: string;
+  value: number;
+}
+
+/**
+ * GET /api/v1/admin/users/stats/ — global, the table's filters do not apply.
+ *
+ * A null figure could not be read on the server. It is shown as "Not available", never as zero.
+ */
+export interface UserListStats {
+  tiles: {
+    /** Learners by the Dashboard's rule: activity and an active enrollment. Staff and service accounts are left out. */
+    learners: number | null;
+    newThisMonth: number;
+    newPreviousMonth: number;
+    /** null when there is no previous month to compare. */
+    newDeltaPct: number | null;
+    activeLast30Days: number | null;
+    legacy: { legacyAccounts: number; signedInAtLeastOnce: number; progressPct: number | null };
+    subscribed: number;
+  };
+  series: { registrationsByMonth: UserStatsSeriesPoint[] };
+  /** null when social-auth data cannot be read. */
+  signInMethods: { password: number; google: number; other: number } | null;
+  generatedAt: string;
 }

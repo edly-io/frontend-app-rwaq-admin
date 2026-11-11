@@ -18,6 +18,7 @@ import { getErrorStatus } from '@src/data/httpError';
 import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
+import OrgListStatsStrip from './components/OrgListStatsStrip';
 import OrgFormModal from './modals/OrgFormModal';
 import { getOrganizationsCsvUrl, organizationsCsvParams } from './data/api';
 import { useOrganization, useOrganizations } from './data/hooks';
@@ -226,6 +227,8 @@ const OrgListPage = () => {
           </Button>
         </div>
       </div>
+
+      <OrgListStatsStrip />
 
       <div className="rwaq-card rwaq-card--fit">
         <SearchFilterBar

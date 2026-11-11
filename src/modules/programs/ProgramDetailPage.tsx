@@ -28,6 +28,7 @@ import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
 import ProgramPricingCard from './components/ProgramPricingCard';
+import ProgramStatsStrip from './components/ProgramStatsStrip';
 import ProgramStatusChips from './components/ProgramStatusChips';
 import BulkEnrollModal from './modals/BulkEnrollModal';
 import UnenrollLearnerModal from './modals/UnenrollLearnerModal';
@@ -413,6 +414,8 @@ const ProgramDetailPage = () => {
           </div>
         </div>
       </div>
+
+      <ProgramStatsStrip uuid={program.uuid} totalCourses={program.totalCourses} />
 
       {/* Overview */}
       <div className="rwaq-card">

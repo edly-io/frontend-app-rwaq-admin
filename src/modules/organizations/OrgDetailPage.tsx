@@ -21,6 +21,7 @@ import { useCourses } from '@src/data/hooks';
 import type { CourseSummary } from '@src/data/hooks';
 import OrgAdminTable from './components/OrgAdminTable';
 import OrgReportList from './components/OrgReportList';
+import OrgStatsStrip from './components/OrgStatsStrip';
 import AddOrgAdminModal from './modals/AddOrgAdminModal';
 import OrgFormModal from './modals/OrgFormModal';
 import { useOrganization } from './data/hooks';
@@ -181,6 +182,8 @@ const OrgDetailPage = () => {
           </div>
         </div>
       </div>
+
+      <OrgStatsStrip org={organization.shortName} adminCount={organization.adminCount} />
 
       <div className="rwaq-card">
         <DetailGrid

@@ -21,13 +21,14 @@ import DetailGrid from '@src/components/DetailGrid';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { countryName } from './data/countries';
 import EnrollmentsTable from './components/EnrollmentsTable';
+import UserStatsStrip from './components/UserStatsStrip';
 import RoleBadges from './components/RoleBadges';
 import StatusBadges from './components/StatusBadges';
 import EditUserModal from './modals/EditUserModal';
 import EnrollModal from './modals/EnrollModal';
 import ChangeModeModal from './modals/ChangeModeModal';
 import UnenrollModal from './modals/UnenrollModal';
-import { useUser, useUserEnrollments } from './data/hooks';
+import { useUser, useUserEnrollmentProgress, useUserEnrollments } from './data/hooks';
 import type { UserEnrollment } from './data/types';
 import messages from './messages';
 
@@ -42,6 +43,11 @@ const UserDetailPage = () => {
   const {
     data: enrollments, isLoading: isLoadingEnrollments, isError: isEnrollmentsError,
   } = useUserEnrollments(userId);
+  // Progress is slow, so it is asked for only once the table has loaded.
+  const { data: progress, isLoading: isProgressLoading } = useUserEnrollmentProgress(
+    userId,
+    !!enrollments && !isEnrollmentsError,
+  );
 
   const [isEditing, setIsEditing] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
@@ -110,6 +116,14 @@ const UserDetailPage = () => {
           </div>
         </div>
       </div>
+
+      <UserStatsStrip
+        userId={userId}
+        enrollments={enrollments}
+        isEnrollmentsLoading={isLoadingEnrollments}
+        progress={progress}
+        isProgressLoading={isProgressLoading}
+      />
 
       <div className="rwaq-card">
         <DetailGrid
@@ -208,6 +222,8 @@ const UserDetailPage = () => {
           <EnrollmentsTable
             enrollments={rows}
             isLoading={isLoadingEnrollments}
+            progress={progress}
+            isProgressLoading={isProgressLoading}
             onChangeMode={setModeTarget}
             onUnenroll={setUnenrollTarget}
           />
