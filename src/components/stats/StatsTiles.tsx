@@ -4,7 +4,7 @@
 import { ReactNode } from 'react';
 
 const StatsTiles = ({ children }: { children: ReactNode }) => (
-  <div className="rwaq-dash-grid rwaq-dash-grid--kpi">{children}</div>
+  <div className="rwaq-dash-grid rwaq-dash-grid--kpi rwaq-stats-tiles">{children}</div>
 );
 
 /** One tile in its card, so the figure and its label sit on the same surface as the charts. */
