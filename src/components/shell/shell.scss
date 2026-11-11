@@ -1369,6 +1369,15 @@ body {
 
 .rwaq-page--fit > .rwaq-page-header { flex: 0 0 auto; }
 
+// The stats strip above a list. It may use at most 45% of the page and scrolls inside that, so the
+// table keeps the rest and stays the main thing on the page. Collapsing it gives all of it back.
+.rwaq-page--fit > .rwaq-stats-strip {
+  flex: 0 1 auto;
+  max-height: 45%;
+  min-height: 0;
+  overflow: auto;
+}
+
 .rwaq-card--fit {
   display: flex;
   flex-direction: column;

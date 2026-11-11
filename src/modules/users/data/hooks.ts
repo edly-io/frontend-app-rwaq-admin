@@ -22,6 +22,7 @@ import {
   getEnrollableCourses,
   getUser,
   getUserEnrollmentProgress,
+  getUserListStats,
   getUserEnrollments,
   getUserStats,
   getUsers,
@@ -42,6 +43,7 @@ export const userQueryKeys = {
   // Under `enrollments`, so an enroll, a mode change or an unenroll refetches the progress too.
   enrollmentProgress: (id: number) => [...userQueryKeys.enrollments(id), 'progress'] as const,
   stats: (id: number) => [...userQueryKeys.detail(id), 'stats'] as const,
+  listStats: () => [...userQueryKeys.all, 'listStats'] as const,
 };
 
 /**
@@ -94,6 +96,14 @@ export const useUserEnrollmentProgress = (id: number, enabled = true) => useQuer
   queryFn: () => getUserEnrollmentProgress(id),
   enabled: enabled && id > 0,
   staleTime: 60 * 1000,
+});
+
+/** Tiles and series of the Users list strip. Global, so it has no params. Pass `enabled: false` while collapsed. */
+export const useUserListStats = (enabled = true) => useQuery({
+  queryKey: userQueryKeys.listStats(),
+  queryFn: getUserListStats,
+  enabled,
+  staleTime: 5 * 60 * 1000,
 });
 
 /** Programs, last activity and subscription of one user, for the strip above the tables. */
