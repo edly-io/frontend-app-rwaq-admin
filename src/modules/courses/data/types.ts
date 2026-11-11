@@ -191,3 +191,42 @@ export interface CoursePricingPatch {
   salePrice?: string | null;
   pricingManagedByAdmin?: boolean;
 }
+
+// ── Stats strip (EDLYCSRWAQ-380) ──────────────────────────────────────────────
+
+/** One month of a zero-filled series. */
+export interface StatsSeriesPoint {
+  period: string;
+  value: number;
+}
+
+export interface ModeCount {
+  mode: string;
+  count: number;
+}
+
+/**
+ * GET /api/v1/admin/courses/{courseId}/stats/
+ *
+ * A null figure could not be read on the server. It is shown as "Not available", never as zero.
+ */
+export interface CourseStats {
+  tiles: {
+    activeLearners: number | null;
+    enrolled: number;
+    unenrolled: number;
+    certificates: number | null;
+    passed: number | null;
+    inProgress: number | null;
+    notStarted: number | null;
+    modes: ModeCount[];
+  };
+  funnel: {
+    enrolled: number;
+    started: number | null;
+    passed: number | null;
+    certified: number | null;
+  };
+  series: { enrollmentsByMonth: StatsSeriesPoint[] };
+  generatedAt: string;
+}

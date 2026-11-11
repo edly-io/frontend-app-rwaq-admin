@@ -43,6 +43,7 @@ import type {
   CourseStaffMember,
 } from './data/types';
 import CoursePricingCard from './components/CoursePricingCard';
+import CourseStatsStrip from './components/CourseStatsStrip';
 import EnrollUserModal from './modals/EnrollUserModal';
 import AddStaffModal from './modals/AddStaffModal';
 import messages from './messages';
@@ -322,6 +323,8 @@ const CourseDetailPage = () => {
           </div>
         </div>
       </div>
+
+      <CourseStatsStrip courseId={courseId} />
 
       {/* ── Info card ─────────────────────────────────────────────────────── */}
       <div className="rwaq-card">
