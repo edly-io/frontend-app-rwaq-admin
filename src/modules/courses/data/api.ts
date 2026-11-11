@@ -36,6 +36,7 @@ import type {
   CourseEnrollPayload,
   CourseListParams,
   CourseListResponse,
+  CourseListStats,
   CourseStaffAddPayload,
   CourseStaffMember,
   CourseStaffRemoveParams,
@@ -182,4 +183,10 @@ export const getCourseStats = async (courseId: string): Promise<CourseStats> => 
     `${getCoursesBaseUrl()}/${encodeURIComponent(courseId)}/stats/`,
   );
   return camelCaseObject(data) as CourseStats;
+};
+
+/** GET /api/v1/admin/courses/stats/ — tiles and series of the Courses list strip. */
+export const getCourseListStats = async (): Promise<CourseListStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getCoursesBaseUrl()}/stats/`);
+  return camelCaseObject(data) as CourseListStats;
 };
