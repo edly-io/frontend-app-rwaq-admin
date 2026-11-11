@@ -132,6 +132,20 @@ describe('CoursesListPage organization filter', () => {
     expect(screen.getByText('Organization: QAOrg')).toBeInTheDocument();
   });
 
+  it('offers the Enrollment code type and sends course_type=enrollment_code to the list and the CSV', () => {
+    renderWrapper(<CoursesListPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+    const select = screen.getByLabelText('Type') as HTMLSelectElement;
+    expect(Array.from(select.options).map((option) => option.textContent)).toContain('Enrollment code');
+    fireEvent.change(select, { target: { value: 'enrollment_code' } });
+
+    expect(window.location.search).toBe('?type=enrollment_code');
+    expect(lastCall().courseType).toBe('enrollment_code');
+    expect(csvParams()).toMatchObject({ courseType: 'enrollment_code' });
+    expect(screen.getByText('Type: Enrollment code')).toBeInTheDocument();
+  });
+
   it('starts from the organization in the URL, and clears it with its chip or Clear all', () => {
     window.history.pushState({}, '', '/?org=QAOrg2&page=2');
     renderWrapper(<CoursesListPage />);

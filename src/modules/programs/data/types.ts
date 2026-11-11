@@ -78,7 +78,7 @@ export interface ProgramDetail extends ProgramSummary {
 }
 
 /** Mirrors rwaq_features.programs.models.Program.PRICING_CATEGORY_CHOICES. */
-export type ProgramPricingCategory = 'is_free' | 'is_paid' | 'is_part_of_subscription';
+export type ProgramPricingCategory = 'is_free' | 'is_paid' | 'is_part_of_subscription' | 'is_enrollment_code';
 
 /** One row of GET /api/v1/admin/programs/{uuid}/courses/ */
 export interface ProgramCourse {
@@ -114,7 +114,7 @@ export type ProgramOrdering =
  * Separate params so they can be combined (e.g. status=active + is_hide=true).
  * Per discovery plan §3.1 and §6.
  */
-export type ProgramPricingFilter = 'free' | 'paid' | 'subscription';
+export type ProgramPricingFilter = 'free' | 'paid' | 'subscription' | 'enrollment_code';
 
 export interface ProgramListParams {
   search?: string;

@@ -68,7 +68,7 @@ export type CourseOrdering =
   | 'org' | '-org'
   | 'enrollment_count' | '-enrollment_count';
 
-export type CourseTypeFilter = 'free' | 'paid' | 'program_only' | 'subscription';
+export type CourseTypeFilter = 'free' | 'paid' | 'program_only' | 'subscription' | 'enrollment_code';
 
 export interface CourseListParams {
   search?: string;
@@ -155,7 +155,8 @@ export interface CourseStaffRemoveParams {
 }
 
 /** Mirrors rwaq_features.models.CoursePricing.PRICING_CATEGORY_CHOICES. */
-export type CoursePricingCategory = 'is_free' | 'is_paid' | 'is_program_only' | 'is_part_of_subscription';
+export type CoursePricingCategory =
+  | 'is_free' | 'is_paid' | 'is_program_only' | 'is_part_of_subscription' | 'is_enrollment_code';
 
 export interface CoursePricing {
   /** null when no type was chosen yet (a legacy course with no pricing row). It behaves as free. */

@@ -63,6 +63,7 @@ const TYPE_OPTIONS: { value: ProgramPricingFilter; label: MessageKey }[] = [
   { value: 'free', label: 'typeFree' },
   { value: 'paid', label: 'typePaid' },
   { value: 'subscription', label: 'typeSubscription' },
+  { value: 'enrollment_code', label: 'typeEnrollmentCode' },
 ];
 
 const SORT_OPTIONS: { value: ProgramOrdering; label: MessageKey }[] = [

@@ -32,6 +32,7 @@ const CourseReportsPage = lazy(() => import('./modules/courses/CourseReportsPage
 const CategoryListPage = lazy(() => import('./modules/categories/CategoryListPage'));
 const CategoryDetailPage = lazy(() => import('./modules/categories/CategoryDetailPage'));
 const PaymentsPage = lazy(() => import('./modules/payments/PaymentsPage'));
+const EnrollmentCodesPage = lazy(() => import('./modules/enrollment-codes/EnrollmentCodesPage'));
 const ComingSoon = lazy(() => import('./components/ComingSoon'));
 
 const queryClient = new QueryClient({
@@ -83,6 +84,9 @@ subscribe(APP_READY, () => {
 
                   {/* Payments — superusers only; the page and the nav item both check. */}
                   <Route path="payments" element={<PaymentsPage />} />
+
+                  {/* Enrollment codes — superusers only; the page and the nav item both check. */}
+                  <Route path="enrollment-codes" element={<EnrollmentCodesPage />} />
 
                   {/* Placeholders — the nav marks these "Soon". Enrollment is
                       absent by design: it is managed per learner on the user

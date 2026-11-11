@@ -36,6 +36,7 @@ const COURSE_TYPE_OPTIONS: { value: CourseTypeFilter; label: MessageKey }[] = [
   { value: 'paid', label: 'typePaid' },
   { value: 'program_only', label: 'typeProgramOnly' },
   { value: 'subscription', label: 'typeSubscription' },
+  { value: 'enrollment_code', label: 'typeEnrollmentCode' },
 ];
 
 const SORT_OPTIONS: { value: CourseOrdering; label: MessageKey }[] = [

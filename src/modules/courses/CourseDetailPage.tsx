@@ -26,6 +26,7 @@ import ErrorState from '@src/components/ErrorState';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorStatus } from '@src/data/httpError';
 import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
+import CodesCard from '@src/modules/enrollment-codes/components/CodesCard';
 import { useEnrollableCourses } from '@src/modules/users/data/hooks';
 import modeLabel from '@src/modules/users/modeLabel';
 import {
@@ -401,6 +402,11 @@ const CourseDetailPage = () => {
 
       {/* ── Pricing ────────────────────────────────────────────────────────── */}
       <CoursePricingCard courseId={courseId} />
+
+      {/* ── Enrollment codes: only for a course of type Enrollment code ─────── */}
+      {pricing?.pricingCategory === 'is_enrollment_code' && (
+        <CodesCard item={{ kind: 'course', id: courseId, name: course?.displayName ?? courseId }} />
+      )}
 
       {/* ── Course Team ────────────────────────────────────────────────────── */}
       <div className="rwaq-card">

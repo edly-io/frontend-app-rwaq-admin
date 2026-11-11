@@ -27,6 +27,7 @@ import DetailGrid from '@src/components/DetailGrid';
 import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
+import CodesCard from '@src/modules/enrollment-codes/components/CodesCard';
 import ProgramPricingCard from './components/ProgramPricingCard';
 import ProgramStatusChips from './components/ProgramStatusChips';
 import BulkEnrollModal from './modals/BulkEnrollModal';
@@ -476,6 +477,11 @@ const ProgramDetailPage = () => {
 
       {/* Pricing */}
       <ProgramPricingCard program={program} />
+
+      {/* Enrollment codes: only for a program of type Enrollment code */}
+      {program.pricingCategory === 'is_enrollment_code' && (
+        <CodesCard item={{ kind: 'program', id: program.uuid, name: program.name }} />
+      )}
 
       {/* Courses + Learners tabs */}
       <div className="rwaq-card">

@@ -12,6 +12,8 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
 import { getDiscountPercent, getPriceWithVat } from '@src/data/discountPercent';
 import { getErrorReason } from '@src/data/httpError';
+import { useActiveCodeCount } from '@src/modules/enrollment-codes/data/hooks';
+import enrollmentCodeMessages from '@src/modules/enrollment-codes/messages';
 import { useUpdateProgram } from '../data/hooks';
 import type { ProgramDetail, ProgramPricingCategory } from '../data/types';
 import messages from '../messages';
@@ -48,6 +50,9 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   }, [program.pricingCategory, program.regularPrice, program.salePrice]);
 
   const isPaid = category === 'is_paid';
+  // Switching a program away from Enrollment code switches its active codes off, so the admin is told how many first.
+  const leavesEnrollmentCode = program.pricingCategory === 'is_enrollment_code' && category !== 'is_enrollment_code';
+  const { data: activeCodeCount } = useActiveCodeCount({ programUuid: program.uuid }, leavesEnrollmentCode);
   // Live from the inputs, before saving.
   const discountPercent = getDiscountPercent(regularPrice, salePrice);
   const { vatRate, vatLabel } = program;
@@ -157,11 +162,24 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
           >
             {intl.formatMessage(messages.pricingSubscription)}
           </Form.Radio>
+          <Form.Radio
+            value="is_enrollment_code"
+            disabled={isPending}
+            description={intl.formatMessage(messages.pricingEnrollmentCodeDescription)}
+          >
+            {intl.formatMessage(messages.pricingEnrollmentCode)}
+          </Form.Radio>
         </Form.RadioSet>
         {fieldErrors.pricingCategory && (
           <Form.Control.Feedback type="invalid">{fieldErrors.pricingCategory}</Form.Control.Feedback>
         )}
       </Form.Group>
+
+      {leavesEnrollmentCode && !!activeCodeCount && (
+        <Alert variant="warning" className="mb-3" data-testid="codes-switched-off-warning">
+          {intl.formatMessage(enrollmentCodeMessages.switchAwayWarning, { count: activeCodeCount })}
+        </Alert>
+      )}
 
       {isPaid && (
         <>

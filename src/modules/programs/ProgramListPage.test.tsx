@@ -68,6 +68,19 @@ describe('ProgramListPage organization filter', () => {
     expect(screen.getByTestId('csv').dataset.url).toBe('http://studio.local:8001/api/v1/admin/programs/csv/');
   });
 
+  it('offers the Enrollment code type and sends pricing=enrollment_code to the list and the CSV', () => {
+    renderWrapper(<ProgramListPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+    const select = screen.getByLabelText('Type') as HTMLSelectElement;
+    expect(Array.from(select.options).map((option) => option.textContent)).toContain('Enrollment code');
+    fireEvent.change(select, { target: { value: 'enrollment_code' } });
+
+    expect(lastCall().pricing).toBe('enrollment_code');
+    expect(csvParams()).toMatchObject({ pricing: 'enrollment_code' });
+    expect(screen.getByText('Type: Enrollment code')).toBeInTheDocument();
+  });
+
   it('starts from the organization in the URL, and clears it with its chip', () => {
     window.history.pushState({}, '', '/?org=QAOrg2&page=2');
     renderWrapper(<ProgramListPage />);

@@ -14,6 +14,8 @@ import { Alert, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
 import { getDiscountPercent, getPriceWithVat } from '@src/data/discountPercent';
+import { useActiveCodeCount } from '@src/modules/enrollment-codes/data/hooks';
+import enrollmentCodeMessages from '@src/modules/enrollment-codes/messages';
 import { useCoursePricing, useUpdateCoursePricing } from '../data/hooks';
 import type { CoursePricingCategory } from '../data/types';
 import { courseRoleMessages as messages } from '../messages';
@@ -65,6 +67,10 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   // The backend refuses a type change while the course is in a program.
   const inProgram = !!pricing?.partOfProgram;
   const isBusy = isLoading || isPending;
+  // Switching a course away from Enrollment code switches its active codes off, so the admin is told how many first.
+  const leavesEnrollmentCode = pricing?.pricingCategory === 'is_enrollment_code'
+    && category !== null && category !== 'is_enrollment_code';
+  const { data: activeCodeCount } = useActiveCodeCount({ courseId }, leavesEnrollmentCode);
 
   const validateRegularPrice = (): string => {
     if (regularPrice.trim() === '') { return intl.formatMessage(messages.pricingErrorPriceRequired); }
@@ -202,11 +208,24 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
           >
             {intl.formatMessage(messages.pricingSubscription)}
           </Form.Radio>
+          <Form.Radio
+            value="is_enrollment_code"
+            disabled={isBusy || inProgram}
+            description={intl.formatMessage(messages.pricingEnrollmentCodeDescription)}
+          >
+            {intl.formatMessage(messages.pricingEnrollmentCode)}
+          </Form.Radio>
         </Form.RadioSet>
         {fieldErrors.pricingCategory && (
           <Form.Control.Feedback type="invalid">{fieldErrors.pricingCategory}</Form.Control.Feedback>
         )}
       </Form.Group>
+
+      {leavesEnrollmentCode && !!activeCodeCount && (
+        <Alert variant="warning" className="mb-3" data-testid="codes-switched-off-warning">
+          {intl.formatMessage(enrollmentCodeMessages.switchAwayWarning, { count: activeCodeCount })}
+        </Alert>
+      )}
 
       {showPriceFields && (
         <>
