@@ -37,13 +37,16 @@ const mockQuery = (value: unknown) => (hooks.useProgramStats as jest.Mock).mockR
 describe('ProgramStatsStrip', () => {
   it('shows the counts and two charts', () => {
     mockQuery(query());
-    renderWrapper(<ProgramStatsStrip uuid={UUID} />);
+    renderWrapper(<ProgramStatsStrip uuid={UUID} totalCourses={3} />);
 
     expect(hooks.useProgramStats).toHaveBeenCalledWith(UUID, true);
     expect(screen.getByText('50')).toBeInTheDocument();
     expect(screen.getByText('18')).toBeInTheDocument();
     expect(screen.getByText('40%')).toBeInTheDocument();
     expect(screen.getByText('33.5 days')).toBeInTheDocument();
+    expect(screen.getByText('Total courses')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(document.querySelectorAll('.rwaq-stats-tiles > .rwaq-card')).toHaveLength(8);
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(2);
   });
 
@@ -57,7 +60,7 @@ describe('ProgramStatsStrip', () => {
         courses: null,
       },
     }));
-    renderWrapper(<ProgramStatsStrip uuid={UUID} />);
+    renderWrapper(<ProgramStatsStrip uuid={UUID} totalCourses={3} />);
 
     expect(screen.getAllByText('Not available').length).toBeGreaterThanOrEqual(3);
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(1);
@@ -65,14 +68,14 @@ describe('ProgramStatsStrip', () => {
 
   it('shows Not available for the days when nobody completed', () => {
     mockQuery(query({ data: { ...stats, tiles: { ...stats.tiles, averageDaysToComplete: null } } }));
-    renderWrapper(<ProgramStatsStrip uuid={UUID} />);
+    renderWrapper(<ProgramStatsStrip uuid={UUID} totalCourses={3} />);
 
     expect(screen.getByText('Not available')).toBeInTheDocument();
   });
 
   it('shows skeletons while loading', () => {
     mockQuery(query({ data: undefined, isLoading: true }));
-    renderWrapper(<ProgramStatsStrip uuid={UUID} />);
+    renderWrapper(<ProgramStatsStrip uuid={UUID} totalCourses={3} />);
 
     expect(screen.queryByText('50')).not.toBeInTheDocument();
     expect(screen.queryByTestId('metric-chart')).not.toBeInTheDocument();
@@ -83,7 +86,7 @@ describe('ProgramStatsStrip', () => {
     mockQuery(query({
       data: undefined, isError: true, error: { response: { status: 500 } }, refetch,
     }));
-    renderWrapper(<ProgramStatsStrip uuid={UUID} />);
+    renderWrapper(<ProgramStatsStrip uuid={UUID} totalCourses={3} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(refetch).toHaveBeenCalled();
@@ -91,7 +94,7 @@ describe('ProgramStatsStrip', () => {
 
   it('shows a separate message for a 403', () => {
     mockQuery(query({ data: undefined, isError: true, error: { response: { status: 403 } } }));
-    renderWrapper(<ProgramStatsStrip uuid={UUID} />);
+    renderWrapper(<ProgramStatsStrip uuid={UUID} totalCourses={3} />);
 
     expect(screen.getByText('Only superusers can see these statistics.')).toBeInTheDocument();
   });
@@ -106,14 +109,14 @@ describe('ProgramStatsStrip', () => {
         },
       },
     }));
-    renderWrapper(<ProgramStatsStrip uuid={UUID} />);
+    renderWrapper(<ProgramStatsStrip uuid={UUID} totalCourses={3} />);
 
     expect(screen.getByText('Nothing to show yet.')).toBeInTheDocument();
   });
 
   it('stops asking while collapsed', () => {
     mockQuery(query());
-    renderWrapper(<ProgramStatsStrip uuid={UUID} />);
+    renderWrapper(<ProgramStatsStrip uuid={UUID} totalCourses={3} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Hide statistics' }));
     expect(hooks.useProgramStats).toHaveBeenLastCalledWith(UUID, false);

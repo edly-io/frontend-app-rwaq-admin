@@ -557,6 +557,10 @@ const messages = defineMessages({
   },
   statsFunnelEnrolled: { id: 'rwaq.admin.courses.stats.funnel.enrolled', defaultMessage: 'Enrolled' },
   statsFunnelStarted: { id: 'rwaq.admin.courses.stats.funnel.started', defaultMessage: 'Started' },
+  statsStartedInfo: {
+    id: 'rwaq.admin.courses.stats.started.info',
+    defaultMessage: 'Enrolled learners who completed at least one block or passed this course.',
+  },
   statsFunnelPassed: { id: 'rwaq.admin.courses.stats.funnel.passed', defaultMessage: 'Passed' },
   statsFunnelCertified: { id: 'rwaq.admin.courses.stats.funnel.certified', defaultMessage: 'Certified' },
 
