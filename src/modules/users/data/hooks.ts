@@ -21,7 +21,9 @@ import {
   enrollUser,
   getEnrollableCourses,
   getUser,
+  getUserEnrollmentProgress,
   getUserEnrollments,
+  getUserStats,
   getUsers,
   unenrollUser,
   updateUser,
@@ -37,6 +39,9 @@ export const userQueryKeys = {
   details: () => [...userQueryKeys.all, 'detail'] as const,
   detail: (id: number) => [...userQueryKeys.details(), id] as const,
   enrollments: (id: number) => [...userQueryKeys.detail(id), 'enrollments'] as const,
+  // Under `enrollments`, so an enroll, a mode change or an unenroll refetches the progress too.
+  enrollmentProgress: (id: number) => [...userQueryKeys.enrollments(id), 'progress'] as const,
+  stats: (id: number) => [...userQueryKeys.detail(id), 'stats'] as const,
 };
 
 /**
@@ -78,6 +83,25 @@ export const useUserEnrollments = (id: number, enabled = true) => useQuery({
   queryKey: userQueryKeys.enrollments(id),
   queryFn: () => getUserEnrollments(id),
   enabled: enabled && id > 0,
+});
+
+/**
+ * Progress % per active enrollment. Slow, so the page asks for it only once the table has loaded
+ * (`enabled`), and shows a spinner in the column until it answers.
+ */
+export const useUserEnrollmentProgress = (id: number, enabled = true) => useQuery({
+  queryKey: userQueryKeys.enrollmentProgress(id),
+  queryFn: () => getUserEnrollmentProgress(id),
+  enabled: enabled && id > 0,
+  staleTime: 60 * 1000,
+});
+
+/** Programs, last activity and subscription of one user, for the strip above the tables. */
+export const useUserStats = (id: number, enabled = true) => useQuery({
+  queryKey: userQueryKeys.stats(id),
+  queryFn: () => getUserStats(id),
+  enabled: enabled && id > 0,
+  staleTime: 5 * 60 * 1000,
 });
 
 /**

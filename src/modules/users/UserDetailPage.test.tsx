@@ -70,6 +70,10 @@ describe('UserDetailPage — Bug 1 regression: empty fields render "—" not raw
     (hooks.useUserEnrollments as jest.Mock).mockReturnValue({
       data: [], isLoading: false, isError: false,
     });
+    (hooks.useUserEnrollmentProgress as jest.Mock).mockReturnValue({ data: [], isLoading: false });
+    (hooks.useUserStats as jest.Mock).mockReturnValue({
+      data: undefined, isLoading: true, isError: false, error: null, refetch: jest.fn(),
+    });
     // Child modal components call these hooks; mock them all so nothing
     // crashes trying to read .isPending on an undefined return value.
     (hooks.useUpdateUser as jest.Mock).mockReturnValue(mockMutation);
