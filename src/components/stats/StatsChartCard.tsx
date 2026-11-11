@@ -28,11 +28,13 @@ export interface StatsChartCardProps {
   isEmpty?: boolean;
   xLabelAngle?: number;
   maxXLabels?: number;
+  /** Show the legend of a bar or line chart. Needed with more than one series. */
+  showLegend?: boolean;
 }
 
 const StatsChartCard = ({
   title, info, subtitle, type, data, series, isLoading = false, isUnavailable = false, isEmpty = false,
-  xLabelAngle, maxXLabels,
+  xLabelAngle, maxXLabels, showLegend = false,
 }: StatsChartCardProps) => {
   const intl = useIntl();
 
@@ -56,7 +58,7 @@ const StatsChartCard = ({
           series={series}
           ariaLabel={title}
           height={COMPACT_CHART_HEIGHT}
-          hideLegend={type !== 'donut'}
+          hideLegend={type !== 'donut' && !showLegend}
           xLabelAngle={xLabelAngle}
           maxXLabels={maxXLabels}
         />
