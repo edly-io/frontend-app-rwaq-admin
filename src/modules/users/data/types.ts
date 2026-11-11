@@ -110,6 +110,7 @@ export type SubscriptionState = 'none' | 'active' | 'cancelled' | 'expired' | 'r
 /** GET /api/v1/admin/users/{id}/stats/ — what the enrollments list does not carry. */
 export interface UserStats {
   tiles: {
+    certificatesEarned: number | null;
     programsEnrolled: number;
     programsCompleted: number;
     /** False when neither completions nor courseware activity can be read. */

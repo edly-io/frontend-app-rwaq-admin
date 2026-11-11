@@ -252,7 +252,7 @@ const MetricChart = ({
     return Array.from({ length: TICK_COUNT }, (_, i) => i * step);
   })();
 
-  const xLabelInterval = labelInterval(data.length, maxXLabels ?? (categoryLabels ? 4 : undefined));
+  const xLabelInterval = labelInterval(data.length, categoryLabels ? undefined : maxXLabels);
   const labelAngle = xLabelAngle ?? (categoryLabels ? 55 : undefined);
   const rtl = isRtl(layoutIntl.locale);
 

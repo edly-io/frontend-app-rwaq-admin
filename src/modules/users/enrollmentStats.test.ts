@@ -30,12 +30,8 @@ describe('enrollmentTiles', () => {
     ]);
 
     expect(tiles).toEqual({
-      active: 2, total: 3, certificates: 1, passed: 1, inProgress: 1,
+      active: 2, total: 3, passed: 1, inProgress: 1,
     });
-  });
-
-  it('gives null, never 0, when the certificates app cannot be read', () => {
-    expect(enrollmentTiles([row({ certificateStatus: null })]).certificates).toBeNull();
   });
 
   it('gives null when the status of an active course could not be read', () => {
@@ -47,13 +43,13 @@ describe('enrollmentTiles', () => {
 
   it('counts zero for a user with no enrollments', () => {
     expect(enrollmentTiles([])).toEqual({
-      active: 0, total: 0, certificates: 0, passed: 0, inProgress: 0,
+      active: 0, total: 0, passed: 0, inProgress: 0,
     });
   });
 });
 
 describe('overallCompletion', () => {
-  it('averages the progress of the active courses and skips the ones without a figure', () => {
+  it('returns null when an active course has no progress figure', () => {
     const rows = [row({}), row({ courseId: 'b' }), row({ courseId: 'c' }), row({ courseId: 'd', isActive: false })];
     const progress = [
       { courseId: 'course-v1:Org+C1+2026', progressPercent: 40 },
@@ -62,7 +58,7 @@ describe('overallCompletion', () => {
       { courseId: 'd', progressPercent: 100 },
     ];
 
-    expect(overallCompletion(rows, progress)).toBe(51);
+    expect(overallCompletion(rows, progress)).toBeNull();
   });
 
   it('is null before the progress arrives or when no course has a figure', () => {
