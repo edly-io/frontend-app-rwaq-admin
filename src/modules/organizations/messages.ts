@@ -186,6 +186,46 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.reports.certificates.details',
     defaultMessage: 'Courses with a certificate, certificates issued and the issuance rate.',
   },
+  // ── Stats strip (EDLYCSRWAQ-380) ───────────────────────────────────────────
+  statsCourses: { id: 'rwaq.admin.orgs.stats.courses', defaultMessage: 'Courses' },
+  statsCoursesInfo: {
+    id: 'rwaq.admin.orgs.stats.courses.info',
+    defaultMessage: 'Published course runs of this organization.',
+  },
+  statsPrograms: { id: 'rwaq.admin.orgs.stats.programs', defaultMessage: 'Programs' },
+  statsProgramsInfo: {
+    id: 'rwaq.admin.orgs.stats.programs.info',
+    defaultMessage: 'Programs of this organization that are not hidden.',
+  },
+  statsAdmins: { id: 'rwaq.admin.orgs.stats.admins', defaultMessage: 'Admins' },
+  statsAdminsInfo: {
+    id: 'rwaq.admin.orgs.stats.admins.info',
+    defaultMessage: 'People with the organization admin role in this organization.',
+  },
+  statsLearners: { id: 'rwaq.admin.orgs.stats.learners', defaultMessage: 'Learners' },
+  statsLearnersInfo: {
+    id: 'rwaq.admin.orgs.stats.learners.info',
+    defaultMessage: 'People with activity in a course of this organization and an active enrollment in it. Same figure as the Dashboard for this organization. Staff, superusers and service accounts are not counted.',
+  },
+  statsActiveEnrollments: { id: 'rwaq.admin.orgs.stats.activeEnrollments', defaultMessage: 'Active enrollments' },
+  statsActiveEnrollmentsInfo: {
+    id: 'rwaq.admin.orgs.stats.activeEnrollments.info',
+    defaultMessage: 'Learner and course pairs with activity and an active enrollment. Same figure as the Dashboard for this organization.',
+  },
+  statsCertificates: { id: 'rwaq.admin.orgs.stats.certificates', defaultMessage: 'Certificates issued' },
+  statsCertificatesInfo: {
+    id: 'rwaq.admin.orgs.stats.certificates.info',
+    defaultMessage: 'Downloadable certificates in this organization. Not available when certificates cannot be read.',
+  },
+  statsEnrollmentsInfo: {
+    id: 'rwaq.admin.orgs.stats.enrollments.info',
+    defaultMessage: 'Learner and course pairs with activity in each month, with an active enrollment. Same series as the Dashboard for this organization.',
+  },
+  statsTopCoursesTitle: { id: 'rwaq.admin.orgs.stats.topCourses.title', defaultMessage: 'Top courses' },
+  statsTopCoursesInfo: {
+    id: 'rwaq.admin.orgs.stats.topCourses.info',
+    defaultMessage: 'The courses of this organization with the most active enrollments.',
+  },
 });
 
 export default messages;

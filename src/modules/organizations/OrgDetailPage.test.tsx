@@ -35,6 +35,7 @@ jest.mock('@src/data/hooks', () => ({
     isError: false,
   }),
 }));
+jest.mock('./components/OrgStatsStrip', () => ({ __esModule: true, default: () => null }));
 jest.mock('./components/OrgAdminTable', () => ({ __esModule: true, default: () => null }));
 jest.mock('./modals/AddOrgAdminModal', () => ({ __esModule: true, default: () => null }));
 jest.mock('./modals/OrgFormModal', () => ({ __esModule: true, default: () => null }));
