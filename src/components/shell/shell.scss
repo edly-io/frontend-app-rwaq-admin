@@ -1470,6 +1470,34 @@ body {
 }
 
 .rwaq-dash-grid--kpi { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
+
+// Statistics strips with many tiles keep balanced rows and enough width for labels.
+// The home dashboard retains its own grid and KPI sizes.
+.rwaq-stats-tiles {
+  > * { min-width: 0; }
+
+  .rwaq-stat-tile__label,
+  .pgn__card p.small { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; }
+
+  .rwaq-stat-tile__value--muted { font-size: 1rem; font-weight: 600; line-height: 1.35; }
+  .rwaq-stat-tile__value--text { font-size: 1rem; font-weight: 600; line-height: 1.35; letter-spacing: 0; }
+
+  // KpiCard uses inline type styles and Paragon padding, so scope the
+  // overrides to strips where it sits beside StatTile.
+  > .pgn__card > .card-body { padding: 1.125rem 1.25rem !important; }
+  > .pgn__card p.small { font-size: 0.75rem !important; letter-spacing: 0.04em !important; }
+  > .pgn__card p.mb-0 { font-size: 1.5rem !important; line-height: 1.15 !important; }
+}
+
+@media (min-width: 70rem) {
+  .rwaq-stats-tiles:has(> :nth-child(6):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .rwaq-stats-tiles:has(> :nth-child(7)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 69.99rem) {
+  .rwaq-stats-tiles:has(> :nth-child(6)) { grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); }
+}
+
 .rwaq-dash-grid--thirds { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
 .rwaq-dash-grid--halves { grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr)); }
 
