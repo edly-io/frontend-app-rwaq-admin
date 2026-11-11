@@ -95,3 +95,21 @@ export interface OrgListParams {
 
 /** The six org reports, named as in the API path (`<name>/csv/`). */
 export type OrgReportName = 'courses' | 'learners' | 'revenue' | 'funnel' | 'lifecycle' | 'certificates';
+
+/**
+ * GET /rwaq/api/organizations/stats/ — global, the table's filters do not apply.
+ *
+ * Figures come from the Dashboard's organization table.
+ */
+export interface OrgListStats {
+  tiles: {
+    activeOrganizations: number;
+    organizationsWithoutAdmins: number;
+    courses: number;
+    programs: number;
+    enrollments: number;
+  };
+  /** Top 10 by active enrollments, then name. */
+  topOrganizations: { shortName: string; name: string; courses: number; enrollments: number }[];
+  generatedAt: string;
+}
