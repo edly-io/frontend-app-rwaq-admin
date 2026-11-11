@@ -110,6 +110,6 @@ export interface OrgListStats {
     enrollments: number;
   };
   /** Top 10 by active enrollments, then name. */
-  topOrganizations: { shortName: string; name: string; courses: number; enrollments: number }[];
+  topOrganizations: { shortName: string; name: string; arabicName: string; courses: number; enrollments: number }[];
   generatedAt: string;
 }

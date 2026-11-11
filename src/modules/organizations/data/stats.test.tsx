@@ -35,7 +35,7 @@ describe('getOrgListStats', () => {
           active_organizations: 2, organizations_without_admins: 1, courses: 3, programs: 1, enrollments: 9,
         },
         top_organizations: [{
-          short_name: 'RWAQ', name: 'Rwaq', courses: 3, enrollments: 9,
+          short_name: 'RWAQ', name: 'Rwaq', arabic_name: 'رواق', courses: 3, enrollments: 9,
         }],
       },
     });
@@ -45,6 +45,7 @@ describe('getOrgListStats', () => {
     expect(mockGet).toHaveBeenCalledWith('http://studio.local:8001/rwaq/api/organizations/stats/');
     expect(stats.tiles.organizationsWithoutAdmins).toBe(1);
     expect(stats.topOrganizations[0].shortName).toBe('RWAQ');
+    expect(stats.topOrganizations[0].arabicName).toBe('رواق');
   });
 });
 

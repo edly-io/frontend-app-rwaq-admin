@@ -27,6 +27,7 @@ export interface StatsChartCardProps {
   /** Nothing to draw, for example every month is zero. */
   isEmpty?: boolean;
   xLabelAngle?: number;
+  horizontalBars?: boolean;
   maxXLabels?: number;
   /** Show the legend of a bar or line chart. Needed with more than one series. */
   showLegend?: boolean;
@@ -34,7 +35,7 @@ export interface StatsChartCardProps {
 
 const StatsChartCard = ({
   title, info, subtitle, type, data, series, isLoading = false, isUnavailable = false, isEmpty = false,
-  xLabelAngle, maxXLabels, showLegend = false,
+  xLabelAngle, horizontalBars = false, maxXLabels, showLegend = false,
 }: StatsChartCardProps) => {
   const intl = useIntl();
 
@@ -57,9 +58,10 @@ const StatsChartCard = ({
           data={data}
           series={series}
           ariaLabel={title}
-          height={COMPACT_CHART_HEIGHT}
+          height={horizontalBars ? Math.max(COMPACT_CHART_HEIGHT, data.length * 30 + 30) : COMPACT_CHART_HEIGHT}
           hideLegend={type !== 'donut' && !showLegend}
           xLabelAngle={xLabelAngle}
+          horizontalBars={horizontalBars}
           maxXLabels={maxXLabels}
         />
       </div>

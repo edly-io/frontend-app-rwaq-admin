@@ -1,7 +1,8 @@
 /**
  * OrgListStatsStrip — global tiles and one compact chart of the top organizations.
  */
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { IntlProvider } from '@edx/frontend-platform/i18n';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from '../data/hooks';
 import OrgListStatsStrip from './OrgListStatsStrip';
@@ -27,10 +28,10 @@ const stats = {
   },
   topOrganizations: [
     {
-      shortName: 'RWAQ', name: 'Rwaq', courses: 40, enrollments: 2000,
+      shortName: 'RWAQ', name: 'Rwaq', arabicName: 'رواق', courses: 40, enrollments: 2000,
     },
     {
-      shortName: 'ARB', name: 'A very long organization name', courses: 7, enrollments: 900,
+      shortName: 'ARB', name: 'A very long organization name', arabicName: '', courses: 7, enrollments: 900,
     },
   ],
 };
@@ -57,7 +58,18 @@ describe('OrgListStatsStrip', () => {
     renderWrapper(<OrgListStatsStrip />);
 
     const { data } = chartProps.mock.calls.at(-1)[0];
-    expect(data.map((point: { name: string }) => point.name)).toEqual(['Rwaq (40)', 'A very long… (7)']);
+    expect(data.map((point: { name: string }) => point.name)).toEqual(['Rwaq (40)', 'A very long organization name (7)']);
+    expect(chartProps.mock.calls.at(-1)[0].horizontalBars).toBe(true);
+  });
+
+  it('uses Arabic organization names in Arabic and English when an Arabic name is missing', () => {
+    mockQuery(query());
+    render(<IntlProvider locale="ar"><OrgListStatsStrip /></IntlProvider>);
+
+    const { data } = chartProps.mock.calls.at(-1)[0];
+    expect(data.map((point: { name: string }) => point.name)).toEqual([
+      'رواق (40)', 'A very long organization name (7)',
+    ]);
   });
 
   it('asks only while expanded', () => {

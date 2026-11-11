@@ -16,12 +16,6 @@ import StatTile from '@src/modules/dashboard/components/StatTile';
 import { useProgramStats } from '../data/hooks';
 import messages from '../messages';
 
-const COURSE_LABEL_LENGTH = 14;
-
-const shorten = (text: string) => (
-  text.length > COURSE_LABEL_LENGTH ? `${text.slice(0, COURSE_LABEL_LENGTH - 1)}…` : text
-);
-
 const ProgramStatsStrip = ({ uuid }: { uuid: string }) => {
   const intl = useIntl();
   const [isOpen, setIsOpen] = useState(true);
@@ -43,7 +37,7 @@ const ProgramStatsStrip = ({ uuid }: { uuid: string }) => {
     }));
   }, [stats, locale, enrolledLabel, completedLabel]);
   const courses = useMemo(
-    () => (stats?.courses ?? []).map((course) => ({ name: shorten(course.courseName), learners: course.passed })),
+    () => (stats?.courses ?? []).map((course) => ({ name: course.courseName, learners: course.passed })),
     [stats],
   );
 
@@ -95,6 +89,7 @@ const ProgramStatsStrip = ({ uuid }: { uuid: string }) => {
           info={intl.formatMessage(messages.statsMonthInfo)}
           type="bar"
           data={months}
+          maxXLabels={6}
           series={[enrolledLabel, completedLabel]}
           showLegend
           isLoading={isLoading}
@@ -109,8 +104,7 @@ const ProgramStatsStrip = ({ uuid }: { uuid: string }) => {
           series={['learners']}
           isLoading={isLoading}
           isUnavailable={query.isError || (!!stats && stats.courses === null)}
-          xLabelAngle={-30}
-          maxXLabels={6}
+          horizontalBars
         />
       </div>
     </StatsStrip>
