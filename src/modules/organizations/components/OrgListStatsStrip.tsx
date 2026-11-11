@@ -73,7 +73,7 @@ const OrgListStatsStrip = () => {
         isLoading={isLoading}
         isUnavailable={query.isError}
         isEmpty={top.every((org) => org.enrollments === 0)}
-        horizontalBars
+        categoryLabels
       />
     </StatsStrip>
   );

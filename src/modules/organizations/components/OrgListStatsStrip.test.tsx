@@ -61,7 +61,7 @@ describe('OrgListStatsStrip', () => {
 
     const { data } = chartProps.mock.calls.at(-1)[0];
     expect(data.map((point: { name: string }) => point.name)).toEqual(['Rwaq (40)', 'A very long organization name (7)']);
-    expect(chartProps.mock.calls.at(-1)[0].horizontalBars).toBe(true);
+    expect(chartProps.mock.calls.at(-1)[0].categoryLabels).toBe(true);
   });
 
   it('uses Arabic organization names in Arabic and English when an Arabic name is missing', () => {

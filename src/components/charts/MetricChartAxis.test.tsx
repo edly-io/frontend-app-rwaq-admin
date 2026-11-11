@@ -115,28 +115,38 @@ describe('MetricChart with valueFormatter and yAxisWidth', () => {
   });
 });
 
-describe('named categories beside horizontal bars', () => {
+describe('named categories below vertical bars', () => {
   const categories = [
     { name: 'A very long organization name (7)', value: 3 },
     { name: 'Rwaq (40)', value: 9 },
   ];
 
-  it('keeps the full category in the tooltip and shortens only the axis tick', () => {
-    renderWrapper(<MetricChart type="bar" data={categories} ariaLabel="Organizations" horizontalBars />);
+  it('keeps full names in the tooltip and shortens only angled axis labels', () => {
+    renderWrapper(<MetricChart type="bar" data={categories} ariaLabel="Organizations" categoryLabels />);
 
-    expect(mockSeen.BarChart.layout).toBe('vertical');
-    expect(mockSeen.XAxis.type).toBe('number');
-    expect(mockSeen.YAxis.type).toBe('category');
-    expect(mockSeen.YAxis.interval).toBe(0);
-    expect(categoryLabel(categories[0].name, false)).toBe('A very long o… (7)');
-    expect(categoryLabel(categories[1].name, false)).toBe('Rwaq (40)');
+    expect(mockSeen.BarChart.layout).toBe('horizontal');
+    expect(mockSeen.XAxis.dataKey).toBe('name');
+    expect(mockSeen.XAxis.angle).toBe(-55);
+    expect(mockSeen.XAxis.height).toBe(64);
+    expect(mockSeen.YAxis.allowDecimals).toBe(false);
+    const formatTick = mockSeen.XAxis.tickFormatter as (value: string) => string;
+    expect(formatTick(categories[0].name)).toBe('A very… (7)');
+    expect(formatTick(categories[1].name)).toBe('Rwaq (40)');
     expect(categories[0].name).toBe('A very long organization name (7)');
+    expect(categoryLabel(categories[0].name, false)).toBe('A very long o… (7)');
   });
 
-  it('places the category axis on the right in Arabic', () => {
-    render(<IntlProvider locale="ar"><MetricChart type="bar" data={categories} ariaLabel="Organizations" horizontalBars /></IntlProvider>);
+  it('shortens Arabic labels and leaves enough space below the axis', () => {
+    render(<IntlProvider locale="ar"><MetricChart type="bar" data={categories} ariaLabel="Organizations" categoryLabels /></IntlProvider>);
 
-    expect(mockSeen.YAxis.orientation).toBe('right');
-    expect(mockSeen.YAxis.width).toBe(140);
+    expect(mockSeen.XAxis.height).toBe(76);
+    expect(mockSeen.XAxis.interval).toBe(0);
+    const formatTick = mockSeen.XAxis.tickFormatter as (value: string) => string;
+    expect(formatTick('مؤسسة التعليم العالي (4)')).toBe('مؤسسة… (4)');
+  });
+
+  it('limits the number of labels on a top-ten vertical chart', () => {
+    renderWrapper(<MetricChart type="bar" data={Array.from({ length: 10 }, (_, i) => ({ name: `Course ${i}`, value: i }))} ariaLabel="Courses" categoryLabels />);
+    expect(mockSeen.XAxis.interval).toBe(2);
   });
 });

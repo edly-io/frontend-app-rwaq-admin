@@ -104,7 +104,7 @@ const ProgramStatsStrip = ({ uuid }: { uuid: string }) => {
           series={['learners']}
           isLoading={isLoading}
           isUnavailable={query.isError || (!!stats && stats.courses === null)}
-          horizontalBars
+          categoryLabels
         />
       </div>
     </StatsStrip>

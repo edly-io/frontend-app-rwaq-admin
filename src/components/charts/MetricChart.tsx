@@ -91,8 +91,8 @@ export interface MetricChartProps {
   hideLegend?: boolean;
   /** Tilt the x-axis labels by this many degrees (bar/line), so a long series fits more of them. */
   xLabelAngle?: number;
-  /** Put named categories beside horizontal bars, keeping their full names in the tooltip. */
-  horizontalBars?: boolean;
+  /** Keep full category names in tooltips; show short, angled labels below vertical bars. */
+  categoryLabels?: boolean;
   /** Show at most about this many x-axis labels, skipping evenly. Omit to show every label. */
   maxXLabels?: number;
   /** Formats the y-axis ticks and the tooltip values, for money and the like. Omit to show the plain number. */
@@ -109,31 +109,14 @@ export const labelInterval = (count: number, max?: number): number => (
   max && count > max ? Math.ceil(count / max) - 1 : 0
 );
 
-export const categoryLabel = (label: string, rtl: boolean): string => {
-  const limit = rtl ? 14 : 18;
+export const categoryLabel = (label: string, rtl: boolean, limit = rtl ? 14 : 18): string => {
   const count = label.match(/ \(\d+\)$/)?.[0] ?? '';
   const name = count ? label.slice(0, -count.length) : label;
   const space = limit - count.length;
   return Array.from(name).length > space
-    ? `${Array.from(name).slice(0, space - 1).join('')}…${count}`
+    ? `${Array.from(name).slice(0, space - 1).join('').trimEnd()}…${count}`
     : label;
 };
-
-interface CategoryTickProps {
-  x?: number;
-  y?: number;
-  payload?: { value: string };
-  rtl: boolean;
-  color: string;
-}
-
-const CategoryTick = ({
-  x = 0, y = 0, payload, rtl, color,
-}: CategoryTickProps) => (
-  <text x={x} y={y} textAnchor={rtl ? 'start' : 'end'} dominantBaseline="central" fontSize={11} fill={color}>
-    {payload ? categoryLabel(payload.value, rtl) : ''}
-  </text>
-);
 
 // ── Reduced-motion hook ───────────────────────────────────────────────────────
 
@@ -229,7 +212,7 @@ const MetricChart = ({
   compact = false,
   hideLegend = false,
   xLabelAngle,
-  horizontalBars = false,
+  categoryLabels = false,
   maxXLabels,
   valueFormatter,
   yAxisWidth = 36,
@@ -269,15 +252,23 @@ const MetricChart = ({
     return Array.from({ length: TICK_COUNT }, (_, i) => i * step);
   })();
 
-  const xLabelInterval = labelInterval(data.length, maxXLabels);
+  const xLabelInterval = labelInterval(data.length, maxXLabels ?? (categoryLabels ? 4 : undefined));
+  const labelAngle = xLabelAngle ?? (categoryLabels ? 55 : undefined);
   const rtl = isRtl(layoutIntl.locale);
 
   // Arabic month names are longer than English ones: the last rotated label was
   // cut off by the right edge of the plot and the longest by the bottom. English
   // keeps Recharts' defaults and the original label spacing.
-  const plotMargin = compact || !rtl ? undefined : {
-    top: 5, right: 28, left: 5, bottom: 0,
-  };
+  let plotMargin;
+  if (categoryLabels) {
+    plotMargin = {
+      top: 5, right: 30, left: 30, bottom: 0,
+    };
+  } else if (rtl && !compact) {
+    plotMargin = {
+      top: 5, right: 28, left: 5, bottom: 0,
+    };
+  }
   const labelDy = rtl ? 8 : 4;
   const labelAreaHeight = rtl ? 76 : 64;
 
@@ -290,9 +281,10 @@ const MetricChart = ({
           tick={mutedTick}
           axisLine={false}
           tickLine={false}
-          dy={xLabelAngle ? labelDy : 6}
+          dy={labelAngle ? labelDy : 6}
           interval={xLabelInterval}
-          {...(xLabelAngle ? { angle: -xLabelAngle, textAnchor: 'end', height: labelAreaHeight } : {})}
+          {...(labelAngle ? { angle: -labelAngle, textAnchor: 'end', height: labelAreaHeight } : {})}
+          {...(categoryLabels ? { tickFormatter: (name: string) => categoryLabel(name, rtl, rtl ? 10 : 12) } : {})}
         />
       ),
       yAxis: (
@@ -374,23 +366,10 @@ const MetricChart = ({
 
     if (type === 'bar') {
       return (
-        <BarChart data={data} margin={plotMargin} layout={horizontalBars ? 'vertical' : 'horizontal'}>
-          {!compact && !horizontalBars && axisProps.grid}
-          {!compact && (horizontalBars ? (
-            <XAxis type="number" tick={mutedTick} axisLine={false} tickLine={false} allowDecimals={false} />
-          ) : axisProps.xAxis)}
-          {!compact && (horizontalBars ? (
-            <YAxis
-              type="category"
-              dataKey="name"
-              tick={<CategoryTick rtl={rtl} color={mutedTick.fill} />}
-              axisLine={false}
-              tickLine={false}
-              interval={0}
-              width={rtl ? 140 : 150}
-              orientation={rtl ? 'right' : 'left'}
-            />
-          ) : axisProps.yAxis)}
+        <BarChart data={data} margin={plotMargin} layout="horizontal">
+          {!compact && axisProps.grid}
+          {!compact && axisProps.xAxis}
+          {!compact && axisProps.yAxis}
           <Tooltip {...tooltipStyle} />
           {!hideLegend && !compact && <Legend content={<ChartLegend />} />}
           {series.map((key, i) => (
@@ -398,7 +377,7 @@ const MetricChart = ({
               key={key}
               dataKey={key}
               fill={colors[i % colors.length]}
-              radius={horizontalBars ? [0, 3, 3, 0] : [3, 3, 0, 0]}
+              radius={[3, 3, 0, 0]}
               maxBarSize={44}
               {...chartProps}
             >
