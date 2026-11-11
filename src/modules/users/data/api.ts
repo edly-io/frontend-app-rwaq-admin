@@ -26,6 +26,7 @@ import { getApiUrl, getStudioApiUrl } from '@src/data/utils';
 import type {
   ChangeModePayload,
   EnrollableCourse,
+  EnrollmentProgress,
   EnrollPayload,
   UnenrollPayload,
   UserCreatePayload,
@@ -34,6 +35,7 @@ import type {
   UserListParams,
   UserListResponse,
   UserPatchPayload,
+  UserStats,
 } from './types';
 
 const getUsersBaseUrl = () => getStudioApiUrl('/api/v1/admin/users');
@@ -63,6 +65,18 @@ export const getUser = async (id: number): Promise<UserDetail> => {
 export const getUserEnrollments = async (id: number): Promise<UserEnrollment[]> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getUsersBaseUrl()}/${id}/enrollments/`);
   return camelCaseObject(data) as UserEnrollment[];
+};
+
+/** GET /api/v1/admin/users/{id}/enrollments/progress/ — progress per active enrollment, loaded after the table. */
+export const getUserEnrollmentProgress = async (id: number): Promise<EnrollmentProgress[]> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getUsersBaseUrl()}/${id}/enrollments/progress/`);
+  return (camelCaseObject(data) as { results: EnrollmentProgress[] }).results;
+};
+
+/** GET /api/v1/admin/users/{id}/stats/ — programs, last activity and subscription of one user. */
+export const getUserStats = async (id: number): Promise<UserStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getUsersBaseUrl()}/${id}/stats/`);
+  return camelCaseObject(data) as UserStats;
 };
 
 /**

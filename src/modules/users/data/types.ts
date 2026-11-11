@@ -83,6 +83,42 @@ export interface UserEnrollment {
   lastChangeAt: string | null;
   /** True for subscription content: admins cannot change the mode or unenroll the learner. */
   isPartOfSubscription?: boolean;
+  /**
+   * Progress columns (EDLYCSRWAQ-380). Each is null when its source cannot be read on the server or the
+   * learner has none, and shows "Not available" or a dash, never zero. Optional so a row returned by an
+   * older server still fits.
+   */
+  status?: EnrollmentProgressStatus | null;
+  gradePercent?: number | null;
+  lastActivityAt?: string | null;
+  certificateIssuedAt?: string | null;
+  courseStatus?: 'upcoming' | 'running' | 'ended' | null;
+  courseEnd?: string | null;
+}
+
+export type EnrollmentProgressStatus = 'passed' | 'in_progress' | 'not_started';
+
+/** One row of GET /api/v1/admin/users/{id}/enrollments/progress/, loaded after the table. */
+export interface EnrollmentProgress {
+  courseId: string;
+  /** Whole percent, null when it could not be worked out for this course. */
+  progressPercent: number | null;
+}
+
+export type SubscriptionState = 'none' | 'active' | 'cancelled' | 'expired' | 'revoked';
+
+/** GET /api/v1/admin/users/{id}/stats/ — what the enrollments list does not carry. */
+export interface UserStats {
+  tiles: {
+    programsEnrolled: number;
+    programsCompleted: number;
+    /** False when neither completions nor courseware activity can be read. */
+    lastActivityAvailable: boolean;
+    lastActivityAt: string | null;
+    subscriptionStatus: SubscriptionState;
+    subscriptionEndsAt: string | null;
+  };
+  generatedAt: string;
 }
 
 /** One row of the course picker behind the enroll form. */
