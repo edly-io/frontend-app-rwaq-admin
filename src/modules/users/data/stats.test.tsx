@@ -5,8 +5,8 @@ import { ReactNode } from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
-import { getUserEnrollmentProgress, getUserStats } from './api';
-import { useUserEnrollmentProgress, useUserStats } from './hooks';
+import { getUserEnrollmentProgress, getUserListStats, getUserStats } from './api';
+import { useUserEnrollmentProgress, useUserListStats, useUserStats } from './hooks';
 
 jest.mock('@edx/frontend-platform/auth', () => ({ getAuthenticatedHttpClient: jest.fn() }));
 jest.mock('@edx/frontend-platform', () => ({
@@ -64,6 +64,33 @@ describe('getUserStats', () => {
   });
 });
 
+describe('getUserListStats', () => {
+  it('asks for the global stats and camelCases them, keeping null', async () => {
+    mockGet.mockResolvedValue({
+      data: {
+        tiles: {
+          learners: null,
+          new_this_month: 3,
+          new_previous_month: 0,
+          new_delta_pct: null,
+          active_last_30_days: null,
+          legacy: { legacy_accounts: 5, signed_in_at_least_once: 2, progress_pct: 40 },
+          subscribed: 1,
+        },
+        series: { registrations_by_month: [{ period: '2026-10', value: 3 }] },
+        sign_in_methods: null,
+      },
+    });
+
+    const stats = await getUserListStats();
+
+    expect(mockGet).toHaveBeenCalledWith('http://studio.local:8001/api/v1/admin/users/stats/');
+    expect(stats.tiles.learners).toBeNull();
+    expect(stats.tiles.legacy.signedInAtLeastOnce).toBe(2);
+    expect(stats.signInMethods).toBeNull();
+  });
+});
+
 describe('hooks', () => {
   it('load the progress and the stats', async () => {
     mockGet.mockResolvedValue({ data: { results: [] } });
@@ -75,6 +102,7 @@ describe('hooks', () => {
   it('make no request while disabled', () => {
     renderHook(() => useUserEnrollmentProgress(7, false), { wrapper });
     renderHook(() => useUserStats(7, false), { wrapper });
+    renderHook(() => useUserListStats(false), { wrapper });
 
     expect(mockGet).not.toHaveBeenCalled();
   });

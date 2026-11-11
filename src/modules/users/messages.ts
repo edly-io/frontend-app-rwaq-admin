@@ -486,6 +486,50 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.stats.enrollmentsMonth.info',
     defaultMessage: 'Enrollments of this user by the month they were made, including ones since cancelled.',
   },
+
+  // ── Users list stats strip (EDLYCSRWAQ-380) ────────────────────────────────
+  listStatsLearners: { id: 'rwaq.admin.users.listStats.learners', defaultMessage: 'Learners' },
+  listStatsLearnersInfo: {
+    id: 'rwaq.admin.users.listStats.learners.info',
+    defaultMessage: 'People with activity in a course and an active enrollment in it, the same figure as the Dashboard. Staff, superusers and service accounts are not counted.',
+  },
+  listStatsNewThisMonth: { id: 'rwaq.admin.users.listStats.newThisMonth', defaultMessage: 'New this month' },
+  listStatsNewThisMonthInfo: {
+    id: 'rwaq.admin.users.listStats.newThisMonth.info',
+    defaultMessage: 'Active accounts created this calendar month, compared with last month. Staff, superusers and service accounts are not counted.',
+  },
+  listStatsActive: { id: 'rwaq.admin.users.listStats.active', defaultMessage: 'Active, last 30 days' },
+  listStatsActiveInfo: {
+    id: 'rwaq.admin.users.listStats.active.info',
+    defaultMessage: 'Learners with courseware activity in the last 30 days and an active enrollment. Staff, superusers and service accounts are not counted.',
+  },
+  listStatsLegacy: { id: 'rwaq.admin.users.listStats.legacy', defaultMessage: 'Legacy accounts migrated' },
+  listStatsLegacyInfo: {
+    id: 'rwaq.admin.users.listStats.legacy.info',
+    defaultMessage: 'Accounts imported from the old platform that have signed in on the new one, out of all imported accounts.',
+  },
+  listStatsLegacyHint: {
+    id: 'rwaq.admin.users.listStats.legacy.hint',
+    defaultMessage: '{remaining} of {total} still to sign in',
+  },
+  listStatsSubscribed: { id: 'rwaq.admin.users.listStats.subscribed', defaultMessage: 'Subscribed learners' },
+  listStatsSubscribedInfo: {
+    id: 'rwaq.admin.users.listStats.subscribed.info',
+    defaultMessage: 'Learners with a live subscription: it ends in the future and is not revoked.',
+  },
+  listStatsRegistrationsTitle: { id: 'rwaq.admin.users.listStats.registrations.title', defaultMessage: 'Registrations per month' },
+  listStatsRegistrationsInfo: {
+    id: 'rwaq.admin.users.listStats.registrations.info',
+    defaultMessage: 'Accounts created in each month, active or not. The same series as the Dashboard.',
+  },
+  listStatsSignInTitle: { id: 'rwaq.admin.users.listStats.signIn.title', defaultMessage: 'Sign-in method' },
+  listStatsSignInInfo: {
+    id: 'rwaq.admin.users.listStats.signIn.info',
+    defaultMessage: 'Learners by how they sign in, by their first linked account. No linked account means a password.',
+  },
+  listStatsSignInPassword: { id: 'rwaq.admin.users.listStats.signIn.password', defaultMessage: 'Password' },
+  listStatsSignInGoogle: { id: 'rwaq.admin.users.listStats.signIn.google', defaultMessage: 'Google' },
+  listStatsSignInOther: { id: 'rwaq.admin.users.listStats.signIn.other', defaultMessage: 'Other' },
 });
 
 export default messages;

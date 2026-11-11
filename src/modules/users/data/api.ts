@@ -33,6 +33,7 @@ import type {
   UserDetail,
   UserEnrollment,
   UserListParams,
+  UserListStats,
   UserListResponse,
   UserPatchPayload,
   UserStats,
@@ -71,6 +72,12 @@ export const getUserEnrollments = async (id: number): Promise<UserEnrollment[]> 
 export const getUserEnrollmentProgress = async (id: number): Promise<EnrollmentProgress[]> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getUsersBaseUrl()}/${id}/enrollments/progress/`);
   return (camelCaseObject(data) as { results: EnrollmentProgress[] }).results;
+};
+
+/** GET /api/v1/admin/users/stats/ — tiles and series of the Users list strip. */
+export const getUserListStats = async (): Promise<UserListStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getUsersBaseUrl()}/stats/`);
+  return camelCaseObject(data) as UserListStats;
 };
 
 /** GET /api/v1/admin/users/{id}/stats/ — programs, last activity and subscription of one user. */
