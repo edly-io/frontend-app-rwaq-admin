@@ -21,11 +21,6 @@ import StatTile from '@src/modules/dashboard/components/StatTile';
 import messages from '../messages';
 
 const TREND_MONTHS = 12;
-const COURSE_LABEL_LENGTH = 16;
-
-const shorten = (text: string) => (
-  text.length > COURSE_LABEL_LENGTH ? `${text.slice(0, COURSE_LABEL_LENGTH - 1)}…` : text
-);
 
 interface OrgStatsStripProps {
   org: string;
@@ -62,7 +57,7 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
   }, [breakdowns, intl]);
   const topCourses = useMemo(
     () => (breakdowns?.catalogConcentration.courses ?? []).map((course) => ({
-      name: shorten(course.displayName), enrollments: course.enrollments,
+      name: course.displayName, enrollments: course.enrollments,
     })),
     [breakdowns],
   );
@@ -135,6 +130,7 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
           info={intl.formatMessage(messages.statsEnrollmentsInfo)}
           type="bar"
           data={enrollmentSeries}
+          maxXLabels={4}
           series={['enrollments']}
           isLoading={trendsQuery.isLoading}
           isUnavailable={trendsQuery.isError}
@@ -156,8 +152,7 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
           series={['enrollments']}
           isLoading={breakdownsLoading}
           isUnavailable={breakdownsQuery.isError}
-          xLabelAngle={-30}
-          maxXLabels={5}
+          horizontalBars
         />
       </div>
     </StatsStrip>

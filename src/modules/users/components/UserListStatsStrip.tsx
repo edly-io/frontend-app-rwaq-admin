@@ -90,6 +90,7 @@ const UserListStatsStrip = () => {
           info={intl.formatMessage(messages.listStatsRegistrationsInfo)}
           type="bar"
           data={registrations}
+          maxXLabels={6}
           series={['registrations']}
           isLoading={isLoading}
           isUnavailable={query.isError}

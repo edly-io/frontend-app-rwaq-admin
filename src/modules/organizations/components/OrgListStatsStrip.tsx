@@ -6,6 +6,7 @@
  */
 import { useMemo, useState } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import { localizedName } from '@src/data/localizedName';
 import StatsChartCard from '@src/components/stats/StatsChartCard';
 import StatsStrip from '@src/components/stats/StatsStrip';
 import StatsTiles, { StatsTileCard } from '@src/components/stats/StatsTiles';
@@ -15,10 +16,6 @@ import summarizeQueries from '@src/components/stats/queryState';
 import StatTile from '@src/modules/dashboard/components/StatTile';
 import { useOrgListStats } from '../data/hooks';
 import messages from '../messages';
-
-const NAME_LENGTH = 12;
-
-const shorten = (text: string) => (text.length > NAME_LENGTH ? `${text.slice(0, NAME_LENGTH - 1)}…` : text);
 
 const OrgListStatsStrip = () => {
   const intl = useIntl();
@@ -30,7 +27,9 @@ const OrgListStatsStrip = () => {
 
   const top = useMemo(
     () => (stats?.topOrganizations ?? []).map((org) => ({
-      name: intl.formatMessage(messages.listStatsTopLabel, { name: shorten(org.name), courses: org.courses }),
+      name: intl.formatMessage(messages.listStatsTopLabel, {
+        name: localizedName(intl.locale, org.name, org.arabicName), courses: org.courses,
+      }),
       enrollments: org.enrollments,
     })),
     [stats, intl],
@@ -74,8 +73,7 @@ const OrgListStatsStrip = () => {
         isLoading={isLoading}
         isUnavailable={query.isError}
         isEmpty={top.every((org) => org.enrollments === 0)}
-        xLabelAngle={-30}
-        maxXLabels={10}
+        horizontalBars
       />
     </StatsStrip>
   );

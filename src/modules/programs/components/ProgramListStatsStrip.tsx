@@ -96,6 +96,7 @@ const ProgramListStatsStrip = () => {
           type="bar"
           data={funnel}
           series={['people']}
+          horizontalBars
           isLoading={isLoading}
           isUnavailable={query.isError}
         />
@@ -105,6 +106,7 @@ const ProgramListStatsStrip = () => {
           info={intl.formatMessage(messages.listStatsEnrollmentsMonthInfo)}
           type="bar"
           data={trend}
+          maxXLabels={6}
           series={['enrollments']}
           isLoading={isLoading}
           isUnavailable={query.isError}

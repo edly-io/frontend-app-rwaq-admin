@@ -16,12 +16,6 @@ import StatTile from '@src/modules/dashboard/components/StatTile';
 import { useCourseListStats } from '../data/hooks';
 import messages from '../messages';
 
-const COURSE_LABEL_LENGTH = 14;
-
-const shorten = (text: string) => (
-  text.length > COURSE_LABEL_LENGTH ? `${text.slice(0, COURSE_LABEL_LENGTH - 1)}…` : text
-);
-
 const CourseListStatsStrip = () => {
   const intl = useIntl();
   const [isOpen, setIsOpen] = useState(true);
@@ -47,7 +41,7 @@ const CourseListStatsStrip = () => {
   }, [stats, intl]);
   const top = useMemo(
     () => (stats?.topCourses ?? []).map((course) => ({
-      name: shorten(course.displayName), enrollments: course.enrollments,
+      name: course.displayName, enrollments: course.enrollments,
     })),
     [stats],
   );
@@ -112,8 +106,7 @@ const CourseListStatsStrip = () => {
           series={['enrollments']}
           isLoading={isLoading}
           isUnavailable={query.isError}
-          xLabelAngle={-30}
-          maxXLabels={5}
+          horizontalBars
         />
         <StatsChartCard
           title={intl.formatMessage(statsMessages.enrollmentsPerMonthTitle)}
@@ -121,6 +114,7 @@ const CourseListStatsStrip = () => {
           info={intl.formatMessage(messages.listStatsTrendInfo)}
           type="bar"
           data={trend}
+          maxXLabels={6}
           series={['enrollments']}
           isLoading={isLoading}
           isUnavailable={query.isError}

@@ -4,8 +4,10 @@
  * without the optional valueFormatter and yAxisWidth, every existing chart
  * (the dashboard's) gets exactly the axis props it got before.
  */
+import { render } from '@testing-library/react';
+import { IntlProvider } from '@edx/frontend-platform/i18n';
 import { renderWrapper } from '@src/setupTest';
-import MetricChart from './MetricChart';
+import MetricChart, { categoryLabel } from './MetricChart';
 
 const mockSeen: Record<string, Record<string, unknown>> = {};
 
@@ -18,7 +20,7 @@ jest.mock('recharts', () => {
   return {
     ResponsiveContainer: passThrough,
     LineChart: passThrough,
-    BarChart: passThrough,
+    BarChart: (props: Record<string, unknown>) => { mockSeen.BarChart = props; return props.children ?? null; },
     PieChart: passThrough,
     Line: recorder('Line'),
     Bar: passThrough,
@@ -110,5 +112,31 @@ describe('MetricChart with valueFormatter and yAxisWidth', () => {
     renderWrapper(<MetricChart type="bar" data={data} ariaLabel="Chart" valueFormatter={format} />);
 
     expect(mockSeen.YAxis.ticks).toEqual([0, 63, 126, 189, 252]);
+  });
+});
+
+describe('named categories beside horizontal bars', () => {
+  const categories = [
+    { name: 'A very long organization name (7)', value: 3 },
+    { name: 'Rwaq (40)', value: 9 },
+  ];
+
+  it('keeps the full category in the tooltip and shortens only the axis tick', () => {
+    renderWrapper(<MetricChart type="bar" data={categories} ariaLabel="Organizations" horizontalBars />);
+
+    expect(mockSeen.BarChart.layout).toBe('vertical');
+    expect(mockSeen.XAxis.type).toBe('number');
+    expect(mockSeen.YAxis.type).toBe('category');
+    expect(mockSeen.YAxis.interval).toBe(0);
+    expect(categoryLabel(categories[0].name, false)).toBe('A very long o… (7)');
+    expect(categoryLabel(categories[1].name, false)).toBe('Rwaq (40)');
+    expect(categories[0].name).toBe('A very long organization name (7)');
+  });
+
+  it('places the category axis on the right in Arabic', () => {
+    render(<IntlProvider locale="ar"><MetricChart type="bar" data={categories} ariaLabel="Organizations" horizontalBars /></IntlProvider>);
+
+    expect(mockSeen.YAxis.orientation).toBe('right');
+    expect(mockSeen.YAxis.width).toBe(140);
   });
 });
