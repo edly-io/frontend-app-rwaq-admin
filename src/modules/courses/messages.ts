@@ -504,6 +504,61 @@ const messages = defineMessages({
     id: 'rwaq.admin.courses.viewAriaLabel',
     defaultMessage: 'View {courseName}',
   },
+
+  // ── Stats strip (EDLYCSRWAQ-380) ───────────────────────────────────────────
+  statsActiveLearners: { id: 'rwaq.admin.courses.stats.activeLearners', defaultMessage: 'Active learners' },
+  statsActiveLearnersInfo: {
+    id: 'rwaq.admin.courses.stats.activeLearners.info',
+    defaultMessage: 'People with activity in this course and an active enrollment. Staff, superusers and service accounts are not counted.',
+  },
+  statsEnrolled: { id: 'rwaq.admin.courses.stats.enrolled', defaultMessage: 'Enrolled' },
+  statsEnrolledInfo: {
+    id: 'rwaq.admin.courses.stats.enrolled.info',
+    defaultMessage: 'Active enrollments of learners. Staff, superusers and service accounts are not counted.',
+  },
+  statsUnenrolled: { id: 'rwaq.admin.courses.stats.unenrolled', defaultMessage: 'Unenrolled' },
+  statsUnenrolledInfo: {
+    id: 'rwaq.admin.courses.stats.unenrolled.info',
+    defaultMessage: 'Learners who left the course. Their enrollment is kept but no longer active.',
+  },
+  statsCertificates: { id: 'rwaq.admin.courses.stats.certificates', defaultMessage: 'Certificates issued' },
+  statsCertificatesInfo: {
+    id: 'rwaq.admin.courses.stats.certificates.info',
+    defaultMessage: 'Downloadable certificates of this course, the same rule as the Dashboard.',
+  },
+  statsPassed: { id: 'rwaq.admin.courses.stats.passed', defaultMessage: 'Passed' },
+  statsPassedInfo: {
+    id: 'rwaq.admin.courses.stats.passed.info',
+    defaultMessage: 'Enrolled learners with a passing grade or a certificate.',
+  },
+  statsInProgress: { id: 'rwaq.admin.courses.stats.inProgress', defaultMessage: 'In progress' },
+  statsInProgressInfo: {
+    id: 'rwaq.admin.courses.stats.inProgress.info',
+    defaultMessage: 'Enrolled learners who completed at least one block and have not passed yet.',
+  },
+  statsNotStarted: { id: 'rwaq.admin.courses.stats.notStarted', defaultMessage: 'Not started' },
+  statsNotStartedInfo: {
+    id: 'rwaq.admin.courses.stats.notStarted.info',
+    defaultMessage: 'Enrolled learners who completed no block and have not passed.',
+  },
+  statsEnrollmentsInfo: {
+    id: 'rwaq.admin.courses.stats.enrollments.info',
+    defaultMessage: 'Learners with activity in this course in each month, with an active enrollment. Same rule as the Dashboard.',
+  },
+  statsModesTitle: { id: 'rwaq.admin.courses.stats.modes.title', defaultMessage: 'Enrollment modes' },
+  statsModesInfo: {
+    id: 'rwaq.admin.courses.stats.modes.info',
+    defaultMessage: 'Active enrollments of this course by mode.',
+  },
+  statsFunnelTitle: { id: 'rwaq.admin.courses.stats.funnel.title', defaultMessage: 'Learner funnel' },
+  statsFunnelInfo: {
+    id: 'rwaq.admin.courses.stats.funnel.info',
+    defaultMessage: 'Enrolled learners, those who started, those who passed and those with a certificate. A stage is Not available when its data cannot be read.',
+  },
+  statsFunnelEnrolled: { id: 'rwaq.admin.courses.stats.funnel.enrolled', defaultMessage: 'Enrolled' },
+  statsFunnelStarted: { id: 'rwaq.admin.courses.stats.funnel.started', defaultMessage: 'Started' },
+  statsFunnelPassed: { id: 'rwaq.admin.courses.stats.funnel.passed', defaultMessage: 'Passed' },
+  statsFunnelCertified: { id: 'rwaq.admin.courses.stats.funnel.certified', defaultMessage: 'Certified' },
 });
 
 export default messages;
