@@ -1,5 +1,5 @@
 /**
- * UserListStatsStrip — global tiles and two compact charts, Not available instead of zero.
+ * UserListStatsStrip — global tiles and a compact registrations chart, Not available instead of zero.
  */
 import { fireEvent, screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
@@ -31,7 +31,7 @@ const query = (overrides = {}) => ({
 const mockQuery = (value: unknown) => (hooks.useUserListStats as jest.Mock).mockReturnValue(value);
 
 describe('UserListStatsStrip', () => {
-  it('shows the global tiles and two charts', () => {
+  it('shows the global tiles and registrations chart', () => {
     mockQuery(query());
     renderWrapper(<UserListStatsStrip />);
 
@@ -40,7 +40,7 @@ describe('UserListStatsStrip', () => {
     expect(screen.getByText('77')).toBeInTheDocument();
     expect(screen.getByText('300 of 500 still to sign in')).toBeInTheDocument();
     expect(screen.getByText('Totals for the whole platform, whatever the filters of the table.')).toBeInTheDocument();
-    expect(screen.getAllByTestId('metric-chart')).toHaveLength(2);
+    expect(screen.getAllByTestId('metric-chart')).toHaveLength(1);
   });
 
   it('asks only while expanded', () => {
@@ -57,14 +57,6 @@ describe('UserListStatsStrip', () => {
     renderWrapper(<UserListStatsStrip />);
 
     expect(screen.getAllByText('Not available')).toHaveLength(2);
-  });
-
-  it('shows Not available instead of the sign-in chart when social auth cannot be read', () => {
-    mockQuery(query({ data: { ...stats, signInMethods: null } }));
-    renderWrapper(<UserListStatsStrip />);
-
-    expect(screen.getAllByTestId('metric-chart')).toHaveLength(1);
-    expect(screen.getByText('Not available')).toBeInTheDocument();
   });
 
   it('shows skeletons while loading', () => {

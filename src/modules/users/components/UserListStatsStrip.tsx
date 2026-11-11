@@ -31,15 +31,6 @@ const UserListStatsStrip = () => {
     () => monthlyChartData(stats?.series.registrationsByMonth, 'registrations', locale),
     [stats, locale],
   );
-  const signIn = useMemo(() => {
-    const methods = stats?.signInMethods;
-    if (!methods) { return []; }
-    return [
-      { name: intl.formatMessage(messages.listStatsSignInPassword), value: methods.password },
-      { name: intl.formatMessage(messages.listStatsSignInGoogle), value: methods.google },
-      { name: intl.formatMessage(messages.listStatsSignInOther), value: methods.other },
-    ].filter((slice) => slice.value > 0);
-  }, [stats, intl]);
 
   const tile = (
     label: keyof typeof messages,
@@ -103,14 +94,6 @@ const UserListStatsStrip = () => {
           isLoading={isLoading}
           isUnavailable={query.isError}
           isEmpty={isEmptySeries(registrations, 'registrations')}
-        />
-        <StatsChartCard
-          title={intl.formatMessage(messages.listStatsSignInTitle)}
-          info={intl.formatMessage(messages.listStatsSignInInfo)}
-          type="donut"
-          data={signIn}
-          isLoading={isLoading}
-          isUnavailable={query.isError || (!!stats && stats.signInMethods === null)}
         />
       </div>
     </StatsStrip>
