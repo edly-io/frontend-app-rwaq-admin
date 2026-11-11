@@ -12,6 +12,7 @@ import * as hooks from './data/hooks';
 import CoursesListPage from './CoursesListPage';
 
 jest.mock('./data/hooks', () => ({ useCourses: jest.fn() }));
+jest.mock('./components/CourseListStatsStrip', () => ({ __esModule: true, default: () => null }));
 jest.mock('@src/modules/organizations/data/hooks', () => ({
   useOrgFilterOptions: jest.fn(() => [
     { value: 'QAOrg', label: 'QA Org' },

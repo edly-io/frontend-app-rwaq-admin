@@ -230,3 +230,29 @@ export interface CourseStats {
   series: { enrollmentsByMonth: StatsSeriesPoint[] };
   generatedAt: string;
 }
+
+/**
+ * GET /api/v1/admin/courses/stats/ — global, the table's filters do not apply.
+ *
+ * A null figure could not be read on the server. It is shown as "Not available", never as zero.
+ */
+export interface CourseListStats {
+  tiles: {
+    courses: number;
+    running: number;
+    activeEnrollments: number | null;
+    certificatesIssued: number | null;
+    types: {
+      /** Includes the courses with no type set, as Studio treats them. */
+      free: number;
+      paid: number;
+      programOnly: number;
+      subscription: number;
+      noType: number;
+    };
+  };
+  series: { enrollmentsByMonth: StatsSeriesPoint[] };
+  courseLifecycle: { noDates: number; upcoming: number; running: number; ended: number };
+  topCourses: { courseId: string; displayName: string; enrollments: number }[];
+  generatedAt: string;
+}

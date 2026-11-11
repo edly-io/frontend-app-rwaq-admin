@@ -6,8 +6,8 @@ import { ReactNode } from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
-import { getCourseStats } from './api';
-import { useCourseStats } from './hooks';
+import { getCourseListStats, getCourseStats } from './api';
+import { useCourseListStats, useCourseStats } from './hooks';
 
 jest.mock('@edx/frontend-platform/auth', () => ({ getAuthenticatedHttpClient: jest.fn() }));
 jest.mock('@edx/frontend-platform', () => ({
@@ -57,6 +57,36 @@ describe('getCourseStats', () => {
   });
 });
 
+describe('getCourseListStats', () => {
+  it('asks for the global stats and camelCases them, keeping null', async () => {
+    mockGet.mockResolvedValue({
+      data: {
+        tiles: {
+          courses: 3,
+          running: 1,
+          active_enrollments: null,
+          certificates_issued: null,
+          types: {
+            free: 2, paid: 1, program_only: 0, subscription: 0, no_type: 1,
+          },
+        },
+        series: { enrollments_by_month: [] },
+        course_lifecycle: {
+          no_dates: 0, upcoming: 0, running: 1, ended: 2,
+        },
+        top_courses: [{ course_id: 'c1', display_name: 'One', enrollments: 4 }],
+      },
+    });
+
+    const stats = await getCourseListStats();
+
+    expect(mockGet).toHaveBeenCalledWith('http://studio.local:8001/api/v1/admin/courses/stats/');
+    expect(stats.tiles.activeEnrollments).toBeNull();
+    expect(stats.tiles.types.programOnly).toBe(0);
+    expect(stats.topCourses[0].displayName).toBe('One');
+  });
+});
+
 describe('useCourseStats', () => {
   it('loads the stats', async () => {
     const { result } = renderHook(() => useCourseStats('course-v1:Org+C1+2026'), { wrapper });
@@ -67,6 +97,7 @@ describe('useCourseStats', () => {
 
   it('makes no request while disabled', () => {
     renderHook(() => useCourseStats('course-v1:Org+C1+2026', false), { wrapper });
+    renderHook(() => useCourseListStats(false), { wrapper });
 
     expect(mockGet).not.toHaveBeenCalled();
   });

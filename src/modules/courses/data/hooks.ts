@@ -19,6 +19,7 @@ import {
   downloadCourseEnrollmentsCsv,
   enrollUserInCourse,
   getCourse,
+  getCourseListStats,
   getCourseStats,
   getCourseEnrollments,
   getCoursePricing,
@@ -42,6 +43,7 @@ export const courseQueryKeys = {
   staff: (courseId: string) => [...courseQueryKeys.detail(courseId), 'staff'] as const,
   pricing: (courseId: string) => [...courseQueryKeys.detail(courseId), 'pricing'] as const,
   stats: (courseId: string) => [...courseQueryKeys.detail(courseId), 'stats'] as const,
+  listStats: () => [...courseQueryKeys.all, 'listStats'] as const,
 };
 
 // ── Queries ───────────────────────────────────────────────────────────────────
@@ -165,5 +167,16 @@ export const useCourseStats = (courseId: string, enabled = true) => useQuery({
   queryKey: courseQueryKeys.stats(courseId),
   queryFn: () => getCourseStats(courseId),
   enabled: enabled && !!courseId,
+  staleTime: 5 * 60 * 1000,
+});
+
+/**
+ * Tiles and series of the Courses list strip. Global, so it has no params. It runs over the whole
+ * catalog, so pass `enabled: false` while the strip is collapsed.
+ */
+export const useCourseListStats = (enabled = true) => useQuery({
+  queryKey: courseQueryKeys.listStats(),
+  queryFn: getCourseListStats,
+  enabled,
   staleTime: 5 * 60 * 1000,
 });
