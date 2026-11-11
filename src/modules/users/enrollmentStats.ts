@@ -8,8 +8,6 @@ import type { EnrollmentProgress, UserEnrollment } from './data/types';
 export interface EnrollmentTiles {
   active: number;
   total: number;
-  /** null when the certificates app cannot be read on the server. */
-  certificates: number | null;
   /** null when a status of an active course could not be read. */
   passed: number | null;
   inProgress: number | null;
@@ -22,21 +20,17 @@ const countStatus = (active: UserEnrollment[], status: string): number | null =>
 /** Tiles of the enrollments list. Unreadable sources give null, never 0. */
 export const enrollmentTiles = (rows: UserEnrollment[]): EnrollmentTiles => {
   const active = rows.filter((row) => row.isActive);
-  const certificatesUnreadable = rows.length > 0 && rows.every((row) => row.certificateStatus === null);
   return {
     active: active.length,
     total: rows.length,
-    certificates: certificatesUnreadable
-      ? null
-      : rows.filter((row) => row.certificateStatus === 'downloadable').length,
     passed: countStatus(active, 'passed'),
     inProgress: countStatus(active, 'in_progress'),
   };
 };
 
 /**
- * The mean progress over the active courses whose progress could be worked out, rounded to a whole percent.
- * null when there is none.
+ * The mean progress over all active courses, rounded to a whole percent.
+ * null when a course is unavailable or there are no active courses.
  */
 export const overallCompletion = (
   rows: UserEnrollment[],
@@ -45,9 +39,10 @@ export const overallCompletion = (
   const byCourse = new Map((progress ?? []).map((item) => [item.courseId, item.progressPercent]));
   const values = rows
     .filter((row) => row.isActive)
-    .map((row) => byCourse.get(row.courseId))
-    .filter((value): value is number => typeof value === 'number');
-  return values.length === 0 ? null : Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+    .map((row) => byCourse.get(row.courseId));
+  if (values.length === 0 || values.some((value) => typeof value !== 'number')) { return null; }
+  const available = values as number[];
+  return Math.round(available.reduce((sum, value) => sum + value, 0) / available.length);
 };
 
 /** Active enrollments per mode, biggest first. */

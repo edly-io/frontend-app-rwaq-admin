@@ -36,6 +36,11 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
   );
   const funnelUnavailable = !!stats && [stats.funnel.started, stats.funnel.passed, stats.funnel.certified]
     .every((value) => value === null);
+  const unavailableStages = stats ? [
+    { label: messages.statsFunnelStarted, value: stats.funnel.started },
+    { label: messages.statsFunnelPassed, value: stats.funnel.passed },
+    { label: messages.statsFunnelCertified, value: stats.funnel.certified },
+  ].filter((stage) => stage.value === null).map((stage) => intl.formatMessage(stage.label)) : [];
   const funnel = useMemo(() => {
     if (!stats) { return []; }
     return [
@@ -110,6 +115,7 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
           categoryLabels
           isLoading={isLoading}
           isUnavailable={query.isError || funnelUnavailable}
+          unavailableLabels={unavailableStages}
         />
       </div>
     </StatsStrip>

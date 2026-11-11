@@ -34,6 +34,11 @@ const query = (overrides = {}) => ({
 const mockQuery = (value: unknown) => (hooks.useCourseStats as jest.Mock).mockReturnValue(value);
 
 describe('CourseStatsStrip', () => {
+  it('identifies a single unavailable funnel stage', () => {
+    mockQuery(query({ data: { ...stats, funnel: { ...stats.funnel, certified: null } } }));
+    renderWrapper(<CourseStatsStrip courseId="course-v1:Org+C1+2026" />);
+    expect(screen.getByText('Certified: Not available')).toBeInTheDocument();
+  });
   it('shows counts and three charts, and no pass rate', () => {
     mockQuery(query());
     renderWrapper(<CourseStatsStrip courseId="course-v1:Org+C1+2026" />);

@@ -145,8 +145,8 @@ describe('named categories below vertical bars', () => {
     expect(formatTick('مؤسسة التعليم العالي (4)')).toBe('مؤسسة… (4)');
   });
 
-  it('limits the number of labels on a top-ten vertical chart', () => {
+  it('keeps every label on a top-ten vertical chart', () => {
     renderWrapper(<MetricChart type="bar" data={Array.from({ length: 10 }, (_, i) => ({ name: `Course ${i}`, value: i }))} ariaLabel="Courses" categoryLabels />);
-    expect(mockSeen.XAxis.interval).toBe(2);
+    expect(mockSeen.XAxis.interval).toBe(0);
   });
 });

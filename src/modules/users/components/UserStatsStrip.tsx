@@ -104,7 +104,9 @@ const UserStatsStrip = ({
         {tile('statsActiveEnrollments', 'statsActiveEnrollmentsInfo', formatCount(tiles?.active), {
           hint: tiles ? intl.formatMessage(messages.statsEnrollmentsOfTotal, { total: tiles.total }) : undefined,
         })}
-        {tile('statsCertificates', 'statsCertificatesInfo', formatCount(tiles?.certificates))}
+        {tile('statsCertificates', 'statsCertificatesInfo', formatCount(stats?.tiles.certificatesEarned), {
+          isLoading: isStatsLoading,
+        })}
         {tile('statsPassed', 'statsPassedInfo', formatCount(tiles?.passed))}
         {tile('statsInProgress', 'statsInProgressInfo', formatCount(tiles?.inProgress))}
         <StatsTileCard>

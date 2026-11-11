@@ -71,7 +71,7 @@ const EnrollmentsTable = ({
     () => new Map((progress ?? []).map((item) => [item.courseId, item.progressPercent])),
     [progress],
   );
-  const formatDate = (value: unknown) => (value ? new Date(value as string).toLocaleDateString() : dash);
+  const formatDate = (value: unknown) => (value ? new Date(value as string).toLocaleDateString(intl.locale) : dash);
 
   const columns: ColumnDef<UserEnrollment>[] = [
     {

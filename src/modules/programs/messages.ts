@@ -294,7 +294,7 @@ const messages = defineMessages({
   listStatsFunnelTitle: { id: 'rwaq.admin.programs.listStats.funnel.title', defaultMessage: 'Program funnel' },
   listStatsFunnelInfo: {
     id: 'rwaq.admin.programs.listStats.funnel.info',
-    defaultMessage: 'Enrolled learners, those who passed at least one course of their program or completed it, and those who completed it.',
+    defaultMessage: 'Enrolled learners, those who have activity in a program course, passed one, or completed the program, and those who completed it.',
   },
   listStatsFunnelEnrolled: { id: 'rwaq.admin.programs.listStats.funnel.enrolled', defaultMessage: 'Enrolled' },
   listStatsFunnelStarted: { id: 'rwaq.admin.programs.listStats.funnel.started', defaultMessage: 'Started' },
@@ -318,12 +318,12 @@ const messages = defineMessages({
   statsInProgress: { id: 'rwaq.admin.programs.stats.inProgress', defaultMessage: 'In progress' },
   statsInProgressInfo: {
     id: 'rwaq.admin.programs.stats.inProgress.info',
-    defaultMessage: 'Learners not completed who passed at least one course of the program. A course is passed with a passing grade or a certificate.',
+    defaultMessage: 'Learners not completed who have activity in a program course or passed one.',
   },
   statsNotStarted: { id: 'rwaq.admin.programs.stats.notStarted', defaultMessage: 'Not started' },
   statsNotStartedInfo: {
     id: 'rwaq.admin.programs.stats.notStarted.info',
-    defaultMessage: 'Learners not completed who passed no course of the program yet.',
+    defaultMessage: 'Learners not completed who have no activity and have not passed a program course.',
   },
   statsCompletion: { id: 'rwaq.admin.programs.stats.completion', defaultMessage: 'Completion rate' },
   statsCompletionInfo: {
