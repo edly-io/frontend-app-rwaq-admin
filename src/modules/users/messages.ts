@@ -269,6 +269,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.enrollments.count',
     defaultMessage: '{count, plural, one {# enrollment} other {# enrollments}}',
   },
+  enrollmentCertificateEarned: { id: 'rwaq.admin.users.enrollments.certificateEarned', defaultMessage: 'Earned' },
   enrollmentNoCertificate: {
     id: 'rwaq.admin.users.enrollments.noCertificate',
     defaultMessage: 'None',

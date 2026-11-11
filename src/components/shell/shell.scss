@@ -1052,6 +1052,21 @@ html[data-paragon-theme-variant='dark'] {
   overflow-wrap: anywhere;
 }
 
+// The learner's enrollments have many columns. Keep the course title and key
+// intact and let the table scroll sideways rather than breaking either word.
+.rwaq-enrollments-table {
+  .rwaq-table-scroll > * { min-width: 100%; }
+  .rwaq-table-scroll table { width: max-content; min-width: 100%; }
+  .rwaq-table-scroll tbody td:first-child { max-width: none; overflow: visible; }
+
+  .rwaq-enrollments__course {
+    width: max-content;
+
+    .rwaq-user-cell__name,
+    .rwaq-user-cell__meta { white-space: nowrap; overflow-wrap: normal; }
+  }
+}
+
 // Mode is an enum value, so it is set as one rather than as prose.
 .rwaq-enrollments__mode {
   display: inline-block;

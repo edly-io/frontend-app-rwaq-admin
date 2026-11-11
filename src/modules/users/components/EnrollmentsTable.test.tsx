@@ -38,6 +38,24 @@ describe('EnrollmentsTable', () => {
     expect(onUnenroll).toHaveBeenCalledWith(expect.objectContaining({ courseId: 'course-v1:Org+Paid+2026' }));
   });
 
+  it('labels only a downloadable certificate as earned', () => {
+    renderWrapper(
+      <EnrollmentsTable
+        enrollments={[
+          row({ courseId: 'course-v1:Org+Earned+2026', certificateStatus: 'downloadable' }),
+          row({ courseId: 'course-v1:Org+NotPassing+2026', certificateStatus: 'notpassing' }),
+          row({ courseId: 'course-v1:Org+NoCertificate+2026', certificateStatus: null }),
+        ]}
+        onChangeMode={jest.fn()}
+        onUnenroll={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Earned')).toBeInTheDocument();
+    expect(screen.getAllByText('None')).toHaveLength(2);
+    expect(screen.queryByText('downloadable')).not.toBeInTheDocument();
+  });
+
   it('shows a spinner in the progress column until the progress arrives', () => {
     renderWrapper(
       <EnrollmentsTable enrollments={[row({ status: 'passed' })]} isProgressLoading onChangeMode={jest.fn()} onUnenroll={jest.fn()} />,
