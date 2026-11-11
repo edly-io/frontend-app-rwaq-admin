@@ -30,6 +30,7 @@ const row = (overrides: Partial<UserEnrollment>): UserEnrollment => ({
 
 const stats = {
   tiles: {
+    certificatesEarned: 1,
     programsEnrolled: 2,
     programsCompleted: 1,
     lastActivityAvailable: true,

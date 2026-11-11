@@ -97,6 +97,8 @@ const ProgramListStatsStrip = () => {
           data={funnel}
           series={['people']}
           categoryLabels
+          unavailableLabels={stats?.funnel.started === null
+            ? [intl.formatMessage(messages.listStatsFunnelStarted)] : []}
           isLoading={isLoading}
           isUnavailable={query.isError}
         />

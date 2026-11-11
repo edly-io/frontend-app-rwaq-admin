@@ -29,13 +29,14 @@ export interface StatsChartCardProps {
   xLabelAngle?: number;
   categoryLabels?: boolean;
   maxXLabels?: number;
+  unavailableLabels?: string[];
   /** Show the legend of a bar or line chart. Needed with more than one series. */
   showLegend?: boolean;
 }
 
 const StatsChartCard = ({
   title, info, subtitle, type, data, series, isLoading = false, isUnavailable = false, isEmpty = false,
-  xLabelAngle, categoryLabels = false, maxXLabels, showLegend = false,
+  xLabelAngle, categoryLabels = false, maxXLabels, unavailableLabels = [], showLegend = false,
 }: StatsChartCardProps) => {
   const intl = useIntl();
 
@@ -52,18 +53,20 @@ const StatsChartCard = ({
       return <div className="rwaq-dash-card__empty">{intl.formatMessage(messages.chartEmpty)}</div>;
     }
     return (
-      <div className="rwaq-chart">
-        <MetricChart
-          type={type}
-          data={data}
-          series={series}
-          ariaLabel={title}
-          height={categoryLabels ? 190 : COMPACT_CHART_HEIGHT}
-          hideLegend={type !== 'donut' && !showLegend}
-          xLabelAngle={xLabelAngle}
-          categoryLabels={categoryLabels}
-          maxXLabels={maxXLabels}
-        />
+      <div className="rwaq-chart" style={categoryLabels ? { overflowX: 'auto' } : undefined}>
+        <div style={categoryLabels ? { minWidth: data.length * 90 } : undefined}>
+          <MetricChart
+            type={type}
+            data={data}
+            series={series}
+            ariaLabel={title}
+            height={categoryLabels ? 190 : COMPACT_CHART_HEIGHT}
+            hideLegend={type !== 'donut' && !showLegend}
+            xLabelAngle={xLabelAngle}
+            categoryLabels={categoryLabels}
+            maxXLabels={maxXLabels}
+          />
+        </div>
       </div>
     );
   };
@@ -77,6 +80,9 @@ const StatsChartCard = ({
         {subtitle && <span className="rwaq-dash-card__sub">{subtitle}</span>}
       </div>
       {renderBody()}
+      {!isLoading && unavailableLabels.map((label) => (
+        <div key={label} className="text-muted small">{label}: {intl.formatMessage(messages.chartUnavailable)}</div>
+      ))}
     </div>
   );
 };
