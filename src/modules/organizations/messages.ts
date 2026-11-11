@@ -233,10 +233,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.listStats.active.info',
     defaultMessage: 'Organizations marked active.',
   },
-  listStatsNoAdmins: { id: 'rwaq.admin.orgs.listStats.noAdmins', defaultMessage: 'Without admins' },
-  listStatsNoAdminsInfo: {
-    id: 'rwaq.admin.orgs.listStats.noAdmins.info',
-    defaultMessage: 'Organizations with no organization admin.',
+  listStatsWithCourses: { id: 'rwaq.admin.orgs.listStats.withCourses', defaultMessage: 'Organizations with courses' },
+  listStatsWithCoursesInfo: {
+    id: 'rwaq.admin.orgs.listStats.withCourses.info',
+    defaultMessage: 'Organizations with at least one published course run, including inactive organizations.',
   },
   listStatsCourses: { id: 'rwaq.admin.orgs.listStats.courses', defaultMessage: 'Courses' },
   listStatsCoursesInfo: {
