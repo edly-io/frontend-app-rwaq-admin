@@ -71,7 +71,7 @@ const UserStatsStrip = ({
     label: keyof typeof messages,
     info: keyof typeof messages,
     value: string | null,
-    options: { isLoading?: boolean; hint?: string } = {},
+    options: { isLoading?: boolean; hint?: string; isText?: boolean } = {},
   ) => (
     <StatsTileCard>
       <StatTile
@@ -79,6 +79,7 @@ const UserStatsStrip = ({
         info={intl.formatMessage(messages[info])}
         value={value}
         hint={options.hint}
+        isText={options.isText}
         isLoading={options.isLoading ?? isEnrollmentsLoading}
       />
     </StatsTileCard>
@@ -131,13 +132,14 @@ const UserStatsStrip = ({
             ? intl.formatMessage(messages.statsProgramsCompleted, { count: subscription.programsCompleted })
             : undefined,
         })}
-        {tile('statsLastActivity', 'statsLastActivityInfo', lastActivity, { isLoading: isStatsLoading })}
+        {tile('statsLastActivity', 'statsLastActivityInfo', lastActivity, { isLoading: isStatsLoading, isText: true })}
         {tile(
           'statsSubscription',
           'statsSubscriptionInfo',
           subscription ? intl.formatMessage(messages[SUBSCRIPTION_LABELS[subscription.subscriptionStatus]]) : null,
           {
             isLoading: isStatsLoading,
+            isText: true,
             hint: subscription?.subscriptionEndsAt
               ? intl.formatMessage(messages.statsSubscriptionEnds, {
                 date: formatDate(subscription.subscriptionEndsAt),

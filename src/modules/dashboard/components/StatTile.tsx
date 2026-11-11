@@ -24,10 +24,12 @@ export interface StatTileProps {
   /** Tooltip explanation shown on hover/click of the ⓘ icon next to the label. */
   info?: string;
   isLoading?: boolean;
+  /** Use the smaller value style for dates and status text instead of figures. */
+  isText?: boolean;
 }
 
 const StatTile = ({
-  label, value, hint, unavailableHint, badge, info, isLoading = false,
+  label, value, hint, unavailableHint, badge, info, isLoading = false, isText = false,
 }: StatTileProps) => {
   const intl = useIntl();
   const isUnavailable = value === null || value === undefined;
@@ -78,7 +80,7 @@ const StatTile = ({
           )}
         </span>
       </InfoTooltip>
-      <span className={`rwaq-stat-tile__value${isUnavailable && !isLoading ? ' rwaq-stat-tile__value--muted' : ''}`}>
+      <span className={`rwaq-stat-tile__value${isUnavailable && !isLoading ? ' rwaq-stat-tile__value--muted' : ''}${isText ? ' rwaq-stat-tile__value--text' : ''}`}>
         {tileValue}
       </span>
       {!isLoading && (isUnavailable ? unavailableHint : hint) && (
