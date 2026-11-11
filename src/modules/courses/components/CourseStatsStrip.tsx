@@ -77,6 +77,7 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
         {tile('statsPassed', 'statsPassedInfo', stats?.tiles.passed)}
         {tile('statsInProgress', 'statsInProgressInfo', stats?.tiles.inProgress)}
         {tile('statsNotStarted', 'statsNotStartedInfo', stats?.tiles.notStarted)}
+        {tile('statsFunnelStarted', 'statsStartedInfo', stats?.funnel.started)}
       </StatsTiles>
 
       <div className="rwaq-dash-grid rwaq-dash-grid--thirds">

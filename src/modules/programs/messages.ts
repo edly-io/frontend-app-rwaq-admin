@@ -341,6 +341,10 @@ const messages = defineMessages({
     defaultMessage: 'The average days from enrollment date to completion date, over the completed enrollments.',
   },
   statsDaysValue: { id: 'rwaq.admin.programs.stats.daysValue', defaultMessage: '{days} days' },
+  statsTotalCoursesInfo: {
+    id: 'rwaq.admin.programs.stats.totalCourses.info',
+    defaultMessage: 'Courses linked to this program.',
+  },
   statsMonthTitle: { id: 'rwaq.admin.programs.stats.month.title', defaultMessage: 'Enrollments and completions' },
   statsMonthInfo: {
     id: 'rwaq.admin.programs.stats.month.info',

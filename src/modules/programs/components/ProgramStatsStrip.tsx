@@ -16,7 +16,7 @@ import StatTile from '@src/modules/dashboard/components/StatTile';
 import { useProgramStats } from '../data/hooks';
 import messages from '../messages';
 
-const ProgramStatsStrip = ({ uuid }: { uuid: string }) => {
+const ProgramStatsStrip = ({ uuid, totalCourses }: { uuid: string; totalCourses: number }) => {
   const intl = useIntl();
   const [isOpen, setIsOpen] = useState(true);
   const query = useProgramStats(uuid, isOpen);
@@ -81,6 +81,7 @@ const ProgramStatsStrip = ({ uuid }: { uuid: string }) => {
             ? null
             : intl.formatMessage(messages.statsDaysValue, { days: days.toLocaleString(locale) }),
         )}
+        {tile('detailTotalCourses', 'statsTotalCoursesInfo', formatCount(totalCourses))}
       </StatsTiles>
 
       <div className="rwaq-dash-grid rwaq-dash-grid--halves">
