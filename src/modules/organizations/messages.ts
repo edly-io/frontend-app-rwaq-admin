@@ -226,6 +226,39 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.stats.topCourses.info',
     defaultMessage: 'The courses of this organization with the most active enrollments.',
   },
+
+  // ── Organizations list stats strip (EDLYCSRWAQ-380) ────────────────────────
+  listStatsActive: { id: 'rwaq.admin.orgs.listStats.active', defaultMessage: 'Active organizations' },
+  listStatsActiveInfo: {
+    id: 'rwaq.admin.orgs.listStats.active.info',
+    defaultMessage: 'Organizations marked active.',
+  },
+  listStatsNoAdmins: { id: 'rwaq.admin.orgs.listStats.noAdmins', defaultMessage: 'Without admins' },
+  listStatsNoAdminsInfo: {
+    id: 'rwaq.admin.orgs.listStats.noAdmins.info',
+    defaultMessage: 'Organizations with no organization admin.',
+  },
+  listStatsCourses: { id: 'rwaq.admin.orgs.listStats.courses', defaultMessage: 'Courses' },
+  listStatsCoursesInfo: {
+    id: 'rwaq.admin.orgs.listStats.courses.info',
+    defaultMessage: 'Published course runs across all organizations.',
+  },
+  listStatsPrograms: { id: 'rwaq.admin.orgs.listStats.programs', defaultMessage: 'Programs' },
+  listStatsProgramsInfo: {
+    id: 'rwaq.admin.orgs.listStats.programs.info',
+    defaultMessage: 'Programs across all organizations, hidden ones included.',
+  },
+  listStatsEnrollments: { id: 'rwaq.admin.orgs.listStats.enrollments', defaultMessage: 'Enrollments' },
+  listStatsEnrollmentsInfo: {
+    id: 'rwaq.admin.orgs.listStats.enrollments.info',
+    defaultMessage: 'Active enrollments in the courses of all organizations, the same as the Dashboard table.',
+  },
+  listStatsTopTitle: { id: 'rwaq.admin.orgs.listStats.top.title', defaultMessage: 'Top organizations by enrollments' },
+  listStatsTopInfo: {
+    id: 'rwaq.admin.orgs.listStats.top.info',
+    defaultMessage: 'The 10 organizations with the most active enrollments. The number in brackets after each name is its number of courses.',
+  },
+  listStatsTopLabel: { id: 'rwaq.admin.orgs.listStats.top.label', defaultMessage: '{name} ({courses})' },
 });
 
 export default messages;

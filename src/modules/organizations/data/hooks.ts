@@ -11,6 +11,7 @@ import {
   createOrganization,
   getOrganization,
   getOrganizations,
+  getOrgListStats,
   removeOrgAdmin,
   updateOrganization,
 } from './api';
@@ -26,6 +27,7 @@ const orgQueryKeys = {
   list: (params: OrgListParams) => [...orgQueryKeys.lists(), params] as const,
   details: () => [...orgQueryKeys.all, 'detail'] as const,
   detail: (shortName: string) => [...orgQueryKeys.details(), shortName] as const,
+  listStats: () => [...orgQueryKeys.all, 'listStats'] as const,
 };
 
 // ── Queries ──────────────────────────────────────────────────────────────────
@@ -126,3 +128,11 @@ export const useRemoveOrgAdmin = (shortName: string) => {
     },
   });
 };
+
+/** Tiles and chart of the Organizations list strip. Global, no params. Pass `enabled: false` while collapsed. */
+export const useOrgListStats = (enabled = true) => useQuery({
+  queryKey: orgQueryKeys.listStats(),
+  queryFn: getOrgListStats,
+  enabled,
+  staleTime: 5 * 60 * 1000,
+});
