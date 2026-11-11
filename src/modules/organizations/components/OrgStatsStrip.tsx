@@ -152,7 +152,7 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
           series={['enrollments']}
           isLoading={breakdownsLoading}
           isUnavailable={breakdownsQuery.isError}
-          horizontalBars
+          categoryLabels
         />
       </div>
     </StatsStrip>

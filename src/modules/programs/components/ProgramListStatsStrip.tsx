@@ -96,7 +96,7 @@ const ProgramListStatsStrip = () => {
           type="bar"
           data={funnel}
           series={['people']}
-          horizontalBars
+          categoryLabels
           isLoading={isLoading}
           isUnavailable={query.isError}
         />
