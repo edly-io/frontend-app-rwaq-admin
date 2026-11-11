@@ -42,6 +42,9 @@ describe('CourseStatsStrip', () => {
     expect(screen.getByText('Passed')).toBeInTheDocument();
     expect(screen.getByText('In progress')).toBeInTheDocument();
     expect(screen.getByText('Not started')).toBeInTheDocument();
+    expect(screen.getByText('Started')).toBeInTheDocument();
+    expect(screen.getAllByText('30')).toHaveLength(2);
+    expect(document.querySelectorAll('.rwaq-stats-tiles > .rwaq-card')).toHaveLength(8);
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(3);
     expect(screen.queryByText(/pass rate/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/%/)).not.toBeInTheDocument();
@@ -61,7 +64,7 @@ describe('CourseStatsStrip', () => {
     }));
     renderWrapper(<CourseStatsStrip courseId="c" />);
 
-    expect(screen.getAllByText('Not available').length).toBeGreaterThanOrEqual(4);
+    expect(screen.getAllByText('Not available').length).toBeGreaterThanOrEqual(5);
   });
 
   it('shows skeletons while loading', () => {
