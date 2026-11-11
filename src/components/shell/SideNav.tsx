@@ -17,6 +17,7 @@ import {
   School,
   LocalOffer,
   Payments,
+  ConfirmationNumber,
   Settings,
   ExpandMore,
   ExpandLess,
@@ -61,6 +62,13 @@ const NAV_ITEMS: NavItemDef[] = [
   },
   {
     to: '/payments', labelId: 'payments', iconSrc: Payments, isLive: true, superuserOnly: true,
+  },
+  {
+    to: '/enrollment-codes',
+    labelId: 'enrollmentCodes',
+    iconSrc: ConfirmationNumber,
+    isLive: true,
+    superuserOnly: true,
   },
 ];
 
