@@ -36,9 +36,11 @@ import type {
   CourseEnrollPayload,
   CourseListParams,
   CourseListResponse,
+  CourseListStats,
   CourseStaffAddPayload,
   CourseStaffMember,
   CourseStaffRemoveParams,
+  CourseStats,
 } from './types';
 
 const getCoursesBaseUrl = () => getStudioApiUrl('/api/v1/admin/courses');
@@ -171,4 +173,20 @@ export const updateCoursePricing = async (
     body,
   );
   return camelCaseObject(data) as CoursePricing;
+};
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+
+/** GET /api/v1/admin/courses/{courseId}/stats/ — tiles and series of one course. */
+export const getCourseStats = async (courseId: string): Promise<CourseStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getCoursesBaseUrl()}/${encodeURIComponent(courseId)}/stats/`,
+  );
+  return camelCaseObject(data) as CourseStats;
+};
+
+/** GET /api/v1/admin/courses/stats/ — tiles and series of the Courses list strip. */
+export const getCourseListStats = async (): Promise<CourseListStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getCoursesBaseUrl()}/stats/`);
+  return camelCaseObject(data) as CourseListStats;
 };

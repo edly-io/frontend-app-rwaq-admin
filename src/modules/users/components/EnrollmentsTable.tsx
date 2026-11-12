@@ -12,11 +12,11 @@
  * is already in hand.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Chip } from '@openedx/paragon';
+import { Button, Chip, Spinner } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
-import type { UserEnrollment } from '../data/types';
+import type { EnrollmentProgress, UserEnrollment } from '../data/types';
 import messages from '../messages';
 import modeLabel from '../modeLabel';
 
@@ -26,12 +26,27 @@ const PAGE_SIZE = 10;
 interface EnrollmentsTableProps {
   enrollments: UserEnrollment[];
   isLoading?: boolean;
+  /** Progress per active course. It arrives after the table, so the column shows a spinner until then. */
+  progress?: EnrollmentProgress[];
+  isProgressLoading?: boolean;
   onChangeMode: (enrollment: UserEnrollment) => void;
   onUnenroll: (enrollment: UserEnrollment) => void;
 }
 
+const STATUS_LABELS = {
+  passed: messages.enrollmentStatusPassed,
+  in_progress: messages.enrollmentStatusInProgress,
+  not_started: messages.enrollmentStatusNotStarted,
+};
+const STATUS_CHIPS = { passed: 'success', in_progress: 'info', not_started: 'light' };
+const COURSE_LABELS = {
+  upcoming: messages.enrollmentCourseUpcoming,
+  running: messages.enrollmentCourseRunning,
+  ended: messages.enrollmentCourseEnded,
+};
+
 const EnrollmentsTable = ({
-  enrollments, isLoading, onChangeMode, onUnenroll,
+  enrollments, isLoading, progress, isProgressLoading = false, onChangeMode, onUnenroll,
 }: EnrollmentsTableProps) => {
   const intl = useIntl();
   const [page, setPage] = useState(1);
@@ -49,13 +64,21 @@ const EnrollmentsTable = ({
   );
 
   const dash = intl.formatMessage(messages.detailNone);
+  const notAvailable = (
+    <span className="text-muted">{intl.formatMessage(messages.enrollmentNotAvailable)}</span>
+  );
+  const progressByCourse = useMemo(
+    () => new Map((progress ?? []).map((item) => [item.courseId, item.progressPercent])),
+    [progress],
+  );
+  const formatDate = (value: unknown) => (value ? new Date(value as string).toLocaleDateString(intl.locale) : dash);
 
   const columns: ColumnDef<UserEnrollment>[] = [
     {
       label: intl.formatMessage(messages.enrollmentCourse),
       key: 'courseName',
       renderCell: (value, row) => (
-        <div className="min-width-0">
+        <div className="rwaq-enrollments__course">
           <div className="rwaq-user-cell__name">{value as string}</div>
           <div className="rwaq-user-cell__meta">{row.courseId}</div>
           {/* The last admin change, on the row it belongs to. An enrollment
@@ -97,13 +120,78 @@ const EnrollmentsTable = ({
     {
       label: intl.formatMessage(messages.enrollmentCertificate),
       key: 'certificateStatus',
-      renderCell: (value) => (value
-        ? <span className="rwaq-enrollments__cert">{value as string}</span>
+      renderCell: (value) => (value === 'downloadable'
+        ? <span className="rwaq-enrollments__cert">{intl.formatMessage(messages.enrollmentCertificateEarned)}</span>
         : (
           <span className="rwaq-enrollments__cert--none">
             {intl.formatMessage(messages.enrollmentNoCertificate)}
           </span>
         )),
+    },
+    {
+      label: intl.formatMessage(messages.enrollmentProgressStatus),
+      key: 'status',
+      renderCell: (value) => {
+        if (!value) { return notAvailable; }
+        const status = value as keyof typeof STATUS_LABELS;
+        return (
+          <Chip className={`rwaq-chip rwaq-chip--${STATUS_CHIPS[status]}`}>
+            {intl.formatMessage(STATUS_LABELS[status])}
+          </Chip>
+        );
+      },
+    },
+    {
+      label: intl.formatMessage(messages.enrollmentGrade),
+      key: 'gradePercent',
+      renderCell: (value) => (typeof value === 'number' ? `${value}%` : dash),
+    },
+    {
+      label: intl.formatMessage(messages.enrollmentProgress),
+      key: 'progress',
+      id: 'progress',
+      renderCell: (_value, row) => {
+        // Only active enrollments have a progress to show.
+        if (!row.isActive) { return dash; }
+        if (isProgressLoading) {
+          return (
+            <Spinner
+              animation="border"
+              size="sm"
+              screenReaderText={intl.formatMessage(messages.enrollmentProgressLoading)}
+            />
+          );
+        }
+        const percent = progressByCourse.get(row.courseId);
+        return typeof percent === 'number' ? `${percent}%` : notAvailable;
+      },
+    },
+    {
+      label: intl.formatMessage(messages.enrollmentLastActivity),
+      key: 'lastActivityAt',
+      renderCell: (value) => formatDate(value),
+    },
+    {
+      label: intl.formatMessage(messages.enrollmentCertificateDate),
+      key: 'certificateIssuedAt',
+      renderCell: (value) => formatDate(value),
+    },
+    {
+      label: intl.formatMessage(messages.enrollmentCourseStatus),
+      key: 'courseStatus',
+      renderCell: (value, row) => {
+        if (!value) { return dash; }
+        return (
+          <div>
+            <div>{intl.formatMessage(COURSE_LABELS[value as keyof typeof COURSE_LABELS])}</div>
+            {row.courseEnd && (
+              <div className="rwaq-user-cell__meta">
+                {intl.formatMessage(messages.enrollmentCourseEnds, { date: formatDate(row.courseEnd) })}
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       label: intl.formatMessage(messages.enrollmentActions),
@@ -141,19 +229,21 @@ const EnrollmentsTable = ({
   ];
 
   return (
-    <AdminDataTable
-      columns={columns}
-      data={rows}
-      isLoading={isLoading}
-      caption={intl.formatMessage(messages.tabEnrollments)}
-      pagination={{
-        currentPage: page,
-        pageCount,
-        itemCount: enrollments.length,
-        pageSize: PAGE_SIZE,
-        onPageChange: setPage,
-      }}
-    />
+    <div className="rwaq-enrollments-table">
+      <AdminDataTable
+        columns={columns}
+        data={rows}
+        isLoading={isLoading}
+        caption={intl.formatMessage(messages.tabEnrollments)}
+        pagination={{
+          currentPage: page,
+          pageCount,
+          itemCount: enrollments.length,
+          pageSize: PAGE_SIZE,
+          onPageChange: setPage,
+        }}
+      />
+    </div>
   );
 };
 

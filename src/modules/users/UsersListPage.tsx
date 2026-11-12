@@ -23,6 +23,7 @@ import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip, SelectOption } from '@src/components/SearchFilterBar';
 import RoleBadges from './components/RoleBadges';
+import UserListStatsStrip from './components/UserListStatsStrip';
 import StatusBadges from './components/StatusBadges';
 import EditUserModal from './modals/EditUserModal';
 import UserFormModal from './modals/UserFormModal';
@@ -306,6 +307,8 @@ const UsersListPage = () => {
           </Button>
         </div>
       </div>
+
+      <UserListStatsStrip />
 
       <div className="rwaq-card rwaq-card--fit">
         <SearchFilterBar

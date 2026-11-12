@@ -21,6 +21,7 @@ import ProfileAvatar from '@src/components/ProfileAvatar';
 import { localizedName } from '@src/data/localizedName';
 import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
 import { useOrgFilterOptions } from '@src/modules/organizations/data/hooks';
+import CourseListStatsStrip from './components/CourseListStatsStrip';
 import { getCoursesCsvUrl } from './data/api';
 import { useCourses } from './data/hooks';
 import type { CourseSummary, CourseOrdering, CourseTypeFilter } from './data/types';
@@ -256,6 +257,8 @@ const CoursesListPage = () => {
       <div className="rwaq-page-header">
         <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
       </div>
+
+      <CourseListStatsStrip />
 
       <div className="rwaq-card rwaq-card--fit">
         <SearchFilterBar

@@ -269,6 +269,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.enrollments.count',
     defaultMessage: '{count, plural, one {# enrollment} other {# enrollments}}',
   },
+  enrollmentCertificateEarned: { id: 'rwaq.admin.users.enrollments.certificateEarned', defaultMessage: 'Earned' },
   enrollmentNoCertificate: {
     id: 'rwaq.admin.users.enrollments.noCertificate',
     defaultMessage: 'None',
@@ -403,6 +404,133 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.enrollments.writeError',
     defaultMessage: 'Could not save the change.',
   },
+
+  // ── Enrollment progress columns (EDLYCSRWAQ-380) ───────────────────────────
+  enrollmentProgressStatus: { id: 'rwaq.admin.users.enrollments.progressStatus', defaultMessage: 'Status' },
+  enrollmentStatusPassed: { id: 'rwaq.admin.users.enrollments.status.passed', defaultMessage: 'Passed' },
+  enrollmentStatusInProgress: { id: 'rwaq.admin.users.enrollments.status.inProgress', defaultMessage: 'In progress' },
+  enrollmentStatusNotStarted: { id: 'rwaq.admin.users.enrollments.status.notStarted', defaultMessage: 'Not started' },
+  enrollmentGrade: { id: 'rwaq.admin.users.enrollments.grade', defaultMessage: 'Grade' },
+  enrollmentProgress: { id: 'rwaq.admin.users.enrollments.progress', defaultMessage: 'Progress' },
+  enrollmentProgressLoading: {
+    id: 'rwaq.admin.users.enrollments.progress.loading',
+    defaultMessage: 'Loading progress',
+  },
+  enrollmentLastActivity: { id: 'rwaq.admin.users.enrollments.lastActivity', defaultMessage: 'Last activity' },
+  enrollmentCertificateDate: {
+    id: 'rwaq.admin.users.enrollments.certificateDate',
+    defaultMessage: 'Certificate date',
+  },
+  enrollmentCourseStatus: { id: 'rwaq.admin.users.enrollments.courseStatus', defaultMessage: 'Course' },
+  enrollmentCourseUpcoming: { id: 'rwaq.admin.users.enrollments.course.upcoming', defaultMessage: 'Upcoming' },
+  enrollmentCourseRunning: { id: 'rwaq.admin.users.enrollments.course.running', defaultMessage: 'Running' },
+  enrollmentCourseEnded: { id: 'rwaq.admin.users.enrollments.course.ended', defaultMessage: 'Ended' },
+  enrollmentCourseEnds: { id: 'rwaq.admin.users.enrollments.course.ends', defaultMessage: 'Ends {date}' },
+  enrollmentNotAvailable: { id: 'rwaq.admin.users.enrollments.notAvailable', defaultMessage: 'Not available' },
+
+  // ── User page stats strip (EDLYCSRWAQ-380) ─────────────────────────────────
+  statsActiveEnrollments: { id: 'rwaq.admin.users.stats.activeEnrollments', defaultMessage: 'Active enrollments' },
+  statsActiveEnrollmentsInfo: {
+    id: 'rwaq.admin.users.stats.activeEnrollments.info',
+    defaultMessage: 'Courses this user is enrolled in now.',
+  },
+  statsEnrollmentsOfTotal: { id: 'rwaq.admin.users.stats.enrollmentsOfTotal', defaultMessage: 'of {total} in total' },
+  statsCertificates: { id: 'rwaq.admin.users.stats.certificates', defaultMessage: 'Certificates earned' },
+  statsCertificatesInfo: {
+    id: 'rwaq.admin.users.stats.certificates.info',
+    defaultMessage: 'Downloadable certificates in the courses listed below.',
+  },
+  statsPassed: { id: 'rwaq.admin.users.stats.passed', defaultMessage: 'Courses passed' },
+  statsPassedInfo: {
+    id: 'rwaq.admin.users.stats.passed.info',
+    defaultMessage: 'Active courses with a passing grade or a certificate.',
+  },
+  statsInProgress: { id: 'rwaq.admin.users.stats.inProgress', defaultMessage: 'Courses in progress' },
+  statsInProgressInfo: {
+    id: 'rwaq.admin.users.stats.inProgress.info',
+    defaultMessage: 'Active courses where the user completed at least one block and has not passed yet.',
+  },
+  statsCompletion: { id: 'rwaq.admin.users.stats.completion', defaultMessage: 'Overall completion' },
+  statsCompletionInfo: {
+    id: 'rwaq.admin.users.stats.completion.info',
+    defaultMessage: 'The average progress over the active courses. Shown once the progress column has loaded.',
+  },
+  statsPrograms: { id: 'rwaq.admin.users.stats.programs', defaultMessage: 'Programs enrolled' },
+  statsProgramsInfo: {
+    id: 'rwaq.admin.users.stats.programs.info',
+    defaultMessage: 'Programs this user is enrolled in now, and how many of them are completed.',
+  },
+  statsProgramsCompleted: { id: 'rwaq.admin.users.stats.programsCompleted', defaultMessage: '{count} completed' },
+  statsLastActivity: { id: 'rwaq.admin.users.stats.lastActivity', defaultMessage: 'Last activity' },
+  statsLastActivityInfo: {
+    id: 'rwaq.admin.users.stats.lastActivity.info',
+    defaultMessage: 'The latest completed block, or the latest courseware activity when there is none.',
+  },
+  statsNoActivity: { id: 'rwaq.admin.users.stats.noActivity', defaultMessage: 'No activity yet' },
+  statsSubscription: { id: 'rwaq.admin.users.stats.subscription', defaultMessage: 'Subscription' },
+  statsSubscriptionInfo: {
+    id: 'rwaq.admin.users.stats.subscription.info',
+    defaultMessage: 'The status of the subscription that ends last, and when it ends.',
+  },
+  statsSubscriptionEnds: { id: 'rwaq.admin.users.stats.subscriptionEnds', defaultMessage: 'Ends {date}' },
+  subscriptionNone: { id: 'rwaq.admin.users.stats.subscription.none', defaultMessage: 'No subscription' },
+  subscriptionActive: { id: 'rwaq.admin.users.stats.subscription.active', defaultMessage: 'Active' },
+  subscriptionCancelled: { id: 'rwaq.admin.users.stats.subscription.cancelled', defaultMessage: 'Cancelled' },
+  subscriptionExpired: { id: 'rwaq.admin.users.stats.subscription.expired', defaultMessage: 'Expired' },
+  subscriptionRevoked: { id: 'rwaq.admin.users.stats.subscription.revoked', defaultMessage: 'Revoked' },
+  statsModesTitle: { id: 'rwaq.admin.users.stats.modes.title', defaultMessage: 'Enrollment modes' },
+  statsModesInfo: {
+    id: 'rwaq.admin.users.stats.modes.info',
+    defaultMessage: 'Active enrollments of this user by mode.',
+  },
+  statsEnrollmentsMonthInfo: {
+    id: 'rwaq.admin.users.stats.enrollmentsMonth.info',
+    defaultMessage: 'Enrollments of this user by the month they were made, including ones since cancelled.',
+  },
+
+  // ── Users list stats strip (EDLYCSRWAQ-380) ────────────────────────────────
+  listStatsLearners: { id: 'rwaq.admin.users.listStats.learners', defaultMessage: 'Learners' },
+  listStatsLearnersInfo: {
+    id: 'rwaq.admin.users.listStats.learners.info',
+    defaultMessage: 'People with activity in a course and an active enrollment in it, the same figure as the Dashboard. Staff, superusers and service accounts are not counted.',
+  },
+  listStatsNewThisMonth: { id: 'rwaq.admin.users.listStats.newThisMonth', defaultMessage: 'New this month' },
+  listStatsNewThisMonthInfo: {
+    id: 'rwaq.admin.users.listStats.newThisMonth.info',
+    defaultMessage: 'Active accounts created this calendar month, compared with last month. Staff, superusers and service accounts are not counted.',
+  },
+  listStatsActive: { id: 'rwaq.admin.users.listStats.active', defaultMessage: 'Active, last 30 days' },
+  listStatsActiveInfo: {
+    id: 'rwaq.admin.users.listStats.active.info',
+    defaultMessage: 'Learners with courseware activity in the last 30 days and an active enrollment. Staff, superusers and service accounts are not counted.',
+  },
+  listStatsLegacy: { id: 'rwaq.admin.users.listStats.legacy', defaultMessage: 'Legacy accounts migrated' },
+  listStatsLegacyInfo: {
+    id: 'rwaq.admin.users.listStats.legacy.info',
+    defaultMessage: 'Accounts imported from the old platform that have signed in on the new one, out of all imported accounts.',
+  },
+  listStatsLegacyHint: {
+    id: 'rwaq.admin.users.listStats.legacy.hint',
+    defaultMessage: '{remaining} of {total} still to sign in',
+  },
+  listStatsSubscribed: { id: 'rwaq.admin.users.listStats.subscribed', defaultMessage: 'Subscribed learners' },
+  listStatsSubscribedInfo: {
+    id: 'rwaq.admin.users.listStats.subscribed.info',
+    defaultMessage: 'Learners with a live subscription: it ends in the future and is not revoked.',
+  },
+  listStatsRegistrationsTitle: { id: 'rwaq.admin.users.listStats.registrations.title', defaultMessage: 'Registrations per month' },
+  listStatsRegistrationsInfo: {
+    id: 'rwaq.admin.users.listStats.registrations.info',
+    defaultMessage: 'Accounts created in each month, active or not. The same series as the Dashboard.',
+  },
+  listStatsSignInTitle: { id: 'rwaq.admin.users.listStats.signIn.title', defaultMessage: 'Sign-in method' },
+  listStatsSignInInfo: {
+    id: 'rwaq.admin.users.listStats.signIn.info',
+    defaultMessage: 'Learners by how they sign in, by their first linked account. No linked account means a password.',
+  },
+  listStatsSignInPassword: { id: 'rwaq.admin.users.listStats.signIn.password', defaultMessage: 'Password' },
+  listStatsSignInGoogle: { id: 'rwaq.admin.users.listStats.signIn.google', defaultMessage: 'Google' },
+  listStatsSignInOther: { id: 'rwaq.admin.users.listStats.signIn.other', defaultMessage: 'Other' },
 });
 
 export default messages;
