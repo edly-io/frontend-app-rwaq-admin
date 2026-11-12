@@ -8,17 +8,13 @@
  * - Pricing card: free or paid, price and sale price, saved with its own button
  * - Courses tab: the courses linked to this program
  * - Learners tab: the learners enrolled in this program
- * - Enrollment code tab (only for an Enrollment code program): its codes and their usage. The tab is in the URL
- *   (`?tab=enrollment-code`), so a link or the pricing card's banner opens it.
  *
  * The UUID (not program_key) is used in the URL because program_key contains
  * ':' and '+' that would require URL encoding.
  */
 import { getSiteName } from '@src/data/siteName';
 import { useState } from 'react';
-import {
-  Link, useNavigate, useParams, useSearchParams,
-} from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   Alert,
   Button,
@@ -32,8 +28,6 @@ import DetailGrid from '@src/components/DetailGrid';
 import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
-import CodesCard from '@src/modules/enrollment-codes/components/CodesCard';
-import enrollmentCodeMessages from '@src/modules/enrollment-codes/messages';
 import ProgramPricingCard from './components/ProgramPricingCard';
 import ProgramStatsStrip from './components/ProgramStatsStrip';
 import ProgramStatusChips from './components/ProgramStatusChips';
@@ -50,12 +44,7 @@ import {
 } from './data/hooks';
 import messages, { programReportsMessages } from './messages';
 
-type Tab = 'courses' | 'learners' | 'enrollmentCode';
-
-/** The value of `?tab=` for each tab. */
-const TAB_PARAM: Record<Tab, string> = {
-  courses: 'courses', learners: 'learners', enrollmentCode: 'enrollment-code',
-};
+type Tab = 'courses' | 'learners';
 
 // ── Settings card ─────────────────────────────────────────────────────────────
 
@@ -317,7 +306,7 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
 interface TabBarProps {
   active: Tab;
   onChange: (tab: Tab) => void;
-  labels: Partial<Record<Tab, string>>;
+  labels: Record<Tab, string>;
 }
 
 const TabBar = ({ active, onChange, labels }: TabBarProps) => (
@@ -366,16 +355,7 @@ const ProgramDetailPage = () => {
   const {
     data: program, isLoading, isError, error,
   } = useProgram(uuid);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  const isCodeProgram = program?.pricingCategory === 'is_enrollment_code';
-  const requestedTab = (Object.keys(TAB_PARAM) as Tab[]).find((tab) => TAB_PARAM[tab] === tabParam);
-  const activeTab: Tab = requestedTab && (requestedTab !== 'enrollmentCode' || isCodeProgram) ? requestedTab : 'courses';
-  const setActiveTab = (tab: Tab) => setSearchParams((prev) => {
-    const next = new URLSearchParams(prev);
-    next.set('tab', TAB_PARAM[tab]);
-    return next;
-  }, { replace: true });
+  const [activeTab, setActiveTab] = useState<Tab>('courses');
 
   const dash = intl.formatMessage(messages.detailNone);
 
@@ -501,7 +481,7 @@ const ProgramDetailPage = () => {
       {/* Pricing */}
       <ProgramPricingCard program={program} />
 
-      {/* Courses, Learners and (Enrollment code programs) Enrollment code tabs */}
+      {/* Courses + Learners tabs */}
       <div className="rwaq-card">
         <TabBar
           active={activeTab}
@@ -509,7 +489,6 @@ const ProgramDetailPage = () => {
           labels={{
             courses: intl.formatMessage(messages.tabCourses),
             learners: intl.formatMessage(messages.tabLearners),
-            ...(isCodeProgram ? { enrollmentCode: intl.formatMessage(enrollmentCodeMessages.tabEnrollmentCode) } : {}),
           }}
         />
 
@@ -521,16 +500,6 @@ const ProgramDetailPage = () => {
         <div id="tabpanel-learners" role="tabpanel" aria-labelledby="tab-learners" hidden={activeTab !== 'learners'}>
           <LearnersTab uuid={program.uuid} isSubscription={program.pricingCategory === 'is_part_of_subscription'} />
         </div>
-        {isCodeProgram && (
-          <div
-            id="tabpanel-enrollmentCode"
-            role="tabpanel"
-            aria-labelledby="tab-enrollmentCode"
-            hidden={activeTab !== 'enrollmentCode'}
-          >
-            <CodesCard item={{ kind: 'program', id: program.uuid, name: program.name }} />
-          </div>
-        )}
       </div>
     </div>
   );

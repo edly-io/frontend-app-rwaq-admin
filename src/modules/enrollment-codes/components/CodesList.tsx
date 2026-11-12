@@ -1,14 +1,17 @@
 /**
  * The list of enrollment codes, with its filters, create button and row actions.
  *
- * Used in the Codes tab of the Enrollment codes page (all codes) and as the Codes card in the Enrollment code
- * tab of a course, program or organization page, where `item` fixes the list to that item (for an
- * organization: its organization codes), hides the scope filter and fixes the item in the create form.
+ * Used in the Codes tab of the Enrollment codes page. `item` fixes the list to one course, program or
+ * organization (its organization codes), hides the scope filter and fixes the item in the create form.
+ * `prefillItem` opens the create form once with that item fixed (the pricing cards' Add enrollment code
+ * button links to the page with it), and `onPrefillHandled` then tells the page it was used.
  *
  * Row actions: view card, view usage (opens the usage panel, `onViewUsage`), view the learners in the Uses
  * tab, switch off or on, edit, and delete (only a code with no uses).
  */
-import { Suspense, lazy, useState } from 'react';
+import {
+  Suspense, lazy, useEffect, useState,
+} from 'react';
 import { Link } from 'react-router-dom';
 import {
   Badge, Button, Icon, IconButton,
@@ -69,18 +72,34 @@ interface CodesListProps {
   onViewUses: (code: EnrollmentCode) => void;
   /** Opens the usage panel of this code. Without it the row has no usage action. */
   onViewUsage?: (code: EnrollmentCode) => void;
+  /** Opens the create form once, with this course or program fixed. */
+  prefillItem?: PickedItem;
+  onPrefillHandled?: () => void;
 }
 
-const CodesList = ({ item, onViewUses, onViewUsage }: CodesListProps) => {
+const CodesList = ({
+  item, onViewUses, onViewUsage, prefillItem, onPrefillHandled,
+}: CodesListProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
   const updateMutation = useUpdateEnrollmentCode();
   const list = useListState('', { status: '', kind: '' }, listScope(item?.id));
 
   const [creating, setCreating] = useState(false);
+  const [createFor, setCreateFor] = useState<PickedItem | undefined>(undefined);
   const [editing, setEditing] = useState<EnrollmentCode | null>(null);
   const [deleting, setDeleting] = useState<EnrollmentCode | null>(null);
   const [share, setShare] = useState<{ id: number; isNew: boolean } | null>(null);
+
+  useEffect(() => {
+    if (prefillItem) {
+      setCreateFor(prefillItem);
+      setCreating(true);
+      onPrefillHandled?.();
+    }
+    // Once per prefill item: the handler only tells the page to forget it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillItem]);
 
   let kindFilter: CodeScope | undefined;
   if (item?.kind === 'organization') {
@@ -305,7 +324,7 @@ const CodesList = ({ item, onViewUses, onViewUsage }: CodesListProps) => {
         appliedChips={chips}
         onClearAll={list.clearAll}
         actions={(
-          <Button variant="primary" iconBefore={Add} onClick={() => setCreating(true)}>
+          <Button variant="primary" iconBefore={Add} onClick={() => { setCreateFor(undefined); setCreating(true); }}>
             {intl.formatMessage(messages.create)}
           </Button>
         )}
@@ -329,7 +348,7 @@ const CodesList = ({ item, onViewUses, onViewUsage }: CodesListProps) => {
       <CreateCodeModal
         isOpen={creating}
         onClose={() => setCreating(false)}
-        fixedItem={item}
+        fixedItem={item ?? createFor}
         onCreated={(created) => setShare({ id: created.id, isNew: true })}
       />
       <EditCodeModal code={editing} onClose={() => setEditing(null)} />
