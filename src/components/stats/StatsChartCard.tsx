@@ -53,8 +53,9 @@ const StatsChartCard = ({
       return <div className="rwaq-dash-card__empty">{intl.formatMessage(messages.chartEmpty)}</div>;
     }
     return (
-      // Start-aligned: a centered flex row that overflows loses its left half to unreachable scroll.
-      <div className="rwaq-chart" style={categoryLabels ? { overflowX: 'auto', justifyContent: 'flex-start' } : undefined}>
+      // Start-aligned and left-to-right: a centered row that overflows loses its left half to unreachable
+      // scroll, and an RTL row would start at the right and show the last bars first.
+      <div className="rwaq-chart" style={categoryLabels ? { overflowX: 'auto', justifyContent: 'flex-start', direction: 'ltr' } : undefined}>
         {/* Full width: a content-sized wrapper gives the responsive chart 0px. */}
         <div style={{ width: '100%', ...(categoryLabels ? { minWidth: data.length * 90 } : {}) }}>
           <MetricChart

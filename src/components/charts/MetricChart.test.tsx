@@ -141,6 +141,11 @@ describe('CategoryTick', () => {
     expect(shown(container)).toBe('Course Enrollment Cod…');
   });
 
+  it('keeps the label left-to-right so Arabic pages do not flip the rotated text onto the bars', () => {
+    const { container } = render(<svg><CategoryTick payload={{ value: 'مساق' }} angle={-55} rtl /></svg>);
+    expect((container.querySelector('text') as SVGTextElement).style.direction).toBe('ltr');
+  });
+
   it('keeps a short name whole', () => {
     const { container } = render(<svg><CategoryTick payload={{ value: 'PFC2 - Paid' }} rtl={false} /></svg>);
     expect(shown(container)).toBe('PFC2 - Paid');

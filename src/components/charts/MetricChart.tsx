@@ -147,6 +147,9 @@ export const CategoryTick = ({
         fill={fill}
         fontSize={fontSize}
         transform={`rotate(${angle})`}
+        // The Arabic build turns the chart wrapper into direction: rtl, which flips the
+        // meaning of text-anchor 'end' and drew rotated labels across the bars.
+        style={{ direction: 'ltr' }}
       >
         <title>{full}</title>
         {categoryLabel(full, rtl, rtl ? CATEGORY_LABEL_LIMIT_RTL : CATEGORY_LABEL_LIMIT)}
