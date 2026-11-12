@@ -9,7 +9,7 @@ import type { ProgramDetail } from '../data/types';
 import ProgramPricingCard from './ProgramPricingCard';
 
 jest.mock('../data/hooks');
-jest.mock('@src/modules/enrollment-codes/data/hooks', () => ({ useActiveCodeCount: jest.fn() }));
+jest.mock('@src/modules/enrollment-codes/data/hooks', () => ({ useItemCodeCount: jest.fn() }));
 jest.mock('@edx/frontend-platform/logging', () => ({ logError: jest.fn() }));
 
 const mockUpdate = jest.fn();
@@ -32,7 +32,7 @@ const save = () => fireEvent.click(screen.getByRole('button', { name: 'Save pric
 
 beforeEach(() => {
   jest.clearAllMocks();
-  (codeHooks.useActiveCodeCount as jest.Mock).mockReturnValue({ data: undefined });
+  (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: undefined });
   mockUpdate.mockResolvedValue(makeProgram());
   (hooks.useUpdateProgram as jest.Mock).mockReturnValue({ mutateAsync: mockUpdate, isPending: false });
 });
@@ -222,22 +222,47 @@ describe('ProgramPricingCard', () => {
       expect(screen.queryByLabelText('Price before VAT (SAR)')).not.toBeInTheDocument();
       save();
       await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({
-        pricingCategory: 'is_enrollment_code', regularPrice: null, salePrice: null,
+        pricingCategory: 'is_enrollment_code', regularPrice: null, salePrice: null, hideFromCatalog: false,
       }));
     });
 
-    it('warns how many active codes switch off when the type is switched away', () => {
-      (codeHooks.useActiveCodeCount as jest.Mock).mockReturnValue({ data: 2 });
-      renderCard({ pricingCategory: 'is_enrollment_code' });
-      expect(screen.queryByTestId('codes-switched-off-warning')).not.toBeInTheDocument();
-      fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
-      expect(screen.getByTestId('codes-switched-off-warning')).toHaveTextContent('2 codes will be switched off.');
-      expect(codeHooks.useActiveCodeCount).toHaveBeenLastCalledWith({ programUuid: makeProgram().uuid }, true);
+    it('shows the hide from catalog checkbox only for the Enrollment code type and sends it', async () => {
+      renderCard();
+      expect(screen.queryByRole('checkbox', { name: /Hide from catalog/ })).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('radio', { name: 'Enrollment code' }));
+      expect(screen.getByText('Learners can still open it by link, QR code and on the partner page.')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('checkbox', { name: /Hide from catalog/ }));
+      save();
+      await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
+      expect(mockUpdate.mock.calls[0][0].hideFromCatalog).toBe(true);
     });
 
-    it('shows no warning when no code is active', () => {
-      (codeHooks.useActiveCodeCount as jest.Mock).mockReturnValue({ data: 0 });
+    it('starts the checkbox from the stored value and never sends the flag for another type', async () => {
+      renderCard({ pricingCategory: 'is_enrollment_code', hideFromCatalog: true });
+      expect(screen.getByRole('checkbox', { name: /Hide from catalog/ })).toBeChecked();
+      fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
+      save();
+      await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
+      expect(mockUpdate.mock.calls[0][0]).not.toHaveProperty('hideFromCatalog');
+    });
+
+    it('offers adding a code after saving the type when the program has none, with a link to the tab', async () => {
+      (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: 0 });
       renderCard({ pricingCategory: 'is_enrollment_code' });
+      expect(screen.queryByTestId('add-code-banner')).not.toBeInTheDocument();
+      save();
+      expect(await screen.findByTestId('add-code-banner')).toHaveTextContent('Add an enrollment code so learners can join.');
+      expect(codeHooks.useItemCodeCount).toHaveBeenLastCalledWith({ programUuid: makeProgram().uuid }, true);
+      fireEvent.click(screen.getByRole('button', { name: 'Add a code' }));
+      expect(window.location.search).toContain('tab=enrollment-code');
+    });
+
+    it('shows no banner when the program already has a code, and never a switch-off warning', async () => {
+      (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: 1 });
+      renderCard({ pricingCategory: 'is_enrollment_code' });
+      save();
+      await waitFor(() => expect(mockUpdate).toHaveBeenCalled());
+      expect(screen.queryByTestId('add-code-banner')).not.toBeInTheDocument();
       fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
       expect(screen.queryByTestId('codes-switched-off-warning')).not.toBeInTheDocument();
     });

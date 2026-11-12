@@ -16,6 +16,7 @@ const baseCard: CodeCard = {
   organizationArabicName: 'رواق',
   logo: 'data:image/png;base64,iVBORw0KGgo=',
   qrUrl: 'https://rwaq.org/enroll?code=V4WPTB',
+  qrMissing: false,
   expiresAt: null,
   platform: {
     slogan: 'رواق .. المنصة العربية للتعليم المفتوح',
@@ -36,6 +37,18 @@ const LONG_ABOUT = `إحدى مبادرات جمعية أروقة المعرفة
   'لجميع المتعلمين في العالم العربي وخارجه '.repeat(4)}`;
 
 describe('EnrollmentCodeCard', () => {
+  it('leaves out the QR part when there is no link, and names an organization code by its organization', () => {
+    const { container } = render(
+      <EnrollmentCodeCard card={{
+        ...baseCard, qrUrl: '', qrMissing: true, itemKind: 'organization', itemName: 'إدراك',
+      }}
+      />,
+    );
+    expect(container.querySelector('[data-qr="true"]')).not.toBeInTheDocument();
+    expect(container.querySelector('.coupon-card__scan-hint')).not.toBeInTheDocument();
+    expect(container.querySelector('.coupon-card__quiz-title')).toHaveTextContent('صالح للتسجيل في: إدراك');
+  });
+
   it('shows the fixed bilingual texts and the code', () => {
     const { container } = render(<EnrollmentCodeCard card={baseCard} />);
     expect(screen.getByText('V4WPTB')).toBeInTheDocument();

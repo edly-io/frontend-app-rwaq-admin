@@ -1,6 +1,6 @@
 /**
- * Enrollment codes hooks with a real QueryClient and a mocked api: the active count behind the type-switch
- * warning, changes that refresh the lists, and no querying while the tab the hook sits in is hidden.
+ * Enrollment codes hooks with a real QueryClient and a mocked api: the item count behind the add-a-code banner,
+ * the items of a code, changes that refresh the lists, and no querying while the tab the hook sits in is hidden.
  */
 import { ReactNode } from 'react';
 import { act, renderHook, waitFor } from '@testing-library/react';
@@ -8,13 +8,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ActiveTabContext } from '@src/modules/payments/data/activeTab';
 import * as api from './api';
 import {
-  useActiveCodeCount, useCreateEnrollmentCode, useEnrollmentCodes, useEnrollmentCodeUses,
+  useCodeItems, useCreateEnrollmentCode, useEnrollmentCodes, useEnrollmentCodeUses, useItemCodeCount,
 } from './hooks';
 
 jest.mock('./api', () => ({
   getEnrollmentCodes: jest.fn(),
   getEnrollmentCodeUses: jest.fn(),
   getEnrollmentCodeCard: jest.fn(),
+  getEnrollmentCodeItems: jest.fn(),
   createEnrollmentCode: jest.fn(),
   updateEnrollmentCode: jest.fn(),
   deleteEnrollmentCode: jest.fn(),
@@ -46,20 +47,36 @@ beforeEach(() => {
 });
 
 describe('enrollment codes hooks', () => {
-  it('counts the active codes of one course from the list filtered by status active', async () => {
+  it('counts the codes of one course, in any state, from the list filtered to the course', async () => {
     mockApi.getEnrollmentCodes.mockResolvedValue(page(3) as never);
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useActiveCodeCount({ courseId: 'course-v1:A+B+C' }), { wrapper });
+    const { result } = renderHook(() => useItemCodeCount({ courseId: 'course-v1:A+B+C' }), { wrapper });
 
     await waitFor(() => expect(result.current.data).toBe(3));
     expect(mockApi.getEnrollmentCodes).toHaveBeenCalledWith({
-      courseId: 'course-v1:A+B+C', status: 'active', page: 1, pageSize: 1,
+      courseId: 'course-v1:A+B+C', page: 1, pageSize: 1,
     });
+  });
+
+  it('loads the items of a code, and nothing without a code', async () => {
+    mockApi.getEnrollmentCodeItems.mockResolvedValue([
+      {
+        kind: 'course', id: 'course-v1:A+B+C', name: 'A', learnersJoined: 2,
+      },
+    ] as never);
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useCodeItems(7), { wrapper });
+    await waitFor(() => expect(result.current.data).toHaveLength(1));
+    expect(mockApi.getEnrollmentCodeItems).toHaveBeenCalledWith(7);
+
+    mockApi.getEnrollmentCodeItems.mockClear();
+    renderHook(() => useCodeItems(null), { wrapper });
+    expect(mockApi.getEnrollmentCodeItems).not.toHaveBeenCalled();
   });
 
   it('does not count while it is not needed', () => {
     const { wrapper } = createWrapper();
-    const { result } = renderHook(() => useActiveCodeCount({ programUuid: 'uuid-1' }, false), { wrapper });
+    const { result } = renderHook(() => useItemCodeCount({ programUuid: 'uuid-1' }, false), { wrapper });
     expect(result.current.data).toBeUndefined();
     expect(mockApi.getEnrollmentCodes).not.toHaveBeenCalled();
   });

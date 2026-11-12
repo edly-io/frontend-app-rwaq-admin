@@ -41,11 +41,13 @@ const PROGRAM_UUID = 'b6f1c2d3-0000-4000-8000-000000000001';
 const makeCode = (overrides: Partial<EnrollmentCode> = {}): EnrollmentCode => ({
   id: 1,
   code: 'ABC234',
+  scope: 'course',
   item: {
     kind: 'course', id: COURSE_KEY, name: 'Safety basics', organization: 'ARB',
   },
   maxUses: 10,
   usesCount: 0,
+  itemsJoinedCount: 0,
   expiresAt: null,
   isActive: true,
   status: 'active',
@@ -89,6 +91,7 @@ describe('CodesList', () => {
       makeCode({
         id: 2,
         code: 'RIYADH26',
+        scope: 'program',
         item: {
           kind: 'program', id: PROGRAM_UUID, name: 'Leadership', organization: 'ARB',
         },
@@ -104,7 +107,7 @@ describe('CodesList', () => {
     expect(first.getByRole('link', { name: 'Safety basics' })).toHaveAttribute('href', `/courses/${encodeURIComponent(COURSE_KEY)}`);
     expect(first.getByText('Course')).toBeInTheDocument();
     expect(first.getByText('admin')).toBeInTheDocument();
-    expect(first.getByText('3 / 10')).toBeInTheDocument();
+    expect(first.getByText('Used 3 of 10')).toBeInTheDocument();
     expect(first.getByText('Dec 31, 2026')).toBeInTheDocument();
     expect(first.getByText('Active')).toBeInTheDocument();
 
@@ -128,12 +131,12 @@ describe('CodesList', () => {
     renderWrapper(<CodesList onViewUses={onViewUses} />);
     fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
     fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'expired' } });
-    fireEvent.change(screen.getByLabelText('Course or program'), { target: { value: 'program' } });
+    fireEvent.change(screen.getByLabelText('Scope'), { target: { value: 'organization' } });
     expect(lastParams()).toMatchObject({
-      status: 'expired', kind: 'program', page: 1, pageSize: 10,
+      status: 'expired', kind: 'organization', page: 1, pageSize: 10,
     });
     expect(screen.getByText('Status: Expired')).toBeInTheDocument();
-    expect(screen.getByText('Type: Program')).toBeInTheDocument();
+    expect(screen.getByText('Type: Organization')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
     expect(lastParams().status).toBeUndefined();
     expect(lastParams().kind).toBeUndefined();
@@ -211,7 +214,7 @@ describe('CodesList', () => {
     it('shows the code and the item read-only', () => {
       openEdit();
       expect(screen.getByLabelText('Code')).toHaveAttribute('readonly');
-      expect(screen.getByText('The code and the course or program cannot be changed.')).toBeInTheDocument();
+      expect(screen.getByText('The code and what it covers cannot be changed.')).toBeInTheDocument();
       expect(screen.getByText('Used so far: 4')).toBeInTheDocument();
     });
 
@@ -256,9 +259,9 @@ describe('CodesList', () => {
       );
       expect(lastParams()).toMatchObject({ courseId: COURSE_KEY });
       expect(lastParams().programUuid).toBeUndefined();
-      expect(screen.queryByRole('columnheader', { name: 'Course or program' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('columnheader', { name: 'Covers' })).not.toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
-      expect(screen.queryByLabelText('Course or program')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Scope')).not.toBeInTheDocument();
     });
 
     it('filters a program by its UUID and preselects it in the create form', () => {
@@ -274,6 +277,62 @@ describe('CodesList', () => {
       expect(screen.queryByLabelText('Course or program')).not.toBeInTheDocument();
       expect(screen.getAllByText('Leadership').length).toBeGreaterThan(0);
     });
+
+    it('lists the organization codes of one organization and shows what an organization code covers', () => {
+      withCodes(makeCode({
+        id: 9,
+        code: 'EDR100',
+        scope: 'organization',
+        item: {
+          kind: 'organization', id: 'Edrakk', name: 'Edrakk', organization: 'Edrakk',
+        },
+        usesCount: 1,
+        maxUses: 100,
+        itemsJoinedCount: 2,
+        coveredItemsCount: 4,
+      }));
+      renderWrapper(
+        <CodesList
+          item={{ kind: 'organization', id: 'Edrakk', name: 'Edrakk' }}
+          onViewUses={onViewUses}
+        />,
+      );
+      expect(lastParams()).toMatchObject({ kind: 'organization', organization: 'Edrakk' });
+      expect(lastParams().courseId).toBeUndefined();
+      const row = within(rowOf('EDR100'));
+      expect(row.getByText('Used 1 of 100')).toBeInTheDocument();
+      expect(row.getByText('2 items joined')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Create code' }));
+      expect(screen.getAllByText('Edrakk').length).toBeGreaterThan(0);
+      expect(screen.queryByRole('radio', { name: 'Organization' })).not.toBeInTheDocument();
+    });
+  });
+
+  it('shows the scope of an organization code in the full list and links to the organization', () => {
+    withCodes(makeCode({
+      id: 9,
+      code: 'EDR100',
+      scope: 'organization',
+      item: {
+        kind: 'organization', id: 'Edrakk', name: 'Edrakk', organization: 'Edrakk',
+      },
+      coveredItemsCount: 4,
+    }));
+    renderWrapper(<CodesList onViewUses={onViewUses} />);
+    const row = within(rowOf('EDR100'));
+    expect(row.getByRole('link', { name: 'Edrakk' })).toHaveAttribute('href', '/organizations/Edrakk');
+    expect(row.getByText('Organization')).toBeInTheDocument();
+    expect(row.getByText('Covers 4 courses and programs')).toBeInTheDocument();
+  });
+
+  it('opens the usage panel from its action, only when the page gives a handler', () => {
+    const onViewUsage = jest.fn();
+    const { unmount } = renderWrapper(<CodesList onViewUses={onViewUses} />);
+    expect(screen.queryByRole('button', { name: 'View usage of ABC234' })).not.toBeInTheDocument();
+    unmount();
+    renderWrapper(<CodesList onViewUses={onViewUses} onViewUsage={onViewUsage} />);
+    fireEvent.click(screen.getByRole('button', { name: 'View usage of ABC234' }));
+    expect(onViewUsage).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
   });
 
   it('opens the card for a new code right after it is created', async () => {

@@ -10,9 +10,19 @@ import EnrollmentCodesPage from './EnrollmentCodesPage';
 jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn() }));
 jest.mock('./components/CodesList', () => ({
   __esModule: true,
-  default: ({ onViewUses }: { onViewUses: (code: { id: number; code: string }) => void }) => (
-    <button type="button" onClick={() => onViewUses({ id: 4, code: 'ABC234' })}>codes list</button>
+  default: ({ onViewUses, onViewUsage }: {
+    onViewUses: (code: { id: number; code: string }) => void;
+    onViewUsage: (code: { id: number; code: string }) => void;
+  }) => (
+    <>
+      <button type="button" onClick={() => onViewUses({ id: 4, code: 'ABC234' })}>codes list</button>
+      <button type="button" onClick={() => onViewUsage({ id: 4, code: 'ABC234' })}>usage</button>
+    </>
   ),
+}));
+jest.mock('./components/CodeUsagePanel', () => ({
+  __esModule: true,
+  default: ({ code }: { code: { code: string } | null }) => (code ? <div data-testid="usage-panel">{code.code}</div> : null),
 }));
 jest.mock('./components/UsesTab', () => ({
   __esModule: true,
@@ -71,5 +81,12 @@ describe('EnrollmentCodesPage', () => {
     expect(screen.getByTestId('uses')).toHaveTextContent('uses 9 ZZZ999');
     fireEvent.click(screen.getByRole('button', { name: 'clear code' }));
     expect(window.location.search).toBe('?tab=uses');
+  });
+
+  it('opens the usage panel of a code from the Codes tab', () => {
+    asUser(true);
+    renderWrapper(<EnrollmentCodesPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'usage' }));
+    expect(screen.getByTestId('usage-panel')).toHaveTextContent('ABC234');
   });
 });

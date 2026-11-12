@@ -100,6 +100,15 @@ const ShareCardModal = ({ codeId, isNew = false, onClose }: ShareCardModalProps)
             <div className="d-flex justify-content-center">
               <EnrollmentCodeCard card={card} testId="enrollment-code-card" />
             </div>
+            {card.qrMissing ? (
+              <Alert variant="warning" className="mt-3" data-testid="enrollment-code-card-qr-missing">
+                {intl.formatMessage(messages.cardQrMissing)}
+              </Alert>
+            ) : (
+              <p className="text-center small text-muted mt-3 mb-0 text-break" data-testid="enrollment-code-card-link">
+                {intl.formatMessage(messages.cardLinkLabel, { url: card.qrUrl })}
+              </p>
+            )}
             <div aria-hidden="true" style={OFFSCREEN_STYLE} data-testid="enrollment-code-card-export">
               <EnrollmentCodeCard card={card} ref={exportRef} />
             </div>
@@ -111,14 +120,14 @@ const ShareCardModal = ({ codeId, isNew = false, onClose }: ShareCardModalProps)
           <Button variant="tertiary" onClick={onClose}>{intl.formatMessage(messages.cardClose)}</Button>
           <Button
             variant="outline-primary"
-            disabled={!card || exporting !== null}
+            disabled={!card || card.qrMissing || exporting !== null}
             onClick={() => handleExport('html')}
           >
             {intl.formatMessage(exporting === 'html' ? messages.cardExporting : messages.cardDownloadHtml)}
           </Button>
           <Button
             variant="outline-primary"
-            disabled={!card || exporting !== null}
+            disabled={!card || card.qrMissing || exporting !== null}
             onClick={() => handleExport('image')}
           >
             {intl.formatMessage(exporting === 'image' ? messages.cardExporting : messages.cardDownloadImage)}

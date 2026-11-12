@@ -12,8 +12,8 @@ import messages from '../messages';
 import useDebounced from './useDebounced';
 
 export interface PickedItem {
-  kind: ItemKind;
-  /** The course key or the program UUID. */
+  kind: ItemKind | 'organization';
+  /** The course key, the program UUID or, for an organization, its short name. */
   id: string;
   name: string;
 }
@@ -30,19 +30,23 @@ interface ItemPickerProps {
   disabled?: boolean;
   /** Only the select, with no label or search box: for a filter bar. */
   compact?: boolean;
+  /** Which kinds to offer. Both by default. */
+  kinds?: ItemKind[];
 }
 
 const LIST_SIZE = 50;
 
-const encode = (item: { kind: ItemKind; id: string }) => `${item.kind}:${item.id}`;
+const encode = (item: { kind: ItemKind | 'organization'; id: string }) => `${item.kind}:${item.id}`;
 
 const ItemPicker = ({
-  controlId, label, value, onChange, emptyLabel, error, help, disabled, compact = false,
+  controlId, label, value, onChange, emptyLabel, error, help, disabled, compact = false, kinds = ['course', 'program'],
 }: ItemPickerProps) => {
   const intl = useIntl();
   const [search, setSearch] = useState('');
   const term = useDebounced(search.trim());
 
+  const withCourses = kinds.includes('course');
+  const withPrograms = kinds.includes('program');
   const courses = useCourses({
     courseType: 'enrollment_code', search: term || undefined, ordering: 'display_name', pageSize: LIST_SIZE,
   });
@@ -50,16 +54,16 @@ const ItemPicker = ({
     pricing: 'enrollment_code', search: term || undefined, ordering: 'name', pageSize: LIST_SIZE,
   });
 
-  const courseOptions: PickedItem[] = (courses.data?.results ?? []).map((course) => ({
+  const courseOptions: PickedItem[] = (withCourses ? courses.data?.results ?? [] : []).map((course) => ({
     kind: 'course', id: course.courseId, name: course.displayName,
   }));
-  const programOptions: PickedItem[] = (programs.data?.results ?? []).map((program) => ({
+  const programOptions: PickedItem[] = (withPrograms ? programs.data?.results ?? [] : []).map((program) => ({
     kind: 'program', id: program.uuid, name: program.name,
   }));
   const all = [...courseOptions, ...programOptions];
   // A chosen item stays selectable even when the search no longer lists it.
   const extra = value && !all.some((item) => encode(item) === encode(value)) ? value : null;
-  const loadFailed = courses.isError || programs.isError;
+  const loadFailed = (withCourses && courses.isError) || (withPrograms && programs.isError);
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const chosen = [...(extra ? [extra] : []), ...all].find((item) => encode(item) === event.target.value);

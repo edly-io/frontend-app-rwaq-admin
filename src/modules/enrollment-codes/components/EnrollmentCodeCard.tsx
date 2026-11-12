@@ -3,7 +3,8 @@
  *
  * Follows the approved mock. The texts on the card are fixed bilingual strings, not translated per locale,
  * because the card is handed to learners and always reads the same. Arabic parts are marked dir="rtl" lang="ar".
- * Only the platform settings that are set are shown. The layout is plain CSS (CARD_CSS) with a container query,
+ * Only the platform settings that are set are shown. With no QR link (the public site address is not set) the
+ * QR part is left out. The layout is plain CSS (CARD_CSS) with a container query,
  * so it follows the card's own width.
  *
  * The same component is drawn twice by the share modal: on screen at whatever width the modal has, and off
@@ -73,27 +74,31 @@ const EnrollmentCodeCard = forwardRef<HTMLDivElement, EnrollmentCodeCardProps>((
             </div>
           )}
         </div>
-        <div className="coupon-card__divider" />
-        <div className="coupon-card__stub">
-          <div className="coupon-card__qr">
-            <QRCodeSVG
-              value={card.qrUrl}
-              size={512}
-              level="M"
-              marginSize={0}
-              bgColor="#ffffff"
-              fgColor="#000000"
-              data-qr="true"
-              aria-label="QR code"
-              role="img"
-            />
-          </div>
-          <span className="coupon-card__scan-hint">
-            <span dir="rtl" lang="ar">امسح الرمز للبدء</span>
-            <br />
-            Scan to start
-          </span>
-        </div>
+        {card.qrUrl && (
+          <>
+            <div className="coupon-card__divider" />
+            <div className="coupon-card__stub">
+              <div className="coupon-card__qr">
+                <QRCodeSVG
+                  value={card.qrUrl}
+                  size={512}
+                  level="M"
+                  marginSize={0}
+                  bgColor="#ffffff"
+                  fgColor="#000000"
+                  data-qr="true"
+                  aria-label="QR code"
+                  role="img"
+                />
+              </div>
+              <span className="coupon-card__scan-hint">
+                <span dir="rtl" lang="ar">امسح الرمز للبدء</span>
+                <br />
+                Scan to start
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

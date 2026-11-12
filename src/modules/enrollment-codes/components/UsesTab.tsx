@@ -1,7 +1,7 @@
 /**
  * Every use of an enrollment code: who joined with which code, and when. Filters: code, course or program,
- * date range and student. The same filters drive the CSV download. A code picked in the Codes tab arrives as
- * `codeId` (exact match, so a code that is part of a longer one is not mixed in).
+ * organization, scope, date range and student. The same filters drive the CSV download. A code picked in the
+ * Codes tab arrives as `codeId` (exact match, so a code that is part of a longer one is not mixed in).
  */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -17,9 +17,12 @@ import { getErrorStatus } from '@src/data/httpError';
 import {
   DateFilter, PAGE_SIZE, formatDateTime, listScope, tablePagination, useDateRange, useListState,
 } from '@src/modules/payments/components/shared';
+import { useOrgFilterOptions } from '@src/modules/organizations/data/hooks';
 import { getEnrollmentCodeUsesCsvUrl } from '../data/api';
 import { useEnrollmentCodeUses } from '../data/hooks';
-import type { CodeUse, ItemKind, UseListParams } from '../data/types';
+import type {
+  CodeScope, CodeUse, ItemKind, UseListParams,
+} from '../data/types';
 import messages from '../messages';
 import { KindTag } from './CreateCodeModal';
 import ItemPicker from './ItemPicker';
@@ -29,6 +32,12 @@ import useDebounced from './useDebounced';
 const itemPath = (kind: ItemKind, id: string) => (
   kind === 'program' ? `/programs/${id}` : `/courses/${encodeURIComponent(id)}`
 );
+
+const SCOPE_MESSAGE = {
+  course: messages.kindCourse,
+  program: messages.kindProgram,
+  organization: messages.kindOrganization,
+};
 
 interface UsesTabProps {
   /** One code, from the Codes tab, and its text for the chip. */
@@ -44,7 +53,11 @@ const UsesTab = ({ codeId, codeLabel, onClearCode }: UsesTabProps) => {
   const codeText = useDebounced(codeInput.trim());
   const [item, setItem] = useState<PickedItem | null>(null);
   const itemKey = item ? `${item.kind}:${item.id}` : '';
-  const scope = listScope(codeId ? String(codeId) : '', dates.startDate, dates.endDate, codeText, itemKey);
+  const [organization, setOrganization] = useState('');
+  const [codeScope, setCodeScope] = useState('');
+  const orgOptions = useOrgFilterOptions(organization);
+  const idPart = codeId ? String(codeId) : '';
+  const scope = listScope(idPart, dates.startDate, dates.endDate, codeText, itemKey, organization, codeScope);
   const list = useListState('', {}, scope);
 
   const listParams: UseListParams = {
@@ -52,6 +65,8 @@ const UsesTab = ({ codeId, codeLabel, onClearCode }: UsesTabProps) => {
     code: codeText || undefined,
     courseId: item?.kind === 'course' ? item.id : undefined,
     programUuid: item?.kind === 'program' ? item.id : undefined,
+    organization: organization || undefined,
+    scope: (codeScope || undefined) as CodeScope | undefined,
     startDate: dates.startDate,
     endDate: dates.endDate,
     search: list.search || undefined,
@@ -84,6 +99,47 @@ const UsesTab = ({ codeId, codeLabel, onClearCode }: UsesTabProps) => {
       onRemove: () => setItem(null),
     });
   }
+
+  if (organization) {
+    chips.push({
+      key: 'organization',
+      label: intl.formatMessage(messages.chipOrganization, {
+        name: orgOptions.find((option) => option.value === organization)?.label ?? organization,
+      }),
+      onRemove: () => setOrganization(''),
+    });
+  }
+  if (codeScope) {
+    chips.push({
+      key: 'scope',
+      label: intl.formatMessage(messages.chipScope, {
+        label: intl.formatMessage(SCOPE_MESSAGE[codeScope as CodeScope]),
+      }),
+      onRemove: () => setCodeScope(''),
+    });
+  }
+
+  const filterGroups = [
+    {
+      id: 'organization',
+      label: intl.formatMessage(messages.filterOrganization),
+      value: organization,
+      options: [{ value: '', label: intl.formatMessage(messages.filterAllOrganizations) }, ...orgOptions],
+      onChange: (value: string) => setOrganization(value),
+    },
+    {
+      id: 'scope',
+      label: intl.formatMessage(messages.filterScope),
+      value: codeScope,
+      options: [
+        { value: '', label: intl.formatMessage(messages.filterAll) },
+        ...(['course', 'program', 'organization'] as CodeScope[]).map((value) => ({
+          value, label: intl.formatMessage(SCOPE_MESSAGE[value]),
+        })),
+      ],
+      onChange: (value: string) => setCodeScope(value),
+    },
+  ];
 
   const columns: ColumnDef<CodeUse>[] = [
     {
@@ -118,9 +174,23 @@ const UsesTab = ({ codeId, codeLabel, onClearCode }: UsesTabProps) => {
       ),
     },
     {
+      label: intl.formatMessage(messages.colScope),
+      key: 'scope',
+      renderCell: (value) => intl.formatMessage(SCOPE_MESSAGE[value as CodeScope]),
+    },
+    {
+      label: intl.formatMessage(messages.colOrganization),
+      key: 'organization',
+    },
+    {
       label: intl.formatMessage(messages.colUsedOn),
       key: 'usedAt',
       renderCell: (value) => formatDateTime(value as string, intl.locale),
+    },
+    {
+      label: intl.formatMessage(messages.colTypedHere),
+      key: 'enteredCode',
+      renderCell: (value) => intl.formatMessage(value ? messages.yes : messages.no),
     },
     {
       label: intl.formatMessage(messages.colEnrolled),
@@ -139,11 +209,14 @@ const UsesTab = ({ codeId, codeLabel, onClearCode }: UsesTabProps) => {
         searchTerm={list.search}
         onSearch={list.setSearch}
         searchPlaceholder={intl.formatMessage(messages.usesSearch)}
+        filterGroups={filterGroups}
         appliedChips={chips}
         onClearAll={() => {
           list.clearAll();
           setCodeInput('');
           setItem(null);
+          setOrganization('');
+          setCodeScope('');
           onClearCode();
           dates.setRange();
         }}

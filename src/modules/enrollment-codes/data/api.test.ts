@@ -7,6 +7,7 @@ import {
   createEnrollmentCode,
   deleteEnrollmentCode,
   getEnrollmentCodeCard,
+  getEnrollmentCodeItems,
   getEnrollmentCodes,
   getEnrollmentCodeUses,
   getEnrollmentCodeUsesCsvUrl,
@@ -164,5 +165,73 @@ describe('enrollment codes api', () => {
 
   it('points the CSV download at the uses csv endpoint', () => {
     expect(getEnrollmentCodeUsesCsvUrl()).toBe(`${BASE}/uses/csv/`);
+  });
+
+  it('lists organization codes with the organization filter and camelCases the new fields', async () => {
+    get.mockResolvedValue({
+      data: {
+        pagination: {
+          count: 1, num_pages: 1, next: null, previous: null,
+        },
+        results: [{
+          id: 9,
+          code: 'EDR100',
+          scope: 'organization',
+          item: {
+            kind: 'organization', id: 'Edrakk', name: 'Edrakk', organization: 'Edrakk',
+          },
+          max_uses: 100,
+          uses_count: 37,
+          items_joined_count: 51,
+          covered_items_count: 4,
+          status: 'active',
+        }],
+      },
+    });
+
+    const page = await getEnrollmentCodes({ kind: 'organization', organization: 'Edrakk' });
+
+    expect(get).toHaveBeenCalledWith(`${BASE}/`, { params: { kind: 'organization', organization: 'Edrakk' } });
+    expect(page.results[0]).toMatchObject({
+      scope: 'organization', usesCount: 37, itemsJoinedCount: 51, coveredItemsCount: 4,
+    });
+  });
+
+  it('creates an organization code with the organization short name', async () => {
+    post.mockResolvedValue({ data: { id: 9, code: 'EDR100', scope: 'organization' } });
+    await createEnrollmentCode({ organization: 'Edrakk', maxUses: 100 });
+    expect(post).toHaveBeenCalledWith(`${BASE}/`, { organization: 'Edrakk', max_uses: 100 });
+  });
+
+  it('lists the uses with the organization and scope filters and the new row fields', async () => {
+    get.mockResolvedValue({
+      data: {
+        pagination: {
+          count: 1, num_pages: 1, next: null, previous: null,
+        },
+        results: [{
+          id: 1, code: 'EDR100', code_id: 9, entered_code: false, scope: 'organization', organization: 'Edrakk',
+        }],
+      },
+    });
+    const page = await getEnrollmentCodeUses({ organization: 'Edrakk', scope: 'organization' });
+    expect(get).toHaveBeenCalledWith(`${BASE}/uses/`, { params: { organization: 'Edrakk', scope: 'organization' } });
+    expect(page.results[0]).toMatchObject({ enteredCode: false, scope: 'organization', organization: 'Edrakk' });
+  });
+
+  it('loads the items of a code', async () => {
+    get.mockResolvedValue({
+      data: [{
+        kind: 'course', id: 'course-v1:A+B+C', name: 'A', learners_joined: 3,
+      }],
+    });
+    const items = await getEnrollmentCodeItems(9);
+    expect(get).toHaveBeenCalledWith(`${BASE}/9/items/`);
+    expect(items[0].learnersJoined).toBe(3);
+  });
+
+  it('reads qrMissing on the card', async () => {
+    get.mockResolvedValue({ data: { code: 'EDR100', qr_url: '', qr_missing: true } });
+    expect((await getEnrollmentCodeCard(9)).qrMissing).toBe(true);
   });
 });

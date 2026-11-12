@@ -12,6 +12,7 @@ import {
   createEnrollmentCode,
   deleteEnrollmentCode,
   getEnrollmentCodeCard,
+  getEnrollmentCodeItems,
   getEnrollmentCodes,
   getEnrollmentCodeUses,
   updateEnrollmentCode,
@@ -23,10 +24,11 @@ import type {
 export const enrollmentCodeQueryKeys = {
   all: [appId, 'enrollmentCodes'] as const,
   list: (params: CodeListParams) => [...enrollmentCodeQueryKeys.all, 'list', params] as const,
-  activeCount: (item: { courseId?: string; programUuid?: string }) => (
-    [...enrollmentCodeQueryKeys.all, 'activeCount', item] as const
+  itemCount: (item: { courseId?: string; programUuid?: string }) => (
+    [...enrollmentCodeQueryKeys.all, 'itemCount', item] as const
   ),
   card: (id: number) => [...enrollmentCodeQueryKeys.all, 'card', id] as const,
+  items: (id: number) => [...enrollmentCodeQueryKeys.all, 'items', id] as const,
   uses: (params: UseListParams) => [...enrollmentCodeQueryKeys.all, 'uses', params] as const,
 };
 
@@ -56,24 +58,30 @@ export const useEnrollmentCodeCard = (id: number | null) => useQuery({
   staleTime: 0,
 });
 
+/** The items a code covers, with the learners who joined each. */
+export const useCodeItems = (id: number | null) => useQuery({
+  queryKey: enrollmentCodeQueryKeys.items(id ?? 0),
+  queryFn: () => getEnrollmentCodeItems(id as number),
+  enabled: id !== null,
+  staleTime: 0,
+});
+
 /**
- * How many active codes one course or program has: the count of the list filtered by status active.
- * Used to warn before the item's type is switched away from Enrollment code.
+ * How many codes (in any state) one course or program has: the count of the list filtered to the item.
+ * Used by the pricing cards to offer adding a first code after the type became Enrollment code.
  */
-export const useActiveCodeCount = (
+export const useItemCodeCount = (
   item: { courseId?: string; programUuid?: string },
   enabled = true,
 ) => useQuery({
-  queryKey: enrollmentCodeQueryKeys.activeCount(item),
-  queryFn: () => getEnrollmentCodes({
-    ...item, status: 'active', page: 1, pageSize: 1,
-  }),
+  queryKey: enrollmentCodeQueryKeys.itemCount(item),
+  queryFn: () => getEnrollmentCodes({ ...item, page: 1, pageSize: 1 }),
   select: (data) => data.pagination?.count ?? data.results.length,
   enabled,
   staleTime: 0,
 });
 
-/** Every change refreshes the lists, the uses and the active counts. */
+/** Every change refreshes the lists, the uses and the item counts. */
 const useInvalidateCodes = () => {
   const queryClient = useQueryClient();
   return () => queryClient.invalidateQueries({ queryKey: enrollmentCodeQueryKeys.all });
