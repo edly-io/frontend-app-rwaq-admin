@@ -239,7 +239,6 @@ const messages = defineMessages({
 
   // ── Code usage panel ───────────────────────────────────────────────────────
   usageTitle: { id: 'rwaq.admin.enrollmentCodes.usage.title', defaultMessage: 'Usage of {code}' },
-  usageClose: { id: 'rwaq.admin.enrollmentCodes.usage.close', defaultMessage: 'Close' },
   usageItemsTitle: { id: 'rwaq.admin.enrollmentCodes.usage.itemsTitle', defaultMessage: 'Courses and programs' },
   usageItemsLoadFailed: {
     id: 'rwaq.admin.enrollmentCodes.usage.itemsLoadFailed', defaultMessage: 'Could not load the courses and programs.',
