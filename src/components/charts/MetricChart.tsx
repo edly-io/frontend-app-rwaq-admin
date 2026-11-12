@@ -25,6 +25,9 @@ import {
   Legend,
 } from 'recharts';
 import { isRtl, useIntl } from '@edx/frontend-platform/i18n';
+import {
+  CATEGORY_LABEL_ANGLE, CATEGORY_LABEL_LIMIT, CATEGORY_LABEL_LIMIT_RTL, categoryLabel, categoryLabelAreaHeight,
+} from './categoryLabels';
 import messages from './messages';
 
 // ── Paragon token resolver ────────────────────────────────────────────────────
@@ -109,19 +112,6 @@ export const labelInterval = (count: number, max?: number): number => (
   max && count > max ? Math.ceil(count / max) - 1 : 0
 );
 
-export const categoryLabel = (label: string, rtl: boolean, limit = rtl ? 14 : 18): string => {
-  const count = label.match(/ \(\d+\)$/)?.[0] ?? '';
-  const name = count ? label.slice(0, -count.length) : label;
-  const space = limit - count.length;
-  return Array.from(name).length > space
-    ? `${Array.from(name).slice(0, space - 1).join('').trimEnd()}…${count}`
-    : label;
-};
-
-/** Characters of a category name kept on the x-axis before the "…", English and Arabic. */
-export const CATEGORY_LABEL_LIMIT = 22;
-export const CATEGORY_LABEL_LIMIT_RTL = 18;
-
 interface CategoryTickProps {
   x?: number;
   y?: number;
@@ -135,6 +125,8 @@ interface CategoryTickProps {
 }
 
 /** Rotated x-axis label cut to a fixed length, with the full name as the hover title. */
+export { categoryLabel, categoryLabelAreaHeight };
+
 export const CategoryTick = ({
   x = 0, y = 0, angle = 0, fill, fontSize, payload, rtl, truncate = true,
 }: CategoryTickProps) => {
@@ -295,7 +287,7 @@ const MetricChart = ({
   })();
 
   const xLabelInterval = labelInterval(data.length, categoryLabels ? undefined : maxXLabels);
-  const labelAngle = xLabelAngle ?? (categoryLabels ? 55 : undefined);
+  const labelAngle = xLabelAngle ?? (categoryLabels ? CATEGORY_LABEL_ANGLE : undefined);
   const rtl = isRtl(layoutIntl.locale);
 
   // Arabic month names are longer than English ones: the last rotated label was
@@ -312,7 +304,10 @@ const MetricChart = ({
     };
   }
   const labelDy = rtl ? 8 : 4;
-  const labelAreaHeight = categoryLabels ? 120 : (rtl ? 76 : 64); // eslint-disable-line no-nested-ternary
+  let labelAreaHeight = rtl ? 76 : 64;
+  if (categoryLabels) {
+    labelAreaHeight = categoryLabelAreaHeight(data.map((point) => String(point.name)), rtl);
+  }
 
   const axisProps = compact
     ? {}

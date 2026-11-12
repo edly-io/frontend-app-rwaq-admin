@@ -4,12 +4,23 @@
  * without the optional valueFormatter and yAxisWidth, every existing chart
  * (the dashboard's) gets exactly the axis props it got before.
  */
+import type { ReactElement } from 'react';
 import { render } from '@testing-library/react';
 import { IntlProvider } from '@edx/frontend-platform/i18n';
 import { renderWrapper } from '@src/setupTest';
-import MetricChart, { categoryLabel } from './MetricChart';
+import MetricChart, { CategoryTick, categoryLabel } from './MetricChart';
+import { categoryLabelAreaHeight } from './categoryLabels';
 
 const mockSeen: Record<string, Record<string, unknown>> = {};
+
+/** The text the axis draws for one category, rendered through the tick element MetricChart hands the XAxis. */
+const drawnLabel = (name: string, rtl: boolean): string | null | undefined => {
+  const tick = mockSeen.XAxis.tick as ReactElement<{ rtl: boolean; truncate: boolean }>;
+  expect(tick.type).toBe(CategoryTick);
+  expect(tick.props.rtl).toBe(rtl);
+  const { container } = render(<svg><CategoryTick {...tick.props} payload={{ value: name }} /></svg>);
+  return container.querySelector('text')?.lastChild?.textContent;
+};
 
 jest.mock('recharts', () => {
   const passThrough = ({ children }: { children?: unknown }) => children ?? null;
@@ -127,11 +138,10 @@ describe('named categories below vertical bars', () => {
     expect(mockSeen.BarChart.layout).toBe('horizontal');
     expect(mockSeen.XAxis.dataKey).toBe('name');
     expect(mockSeen.XAxis.angle).toBe(-55);
-    expect(mockSeen.XAxis.height).toBe(64);
+    expect(mockSeen.XAxis.height).toBe(categoryLabelAreaHeight(categories.map((c) => c.name), false));
     expect(mockSeen.YAxis.allowDecimals).toBe(false);
-    const formatTick = mockSeen.XAxis.tickFormatter as (value: string) => string;
-    expect(formatTick(categories[0].name)).toBe('A very… (7)');
-    expect(formatTick(categories[1].name)).toBe('Rwaq (40)');
+    expect(drawnLabel(categories[0].name, false)).toBe('A very long organ… (7)');
+    expect(drawnLabel(categories[1].name, false)).toBe('Rwaq (40)');
     expect(categories[0].name).toBe('A very long organization name (7)');
     expect(categoryLabel(categories[0].name, false)).toBe('A very long o… (7)');
   });
@@ -139,10 +149,9 @@ describe('named categories below vertical bars', () => {
   it('shortens Arabic labels and leaves enough space below the axis', () => {
     render(<IntlProvider locale="ar"><MetricChart type="bar" data={categories} ariaLabel="Organizations" categoryLabels /></IntlProvider>);
 
-    expect(mockSeen.XAxis.height).toBe(76);
+    expect(mockSeen.XAxis.height).toBe(categoryLabelAreaHeight(categories.map((c) => c.name), true));
     expect(mockSeen.XAxis.interval).toBe(0);
-    const formatTick = mockSeen.XAxis.tickFormatter as (value: string) => string;
-    expect(formatTick('مؤسسة التعليم العالي (4)')).toBe('مؤسسة… (4)');
+    expect(drawnLabel('مؤسسة التعليم العالي (4)', true)).toBe('مؤسسة التعليم… (4)');
   });
 
   it('keeps every label on a top-ten vertical chart', () => {
