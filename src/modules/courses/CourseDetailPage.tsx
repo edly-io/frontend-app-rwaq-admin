@@ -25,6 +25,7 @@ import ProfileAvatar from '@src/components/ProfileAvatar';
 import ErrorState from '@src/components/ErrorState';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorStatus } from '@src/data/httpError';
+import { localizedName } from '@src/data/localizedName';
 import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import { useEnrollableCourses } from '@src/modules/users/data/hooks';
 import modeLabel from '@src/modules/users/modeLabel';
@@ -299,7 +300,9 @@ const CourseDetailPage = () => {
               {course.categories.length > 0 && (
                 <div className="d-flex flex-wrap rwaq-gap-xs mt-2">
                   {course.categories.map((cat) => (
-                    <Badge key={cat.slug} variant="light">{cat.name}</Badge>
+                    <Badge key={cat.slug} variant="light">
+                      {localizedName(intl.locale, cat.name, cat.arabicName)}
+                    </Badge>
                   ))}
                 </div>
               )}
