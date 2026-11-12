@@ -118,6 +118,43 @@ export const categoryLabel = (label: string, rtl: boolean, limit = rtl ? 14 : 18
     : label;
 };
 
+/** Characters of a category name kept on the x-axis before the "…", English and Arabic. */
+export const CATEGORY_LABEL_LIMIT = 22;
+export const CATEGORY_LABEL_LIMIT_RTL = 18;
+
+interface CategoryTickProps {
+  x?: number;
+  y?: number;
+  angle?: number;
+  fill?: string;
+  fontSize?: number;
+  payload?: { value: string };
+  rtl: boolean;
+}
+
+/** Rotated x-axis label cut to a fixed length, with the full name as the hover title. */
+export const CategoryTick = ({
+  x = 0, y = 0, angle = 0, fill, fontSize, payload, rtl,
+}: CategoryTickProps) => {
+  const full = payload?.value ?? '';
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={0}
+        y={0}
+        dy={rtl ? 8 : 4}
+        textAnchor="end"
+        fill={fill}
+        fontSize={fontSize}
+        transform={`rotate(${angle})`}
+      >
+        <title>{full}</title>
+        {categoryLabel(full, rtl, rtl ? CATEGORY_LABEL_LIMIT_RTL : CATEGORY_LABEL_LIMIT)}
+      </text>
+    </g>
+  );
+};
+
 // ── Reduced-motion hook ───────────────────────────────────────────────────────
 
 const usePrefersReducedMotion = (): boolean => {
@@ -270,7 +307,7 @@ const MetricChart = ({
     };
   }
   const labelDy = rtl ? 8 : 4;
-  const labelAreaHeight = rtl ? 76 : 64;
+  const labelAreaHeight = categoryLabels ? 112 : (rtl ? 76 : 64); // eslint-disable-line no-nested-ternary
 
   const axisProps = compact
     ? {}
@@ -278,13 +315,12 @@ const MetricChart = ({
       xAxis: (
         <XAxis
           dataKey="name"
-          tick={mutedTick}
+          tick={categoryLabels ? <CategoryTick rtl={rtl} {...mutedTick} /> : mutedTick}
           axisLine={false}
           tickLine={false}
           dy={labelAngle ? labelDy : 6}
           interval={xLabelInterval}
           {...(labelAngle ? { angle: -labelAngle, textAnchor: 'end', height: labelAreaHeight } : {})}
-          {...(categoryLabels ? { tickFormatter: (name: string) => categoryLabel(name, rtl, rtl ? 10 : 12) } : {})}
         />
       ),
       yAxis: (

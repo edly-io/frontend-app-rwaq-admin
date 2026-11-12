@@ -53,14 +53,16 @@ const StatsChartCard = ({
       return <div className="rwaq-dash-card__empty">{intl.formatMessage(messages.chartEmpty)}</div>;
     }
     return (
-      <div className="rwaq-chart" style={categoryLabels ? { overflowX: 'auto' } : undefined}>
-        <div style={categoryLabels ? { minWidth: data.length * 90 } : undefined}>
+      // Start-aligned: a centered flex row that overflows loses its left half to unreachable scroll.
+      <div className="rwaq-chart" style={categoryLabels ? { overflowX: 'auto', justifyContent: 'flex-start' } : undefined}>
+        {/* Full width: a content-sized wrapper gives the responsive chart 0px. */}
+        <div style={{ width: '100%', ...(categoryLabels ? { minWidth: data.length * 90 } : {}) }}>
           <MetricChart
             type={type}
             data={data}
             series={series}
             ariaLabel={title}
-            height={categoryLabels ? 190 : COMPACT_CHART_HEIGHT}
+            height={categoryLabels ? 240 : COMPACT_CHART_HEIGHT}
             hideLegend={type !== 'donut' && !showLegend}
             xLabelAngle={xLabelAngle}
             categoryLabels={categoryLabels}
