@@ -146,6 +146,12 @@ describe('CategoryTick', () => {
     expect((container.querySelector('text') as SVGTextElement).style.direction).toBe('ltr');
   });
 
+  it('can leave long names whole for charts that only rotate short labels', () => {
+    const full = 'A very long month name that stays whole';
+    const { container } = render(<svg><CategoryTick payload={{ value: full }} rtl={false} truncate={false} /></svg>);
+    expect(shown(container)).toBe(full);
+  });
+
   it('keeps a short name whole', () => {
     const { container } = render(<svg><CategoryTick payload={{ value: 'PFC2 - Paid' }} rtl={false} /></svg>);
     expect(shown(container)).toBe('PFC2 - Paid');
