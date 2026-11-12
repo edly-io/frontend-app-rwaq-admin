@@ -8,10 +8,10 @@
  * or enrolled learners cannot change type: the text sits under the type choice).
  *
  * An Enrollment code program can be hidden from the public catalog. After saving that type on a program with
- * no code yet, a banner offers adding one (the program page's Enrollment code tab).
+ * no code yet, a banner offers adding one (the Enrollment codes page, opened with this program filled in).
  */
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
@@ -48,7 +48,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
   const [hideFromCatalog, setHideFromCatalog] = useState(false);
-  const [, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setCategory(program.pricingCategory || 'is_free');
@@ -58,9 +58,10 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   }, [program.pricingCategory, program.regularPrice, program.salePrice, program.hideFromCatalog]);
 
   const isPaid = category === 'is_paid';
-  // After saving the Enrollment code type, offer a first code when the program has none.
+  // An Enrollment code program (stored, or just saved) with no code yet offers adding one.
   const isCodeType = category === 'is_enrollment_code';
-  const { data: codeCount } = useItemCodeCount({ programUuid: program.uuid }, saved && isCodeType);
+  const isCodeProgram = program.pricingCategory === 'is_enrollment_code' || (saved && isCodeType);
+  const { data: codeCount } = useItemCodeCount({ programUuid: program.uuid }, isCodeProgram);
   // Live from the inputs, before saving.
   const discountPercent = getDiscountPercent(regularPrice, salePrice);
   const { vatRate, vatLabel } = program;
@@ -140,18 +141,14 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
         <Alert variant="success" className="mb-3">{intl.formatMessage(messages.pricingSaved)}</Alert>
       )}
 
-      {saved && isCodeType && codeCount === 0 && (
+      {isCodeProgram && codeCount === 0 && (
         <Alert variant="info" className="mb-3" data-testid="add-code-banner">
           {intl.formatMessage(enrollmentCodeMessages.addCodeBanner)}
           {' '}
           <Button
             variant="link"
             size="inline"
-            onClick={() => setSearchParams((prev) => {
-              const next = new URLSearchParams(prev);
-              next.set('tab', 'enrollment-code');
-              return next;
-            }, { replace: true })}
+            onClick={() => navigate(`/enrollment-codes?create=1&scope=program&id=${encodeURIComponent(program.uuid)}`)}
           >
             {intl.formatMessage(enrollmentCodeMessages.addCodeAction)}
           </Button>

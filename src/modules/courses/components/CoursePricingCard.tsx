@@ -11,10 +11,10 @@
  * with no field sits under the type choice).
  *
  * An Enrollment code course can be hidden from the public catalog. After saving that type on a course with no
- * code yet, a banner offers adding one (the course page's Enrollment code tab).
+ * code yet, a banner offers adding one (the Enrollment codes page, opened with this course filled in).
  */
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
@@ -50,7 +50,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   const [salePrice, setSalePrice] = useState('');
   const [managedByAdmin, setManagedByAdmin] = useState(false);
   const [hideFromCatalog, setHideFromCatalog] = useState(false);
-  const [, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
@@ -75,9 +75,10 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   // The backend refuses a type change while the course is in a program.
   const inProgram = !!pricing?.partOfProgram;
   const isBusy = isLoading || isPending;
-  // After saving the Enrollment code type, offer a first code when the course has none.
+  // An Enrollment code course (stored, or just saved) with no code yet offers adding one.
   const isCodeType = category === 'is_enrollment_code';
-  const { data: codeCount } = useItemCodeCount({ courseId }, saved && isCodeType);
+  const isCodeCourse = pricing?.pricingCategory === 'is_enrollment_code' || (saved && isCodeType);
+  const { data: codeCount } = useItemCodeCount({ courseId }, isCodeCourse);
 
   const validateRegularPrice = (): string => {
     if (regularPrice.trim() === '') { return intl.formatMessage(messages.pricingErrorPriceRequired); }
@@ -183,18 +184,14 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
         <Alert variant="success" className="mb-3">{intl.formatMessage(messages.pricingSaved)}</Alert>
       )}
 
-      {saved && isCodeType && codeCount === 0 && (
+      {isCodeCourse && codeCount === 0 && (
         <Alert variant="info" className="mb-3" data-testid="add-code-banner">
           {intl.formatMessage(enrollmentCodeMessages.addCodeBanner)}
           {' '}
           <Button
             variant="link"
             size="inline"
-            onClick={() => setSearchParams((prev) => {
-              const next = new URLSearchParams(prev);
-              next.set('tab', 'enrollment-code');
-              return next;
-            }, { replace: true })}
+            onClick={() => navigate(`/enrollment-codes?create=1&scope=course&id=${encodeURIComponent(courseId)}`)}
           >
             {intl.formatMessage(enrollmentCodeMessages.addCodeAction)}
           </Button>

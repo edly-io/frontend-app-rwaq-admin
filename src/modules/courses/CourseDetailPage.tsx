@@ -26,8 +26,6 @@ import ErrorState from '@src/components/ErrorState';
 import { useToast } from '@src/components/ToastContext';
 import { getErrorStatus } from '@src/data/httpError';
 import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
-import CodesCard from '@src/modules/enrollment-codes/components/CodesCard';
-import enrollmentCodeMessages from '@src/modules/enrollment-codes/messages';
 import { useEnrollableCourses } from '@src/modules/users/data/hooks';
 import modeLabel from '@src/modules/users/modeLabel';
 import {
@@ -68,8 +66,6 @@ type ModalState =
   | { kind: 'addStaff' };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-
-type CourseTab = 'details' | 'enrollmentCode';
 
 const CourseDetailPage = () => {
   const intl = useIntl();
@@ -114,14 +110,6 @@ const CourseDetailPage = () => {
   const enrollableRow = enrollableCourses?.find((row) => row.courseId === courseId);
   const enrollModes = enrollableRow?.availableModes;
   const { data: pricing } = useCoursePricing(courseId);
-  // The Enrollment code tab shows only for an Enrollment code course. `?tab=enrollment-code` opens it.
-  const isCodeCourse = pricing?.pricingCategory === 'is_enrollment_code';
-  const activeTab: CourseTab = isCodeCourse && searchParams.get('tab') === 'enrollment-code' ? 'enrollmentCode' : 'details';
-  const setActiveTab = (tab: CourseTab) => setSearchParams((prev) => {
-    const next = new URLSearchParams(prev);
-    if (tab === 'enrollmentCode') { next.set('tab', 'enrollment-code'); } else { next.delete('tab'); }
-    return next;
-  }, { replace: true });
   // Subscription content is joined only through the learner's own subscription, so no admin enrolls into it.
   const isSubscription = pricing?.pricingCategory === 'is_part_of_subscription'
     || enrollableRow?.isPartOfSubscription === true;
@@ -331,186 +319,135 @@ const CourseDetailPage = () => {
         </div>
       </div>
 
-      {/* ── Tabs: Details, and Enrollment code for an Enrollment code course ── */}
-      {isCodeCourse && (
-        <div
-          className="d-flex rwaq-gap-sm mb-4"
-          role="tablist"
-          style={{ borderBottom: '2px solid var(--pgn-color-gray-200, #dee2e6)' }}
-        >
-          {(['details', 'enrollmentCode'] as CourseTab[]).map((tab) => (
-            <button
-              key={tab}
-              id={`tab-${tab}`}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === tab}
-              aria-controls={`tabpanel-${tab}`}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: '0.5rem 1rem',
-                fontWeight: activeTab === tab ? 600 : 400,
-                color: activeTab === tab
-                  ? 'var(--pgn-color-primary-500, #0A3055)'
-                  : 'var(--pgn-color-gray-600, #454545)',
-                borderBottom: activeTab === tab
-                  ? '2px solid var(--pgn-color-primary-500, #0A3055)'
-                  : '2px solid transparent',
-                marginBottom: '-2px',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {intl.formatMessage(tab === 'details' ? enrollmentCodeMessages.tabDetails : enrollmentCodeMessages.tabEnrollmentCode)}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Both panels stay mounted so aria-controls always resolves. Hidden with the `hidden` attribute. */}
-      <div id="tabpanel-details" role="tabpanel" aria-labelledby="tab-details" hidden={activeTab !== 'details'}>
-        {/* ── Info card ─────────────────────────────────────────────────────── */}
-        <div className="rwaq-card">
-          <DetailGrid
-            className="rwaq-detail-block"
-            title={intl.formatMessage(messages.courseInfoTitle)}
-            items={[
-              { label: intl.formatMessage(messages.fieldCourseId), value: course.courseId },
-              { label: intl.formatMessage(messages.fieldOrg), value: course.org },
-              { label: intl.formatMessage(messages.fieldStart), value: formatDate(course.start) },
-              { label: intl.formatMessage(messages.fieldEnd), value: formatDate(course.end) },
-              {
-                label: intl.formatMessage(messages.fieldPace),
-                value: course.selfPaced
-                  ? intl.formatMessage(messages.selfPaced)
-                  : intl.formatMessage(messages.instructorPaced),
-              },
-            ]}
-          />
-        </div>
-
-        {/* ── Student Management ─────────────────────────────────────────────── */}
-        <div className="rwaq-card">
-          <div className="d-flex justify-content-between align-items-center flex-wrap rwaq-gap-sm mb-4">
-            <h2 className="rwaq-section-title mb-0">
-              {intl.formatMessage(messages.enrollmentsSectionTitle)}
-            </h2>
-            <div className="rwaq-header-actions">
-              <DownloadButton
-                variant="outline-secondary"
-                size="sm"
-                label={intl.formatMessage(messages.downloadCsv)}
-                pendingLabel={intl.formatMessage(messages.downloadingCsv)}
-                isPending={csvMutation.isPending}
-                onClick={handleDownloadCsv}
-                disabled={!enrollmentData?.pagination?.count}
-              />
-              {enrollBlockedNote ? (
-                <DisabledButtonWithTooltip
-                  id="course-enroll-blocked"
-                  size="sm"
-                  tooltip={intl.formatMessage(enrollBlockedNote)}
-                >
-                  {intl.formatMessage(messages.enrollUser)}
-                </DisabledButtonWithTooltip>
-              ) : (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setModal({ kind: 'enroll' })}
-                >
-                  {intl.formatMessage(messages.enrollUser)}
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {isEnrollmentsError ? (
-            <ErrorState
-              statusCode={getErrorStatus(enrollmentsError) || undefined}
-              title={intl.formatMessage(messages.enrollmentsErrorTitle)}
-              onRetry={() => refetchEnrollments()}
-            />
-          ) : (
-            <AdminDataTable
-              columns={enrollmentColumns}
-              data={enrollmentRows}
-              isLoading={isLoadingEnrollments}
-              caption={intl.formatMessage(messages.enrollmentsSectionTitle)}
-              pagination={enrollmentData ? {
-                currentPage: enrollPage,
-                pageCount: enrollmentData.pagination?.numPages
-                  ?? Math.max(1, Math.ceil((enrollmentData.pagination?.count ?? 0) / ENROLLMENT_PAGE_SIZE)),
-                itemCount: enrollmentData.pagination?.count ?? enrollmentRows.length,
-                pageSize: ENROLLMENT_PAGE_SIZE,
-                onPageChange: setEnrollPage,
-              } : undefined}
-            />
-          )}
-        </div>
-
-        {/* ── Pricing ────────────────────────────────────────────────────────── */}
-        <CoursePricingCard courseId={courseId} />
-
-        {/* ── Course Team ────────────────────────────────────────────────────── */}
-        <div className="rwaq-card">
-          <div className="d-flex justify-content-between align-items-start flex-wrap rwaq-gap-sm mb-4">
-            <div>
-              <h2 className="rwaq-section-title mb-1">
-                {intl.formatMessage(messages.staffSectionTitle)}
-              </h2>
-              <p className="text-muted small mb-0">
-                {intl.formatMessage(messages.staffSectionDescription)}
-              </p>
-            </div>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setModal({ kind: 'addStaff' })}
-            >
-              {intl.formatMessage(messages.addStaff)}
-            </Button>
-          </div>
-
-          {isStaffError && (
-            <Alert variant="danger">{intl.formatMessage(messages.staffErrorTitle)}</Alert>
-          )}
-
-          {!isStaffError && !isLoadingStaff && allStaffRows.length === 0 && (
-            <p className="text-muted text-center py-5 mb-0">
-              {intl.formatMessage(messages.staffEmpty)}
-            </p>
-          )}
-
-          {!isStaffError && (isLoadingStaff || allStaffRows.length > 0) && (
-            <AdminDataTable
-              columns={staffColumns}
-              data={staffRows}
-              isLoading={isLoadingStaff}
-              caption={intl.formatMessage(messages.staffSectionTitle)}
-              pagination={{
-                currentPage: safeStaffPage,
-                pageCount: staffPageCount,
-                itemCount: allStaffRows.length,
-                pageSize: STAFF_PAGE_SIZE,
-                onPageChange: (page: number) => setStaffPage(page),
-              }}
-            />
-          )}
-        </div>
+      {/* ── Info card ─────────────────────────────────────────────────────── */}
+      <div className="rwaq-card">
+        <DetailGrid
+          className="rwaq-detail-block"
+          title={intl.formatMessage(messages.courseInfoTitle)}
+          items={[
+            { label: intl.formatMessage(messages.fieldCourseId), value: course.courseId },
+            { label: intl.formatMessage(messages.fieldOrg), value: course.org },
+            { label: intl.formatMessage(messages.fieldStart), value: formatDate(course.start) },
+            { label: intl.formatMessage(messages.fieldEnd), value: formatDate(course.end) },
+            {
+              label: intl.formatMessage(messages.fieldPace),
+              value: course.selfPaced
+                ? intl.formatMessage(messages.selfPaced)
+                : intl.formatMessage(messages.instructorPaced),
+            },
+          ]}
+        />
       </div>
-      {isCodeCourse && (
-        <div
-          id="tabpanel-enrollmentCode"
-          role="tabpanel"
-          aria-labelledby="tab-enrollmentCode"
-          hidden={activeTab !== 'enrollmentCode'}
-        >
-          <CodesCard item={{ kind: 'course', id: courseId, name: course?.displayName ?? courseId }} />
+
+      {/* ── Student Management ─────────────────────────────────────────────── */}
+      <div className="rwaq-card">
+        <div className="d-flex justify-content-between align-items-center flex-wrap rwaq-gap-sm mb-4">
+          <h2 className="rwaq-section-title mb-0">
+            {intl.formatMessage(messages.enrollmentsSectionTitle)}
+          </h2>
+          <div className="rwaq-header-actions">
+            <DownloadButton
+              variant="outline-secondary"
+              size="sm"
+              label={intl.formatMessage(messages.downloadCsv)}
+              pendingLabel={intl.formatMessage(messages.downloadingCsv)}
+              isPending={csvMutation.isPending}
+              onClick={handleDownloadCsv}
+              disabled={!enrollmentData?.pagination?.count}
+            />
+            {enrollBlockedNote ? (
+              <DisabledButtonWithTooltip
+                id="course-enroll-blocked"
+                size="sm"
+                tooltip={intl.formatMessage(enrollBlockedNote)}
+              >
+                {intl.formatMessage(messages.enrollUser)}
+              </DisabledButtonWithTooltip>
+            ) : (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setModal({ kind: 'enroll' })}
+              >
+                {intl.formatMessage(messages.enrollUser)}
+              </Button>
+            )}
+          </div>
         </div>
-      )}
+
+        {isEnrollmentsError ? (
+          <ErrorState
+            statusCode={getErrorStatus(enrollmentsError) || undefined}
+            title={intl.formatMessage(messages.enrollmentsErrorTitle)}
+            onRetry={() => refetchEnrollments()}
+          />
+        ) : (
+          <AdminDataTable
+            columns={enrollmentColumns}
+            data={enrollmentRows}
+            isLoading={isLoadingEnrollments}
+            caption={intl.formatMessage(messages.enrollmentsSectionTitle)}
+            pagination={enrollmentData ? {
+              currentPage: enrollPage,
+              pageCount: enrollmentData.pagination?.numPages
+                ?? Math.max(1, Math.ceil((enrollmentData.pagination?.count ?? 0) / ENROLLMENT_PAGE_SIZE)),
+              itemCount: enrollmentData.pagination?.count ?? enrollmentRows.length,
+              pageSize: ENROLLMENT_PAGE_SIZE,
+              onPageChange: setEnrollPage,
+            } : undefined}
+          />
+        )}
+      </div>
+
+      {/* ── Pricing ────────────────────────────────────────────────────────── */}
+      <CoursePricingCard courseId={courseId} />
+
+      {/* ── Course Team ────────────────────────────────────────────────────── */}
+      <div className="rwaq-card">
+        <div className="d-flex justify-content-between align-items-start flex-wrap rwaq-gap-sm mb-4">
+          <div>
+            <h2 className="rwaq-section-title mb-1">
+              {intl.formatMessage(messages.staffSectionTitle)}
+            </h2>
+            <p className="text-muted small mb-0">
+              {intl.formatMessage(messages.staffSectionDescription)}
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setModal({ kind: 'addStaff' })}
+          >
+            {intl.formatMessage(messages.addStaff)}
+          </Button>
+        </div>
+
+        {isStaffError && (
+          <Alert variant="danger">{intl.formatMessage(messages.staffErrorTitle)}</Alert>
+        )}
+
+        {!isStaffError && !isLoadingStaff && allStaffRows.length === 0 && (
+          <p className="text-muted text-center py-5 mb-0">
+            {intl.formatMessage(messages.staffEmpty)}
+          </p>
+        )}
+
+        {!isStaffError && (isLoadingStaff || allStaffRows.length > 0) && (
+          <AdminDataTable
+            columns={staffColumns}
+            data={staffRows}
+            isLoading={isLoadingStaff}
+            caption={intl.formatMessage(messages.staffSectionTitle)}
+            pagination={{
+              currentPage: safeStaffPage,
+              pageCount: staffPageCount,
+              itemCount: allStaffRows.length,
+              pageSize: STAFF_PAGE_SIZE,
+              onPageChange: (page: number) => setStaffPage(page),
+            }}
+          />
+        )}
+      </div>
 
       {/* ── Modals ──────────────────────────────────────────────────────────── */}
       <EnrollUserModal

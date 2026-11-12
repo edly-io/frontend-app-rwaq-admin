@@ -227,15 +227,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.enrollmentCodes.pricing.addCodeBanner',
     defaultMessage: 'Add an enrollment code so learners can join.',
   },
-  addCodeAction: { id: 'rwaq.admin.enrollmentCodes.pricing.addCodeAction', defaultMessage: 'Add a code' },
-
-  // ── Tabs on the course, program and organization pages ─────────────────────
-  tabDetails: { id: 'rwaq.admin.enrollmentCodes.tab.details', defaultMessage: 'Details' },
-  tabEnrollmentCode: { id: 'rwaq.admin.enrollmentCodes.tab.enrollmentCode', defaultMessage: 'Enrollment code' },
-  orgCodesDescription: {
-    id: 'rwaq.admin.enrollmentCodes.section.orgDescription',
-    defaultMessage: 'An organization code works for every Enrollment code course and program of this organization.',
-  },
+  addCodeAction: { id: 'rwaq.admin.enrollmentCodes.pricing.addCodeAction', defaultMessage: 'Add enrollment code' },
 
   // ── Code usage panel ───────────────────────────────────────────────────────
   usageTitle: { id: 'rwaq.admin.enrollmentCodes.usage.title', defaultMessage: 'Usage of {code}' },
@@ -253,16 +245,6 @@ const messages = defineMessages({
   usageLearnersTitle: { id: 'rwaq.admin.enrollmentCodes.usage.learnersTitle', defaultMessage: 'Learners' },
   usageExpires: { id: 'rwaq.admin.enrollmentCodes.usage.expires', defaultMessage: 'Expires: {date}' },
 
-  // ── Codes card on a course or program page ─────────────────────────────────
-  cardSectionTitle: { id: 'rwaq.admin.enrollmentCodes.section.title', defaultMessage: 'Enrollment codes' },
-  cardSectionCourse: {
-    id: 'rwaq.admin.enrollmentCodes.section.courseDescription',
-    defaultMessage: 'Learners join this course with one of these codes.',
-  },
-  cardSectionProgram: {
-    id: 'rwaq.admin.enrollmentCodes.section.programDescription',
-    defaultMessage: 'Learners join this program with one of these codes.',
-  },
 });
 
 export default messages;

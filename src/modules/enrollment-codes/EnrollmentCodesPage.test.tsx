@@ -5,16 +5,29 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as whoami from '@src/data/whoami';
+import * as courseHooks from '@src/modules/courses/data/hooks';
+import * as programHooks from '@src/modules/programs/data/hooks';
 import EnrollmentCodesPage from './EnrollmentCodesPage';
 
 jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn() }));
+jest.mock('@src/modules/courses/data/hooks', () => ({ useCourse: jest.fn() }));
+jest.mock('@src/modules/programs/data/hooks', () => ({ useProgram: jest.fn() }));
 jest.mock('./components/CodesList', () => ({
   __esModule: true,
-  default: ({ onViewUses, onViewUsage }: {
+  default: ({
+    onViewUses, onViewUsage, prefillItem, onPrefillHandled,
+  }: {
     onViewUses: (code: { id: number; code: string }) => void;
     onViewUsage: (code: { id: number; code: string }) => void;
+    prefillItem?: { kind: string; id: string; name: string };
+    onPrefillHandled?: () => void;
   }) => (
     <>
+      {prefillItem && (
+        <button type="button" data-testid="create-form" onClick={onPrefillHandled}>
+          {`${prefillItem.kind}|${prefillItem.id}|${prefillItem.name}`}
+        </button>
+      )}
       <button type="button" onClick={() => onViewUses({ id: 4, code: 'ABC234' })}>codes list</button>
       <button type="button" onClick={() => onViewUsage({ id: 4, code: 'ABC234' })}>usage</button>
     </>
@@ -41,6 +54,8 @@ const asUser = (isSuperuser: boolean) => (whoami.useAdminCapabilities as jest.Mo
 beforeEach(() => {
   jest.clearAllMocks();
   window.history.pushState({}, '', '/enrollment-codes');
+  (courseHooks.useCourse as jest.Mock).mockReturnValue({ data: undefined, isSuccess: false, isError: false });
+  (programHooks.useProgram as jest.Mock).mockReturnValue({ data: undefined, isSuccess: false, isError: false });
 });
 
 describe('EnrollmentCodesPage', () => {
@@ -88,5 +103,51 @@ describe('EnrollmentCodesPage', () => {
     renderWrapper(<EnrollmentCodesPage />);
     fireEvent.click(screen.getByRole('button', { name: 'usage' }));
     expect(screen.getByTestId('usage-panel')).toHaveTextContent('ABC234');
+  });
+
+  describe('opening the create form from a link', () => {
+    it('pre-fills a course, and clears the params from the URL', () => {
+      asUser(true);
+      (courseHooks.useCourse as jest.Mock).mockImplementation((id: string) => (
+        id ? { data: { displayName: 'Safety basics' }, isSuccess: true, isError: false }
+          : { data: undefined, isSuccess: false, isError: false }
+      ));
+      window.history.pushState({}, '', '/enrollment-codes?create=1&scope=course&id=course-v1%3AARB%2BSAFE%2B2026');
+      renderWrapper(<EnrollmentCodesPage />);
+      expect(screen.getByTestId('create-form')).toHaveTextContent('course|course-v1:ARB+SAFE+2026|Safety basics');
+      expect(window.location.search).toBe('');
+      expect(courseHooks.useCourse).toHaveBeenCalledWith('course-v1:ARB+SAFE+2026');
+    });
+
+    it('pre-fills a program', () => {
+      asUser(true);
+      (programHooks.useProgram as jest.Mock).mockImplementation((id: string) => (
+        id ? { data: { name: 'Leadership' }, isSuccess: true, isError: false }
+          : { data: undefined, isSuccess: false, isError: false }
+      ));
+      window.history.pushState({}, '', '/enrollment-codes?create=1&scope=program&id=uuid-1');
+      renderWrapper(<EnrollmentCodesPage />);
+      expect(screen.getByTestId('create-form')).toHaveTextContent('program|uuid-1|Leadership');
+      expect(window.location.search).toBe('');
+    });
+
+    it('forgets the request once the form was opened, and opens nothing without a valid link', () => {
+      asUser(true);
+      (programHooks.useProgram as jest.Mock).mockImplementation((id: string) => (
+        id ? { data: { name: 'Leadership' }, isSuccess: true, isError: false }
+          : { data: undefined, isSuccess: false, isError: false }
+      ));
+      window.history.pushState({}, '', '/enrollment-codes?create=1&scope=program&id=uuid-1');
+      renderWrapper(<EnrollmentCodesPage />);
+      fireEvent.click(screen.getByTestId('create-form'));
+      expect(screen.queryByTestId('create-form')).not.toBeInTheDocument();
+    });
+
+    it('ignores a link with no item or an unknown scope', () => {
+      asUser(true);
+      window.history.pushState({}, '', '/enrollment-codes?create=1&scope=organization&id=Edrakk');
+      renderWrapper(<EnrollmentCodesPage />);
+      expect(screen.queryByTestId('create-form')).not.toBeInTheDocument();
+    });
   });
 });

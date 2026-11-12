@@ -322,15 +322,24 @@ describe('CoursePricingCard', () => {
       expect(mockUpdate.mock.calls[0][0]).not.toHaveProperty('hideFromCatalog');
     });
 
-    it('offers adding a code after saving the type when the course has none, with a link to the tab', async () => {
+    it('offers Add enrollment code to a stored Enrollment code course with no code, linking to the codes page', () => {
       (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: 0 });
       renderCard({ pricingCategory: 'is_enrollment_code' });
-      expect(screen.queryByTestId('add-code-banner')).not.toBeInTheDocument();
-      save();
-      expect(await screen.findByTestId('add-code-banner')).toHaveTextContent('Add an enrollment code so learners can join.');
+      expect(screen.getByTestId('add-code-banner')).toHaveTextContent('Add an enrollment code so learners can join.');
       expect(codeHooks.useItemCodeCount).toHaveBeenLastCalledWith({ courseId }, true);
-      fireEvent.click(screen.getByRole('button', { name: 'Add a code' }));
-      expect(window.location.search).toContain('tab=enrollment-code');
+      fireEvent.click(screen.getByRole('button', { name: 'Add enrollment code' }));
+      expect(window.location.pathname).toBe('/enrollment-codes');
+      expect(window.location.search).toBe(`?create=1&scope=course&id=${encodeURIComponent(courseId)}`);
+    });
+
+    it('offers it right after saving the type too, and not for another type', async () => {
+      (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: 0 });
+      renderCard();
+      expect(screen.queryByTestId('add-code-banner')).not.toBeInTheDocument();
+      expect(codeHooks.useItemCodeCount).toHaveBeenLastCalledWith({ courseId }, false);
+      fireEvent.click(screen.getByRole('radio', { name: 'Enrollment code' }));
+      save();
+      expect(await screen.findByTestId('add-code-banner')).toBeInTheDocument();
     });
 
     it('shows no banner when the course already has a code, and never a switch-off warning', async () => {

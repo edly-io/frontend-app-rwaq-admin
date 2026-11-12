@@ -1,9 +1,8 @@
 /**
- * ProgramDetailPage tabs: Courses and Learners always, and Enrollment code only for an Enrollment code program,
- * opened by click or by `?tab=enrollment-code` (the pricing card's banner uses it).
- * The cards, modals and tables are stubbed, they have their own tests.
+ * ProgramDetailPage tabs: Courses and Learners only, also for an Enrollment code program (its codes are managed
+ * on the Enrollment codes page). The cards, modals and tables are stubbed, they have their own tests.
  */
-import { fireEvent, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from './data/hooks';
 import type { ProgramDetail } from './data/types';
@@ -24,12 +23,6 @@ jest.mock('./components/ProgramStatusChips', () => ({ __esModule: true, default:
 jest.mock('./modals/BulkEnrollModal', () => ({ __esModule: true, default: () => null }));
 jest.mock('./modals/UnenrollLearnerModal', () => ({ __esModule: true, default: () => null }));
 jest.mock('@src/components/ToastContext', () => ({ useToast: () => ({ showToast: jest.fn() }) }));
-jest.mock('@src/modules/enrollment-codes/components/CodesCard', () => ({
-  __esModule: true,
-  default: ({ item }: { item: { kind: string; id: string } }) => (
-    <div data-testid="codes-card" data-kind={item.kind} data-id={item.id} />
-  ),
-}));
 
 const program = (pricingCategory: string) => ({
   uuid: 'uuid-1',
@@ -59,37 +52,17 @@ beforeEach(() => {
   (hooks.useUpdateProgram as jest.Mock).mockReturnValue({ mutate: jest.fn(), isPending: false });
 });
 
-describe('ProgramDetailPage Enrollment code tab', () => {
-  it('has no Enrollment code tab for another type', () => {
-    renderPage('is_paid');
-    expect(screen.getByRole('tab', { name: 'Courses' })).toBeInTheDocument();
+describe('ProgramDetailPage', () => {
+  it.each(['is_paid', 'is_enrollment_code'])('has only the Courses and Learners tabs for %s', (category) => {
+    renderPage(category);
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['Courses', 'Learners']);
+    expect(screen.getByRole('tab', { name: 'Courses' })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('ignores ?tab=enrollment-code', () => {
+    window.history.pushState({}, '', '/programs/uuid-1?tab=enrollment-code');
+    renderPage('is_enrollment_code');
+    expect(screen.getByRole('tab', { name: 'Courses' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.queryByRole('tab', { name: 'Enrollment code' })).not.toBeInTheDocument();
-    expect(screen.queryByTestId('codes-card')).not.toBeInTheDocument();
-  });
-
-  it('shows the tab for an Enrollment code program, with the codes of this program', () => {
-    renderPage('is_enrollment_code');
-    expect(screen.getByRole('tab', { name: 'Courses' })).toHaveAttribute('aria-selected', 'true');
-    const card = screen.getByTestId('codes-card');
-    expect(card).toHaveAttribute('data-kind', 'program');
-    expect(card).toHaveAttribute('data-id', 'uuid-1');
-    expect(card.closest('[role="tabpanel"]')).not.toBeVisible();
-    fireEvent.click(screen.getByRole('tab', { name: 'Enrollment code' }));
-    expect(window.location.search).toBe('?tab=enrollment-code');
-    expect(screen.getByRole('tab', { name: 'Enrollment code' })).toHaveAttribute('aria-selected', 'true');
-    expect(card.closest('[role="tabpanel"]')).toBeVisible();
-  });
-
-  it('opens from ?tab=enrollment-code', () => {
-    window.history.pushState({}, '', '/programs/uuid-1?tab=enrollment-code');
-    renderPage('is_enrollment_code');
-    expect(screen.getByRole('tab', { name: 'Enrollment code' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByTestId('codes-card').closest('[role="tabpanel"]')).toBeVisible();
-  });
-
-  it('ignores ?tab=enrollment-code for a program of another type', () => {
-    window.history.pushState({}, '', '/programs/uuid-1?tab=enrollment-code');
-    renderPage('is_free');
-    expect(screen.getByRole('tab', { name: 'Courses' })).toHaveAttribute('aria-selected', 'true');
   });
 });

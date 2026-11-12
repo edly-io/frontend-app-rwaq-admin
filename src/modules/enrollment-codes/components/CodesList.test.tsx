@@ -348,6 +348,23 @@ describe('CodesList', () => {
     expect(modal).toHaveAttribute('data-new', 'true');
   });
 
+  it('opens the create form once with the prefill item fixed, over the full list', () => {
+    const handled = jest.fn();
+    renderWrapper(
+      <CodesList
+        onViewUses={onViewUses}
+        prefillItem={{ kind: 'program', id: PROGRAM_UUID, name: 'Leadership' }}
+        onPrefillHandled={handled}
+      />,
+    );
+    expect(handled).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('heading', { name: 'Create enrollment code' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Course or program')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Leadership').length).toBeGreaterThan(0);
+    // The list itself is not narrowed to the item.
+    expect(lastParams().programUuid).toBeUndefined();
+  });
+
   it('shows an error state when the list fails to load', () => {
     (hooks.useEnrollmentCodes as jest.Mock).mockReturnValue({
       data: undefined,
