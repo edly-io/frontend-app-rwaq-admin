@@ -130,11 +130,13 @@ interface CategoryTickProps {
   fontSize?: number;
   payload?: { value: string };
   rtl: boolean;
+  /** Cut long names with "…". Off for charts that only rotate short labels, such as months. */
+  truncate?: boolean;
 }
 
 /** Rotated x-axis label cut to a fixed length, with the full name as the hover title. */
 export const CategoryTick = ({
-  x = 0, y = 0, angle = 0, fill, fontSize, payload, rtl,
+  x = 0, y = 0, angle = 0, fill, fontSize, payload, rtl, truncate = true,
 }: CategoryTickProps) => {
   const full = payload?.value ?? '';
   return (
@@ -152,7 +154,7 @@ export const CategoryTick = ({
         style={{ direction: 'ltr' }}
       >
         <title>{full}</title>
-        {categoryLabel(full, rtl, rtl ? CATEGORY_LABEL_LIMIT_RTL : CATEGORY_LABEL_LIMIT)}
+        {truncate ? categoryLabel(full, rtl, rtl ? CATEGORY_LABEL_LIMIT_RTL : CATEGORY_LABEL_LIMIT) : full}
       </text>
     </g>
   );
@@ -318,7 +320,7 @@ const MetricChart = ({
       xAxis: (
         <XAxis
           dataKey="name"
-          tick={categoryLabels ? <CategoryTick rtl={rtl} {...mutedTick} /> : mutedTick}
+          tick={labelAngle ? <CategoryTick rtl={rtl} truncate={categoryLabels} {...mutedTick} /> : mutedTick}
           axisLine={false}
           tickLine={false}
           dy={labelAngle ? labelDy : 6}
