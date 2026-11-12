@@ -1,9 +1,9 @@
 /**
  * MetricChart tests — covers rendering, a11y, and reduced-motion.
  */
-import { screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
-import MetricChart, { labelInterval } from './MetricChart';
+import MetricChart, { CategoryTick, labelInterval } from './MetricChart';
 import type { ChartDataPoint } from './MetricChart';
 
 // jsdom does not implement window.matchMedia — mock it
@@ -128,5 +128,21 @@ describe('labelInterval', () => {
     expect(labelInterval(30, 28)).toBe(1);
     expect(labelInterval(100, 45)).toBe(2);
     expect(labelInterval(400, undefined)).toBe(0);
+  });
+});
+
+describe('CategoryTick', () => {
+  const shown = (container: HTMLElement) => container.querySelector('text')?.lastChild?.textContent;
+
+  it('shows a cut label with the full name as the hover title', () => {
+    const full = 'Course Enrollment Codes QA Test';
+    const { container } = render(<svg><CategoryTick payload={{ value: full }} angle={-55} rtl={false} /></svg>);
+    expect(container.querySelector('title')?.textContent).toBe(full);
+    expect(shown(container)).toBe('Course Enrollment Cod…');
+  });
+
+  it('keeps a short name whole', () => {
+    const { container } = render(<svg><CategoryTick payload={{ value: 'PFC2 - Paid' }} rtl={false} /></svg>);
+    expect(shown(container)).toBe('PFC2 - Paid');
   });
 });
