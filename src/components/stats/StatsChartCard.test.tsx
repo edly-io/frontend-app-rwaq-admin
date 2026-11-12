@@ -27,6 +27,8 @@ describe('StatsChartCard', () => {
     const row = wrapper.parentElement as HTMLElement;
     expect(row.style.justifyContent).toBe('flex-start');
     expect(row.style.overflowX).toBe('auto');
+    // The Arabic build makes the wrapper RTL, which would start the row at its last bar.
+    expect(row.style.direction).toBe('ltr');
     expect(wrapper.style.minWidth).toBe('900px');
   });
 });
