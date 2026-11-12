@@ -4,14 +4,21 @@
  * The chart keeps a short fixed height so the table below stays the main thing on the page.
  * Loading, empty and "not available" are three different states and never look like a flat zero line.
  */
+import type { CSSProperties } from 'react';
 import { Skeleton } from '@openedx/paragon';
-import { useIntl } from '@edx/frontend-platform/i18n';
+import { isRtl, useIntl } from '@edx/frontend-platform/i18n';
 import InfoTooltip from '@src/components/InfoTooltip';
 import MetricChart from '@src/components/charts/MetricChart';
+import { categoryLabelAreaHeight } from '@src/components/charts/categoryLabels';
 import type { ChartDataPoint, ChartType } from '@src/components/charts/MetricChart';
 import messages from './messages';
 
 export const COMPACT_CHART_HEIGHT = 150;
+/** Plot area of a category chart, without the rotated labels under it. */
+export const CATEGORY_PLOT_HEIGHT = 130;
+const CATEGORY_TOP_MARGIN = 5;
+/** Keeps the heading at the top and centers the chart when a taller neighbour stretches the card. */
+const CENTERED: CSSProperties = { marginTop: 'auto', marginBottom: 'auto' };
 
 export interface StatsChartCardProps {
   title: string;
@@ -46,15 +53,23 @@ const StatsChartCard = ({
     }
     if (isUnavailable) {
       return (
-        <div className="rwaq-dash-card__empty">{intl.formatMessage(messages.chartUnavailable)}</div>
+        <div className="rwaq-dash-card__empty" style={CENTERED}>{intl.formatMessage(messages.chartUnavailable)}</div>
       );
     }
     if (isEmpty || data.length === 0) {
-      return <div className="rwaq-dash-card__empty">{intl.formatMessage(messages.chartEmpty)}</div>;
+      return <div className="rwaq-dash-card__empty" style={CENTERED}>{intl.formatMessage(messages.chartEmpty)}</div>;
     }
+    const labelArea = categoryLabelAreaHeight(data.map((point) => String(point.name)), isRtl(intl.locale));
+    const chartHeight = categoryLabels ? CATEGORY_PLOT_HEIGHT + CATEGORY_TOP_MARGIN + labelArea : COMPACT_CHART_HEIGHT;
+    const rowStyle: CSSProperties = categoryLabels
+      ? {
+        ...CENTERED, overflowX: 'auto', justifyContent: 'flex-start', direction: 'ltr',
+      }
+      : CENTERED;
     return (
-      // Start-aligned: a centered flex row that overflows loses its left half to unreachable scroll.
-      <div className="rwaq-chart" style={categoryLabels ? { overflowX: 'auto', justifyContent: 'flex-start' } : undefined}>
+      // Start-aligned and left-to-right: a centered row that overflows loses its left half to unreachable
+      // scroll, and an RTL row would start at the right and show the last bars first.
+      <div className="rwaq-chart" style={rowStyle}>
         {/* Full width: a content-sized wrapper gives the responsive chart 0px. */}
         <div style={{ width: '100%', ...(categoryLabels ? { minWidth: data.length * 90 } : {}) }}>
           <MetricChart
@@ -62,7 +77,7 @@ const StatsChartCard = ({
             data={data}
             series={series}
             ariaLabel={title}
-            height={categoryLabels ? 256 : COMPACT_CHART_HEIGHT}
+            height={chartHeight}
             hideLegend={type !== 'donut' && !showLegend}
             xLabelAngle={xLabelAngle}
             categoryLabels={categoryLabels}
