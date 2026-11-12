@@ -62,7 +62,7 @@ const StatsChartCard = ({
             data={data}
             series={series}
             ariaLabel={title}
-            height={categoryLabels ? 240 : COMPACT_CHART_HEIGHT}
+            height={categoryLabels ? 256 : COMPACT_CHART_HEIGHT}
             hideLegend={type !== 'donut' && !showLegend}
             xLabelAngle={xLabelAngle}
             categoryLabels={categoryLabels}

@@ -307,7 +307,7 @@ const MetricChart = ({
     };
   }
   const labelDy = rtl ? 8 : 4;
-  const labelAreaHeight = categoryLabels ? 112 : (rtl ? 76 : 64); // eslint-disable-line no-nested-ternary
+  const labelAreaHeight = categoryLabels ? 120 : (rtl ? 76 : 64); // eslint-disable-line no-nested-ternary
 
   const axisProps = compact
     ? {}
