@@ -7,6 +7,7 @@
  *   PATCH  /api/v1/admin/enrollment-codes/{id}/
  *   DELETE /api/v1/admin/enrollment-codes/{id}/   only while the code has no uses
  *   GET    /api/v1/admin/enrollment-codes/{id}/card/
+ *   GET    /api/v1/admin/enrollment-codes/{id}/items/   the items a code covers, learners joined per item
  *   GET    /api/v1/admin/enrollment-codes/uses/
  *   GET    /api/v1/admin/enrollment-codes/uses/csv/   same filters, every use, as a file
  *
@@ -19,6 +20,7 @@ import { getStudioApiUrl } from '@src/data/utils';
 import type {
   CodeCard,
   CodeCreatePayload,
+  CodeItemRow,
   CodeListParams,
   CodePatch,
   CodeUse,
@@ -60,6 +62,11 @@ export const deleteEnrollmentCode = async (id: number): Promise<void> => {
 export const getEnrollmentCodeCard = async (id: number): Promise<CodeCard> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getBaseUrl()}/${id}/card/`);
   return camelCaseObject(data) as CodeCard;
+};
+
+export const getEnrollmentCodeItems = async (id: number): Promise<CodeItemRow[]> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getBaseUrl()}/${id}/items/`);
+  return camelCaseObject(data) as CodeItemRow[];
 };
 
 export const getEnrollmentCodeUses = async (params: UseListParams = {}): Promise<Paginated<CodeUse>> => {

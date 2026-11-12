@@ -6,15 +6,20 @@
  * applies here: the admin can always change the type and price.
  *
  * The backend refuses a type change while the course is in a program, and for
- * a free course that learners already joined. Those refusals come back as
- * `{ detail, field? }` and are shown as they are.
+ * a free course that learners already joined, and while an Enrollment code course has an active code or
+ * enrolled learners. Those refusals come back as `{ detail, field? }` and are shown as they are (a refusal
+ * with no field sits under the type choice).
+ *
+ * An Enrollment code course can be hidden from the public catalog. After saving that type on a course with no
+ * code yet, a banner offers adding one (the course page's Enrollment code tab).
  */
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Alert, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
 import { getDiscountPercent, getPriceWithVat } from '@src/data/discountPercent';
-import { useActiveCodeCount } from '@src/modules/enrollment-codes/data/hooks';
+import { useItemCodeCount } from '@src/modules/enrollment-codes/data/hooks';
 import enrollmentCodeMessages from '@src/modules/enrollment-codes/messages';
 import { useCoursePricing, useUpdateCoursePricing } from '../data/hooks';
 import type { CoursePricingCategory } from '../data/types';
@@ -44,6 +49,8 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   const [regularPrice, setRegularPrice] = useState('');
   const [salePrice, setSalePrice] = useState('');
   const [managedByAdmin, setManagedByAdmin] = useState(false);
+  const [hideFromCatalog, setHideFromCatalog] = useState(false);
+  const [, setSearchParams] = useSearchParams();
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
@@ -54,6 +61,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
     setRegularPrice(pricing.regularPrice ?? '');
     setSalePrice(pricing.salePrice ?? '');
     setManagedByAdmin(pricing.pricingManagedByAdmin);
+    setHideFromCatalog(pricing.hideFromCatalog ?? false);
   }, [pricing]);
 
   // Only a paid course is sold on its own, so only it carries a price.
@@ -67,10 +75,9 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   // The backend refuses a type change while the course is in a program.
   const inProgram = !!pricing?.partOfProgram;
   const isBusy = isLoading || isPending;
-  // Switching a course away from Enrollment code switches its active codes off, so the admin is told how many first.
-  const leavesEnrollmentCode = pricing?.pricingCategory === 'is_enrollment_code'
-    && category !== null && category !== 'is_enrollment_code';
-  const { data: activeCodeCount } = useActiveCodeCount({ courseId }, leavesEnrollmentCode);
+  // After saving the Enrollment code type, offer a first code when the course has none.
+  const isCodeType = category === 'is_enrollment_code';
+  const { data: codeCount } = useItemCodeCount({ courseId }, saved && isCodeType);
 
   const validateRegularPrice = (): string => {
     if (regularPrice.trim() === '') { return intl.formatMessage(messages.pricingErrorPriceRequired); }
@@ -109,14 +116,20 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
           regularPrice: regularPrice.trim(),
           salePrice: salePrice.trim() === '' ? null : salePrice.trim(),
         } : {}),
+        ...(category === 'is_enrollment_code' ? { hideFromCatalog } : {}),
         pricingManagedByAdmin: managedByAdmin,
       });
       setSaved(true);
     } catch (err) {
       logError(err);
-      const data = (err as { response?: { data?: { detail?: string; field?: string } } })?.response?.data;
+      const response = (err as {
+        response?: { status?: number; data?: { detail?: string; field?: string } };
+      })?.response;
+      const data = response?.data;
       const detail = data?.detail || intl.formatMessage(messages.pricingErrorSaveFailed);
-      const field = data?.field ? BACKEND_FIELDS[data.field] : undefined;
+      // A 409 with no field is a type-change refusal: it belongs under the type choice.
+      let field: PricingField | undefined = data?.field ? BACKEND_FIELDS[data.field] : undefined;
+      if (!data?.field && response?.status === 409) { field = 'pricingCategory'; }
       if (field) {
         setFieldError(field, detail);
       } else {
@@ -170,6 +183,24 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
         <Alert variant="success" className="mb-3">{intl.formatMessage(messages.pricingSaved)}</Alert>
       )}
 
+      {saved && isCodeType && codeCount === 0 && (
+        <Alert variant="info" className="mb-3" data-testid="add-code-banner">
+          {intl.formatMessage(enrollmentCodeMessages.addCodeBanner)}
+          {' '}
+          <Button
+            variant="link"
+            size="inline"
+            onClick={() => setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set('tab', 'enrollment-code');
+              return next;
+            }, { replace: true })}
+          >
+            {intl.formatMessage(enrollmentCodeMessages.addCodeAction)}
+          </Button>
+        </Alert>
+      )}
+
       <Form.Group isInvalid={!!fieldErrors.pricingCategory}>
         <Form.Label className="sr-only">{intl.formatMessage(messages.pricingSectionTitle)}</Form.Label>
         <Form.RadioSet
@@ -221,10 +252,18 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
         )}
       </Form.Group>
 
-      {leavesEnrollmentCode && !!activeCodeCount && (
-        <Alert variant="warning" className="mb-3" data-testid="codes-switched-off-warning">
-          {intl.formatMessage(enrollmentCodeMessages.switchAwayWarning, { count: activeCodeCount })}
-        </Alert>
+      {isCodeType && (
+        <Form.Group controlId="course-hide-from-catalog">
+          <Form.Checkbox
+            name="hideFromCatalog"
+            checked={hideFromCatalog}
+            disabled={isBusy}
+            description={intl.formatMessage(enrollmentCodeMessages.hideFromCatalogHelp)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setHideFromCatalog(e.target.checked); touched(); }}
+          >
+            {intl.formatMessage(enrollmentCodeMessages.hideFromCatalog)}
+          </Form.Checkbox>
+        </Form.Group>
       )}
 
       {showPriceFields && (

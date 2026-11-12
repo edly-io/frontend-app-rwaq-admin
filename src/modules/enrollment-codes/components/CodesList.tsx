@@ -1,11 +1,12 @@
 /**
  * The list of enrollment codes, with its filters, create button and row actions.
  *
- * Used twice: in the Codes tab of the Enrollment codes page (all codes) and as the Codes card on a course
- * or program page, where `item` fixes the list to that item, hides the item filter and preselects the item
- * in the create form.
+ * Used in the Codes tab of the Enrollment codes page (all codes) and as the Codes card in the Enrollment code
+ * tab of a course, program or organization page, where `item` fixes the list to that item (for an
+ * organization: its organization codes), hides the scope filter and fixes the item in the create form.
  *
- * Row actions: view card, view uses, switch off or on, edit, and delete (only a code with no uses).
+ * Row actions: view card, view usage (opens the usage panel, `onViewUsage`), view the learners in the Uses
+ * tab, switch off or on, edit, and delete (only a code with no uses).
  */
 import { Suspense, lazy, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -13,7 +14,7 @@ import {
   Badge, Button, Icon, IconButton,
 } from '@openedx/paragon';
 import {
-  Add, ContentCopy, Delete, Edit, People, QrCode2, ToggleOff, ToggleOn,
+  Add, ContentCopy, Delete, Edit, People, QrCode2, ToggleOff, ToggleOn, Visibility,
 } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
@@ -29,7 +30,7 @@ import {
 } from '@src/modules/payments/components/shared';
 import { useEnrollmentCodes, useUpdateEnrollmentCode } from '../data/hooks';
 import type {
-  CodeListParams, CodeStatus, EnrollmentCode, ItemKind,
+  CodeListParams, CodeScope, CodeStatus, EnrollmentCode, ItemKind,
 } from '../data/types';
 import messages from '../messages';
 import { formatDate } from './codeDates';
@@ -56,18 +57,21 @@ const STATUS_MESSAGE = {
 };
 
 /** The existing detail page for a course or program. */
-const itemPath = (kind: ItemKind, id: string) => (
-  kind === 'program' ? `/programs/${id}` : `/courses/${encodeURIComponent(id)}`
-);
+export const itemPath = (kind: ItemKind | 'organization', id: string) => {
+  if (kind === 'organization') { return `/organizations/${encodeURIComponent(id)}`; }
+  return kind === 'program' ? `/programs/${id}` : `/courses/${encodeURIComponent(id)}`;
+};
 
 interface CodesListProps {
-  /** Fixes the list to one course or program. */
+  /** Fixes the list to one course, one program or one organization (its organization codes). */
   item?: PickedItem;
   /** Opens the Uses tab filtered to this code. */
   onViewUses: (code: EnrollmentCode) => void;
+  /** Opens the usage panel of this code. Without it the row has no usage action. */
+  onViewUsage?: (code: EnrollmentCode) => void;
 }
 
-const CodesList = ({ item, onViewUses }: CodesListProps) => {
+const CodesList = ({ item, onViewUses, onViewUsage }: CodesListProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
   const updateMutation = useUpdateEnrollmentCode();
@@ -78,9 +82,16 @@ const CodesList = ({ item, onViewUses }: CodesListProps) => {
   const [deleting, setDeleting] = useState<EnrollmentCode | null>(null);
   const [share, setShare] = useState<{ id: number; isNew: boolean } | null>(null);
 
+  let kindFilter: CodeScope | undefined;
+  if (item?.kind === 'organization') {
+    kindFilter = 'organization';
+  } else if (!item) {
+    kindFilter = (list.filters.kind || undefined) as CodeScope | undefined;
+  }
   const listParams: CodeListParams = {
     status: (list.filters.status || undefined) as CodeStatus | undefined,
-    kind: item ? undefined : (list.filters.kind || undefined) as ItemKind | undefined,
+    kind: kindFilter,
+    organization: item?.kind === 'organization' ? item.id : undefined,
     courseId: item?.kind === 'course' ? item.id : undefined,
     programUuid: item?.kind === 'program' ? item.id : undefined,
     search: list.search || undefined,
@@ -101,6 +112,7 @@ const CodesList = ({ item, onViewUses }: CodesListProps) => {
     { value: '', label: intl.formatMessage(messages.filterAll) },
     { value: 'course', label: intl.formatMessage(messages.kindCourse) },
     { value: 'program', label: intl.formatMessage(messages.kindProgram) },
+    { value: 'organization', label: intl.formatMessage(messages.kindOrganization) },
   ];
   const optionLabel = (options: { value: string; label: string }[], value: string) => (
     options.find((option) => option.value === value)?.label ?? value
@@ -174,7 +186,11 @@ const CodesList = ({ item, onViewUses }: CodesListProps) => {
             <Link to={itemPath(row.item.kind, row.item.id)}>{row.item.name}</Link>
             <KindTag kind={row.item.kind} />
           </div>
-          <div className="rwaq-user-cell__meta">{row.item.organization}</div>
+          <div className="rwaq-user-cell__meta">
+            {row.scope === 'organization' && row.coveredItemsCount !== undefined
+              ? intl.formatMessage(messages.usageCovers, { count: row.coveredItemsCount })
+              : row.item.organization}
+          </div>
         </div>
       ),
     }]),
@@ -185,9 +201,16 @@ const CodesList = ({ item, onViewUses }: CodesListProps) => {
     {
       label: intl.formatMessage(messages.colUsage),
       key: 'usesCount',
-      renderCell: (_value, row) => intl.formatMessage(messages.usageValue, {
-        used: row.usesCount, limit: row.maxUses,
-      }),
+      renderCell: (_value, row) => (
+        <>
+          <div>{intl.formatMessage(messages.usageUsedOf, { count: row.usesCount, max: row.maxUses })}</div>
+          {row.itemsJoinedCount > 0 && (
+            <div className="rwaq-user-cell__meta">
+              {intl.formatMessage(messages.usageJoined, { count: row.itemsJoinedCount })}
+            </div>
+          )}
+        </>
+      ),
     },
     {
       label: intl.formatMessage(messages.colExpires),
@@ -216,6 +239,14 @@ const CodesList = ({ item, onViewUses }: CodesListProps) => {
             alt={intl.formatMessage(messages.actionViewCard)}
             onClick={() => setShare({ id: row.id, isNew: false })}
           />
+          {onViewUsage && (
+            <IconButton
+              src={Visibility}
+              iconAs={Icon}
+              alt={intl.formatMessage(messages.actionViewUsage, { code: row.code })}
+              onClick={() => onViewUsage(row)}
+            />
+          )}
           <IconButton
             src={People}
             iconAs={Icon}

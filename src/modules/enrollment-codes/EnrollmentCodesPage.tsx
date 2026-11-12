@@ -6,7 +6,7 @@
  * reload or a link keeps them. A tab stays mounted once opened, so it keeps its filters and page, and a
  * hidden one does not query (ActiveTabContext).
  */
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Tab, Tabs } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -15,8 +15,10 @@ import LoadingPage from '@src/components/LoadingPage';
 import { useAdminCapabilities } from '@src/data/whoami';
 import { TabCard } from '@src/modules/payments/components/shared';
 import { ActiveTabContext } from '@src/modules/payments/data/activeTab';
+import CodeUsagePanel from './components/CodeUsagePanel';
 import CodesList from './components/CodesList';
 import UsesTab from './components/UsesTab';
+import type { EnrollmentCode } from './data/types';
 import messages from './messages';
 
 const TABS = ['codes', 'uses'] as const;
@@ -25,6 +27,7 @@ type CodesTab = typeof TABS[number];
 const EnrollmentCodesContent = () => {
   const intl = useIntl();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [usage, setUsage] = useState<EnrollmentCode | null>(null);
 
   const tabParam = searchParams.get('tab') as CodesTab | null;
   const tab: CodesTab = tabParam && TABS.includes(tabParam) ? tabParam : 'codes';
@@ -65,6 +68,7 @@ const EnrollmentCodesContent = () => {
             <ActiveTabContext.Provider value={tab === 'codes'}>
               <TabCard>
                 <CodesList
+                  onViewUsage={setUsage}
                   onViewUses={(code) => updateParams({
                     tab: 'uses', codeId: String(code.id), code: code.code,
                   })}
@@ -85,6 +89,7 @@ const EnrollmentCodesContent = () => {
           </Tab>
         </Tabs>
       </div>
+      <CodeUsagePanel code={usage} onClose={() => setUsage(null)} />
     </div>
   );
 };

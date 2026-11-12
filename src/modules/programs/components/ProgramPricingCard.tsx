@@ -4,15 +4,20 @@
  * Same rules as the Studio program page, enforced by the shared backend
  * validation: a paid program needs a price above 0, and the sale price must be
  * below it. Switching back to Free clears both prices. The backend reports
- * refusals as DRF field errors, shown on the field they name.
+ * refusals as DRF field errors, shown on the field they name (an Enrollment code program with an active code
+ * or enrolled learners cannot change type: the text sits under the type choice).
+ *
+ * An Enrollment code program can be hidden from the public catalog. After saving that type on a program with
+ * no code yet, a banner offers adding one (the program page's Enrollment code tab).
  */
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Alert, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
 import { getDiscountPercent, getPriceWithVat } from '@src/data/discountPercent';
 import { getErrorReason } from '@src/data/httpError';
-import { useActiveCodeCount } from '@src/modules/enrollment-codes/data/hooks';
+import { useItemCodeCount } from '@src/modules/enrollment-codes/data/hooks';
 import enrollmentCodeMessages from '@src/modules/enrollment-codes/messages';
 import { useUpdateProgram } from '../data/hooks';
 import type { ProgramDetail, ProgramPricingCategory } from '../data/types';
@@ -42,17 +47,20 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  const [hideFromCatalog, setHideFromCatalog] = useState(false);
+  const [, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     setCategory(program.pricingCategory || 'is_free');
+    setHideFromCatalog(program.hideFromCatalog ?? false);
     setRegularPrice(program.regularPrice ?? '');
     setSalePrice(program.salePrice ?? '');
-  }, [program.pricingCategory, program.regularPrice, program.salePrice]);
+  }, [program.pricingCategory, program.regularPrice, program.salePrice, program.hideFromCatalog]);
 
   const isPaid = category === 'is_paid';
-  // Switching a program away from Enrollment code switches its active codes off, so the admin is told how many first.
-  const leavesEnrollmentCode = program.pricingCategory === 'is_enrollment_code' && category !== 'is_enrollment_code';
-  const { data: activeCodeCount } = useActiveCodeCount({ programUuid: program.uuid }, leavesEnrollmentCode);
+  // After saving the Enrollment code type, offer a first code when the program has none.
+  const isCodeType = category === 'is_enrollment_code';
+  const { data: codeCount } = useItemCodeCount({ programUuid: program.uuid }, saved && isCodeType);
   // Live from the inputs, before saving.
   const discountPercent = getDiscountPercent(regularPrice, salePrice);
   const { vatRate, vatLabel } = program;
@@ -93,6 +101,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
         pricingCategory: category,
         regularPrice: isPaid ? regularPrice.trim() : null,
         salePrice: isPaid && salePrice.trim() !== '' ? salePrice.trim() : null,
+        ...(isCodeType ? { hideFromCatalog } : {}),
       });
       setSaved(true);
     } catch (err) {
@@ -129,6 +138,24 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
       {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
       {saved && !error && (
         <Alert variant="success" className="mb-3">{intl.formatMessage(messages.pricingSaved)}</Alert>
+      )}
+
+      {saved && isCodeType && codeCount === 0 && (
+        <Alert variant="info" className="mb-3" data-testid="add-code-banner">
+          {intl.formatMessage(enrollmentCodeMessages.addCodeBanner)}
+          {' '}
+          <Button
+            variant="link"
+            size="inline"
+            onClick={() => setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set('tab', 'enrollment-code');
+              return next;
+            }, { replace: true })}
+          >
+            {intl.formatMessage(enrollmentCodeMessages.addCodeAction)}
+          </Button>
+        </Alert>
       )}
 
       <Form.Group isInvalid={!!fieldErrors.pricingCategory}>
@@ -175,10 +202,18 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
         )}
       </Form.Group>
 
-      {leavesEnrollmentCode && !!activeCodeCount && (
-        <Alert variant="warning" className="mb-3" data-testid="codes-switched-off-warning">
-          {intl.formatMessage(enrollmentCodeMessages.switchAwayWarning, { count: activeCodeCount })}
-        </Alert>
+      {isCodeType && (
+        <Form.Group controlId="program-hide-from-catalog">
+          <Form.Checkbox
+            name="hideFromCatalog"
+            checked={hideFromCatalog}
+            disabled={isPending}
+            description={intl.formatMessage(enrollmentCodeMessages.hideFromCatalogHelp)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setHideFromCatalog(e.target.checked); touched(); }}
+          >
+            {intl.formatMessage(enrollmentCodeMessages.hideFromCatalog)}
+          </Form.Checkbox>
+        </Form.Group>
       )}
 
       {isPaid && (

@@ -177,6 +177,8 @@ export interface CoursePricing {
    * Studio-facing endpoint refuses writes. Settable only from here.
    */
   pricingManagedByAdmin: boolean;
+  /** Enrollment code courses only: kept out of the public catalog. The link and the partner page still show it. */
+  hideFromCatalog?: boolean;
   /**
    * program_key of the program the course is in, or null. Only a Program-only
    * course can be in a program, and its type cannot change while it is in one.
@@ -191,4 +193,6 @@ export interface CoursePricingPatch {
   regularPrice?: string | null;
   salePrice?: string | null;
   pricingManagedByAdmin?: boolean;
+  /** Sent only with the Enrollment code type. The backend refuses it on any other type. */
+  hideFromCatalog?: boolean;
 }

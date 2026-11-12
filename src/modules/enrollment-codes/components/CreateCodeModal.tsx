@@ -2,9 +2,10 @@
  * Create an enrollment code, modeled on the legacy Create Coupon form.
  *
  * Code: typed (6 to 8 letters and numbers, uppercased as you type) or generated with the Generate button.
- * Left empty, the backend generates one. Course or program: one, of type Enrollment code. From a course or
- * program page the item is fixed and the picker is skipped. Usage: unchecked is a single use, checked asks
- * for a number. Expiry is optional. The backend's refusals show on the field they name.
+ * Left empty, the backend generates one. Scope: a course or a program of type Enrollment code, or an
+ * organization (the code then works for every Enrollment code course and program of it). From a detail
+ * page the scope and the item are fixed and the scope choice and picker are skipped. Usage: unchecked is a
+ * single use, checked asks for a number. Expiry is optional. The backend's refusals show on the field they name.
  */
 import { useEffect, useState } from 'react';
 import { Badge, Button, Form } from '@openedx/paragon';
@@ -12,11 +13,13 @@ import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
 import { useCreateEnrollmentCode } from '../data/hooks';
-import type { EnrollmentCode, ItemKind } from '../data/types';
+import type { CodeScope, EnrollmentCode, ItemKind } from '../data/types';
 import messages from '../messages';
 import { readCodeError } from './codeErrors';
 import ItemPicker from './ItemPicker';
 import type { PickedItem } from './ItemPicker';
+import OrganizationPicker from './OrganizationPicker';
+import type { PickedOrganization } from './OrganizationPicker';
 
 /** No 0, O, 1, I or L, which are mistaken for each other when a code is read out or copied by hand. */
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -40,6 +43,7 @@ const BACKEND_FIELDS: Record<string, FormField> = {
   code: 'code',
   course_id: 'item',
   program_uuid: 'item',
+  organization: 'item',
   max_uses: 'maxUses',
   expires_at: 'expiresAt',
 };
@@ -47,16 +51,22 @@ const BACKEND_FIELDS: Record<string, FormField> = {
 interface CreateCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  /** Set from a course or program page: the code is for this item and the picker is skipped. */
+  /** Set from a detail page: the code is for this item and the scope choice and picker are skipped. */
   fixedItem?: PickedItem;
   onCreated: (code: EnrollmentCode) => void;
 }
 
-export const KindTag = ({ kind }: { kind: ItemKind }) => {
+const KIND_MESSAGE = {
+  course: messages.kindCourse,
+  program: messages.kindProgram,
+  organization: messages.kindOrganization,
+};
+
+export const KindTag = ({ kind }: { kind: ItemKind | 'organization' }) => {
   const intl = useIntl();
   return (
     <Badge variant="light" className="ml-2">
-      {intl.formatMessage(kind === 'course' ? messages.kindCourse : messages.kindProgram)}
+      {intl.formatMessage(KIND_MESSAGE[kind])}
     </Badge>
   );
 };
@@ -68,7 +78,9 @@ const CreateCodeModal = ({
   const mutation = useCreateEnrollmentCode();
 
   const [code, setCode] = useState('');
+  const [scope, setScope] = useState<CodeScope>('course');
   const [picked, setPicked] = useState<PickedItem | null>(null);
+  const [pickedOrg, setPickedOrg] = useState<PickedOrganization | null>(null);
   const [multiple, setMultiple] = useState(false);
   const [maxUses, setMaxUses] = useState('2');
   const [expiresAt, setExpiresAt] = useState('');
@@ -78,7 +90,9 @@ const CreateCodeModal = ({
   useEffect(() => {
     if (isOpen) {
       setCode('');
+      setScope('course');
       setPicked(null);
+      setPickedOrg(null);
       setMultiple(false);
       setMaxUses('2');
       setExpiresAt('');
@@ -87,13 +101,18 @@ const CreateCodeModal = ({
     }
   }, [isOpen]);
 
-  const item = fixedItem ?? picked;
+  // What the code covers: the fixed item, or the choice of the current scope.
+  const item: PickedItem | null = fixedItem ?? (scope === 'organization'
+    ? (pickedOrg && { kind: 'organization', id: pickedOrg.shortName, name: pickedOrg.name })
+    : picked);
   const clear = (field: FormField) => setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
 
   const validate = (): FieldErrors => {
     const errors: FieldErrors = {};
     if (code && !CODE_PATTERN.test(code)) { errors.code = intl.formatMessage(messages.codeInvalid); }
-    if (!item) { errors.item = intl.formatMessage(messages.itemRequired); }
+    if (!item) {
+      errors.item = intl.formatMessage(scope === 'organization' ? messages.organizationRequired : messages.itemRequired);
+    }
     if (multiple && !(Number.isInteger(Number(maxUses)) && Number(maxUses) >= 1)) {
       errors.maxUses = intl.formatMessage(messages.maxUsesInvalid);
     }
@@ -109,7 +128,9 @@ const CreateCodeModal = ({
     try {
       const created = await mutation.mutateAsync({
         code: code || undefined,
-        ...(item.kind === 'course' ? { courseId: item.id } : { programUuid: item.id }),
+        ...(item.kind === 'course' ? { courseId: item.id } : {}),
+        ...(item.kind === 'program' ? { programUuid: item.id } : {}),
+        ...(item.kind === 'organization' ? { organization: item.id } : {}),
         maxUses: multiple ? Number(maxUses) : 1,
         expiresAt: expiresAt || undefined,
       });
@@ -167,21 +188,51 @@ const CreateCodeModal = ({
 
       {fixedItem ? (
         <Form.Group>
-          <Form.Label>{intl.formatMessage(messages.itemLabel)}</Form.Label>
+          <Form.Label>{intl.formatMessage(messages.scopeLabel)}</Form.Label>
           <div>
             {fixedItem.name}
             <KindTag kind={fixedItem.kind} />
           </div>
         </Form.Group>
       ) : (
-        <ItemPicker
-          controlId="enrollment-code-item"
-          label={intl.formatMessage(messages.itemLabel)}
-          value={picked}
-          onChange={(next) => { setPicked(next); clear('item'); }}
-          error={fieldErrors.item}
-          help={intl.formatMessage(messages.itemHelp)}
-        />
+        <>
+          <Form.Group controlId="enrollment-code-scope">
+            <Form.Label>{intl.formatMessage(messages.scopeLabel)}</Form.Label>
+            <Form.RadioSet
+              name="enrollment-code-scope"
+              value={scope}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                setScope(event.target.value as CodeScope);
+                clear('item');
+              }}
+              isInline
+            >
+              <Form.Radio value="course">{intl.formatMessage(messages.scopeCourse)}</Form.Radio>
+              <Form.Radio value="program">{intl.formatMessage(messages.scopeProgram)}</Form.Radio>
+              <Form.Radio value="organization">{intl.formatMessage(messages.scopeOrganization)}</Form.Radio>
+            </Form.RadioSet>
+          </Form.Group>
+          {scope === 'organization' ? (
+            <OrganizationPicker
+              controlId="enrollment-code-organization"
+              value={pickedOrg}
+              onChange={(next) => { setPickedOrg(next); clear('item'); }}
+              error={fieldErrors.item}
+              help={intl.formatMessage(messages.organizationHelp)}
+            />
+          ) : (
+            <ItemPicker
+              key={scope}
+              controlId="enrollment-code-item"
+              label={intl.formatMessage(scope === 'course' ? messages.courseLabel : messages.programLabel)}
+              kinds={[scope]}
+              value={picked?.kind === scope ? picked : null}
+              onChange={(next) => { setPicked(next); clear('item'); }}
+              error={fieldErrors.item}
+              help={intl.formatMessage(messages.itemHelp)}
+            />
+          )}
+        </>
       )}
 
       <Form.Group controlId="enrollment-code-multiple">

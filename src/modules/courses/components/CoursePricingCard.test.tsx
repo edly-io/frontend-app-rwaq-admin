@@ -10,7 +10,7 @@ import type { CoursePricing } from '../data/types';
 import CoursePricingCard from './CoursePricingCard';
 
 jest.mock('../data/hooks');
-jest.mock('@src/modules/enrollment-codes/data/hooks', () => ({ useActiveCodeCount: jest.fn() }));
+jest.mock('@src/modules/enrollment-codes/data/hooks', () => ({ useItemCodeCount: jest.fn() }));
 jest.mock('@edx/frontend-platform/logging', () => ({ logError: jest.fn() }));
 
 const courseId = 'course-v1:ArbOrg+PRC01+2026';
@@ -23,6 +23,7 @@ const basePricing: CoursePricing = {
   discountPercentage: null,
   currency: 'SAR',
   pricingManagedByAdmin: false,
+  hideFromCatalog: false,
   partOfProgram: null,
   partOfProgramName: null,
 };
@@ -39,7 +40,7 @@ const save = () => fireEvent.click(screen.getByRole('button', { name: 'Save pric
 
 beforeEach(() => {
   jest.clearAllMocks();
-  (codeHooks.useActiveCodeCount as jest.Mock).mockReturnValue({ data: undefined });
+  (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: undefined });
   mockUpdate.mockResolvedValue(basePricing);
   (hooks.useUpdateCoursePricing as jest.Mock).mockReturnValue({ mutateAsync: mockUpdate, isPending: false });
 });
@@ -287,43 +288,72 @@ describe('CoursePricingCard', () => {
       expect(screen.queryByLabelText('Price before VAT (SAR)')).not.toBeInTheDocument();
     });
 
-    it('saves the type with no prices', async () => {
+    it('saves the type with no prices and with hideFromCatalog off', async () => {
       renderCard();
       fireEvent.click(screen.getByRole('radio', { name: 'Enrollment code' }));
       save();
       await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
       const body = mockUpdate.mock.calls[0][0];
       expect(body.pricingCategory).toBe('is_enrollment_code');
+      expect(body.hideFromCatalog).toBe(false);
       expect(body).not.toHaveProperty('regularPrice');
       expect(body).not.toHaveProperty('salePrice');
     });
 
-    it('warns how many active codes switch off when the type is switched away, and counts the right course', () => {
-      (codeHooks.useActiveCodeCount as jest.Mock).mockReturnValue({ data: 3 });
+    it('shows the hide from catalog checkbox only for the Enrollment code type and sends it', async () => {
+      renderCard();
+      expect(screen.queryByRole('checkbox', { name: 'Hide from catalog' })).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('radio', { name: 'Enrollment code' }));
+      expect(screen.getByText('Learners can still open it by link, QR code and on the partner page.')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('checkbox', { name: /Hide from catalog/ }));
+      save();
+      await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
+      expect(mockUpdate.mock.calls[0][0].hideFromCatalog).toBe(true);
+      fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
+      expect(screen.queryByRole('checkbox', { name: /Hide from catalog/ })).not.toBeInTheDocument();
+    });
+
+    it('starts the checkbox from the stored value and never sends the flag for another type', async () => {
+      renderCard({ pricingCategory: 'is_enrollment_code', hideFromCatalog: true });
+      expect(screen.getByRole('checkbox', { name: /Hide from catalog/ })).toBeChecked();
+      fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
+      save();
+      await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
+      expect(mockUpdate.mock.calls[0][0]).not.toHaveProperty('hideFromCatalog');
+    });
+
+    it('offers adding a code after saving the type when the course has none, with a link to the tab', async () => {
+      (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: 0 });
       renderCard({ pricingCategory: 'is_enrollment_code' });
+      expect(screen.queryByTestId('add-code-banner')).not.toBeInTheDocument();
+      save();
+      expect(await screen.findByTestId('add-code-banner')).toHaveTextContent('Add an enrollment code so learners can join.');
+      expect(codeHooks.useItemCodeCount).toHaveBeenLastCalledWith({ courseId }, true);
+      fireEvent.click(screen.getByRole('button', { name: 'Add a code' }));
+      expect(window.location.search).toContain('tab=enrollment-code');
+    });
+
+    it('shows no banner when the course already has a code, and never a switch-off warning', async () => {
+      (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: 2 });
+      renderCard({ pricingCategory: 'is_enrollment_code' });
+      save();
+      await waitFor(() => expect(mockUpdate).toHaveBeenCalled());
+      expect(screen.queryByTestId('add-code-banner')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
       expect(screen.queryByTestId('codes-switched-off-warning')).not.toBeInTheDocument();
-      fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
-      expect(screen.getByTestId('codes-switched-off-warning')).toHaveTextContent('3 codes will be switched off.');
-      expect(codeHooks.useActiveCodeCount).toHaveBeenLastCalledWith({ courseId }, true);
     });
 
-    it('says "1 code" for one', () => {
-      (codeHooks.useActiveCodeCount as jest.Mock).mockReturnValue({ data: 1 });
+    it('shows a 409 with no field under the type choice', async () => {
+      mockUpdate.mockRejectedValue({
+        response: {
+          status: 409,
+          data: { detail: 'This course has an enrollment code. Delete or switch off its code in the Enrollment code tab first.' },
+        },
+      });
       renderCard({ pricingCategory: 'is_enrollment_code' });
       fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
-      expect(screen.getByTestId('codes-switched-off-warning')).toHaveTextContent('1 code will be switched off.');
-    });
-
-    it('shows no warning when no code is active', () => {
-      (codeHooks.useActiveCodeCount as jest.Mock).mockReturnValue({ data: 0 });
-      renderCard({ pricingCategory: 'is_enrollment_code' });
-      fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
-      expect(screen.queryByTestId('codes-switched-off-warning')).not.toBeInTheDocument();
-    });
-
-    it('does not count codes for a course that is not switching away', () => {
-      renderCard({ pricingCategory: 'is_free' });
-      expect(codeHooks.useActiveCodeCount).toHaveBeenLastCalledWith({ courseId }, false);
+      save();
+      expect(await screen.findByText(/This course has an enrollment code/)).toBeInTheDocument();
     });
 
     it('shows the backend refusal to switch away on the type, as the other locks do', async () => {

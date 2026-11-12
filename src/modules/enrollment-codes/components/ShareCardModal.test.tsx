@@ -43,6 +43,7 @@ const card: CodeCard = {
   organizationArabicName: 'رواق',
   logo: 'data:image/png;base64,iVBORw0KGgo=',
   qrUrl: 'https://rwaq.org/enroll?code=RIYADH26',
+  qrMissing: false,
   expiresAt: null,
   platform: { slogan: 'Slogan', about: 'About', links: [{ type: 'website', url: 'https://rwaq.org', text: 'rwaq.org' }] },
 };
@@ -71,6 +72,28 @@ beforeEach(() => {
 });
 
 describe('ShareCardModal', () => {
+  it('shows the full link under the card, so the admin can open it before sharing', () => {
+    renderModal();
+    expect(screen.getByTestId('enrollment-code-card-link')).toHaveTextContent(
+      'The QR code opens: https://rwaq.org/enroll?code=RIYADH26',
+    );
+    expect(screen.queryByTestId('enrollment-code-card-qr-missing')).not.toBeInTheDocument();
+  });
+
+  it('says so and disables the image and HTML downloads when the public site address is not set', () => {
+    (hooks.useEnrollmentCodeCard as jest.Mock).mockReturnValue({
+      data: { ...card, qrUrl: '', qrMissing: true }, isLoading: false, isError: false,
+    });
+    renderModal();
+    expect(screen.getByTestId('enrollment-code-card-qr-missing')).toHaveTextContent(
+      'The public site address is not set, so no QR code can be made.',
+    );
+    expect(screen.queryByTestId('enrollment-code-card-link')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Download HTML' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Download Image' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Copy Code' })).toBeEnabled();
+  });
+
   it('shows the card and the four buttons, titled as created after a create', () => {
     renderModal({ isNew: true });
     expect(screen.getAllByText('RIYADH26').length).toBeGreaterThan(0);

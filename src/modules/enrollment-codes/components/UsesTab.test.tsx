@@ -1,10 +1,11 @@
 /**
- * The Uses tab: who joined with which code, the filters (code, item, dates, student), the CSV with the same
- * filters, and the code a Codes row narrowed it to.
+ * The Uses tab: who joined with which code, the filters (code, item, organization, scope, dates, student), the
+ * CSV with the same filters, the scope, organization and typed-here columns, and the code a Codes row narrowed it to.
  */
 import { fireEvent, screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as courseHooks from '@src/modules/courses/data/hooks';
+import * as orgHooks from '@src/modules/organizations/data/hooks';
 import * as programHooks from '@src/modules/programs/data/hooks';
 import * as hooks from '../data/hooks';
 import type { CodeUse } from '../data/types';
@@ -13,6 +14,7 @@ import UsesTab from './UsesTab';
 jest.mock('../data/hooks', () => ({ useEnrollmentCodeUses: jest.fn() }));
 jest.mock('@src/modules/courses/data/hooks', () => ({ useCourses: jest.fn() }));
 jest.mock('@src/modules/programs/data/hooks', () => ({ usePrograms: jest.fn() }));
+jest.mock('@src/modules/organizations/data/hooks', () => ({ useOrgFilterOptions: jest.fn() }));
 jest.mock('@src/modules/dashboard/components/DateRangePicker', () => ({
   __esModule: true,
   default: ({ onChange }: { onChange: (from?: string, to?: string) => void }) => (
@@ -50,6 +52,9 @@ const USE: CodeUse = {
   item: { kind: 'course', id: COURSE_KEY, name: 'Safety basics' },
   usedAt: '2026-11-02T08:30:00Z',
   stillEnrolled: true,
+  enteredCode: true,
+  scope: 'course',
+  organization: 'Arbisoft',
 };
 
 const withUses = (...uses: CodeUse[]) => (hooks.useEnrollmentCodeUses as jest.Mock).mockReturnValue({
@@ -70,12 +75,18 @@ beforeEach(() => {
     data: { results: [{ courseId: COURSE_KEY, displayName: 'Safety basics' }] },
   });
   (programHooks.usePrograms as jest.Mock).mockReturnValue({ data: { results: [] } });
+  (orgHooks.useOrgFilterOptions as jest.Mock).mockReturnValue([
+    { value: 'Edrakk', label: 'Edrakk' }, { value: 'ARB', label: 'Arbisoft' },
+  ]);
   withUses(USE, {
     ...USE,
     id: 2,
     code: 'RIYADH26',
     codeId: 5,
     stillEnrolled: false,
+    enteredCode: false,
+    scope: 'organization',
+    organization: 'Edrakk',
     student: {
       id: 8, name: '', username: 'omar', email: 'omar@example.com',
     },
@@ -102,6 +113,34 @@ describe('UsesTab', () => {
     expect(second).toHaveTextContent('Left');
   });
 
+  it('shows the scope, the organization and whether the learner typed the code here', () => {
+    renderWrapper(<UsesTab onClearCode={jest.fn()} />);
+    ['Scope', 'Organization', 'Typed the code here'].forEach((name) => {
+      expect(screen.getByRole('columnheader', { name })).toBeInTheDocument();
+    });
+    const first = screen.getByText('ABC234').closest('tr') as HTMLElement;
+    expect(first).toHaveTextContent('Arbisoft');
+    expect(first).toHaveTextContent('Yes');
+    const second = screen.getByText('RIYADH26').closest('tr') as HTMLElement;
+    expect(second).toHaveTextContent('Organization');
+    expect(second).toHaveTextContent('Edrakk');
+    expect(second).toHaveTextContent('No');
+  });
+
+  it('filters by organization and scope, and the CSV follows', () => {
+    renderWrapper(<UsesTab onClearCode={jest.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+    fireEvent.change(screen.getByLabelText('Organization'), { target: { value: 'Edrakk' } });
+    fireEvent.change(screen.getByLabelText('Scope'), { target: { value: 'organization' } });
+    expect(lastParams()).toMatchObject({ organization: 'Edrakk', scope: 'organization', page: 1 });
+    expect(csvParams()).toMatchObject({ organization: 'Edrakk', scope: 'organization' });
+    expect(screen.getByText('Organization: Edrakk')).toBeInTheDocument();
+    expect(screen.getByText('Scope: Organization')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
+    expect(lastParams().organization).toBeUndefined();
+    expect(lastParams().scope).toBeUndefined();
+  });
+
   it('lists every use until a filter is set', () => {
     renderWrapper(<UsesTab onClearCode={jest.fn()} />);
     expect(lastParams()).toEqual({
@@ -109,6 +148,8 @@ describe('UsesTab', () => {
       code: undefined,
       courseId: undefined,
       programUuid: undefined,
+      organization: undefined,
+      scope: undefined,
       startDate: undefined,
       endDate: undefined,
       search: undefined,

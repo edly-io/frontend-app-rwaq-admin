@@ -4,6 +4,9 @@
  * Profile *editing* lives in the list page's row action now, so this page has
  * one job each for its two cards: state the org's facts, and run its admin
  * roster. That split is why the form that used to sit here is gone.
+ *
+ * Two tabs: Details (all of the above) and Enrollment code, the org's organization codes (superusers, who
+ * are the only ones the codes API admits). `?tab=enrollment-code` opens it.
  */
 import { useState } from 'react';
 import DOMPurify from 'dompurify';
@@ -18,6 +21,9 @@ import type { ColumnDef } from '@src/components/AdminDataTable';
 import DetailGrid from '@src/components/DetailGrid';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useCourses } from '@src/data/hooks';
+import { useAdminCapabilities } from '@src/data/whoami';
+import CodesCard from '@src/modules/enrollment-codes/components/CodesCard';
+import enrollmentCodeMessages from '@src/modules/enrollment-codes/messages';
 import type { CourseSummary } from '@src/data/hooks';
 import OrgAdminTable from './components/OrgAdminTable';
 import OrgReportList from './components/OrgReportList';
@@ -119,12 +125,23 @@ const OrgCoursesTable = ({ org }: { org: string }) => {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+type OrgTab = 'details' | 'enrollmentCode';
+
 const OrgDetailPage = () => {
   const intl = useIntl();
   const { shortName = '' } = useParams();
   const { data: organization, isLoading, isError } = useOrganization(shortName);
   const [isAddingAdmin, setIsAddingAdmin] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { data: capabilities } = useAdminCapabilities();
+  const showCodesTab = capabilities?.isSuperuser === true;
+  const activeTab: OrgTab = showCodesTab && searchParams.get('tab') === 'enrollment-code' ? 'enrollmentCode' : 'details';
+  const setActiveTab = (tab: OrgTab) => setSearchParams((prev) => {
+    const next = new URLSearchParams(prev);
+    if (tab === 'enrollmentCode') { next.set('tab', 'enrollment-code'); } else { next.delete('tab'); }
+    return next;
+  }, { replace: true });
 
   const dash = intl.formatMessage(messages.detailNone);
 
@@ -182,60 +199,110 @@ const OrgDetailPage = () => {
         </div>
       </div>
 
-      <div className="rwaq-card">
-        <DetailGrid
-          title={intl.formatMessage(messages.detailOverview)}
-          items={[
-            { label: intl.formatMessage(messages.detailShortName), value: organization.shortName },
-            {
-              label: intl.formatMessage(messages.detailArabicName),
-              value: organization.arabicName
-                ? <span dir="auto">{organization.arabicName}</span>
-                : dash,
-            },
-            { label: intl.formatMessage(messages.detailCourses), value: organization.courseCount },
-            { label: intl.formatMessage(messages.detailAdmins), value: organization.adminCount },
-            {
-              label: intl.formatMessage(messages.detailFeaturedVideo),
-              value: organization.featuredVideo
-                ? (
-                  <a href={organization.featuredVideo} target="_blank" rel="noreferrer">
-                    {organization.featuredVideo}
-                  </a>
-                )
-                : dash,
-            },
-            {
-              label: intl.formatMessage(messages.detailShowLogoOnProgramCertificate),
-              value: organization.showLogoOnProgramCertificate ? 'Enabled' : '—',
-            },
-            ...(organization.description ? [{
-              label: intl.formatMessage(messages.detailDescription),
-              // eslint-disable-next-line react/no-danger
-              value: <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(organization.description) }} />,
-              isWide: true,
-            }] : []),
-          ]}
-        />
-      </div>
+      {showCodesTab && (
+        <div
+          className="d-flex rwaq-gap-sm mb-4"
+          role="tablist"
+          style={{ borderBottom: '2px solid var(--pgn-color-gray-200, #dee2e6)' }}
+        >
+          {(['details', 'enrollmentCode'] as OrgTab[]).map((tab) => (
+            <button
+              key={tab}
+              id={`tab-${tab}`}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab}
+              aria-controls={`tabpanel-${tab}`}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: '0.5rem 1rem',
+                fontWeight: activeTab === tab ? 600 : 400,
+                color: activeTab === tab
+                  ? 'var(--pgn-color-primary-500, #0A3055)'
+                  : 'var(--pgn-color-gray-600, #454545)',
+                borderBottom: activeTab === tab
+                  ? '2px solid var(--pgn-color-primary-500, #0A3055)'
+                  : '2px solid transparent',
+                marginBottom: '-2px',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {intl.formatMessage(tab === 'details' ? enrollmentCodeMessages.tabDetails : enrollmentCodeMessages.tabEnrollmentCode)}
+            </button>
+          ))}
+        </div>
+      )}
 
-      <div className="rwaq-card">
-        <h2 className="rwaq-section-title mb-4">
-          {intl.formatMessage(messages.detailAdmins)}
-        </h2>
+      {/* Both panels stay mounted so aria-controls always resolves. Hidden with the `hidden` attribute. */}
+      <div id="tabpanel-details" role="tabpanel" aria-labelledby="tab-details" hidden={activeTab !== 'details'}>
+        <div className="rwaq-card">
+          <DetailGrid
+            title={intl.formatMessage(messages.detailOverview)}
+            items={[
+              { label: intl.formatMessage(messages.detailShortName), value: organization.shortName },
+              {
+                label: intl.formatMessage(messages.detailArabicName),
+                value: organization.arabicName
+                  ? <span dir="auto">{organization.arabicName}</span>
+                  : dash,
+              },
+              { label: intl.formatMessage(messages.detailCourses), value: organization.courseCount },
+              { label: intl.formatMessage(messages.detailAdmins), value: organization.adminCount },
+              {
+                label: intl.formatMessage(messages.detailFeaturedVideo),
+                value: organization.featuredVideo
+                  ? (
+                    <a href={organization.featuredVideo} target="_blank" rel="noreferrer">
+                      {organization.featuredVideo}
+                    </a>
+                  )
+                  : dash,
+              },
+              {
+                label: intl.formatMessage(messages.detailShowLogoOnProgramCertificate),
+                value: organization.showLogoOnProgramCertificate ? 'Enabled' : '—',
+              },
+              ...(organization.description ? [{
+                label: intl.formatMessage(messages.detailDescription),
+                // eslint-disable-next-line react/no-danger
+                value: <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(organization.description) }} />,
+                isWide: true,
+              }] : []),
+            ]}
+          />
+        </div>
 
-        <OrgAdminTable shortName={organization.shortName} members={organization.members ?? []} />
-      </div>
+        <div className="rwaq-card">
+          <h2 className="rwaq-section-title mb-4">
+            {intl.formatMessage(messages.detailAdmins)}
+          </h2>
 
-      <div className="rwaq-card">
-        <h2 className="rwaq-section-title mb-4">{intl.formatMessage(messages.detailCourses)}</h2>
-        <OrgCoursesTable org={organization.shortName} />
-      </div>
+          <OrgAdminTable shortName={organization.shortName} members={organization.members ?? []} />
+        </div>
 
-      <div className="rwaq-card">
-        <h2 className="rwaq-section-title mb-4">{intl.formatMessage(messages.reportsTitle)}</h2>
-        <OrgReportList org={organization.shortName} />
+        <div className="rwaq-card">
+          <h2 className="rwaq-section-title mb-4">{intl.formatMessage(messages.detailCourses)}</h2>
+          <OrgCoursesTable org={organization.shortName} />
+        </div>
+
+        <div className="rwaq-card">
+          <h2 className="rwaq-section-title mb-4">{intl.formatMessage(messages.reportsTitle)}</h2>
+          <OrgReportList org={organization.shortName} />
+        </div>
       </div>
+      {showCodesTab && (
+        <div
+          id="tabpanel-enrollmentCode"
+          role="tabpanel"
+          aria-labelledby="tab-enrollmentCode"
+          hidden={activeTab !== 'enrollmentCode'}
+        >
+          <CodesCard item={{ kind: 'organization', id: organization.shortName, name: organization.name }} />
+        </div>
+      )}
 
       <AddOrgAdminModal
         isOpen={isAddingAdmin}
