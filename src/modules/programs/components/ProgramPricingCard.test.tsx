@@ -38,11 +38,9 @@ beforeEach(() => {
 });
 
 describe('ProgramPricingCard', () => {
-  it('shows the lock help text', () => {
+  it('shows the program type and pricing heading', () => {
     renderCard();
-    expect(screen.getByText(
-      'When enabled, the pricing fields are managed from the admin panel. Org admin can still change them.',
-    )).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Program type and pricing' })).toBeInTheDocument();
   });
 
   it('validates price and sale price on blur', () => {
@@ -211,7 +209,7 @@ describe('ProgramPricingCard', () => {
       expect(values[values.length - 2]).toBe('is_part_of_subscription');
       expect(screen.getByRole('radio', { name: 'Enrollment code' })).not.toBeChecked();
       expect(screen.getByText(
-        'Learners enroll at no cost, but only with an enrollment code. It has no price of its own.',
+        'A free, restricted program that learners can only join with an enrollment code.',
       )).toBeInTheDocument();
     });
 
@@ -222,34 +220,14 @@ describe('ProgramPricingCard', () => {
       expect(screen.queryByLabelText('Price before VAT (SAR)')).not.toBeInTheDocument();
       save();
       await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({
-        pricingCategory: 'is_enrollment_code', regularPrice: null, salePrice: null, hideFromCatalog: false,
+        pricingCategory: 'is_enrollment_code', regularPrice: null, salePrice: null,
       }));
-    });
-
-    it('shows the hide from catalog checkbox only for the Enrollment code type and sends it', async () => {
-      renderCard();
-      expect(screen.queryByRole('checkbox', { name: /Hide from catalog/ })).not.toBeInTheDocument();
-      fireEvent.click(screen.getByRole('radio', { name: 'Enrollment code' }));
-      expect(screen.getByText('Learners can still open it by link, QR code and on the partner page.')).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('checkbox', { name: /Hide from catalog/ }));
-      save();
-      await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
-      expect(mockUpdate.mock.calls[0][0].hideFromCatalog).toBe(true);
-    });
-
-    it('starts the checkbox from the stored value and never sends the flag for another type', async () => {
-      renderCard({ pricingCategory: 'is_enrollment_code', hideFromCatalog: true });
-      expect(screen.getByRole('checkbox', { name: /Hide from catalog/ })).toBeChecked();
-      fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
-      save();
-      await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
-      expect(mockUpdate.mock.calls[0][0]).not.toHaveProperty('hideFromCatalog');
     });
 
     it('offers Add enrollment code to a stored Enrollment code program with no code, linking to the codes page', () => {
       (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: 0 });
       renderCard({ pricingCategory: 'is_enrollment_code' });
-      expect(screen.getByTestId('add-code-banner')).toHaveTextContent('Add an enrollment code so learners can join.');
+      expect(screen.getByRole('button', { name: 'Add enrollment code' })).toBeInTheDocument();
       expect(codeHooks.useItemCodeCount).toHaveBeenLastCalledWith({ programUuid: makeProgram().uuid }, true);
       fireEvent.click(screen.getByRole('button', { name: 'Add enrollment code' }));
       expect(window.location.pathname).toBe('/enrollment-codes');
@@ -263,7 +241,7 @@ describe('ProgramPricingCard', () => {
       expect(codeHooks.useItemCodeCount).toHaveBeenLastCalledWith({ programUuid: makeProgram().uuid }, false);
       fireEvent.click(screen.getByRole('radio', { name: 'Enrollment code' }));
       save();
-      expect(await screen.findByTestId('add-code-banner')).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'Add enrollment code' })).toBeInTheDocument();
     });
 
     it('shows no banner when the program already has a code, and never a switch-off warning', async () => {

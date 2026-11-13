@@ -6,15 +6,15 @@
  * `prefillItem` opens the create form once with that item fixed (the pricing cards' Add enrollment code
  * button links to the page with it), and `onPrefillHandled` then tells the page it was used.
  *
- * Row actions: view card, view usage (opens the usage panel, `onViewUsage`), view the learners in the Uses
- * tab, switch off or on, edit, and delete (only a code with no uses).
+ * Row actions: view card, view usage (opens the code's usage page, `onViewUsage`), view the learners in the Uses
+ * tab, mark inactive or active (a code that was used), edit, and delete (a code with no uses).
  */
 import {
   Suspense, lazy, useEffect, useState,
 } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Badge, Button, Icon, IconButton,
+  Badge, Button, Icon, IconButton, OverlayTrigger, Tooltip,
 } from '@openedx/paragon';
 import {
   Add, ContentCopy, Delete, Edit, People, QrCode2, ToggleOff, ToggleOn, Visibility,
@@ -68,9 +68,14 @@ export const itemPath = (kind: ItemKind | 'organization', id: string) => {
 interface CodesListProps {
   /** Fixes the list to one course, one program or one organization (its organization codes). */
   item?: PickedItem;
+  courseId?: string;
+  programUuid?: string;
+  organization?: string;
+  itemFilterLabel?: string;
+  onClearItemFilter?: () => void;
   /** Opens the Uses tab filtered to this code. */
   onViewUses: (code: EnrollmentCode) => void;
-  /** Opens the usage panel of this code. Without it the row has no usage action. */
+  /** Opens the usage page of this code. Without it the row has no usage action. */
   onViewUsage?: (code: EnrollmentCode) => void;
   /** Opens the create form once, with this course or program fixed. */
   prefillItem?: PickedItem;
@@ -78,7 +83,8 @@ interface CodesListProps {
 }
 
 const CodesList = ({
-  item, onViewUses, onViewUsage, prefillItem, onPrefillHandled,
+  item, courseId, programUuid, organization, itemFilterLabel, onClearItemFilter,
+  onViewUses, onViewUsage, prefillItem, onPrefillHandled,
 }: CodesListProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
@@ -110,9 +116,10 @@ const CodesList = ({
   const listParams: CodeListParams = {
     status: (list.filters.status || undefined) as CodeStatus | undefined,
     kind: kindFilter,
-    organization: item?.kind === 'organization' ? item.id : undefined,
-    courseId: item?.kind === 'course' ? item.id : undefined,
-    programUuid: item?.kind === 'program' ? item.id : undefined,
+    organization: item?.kind === 'organization' ? item.id : organization,
+    includeCovering: Boolean(courseId || programUuid) || undefined,
+    courseId: item?.kind === 'course' ? item.id : courseId,
+    programUuid: item?.kind === 'program' ? item.id : programUuid,
     search: list.search || undefined,
     page: list.page,
     pageSize: PAGE_SIZE,
@@ -120,6 +127,12 @@ const CodesList = ({
   const {
     data, isLoading, isPlaceholderData, isError, error, refetch,
   } = useEnrollmentCodes(listParams);
+
+  // The item filter also returns organization codes that cover the item, so an empty list may only be
+  // hidden by the Scope filter.
+  const showCoveringHint = Boolean(courseId || programUuid)
+    && Boolean(list.filters.kind)
+    && !isLoading && !isPlaceholderData && (data?.results ?? []).length === 0;
 
   const statusOptions = [
     { value: '', label: intl.formatMessage(messages.filterAll) },
@@ -138,6 +151,9 @@ const CodesList = ({
   );
 
   const chips: AppliedChip[] = [];
+  if (itemFilterLabel && onClearItemFilter) {
+    chips.push({ key: 'coveredItem', label: itemFilterLabel, onRemove: onClearItemFilter });
+  }
   if (list.search) {
     chips.push({
       key: 'search',
@@ -184,34 +200,34 @@ const CodesList = ({
       key: 'code',
       renderCell: (_value, row) => (
         <span className="d-inline-flex align-items-center">
-          <strong className="rwaq-order-cell">{row.code}</strong>
-          <IconButton
-            src={ContentCopy}
-            iconAs={Icon}
-            alt={intl.formatMessage(messages.copyCode, { code: row.code })}
-            size="inline"
-            className="ml-1"
-            onClick={() => handleCopy(row.code)}
-          />
+          <strong>{row.code}</strong>
+          <OverlayTrigger placement="top" overlay={<Tooltip id={`code-${row.id}-ContentCopy`}>{intl.formatMessage(messages.copyCode, { code: row.code })}</Tooltip>}>
+            <span><IconButton
+              src={ContentCopy}
+              iconAs={Icon}
+              alt={intl.formatMessage(messages.copyCode, { code: row.code })}
+              size="inline"
+              className="ml-1"
+              onClick={() => handleCopy(row.code)}
+            />
+            </span>
+          </OverlayTrigger>
         </span>
       ),
     },
     ...(item ? [] : [{
+      label: intl.formatMessage(messages.colScope),
+      key: 'scope',
+      renderCell: (_value: unknown, row: EnrollmentCode) => <KindTag kind={row.scope} />,
+    }, {
       label: intl.formatMessage(messages.colItem),
       key: 'item',
-      renderCell: (_value: unknown, row: EnrollmentCode) => (
-        <div className="min-width-0">
-          <div className="rwaq-user-cell__name" title={row.item.name}>
-            <Link to={itemPath(row.item.kind, row.item.id)}>{row.item.name}</Link>
-            <KindTag kind={row.item.kind} />
-          </div>
-          <div className="rwaq-user-cell__meta">
-            {row.scope === 'organization' && row.coveredItemsCount !== undefined
-              ? intl.formatMessage(messages.usageCovers, { count: row.coveredItemsCount })
-              : row.item.organization}
-          </div>
-        </div>
-      ),
+      renderCell: (_value: unknown, row: EnrollmentCode) => (row.item
+        ? <Link to={itemPath(row.item.kind, row.item.id)}>{row.item.name}</Link> : '—'),
+    }, {
+      label: intl.formatMessage(messages.colOrganization),
+      key: 'organization',
+      renderCell: (_value: unknown, row: EnrollmentCode) => row.item?.organization || '—',
     }]),
     {
       label: intl.formatMessage(messages.colCreatedBy),
@@ -252,45 +268,71 @@ const CodesList = ({
       id: 'actions',
       renderCell: (_value, row) => (
         <span className="d-inline-flex align-items-center text-nowrap">
-          <IconButton
-            src={QrCode2}
-            iconAs={Icon}
-            alt={intl.formatMessage(messages.actionViewCard)}
-            onClick={() => setShare({ id: row.id, isNew: false })}
-          />
+          <OverlayTrigger placement="top" overlay={<Tooltip id={`code-${row.id}-QrCode2`}>{intl.formatMessage(messages.actionViewCard)}</Tooltip>}>
+            <span><IconButton
+              size="sm"
+              src={QrCode2}
+              iconAs={Icon}
+              alt={intl.formatMessage(messages.actionViewCard)}
+              onClick={() => setShare({ id: row.id, isNew: false })}
+            />
+            </span>
+          </OverlayTrigger>
           {onViewUsage && (
-            <IconButton
-              src={Visibility}
-              iconAs={Icon}
-              alt={intl.formatMessage(messages.actionViewUsage, { code: row.code })}
-              onClick={() => onViewUsage(row)}
-            />
+            <OverlayTrigger placement="top" overlay={<Tooltip id={`code-${row.id}-Visibility`}>{intl.formatMessage(messages.actionViewUsage, { code: row.code })}</Tooltip>}>
+              <span><IconButton
+                size="sm"
+                src={Visibility}
+                iconAs={Icon}
+                alt={intl.formatMessage(messages.actionViewUsage, { code: row.code })}
+                onClick={() => onViewUsage(row)}
+              />
+              </span>
+            </OverlayTrigger>
           )}
-          <IconButton
-            src={People}
-            iconAs={Icon}
-            alt={intl.formatMessage(messages.actionViewUses)}
-            onClick={() => onViewUses(row)}
-          />
-          <IconButton
-            src={row.isActive ? ToggleOn : ToggleOff}
-            iconAs={Icon}
-            alt={intl.formatMessage(row.isActive ? messages.actionSwitchOff : messages.actionSwitchOn)}
-            onClick={() => handleToggle(row)}
-          />
-          <IconButton
-            src={Edit}
-            iconAs={Icon}
-            alt={intl.formatMessage(messages.actionEdit)}
-            onClick={() => setEditing(row)}
-          />
-          {row.usesCount === 0 && (
-            <IconButton
-              src={Delete}
+          <OverlayTrigger placement="top" overlay={<Tooltip id={`code-${row.id}-People`}>{intl.formatMessage(messages.actionViewUses)}</Tooltip>}>
+            <span><IconButton
+              size="sm"
+              src={People}
               iconAs={Icon}
-              alt={intl.formatMessage(messages.actionDelete)}
-              onClick={() => setDeleting(row)}
+              alt={intl.formatMessage(messages.actionViewUses)}
+              onClick={() => onViewUses(row)}
             />
+            </span>
+          </OverlayTrigger>
+          {(row.usesCount > 0 || !row.isActive) && (
+            <OverlayTrigger placement="top" overlay={<Tooltip id={`code-${row.id}-toggle`}>{intl.formatMessage(row.isActive ? messages.actionSwitchOff : messages.actionSwitchOn)}</Tooltip>}>
+              <span><IconButton
+                size="sm"
+                src={row.isActive ? ToggleOn : ToggleOff}
+                iconAs={Icon}
+                alt={intl.formatMessage(row.isActive ? messages.actionSwitchOff : messages.actionSwitchOn)}
+                onClick={() => handleToggle(row)}
+              />
+              </span>
+            </OverlayTrigger>
+          )}
+          <OverlayTrigger placement="top" overlay={<Tooltip id={`code-${row.id}-Edit`}>{intl.formatMessage(messages.actionEdit)}</Tooltip>}>
+            <span><IconButton
+              size="sm"
+              src={Edit}
+              iconAs={Icon}
+              alt={intl.formatMessage(messages.actionEdit)}
+              onClick={() => setEditing(row)}
+            />
+            </span>
+          </OverlayTrigger>
+          {row.usesCount === 0 && (
+            <OverlayTrigger placement="top" overlay={<Tooltip id={`code-${row.id}-Delete`}>{intl.formatMessage(messages.actionDelete)}</Tooltip>}>
+              <span><IconButton
+                size="sm"
+                src={Delete}
+                iconAs={Icon}
+                alt={intl.formatMessage(messages.actionDelete)}
+                onClick={() => setDeleting(row)}
+              />
+              </span>
+            </OverlayTrigger>
           )}
         </span>
       ),
@@ -322,7 +364,10 @@ const CodesList = ({
         searchPlaceholder={intl.formatMessage(messages.codesSearch)}
         filterGroups={filterGroups}
         appliedChips={chips}
-        onClearAll={list.clearAll}
+        onClearAll={() => {
+          list.clearAll();
+          onClearItemFilter?.();
+        }}
         actions={(
           <Button variant="primary" iconBefore={Add} onClick={() => { setCreateFor(undefined); setCreating(true); }}>
             {intl.formatMessage(messages.create)}
@@ -336,13 +381,20 @@ const CodesList = ({
           onRetry={() => refetch()}
         />
       ) : (
-        <AdminDataTable
-          columns={columns}
-          data={data?.results ?? []}
-          isLoading={isLoading || isPlaceholderData}
-          caption={intl.formatMessage(messages.tabCodes)}
-          pagination={tablePagination(data, list.page, list.setPage)}
-        />
+        <>
+          <AdminDataTable
+            columns={columns}
+            data={data?.results ?? []}
+            isLoading={isLoading || isPlaceholderData}
+            caption={intl.formatMessage(messages.tabCodes)}
+            pagination={tablePagination(data, list.page, list.setPage)}
+          />
+          {showCoveringHint && (
+            <p className="text-muted text-center small mt-2" data-testid="covering-hint">
+              {intl.formatMessage(programUuid ? messages.emptyCoveringHintProgram : messages.emptyCoveringHintCourse)}
+            </p>
+          )}
+        </>
       )}
 
       <CreateCodeModal

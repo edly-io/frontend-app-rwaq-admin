@@ -10,6 +10,23 @@ const messages = defineMessages({
   errorTitle: { id: 'rwaq.admin.enrollmentCodes.error', defaultMessage: 'Could not load enrollment codes.' },
   tabCodes: { id: 'rwaq.admin.enrollmentCodes.tab.codes', defaultMessage: 'Codes' },
   tabUses: { id: 'rwaq.admin.enrollmentCodes.tab.uses', defaultMessage: 'Uses' },
+  backToCodes: { id: 'rwaq.admin.enrollmentCodes.usage.backToCodes', defaultMessage: 'Back to enrollment codes' },
+  viewLearnerActivity: { id: 'rwaq.admin.enrollmentCodes.usage.viewLearners', defaultMessage: 'View uses' },
+  usageRemainingLabel: { id: 'rwaq.admin.enrollmentCodes.usage.remainingLabel', defaultMessage: 'Remaining' },
+  usageJoinedLabel: { id: 'rwaq.admin.enrollmentCodes.usage.joinedLabel', defaultMessage: 'Items joined' },
+
+  filterCovers: { id: 'rwaq.admin.enrollmentCodes.filter.covers', defaultMessage: 'Covers: {name}' },
+  emptyCoveringHintProgram: {
+    id: 'rwaq.admin.enrollmentCodes.empty.coveringHintProgram',
+    defaultMessage: 'No codes were made for this program alone. Organization codes also cover it: set Scope to All to see them.',
+  },
+  emptyCoveringHintCourse: {
+    id: 'rwaq.admin.enrollmentCodes.empty.coveringHintCourse',
+    defaultMessage: 'No codes were made for this course alone. Organization codes also cover it: set Scope to All to see them.',
+  },
+  filterCoveredItem: { id: 'rwaq.admin.enrollmentCodes.filter.coveredItem', defaultMessage: '{type}: {name}' },
+  itemFilterActive: { id: 'rwaq.admin.enrollmentCodes.itemFilterActive', defaultMessage: 'Showing codes for this item.' },
+  itemFilterClear: { id: 'rwaq.admin.enrollmentCodes.itemFilterClear', defaultMessage: 'Show all codes' },
 
   // ── Codes list ─────────────────────────────────────────────────────────────
   codesSearch: {
@@ -44,21 +61,21 @@ const messages = defineMessages({
   kindProgram: { id: 'rwaq.admin.enrollmentCodes.kind.program', defaultMessage: 'Program' },
   kindOrganization: { id: 'rwaq.admin.enrollmentCodes.kind.organization', defaultMessage: 'Organization' },
   statusActive: { id: 'rwaq.admin.enrollmentCodes.status.active', defaultMessage: 'Active' },
-  statusSwitchedOff: { id: 'rwaq.admin.enrollmentCodes.status.switchedOff', defaultMessage: 'Switched off' },
+  statusSwitchedOff: { id: 'rwaq.admin.enrollmentCodes.status.switchedOff', defaultMessage: 'Inactive' },
   statusExpired: { id: 'rwaq.admin.enrollmentCodes.status.expired', defaultMessage: 'Expired' },
   statusUsedUp: { id: 'rwaq.admin.enrollmentCodes.status.usedUp', defaultMessage: 'Used up' },
   copyCode: { id: 'rwaq.admin.enrollmentCodes.copyCode', defaultMessage: 'Copy code {code}' },
   codeCopied: { id: 'rwaq.admin.enrollmentCodes.codeCopied', defaultMessage: 'Code copied.' },
   codeCopyFailed: { id: 'rwaq.admin.enrollmentCodes.codeCopyFailed', defaultMessage: 'Could not copy the code.' },
   actionViewCard: { id: 'rwaq.admin.enrollmentCodes.action.viewCard', defaultMessage: 'View card' },
-  actionViewUsage: { id: 'rwaq.admin.enrollmentCodes.action.viewUsage', defaultMessage: 'View usage of {code}' },
+  actionViewUsage: { id: 'rwaq.admin.enrollmentCodes.action.viewUsage', defaultMessage: 'View details of {code}' },
   actionViewUses: { id: 'rwaq.admin.enrollmentCodes.action.viewUses', defaultMessage: 'View uses' },
-  actionSwitchOff: { id: 'rwaq.admin.enrollmentCodes.action.switchOff', defaultMessage: 'Switch off' },
-  actionSwitchOn: { id: 'rwaq.admin.enrollmentCodes.action.switchOn', defaultMessage: 'Switch on' },
+  actionSwitchOff: { id: 'rwaq.admin.enrollmentCodes.action.switchOff', defaultMessage: 'Mark inactive' },
+  actionSwitchOn: { id: 'rwaq.admin.enrollmentCodes.action.switchOn', defaultMessage: 'Mark active' },
   actionEdit: { id: 'rwaq.admin.enrollmentCodes.action.edit', defaultMessage: 'Edit' },
   actionDelete: { id: 'rwaq.admin.enrollmentCodes.action.delete', defaultMessage: 'Delete' },
-  switchedOffToast: { id: 'rwaq.admin.enrollmentCodes.switchedOff', defaultMessage: 'Code {code} is switched off.' },
-  switchedOnToast: { id: 'rwaq.admin.enrollmentCodes.switchedOn', defaultMessage: 'Code {code} is switched on.' },
+  switchedOffToast: { id: 'rwaq.admin.enrollmentCodes.switchedOff', defaultMessage: 'Code {code} is now inactive.' },
+  switchedOnToast: { id: 'rwaq.admin.enrollmentCodes.switchedOn', defaultMessage: 'Code {code} is now active.' },
   switchFailed: {
     id: 'rwaq.admin.enrollmentCodes.switchFailed',
     defaultMessage: 'Could not change the code. Please try again.',
@@ -151,10 +168,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.enrollmentCodes.form.expiresHelp',
     defaultMessage: 'Leave it empty for a code that never expires.',
   },
-  activeLabel: { id: 'rwaq.admin.enrollmentCodes.form.activeLabel', defaultMessage: 'Code is on' },
+  activeLabel: { id: 'rwaq.admin.enrollmentCodes.form.activeLabel', defaultMessage: 'Code is active' },
   activeHelp: {
     id: 'rwaq.admin.enrollmentCodes.form.activeHelp',
-    defaultMessage: 'Switch it off to stop new enrollments with this code.',
+    defaultMessage: 'Turn it off to mark the code inactive and stop new enrollments with it.',
   },
   editReadOnlyNote: {
     id: 'rwaq.admin.enrollmentCodes.form.editReadOnlyNote',
@@ -219,6 +236,10 @@ const messages = defineMessages({
 
   // ── Pricing cards ──────────────────────────────────────────────────────────
   hideFromCatalog: { id: 'rwaq.admin.enrollmentCodes.pricing.hideFromCatalog', defaultMessage: 'Hide from catalog' },
+  hideFromCatalogDisabled: {
+    id: 'rwaq.admin.enrollmentCodes.pricing.hideFromCatalogDisabled',
+    defaultMessage: 'Save the course as an Enrollment code course to enable this setting.',
+  },
   hideFromCatalogHelp: {
     id: 'rwaq.admin.enrollmentCodes.pricing.hideFromCatalogHelp',
     defaultMessage: 'Learners can still open it by link, QR code and on the partner page.',
@@ -227,10 +248,14 @@ const messages = defineMessages({
     id: 'rwaq.admin.enrollmentCodes.pricing.addCodeBanner',
     defaultMessage: 'Add an enrollment code so learners can join.',
   },
+  viewCodesAction: {
+    id: 'rwaq.admin.enrollment-codes.view-codes-action',
+    defaultMessage: 'View enrollment codes',
+  },
   addCodeAction: { id: 'rwaq.admin.enrollmentCodes.pricing.addCodeAction', defaultMessage: 'Add enrollment code' },
 
   // ── Code usage panel ───────────────────────────────────────────────────────
-  usageTitle: { id: 'rwaq.admin.enrollmentCodes.usage.title', defaultMessage: 'Usage of {code}' },
+  usageTitle: { id: 'rwaq.admin.enrollmentCodes.usage.title', defaultMessage: 'Details of {code}' },
   usageItemsTitle: { id: 'rwaq.admin.enrollmentCodes.usage.itemsTitle', defaultMessage: 'Courses and programs' },
   usageItemsLoadFailed: {
     id: 'rwaq.admin.enrollmentCodes.usage.itemsLoadFailed', defaultMessage: 'Could not load the courses and programs.',

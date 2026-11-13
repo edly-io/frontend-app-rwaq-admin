@@ -177,6 +177,8 @@ export interface CoursePricing {
    * Studio-facing endpoint refuses writes. Settable only from here.
    */
   pricingManagedByAdmin: boolean;
+  /** Names of the categories the last save removed. Only a switch to Enrollment code removes any. */
+  removedCategories?: string[];
   /** Enrollment code courses only: kept out of the public catalog. The link and the partner page still show it. */
   hideFromCatalog?: boolean;
   /**

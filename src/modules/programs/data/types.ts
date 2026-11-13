@@ -62,8 +62,6 @@ export interface ProgramDetail extends ProgramSummary {
   introVideoId: string | null;
   introVideoUrl: string | null;
   pricingCategory: ProgramPricingCategory;
-  /** Enrollment code programs only: kept out of the public catalog. The link and the partner page still show it. */
-  hideFromCatalog?: boolean;
   /** Decimal strings, not numbers, to avoid float rounding on money. */
   regularPrice: string | null;
   salePrice: string | null;
@@ -146,8 +144,6 @@ export interface ProgramPatch {
   pricingCategory?: ProgramPricingCategory;
   regularPrice?: string | null;
   salePrice?: string | null;
-  /** Sent only with the Enrollment code type. The backend refuses it on any other type. */
-  hideFromCatalog?: boolean;
 }
 
 /** One address the bulk-enroll call could act on. */
