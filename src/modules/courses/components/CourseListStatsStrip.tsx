@@ -111,7 +111,7 @@ const CourseListStatsStrip = () => {
           categoryLabels
         />
         <StatsChartCard
-          title={intl.formatMessage(statsMessages.enrollmentsPerMonthTitle)}
+          title={intl.formatMessage(statsMessages.activeEnrollmentsPerMonthTitle)}
           subtitle={intl.formatMessage(statsMessages.lastTwelveMonths)}
           info={intl.formatMessage(messages.listStatsTrendInfo)}
           type="bar"
