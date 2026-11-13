@@ -120,6 +120,7 @@ const messages = defineMessages({
   typePaid: { id: 'rwaq.admin.courses.type.paid', defaultMessage: 'Paid' },
   typeProgramOnly: { id: 'rwaq.admin.courses.type.programOnly', defaultMessage: 'Program-only' },
   typeSubscription: { id: 'rwaq.admin.courses.type.subscription', defaultMessage: 'Part of Subscription' },
+  typeEnrollmentCode: { id: 'rwaq.admin.courses.type.enrollmentCode', defaultMessage: 'Enrollment code' },
   chipType: { id: 'rwaq.admin.courses.chip.type', defaultMessage: 'Type: {label}' },
   chipSort: {
     id: 'rwaq.admin.courses.chip.sort',
@@ -770,11 +771,11 @@ export const courseRoleMessages = defineMessages({
   },
   pricingManagedLabel: {
     id: 'rwaq.admin.courses.pricing.managed-label',
-    defaultMessage: 'Manage pricing from the admin panel',
+    defaultMessage: 'Manage course type and pricing from the admin panel',
   },
   pricingManagedHint: {
     id: 'rwaq.admin.courses.pricing.managed-hint',
-    defaultMessage: 'When enabled, course authors see the pricing fields in Studio but cannot change them. Org admin can still change them.',
+    defaultMessage: 'When enabled, course authors can see the course type and pricing in Studio but cannot change them. Org admins can still change them.',
   },
   pricingFree: {
     id: 'rwaq.admin.courses.pricing.free',
@@ -799,6 +800,14 @@ export const courseRoleMessages = defineMessages({
   pricingSubscriptionDescription: {
     id: 'rwaq.admin.courses.pricing.subscription-description',
     defaultMessage: 'Learners reach this course through the Rwaq subscription. It has no price of its own.',
+  },
+  pricingEnrollmentCode: {
+    id: 'rwaq.admin.courses.pricing.enrollment-code',
+    defaultMessage: 'Enrollment code',
+  },
+  pricingEnrollmentCodeDescription: {
+    id: 'rwaq.admin.courses.pricing.enrollment-code-description',
+    defaultMessage: 'A free, restricted course that learners can only join with an enrollment code.',
   },
   pricingProgramOnly: {
     id: 'rwaq.admin.courses.pricing.program-only',
@@ -840,9 +849,25 @@ export const courseRoleMessages = defineMessages({
     id: 'rwaq.admin.courses.pricing.save',
     defaultMessage: 'Save pricing',
   },
+  settingsTitle: {
+    id: 'rwaq.admin.courses.settings.title',
+    defaultMessage: 'Settings',
+  },
+  settingsSaved: {
+    id: 'rwaq.admin.courses.settings.saved',
+    defaultMessage: 'Settings saved.',
+  },
+  settingsSave: {
+    id: 'rwaq.admin.courses.pricing.settings-save',
+    defaultMessage: 'Save settings',
+  },
   pricingSaving: {
     id: 'rwaq.admin.courses.pricing.saving',
     defaultMessage: 'Saving…',
+  },
+  pricingCategoriesRemoved: {
+    id: 'rwaq.admin.courses.pricing.categoriesRemoved',
+    defaultMessage: 'An Enrollment code course cannot have categories, so these were removed: {categories}.',
   },
   pricingSaved: {
     id: 'rwaq.admin.courses.pricing.saved',

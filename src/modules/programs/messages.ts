@@ -34,6 +34,7 @@ const messages = defineMessages({
   typeFree: { id: 'rwaq.admin.programs.type.free', defaultMessage: 'Free' },
   typePaid: { id: 'rwaq.admin.programs.type.paid', defaultMessage: 'Paid' },
   typeSubscription: { id: 'rwaq.admin.programs.type.subscription', defaultMessage: 'Part of Subscription' },
+  typeEnrollmentCode: { id: 'rwaq.admin.programs.type.enrollmentCode', defaultMessage: 'Enrollment code' },
   orgLabel: { id: 'rwaq.admin.programs.org.label', defaultMessage: 'Organization' },
   orgAll: { id: 'rwaq.admin.programs.org.all', defaultMessage: 'All organizations' },
   chipOrg: { id: 'rwaq.admin.programs.chip.org', defaultMessage: 'Organization: {org}' },
@@ -107,7 +108,7 @@ const messages = defineMessages({
   settingError: { id: 'rwaq.admin.programs.settings.error', defaultMessage: 'Could not save settings. Please try again.' },
 
   // ── Detail — pricing card ──────────────────────────────────────────────────
-  pricingTitle: { id: 'rwaq.admin.programs.pricing.title', defaultMessage: 'Pricing' },
+  pricingTitle: { id: 'rwaq.admin.programs.pricing.title', defaultMessage: 'Program type and pricing' },
   pricingDescription: {
     id: 'rwaq.admin.programs.pricing.description',
     defaultMessage: 'Set how this program is sold. Prices are published to the marketing site.',
@@ -130,6 +131,14 @@ const messages = defineMessages({
   pricingSubscriptionDescription: {
     id: 'rwaq.admin.programs.pricing.subscription-description',
     defaultMessage: 'Learners reach this program through the Rwaq subscription. It has no price of its own.',
+  },
+  pricingEnrollmentCode: {
+    id: 'rwaq.admin.programs.pricing.enrollment-code',
+    defaultMessage: 'Enrollment code',
+  },
+  pricingEnrollmentCodeDescription: {
+    id: 'rwaq.admin.programs.pricing.enrollment-code-description',
+    defaultMessage: 'A free, restricted program that learners can only join with an enrollment code.',
   },
   pricingPriceLabel: {
     id: 'rwaq.admin.programs.pricing.price-label',
