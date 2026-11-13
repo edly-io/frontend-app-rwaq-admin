@@ -87,7 +87,7 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
 
       <div className="rwaq-dash-grid rwaq-dash-grid--thirds">
         <StatsChartCard
-          title={intl.formatMessage(statsMessages.enrollmentsPerMonthTitle)}
+          title={intl.formatMessage(statsMessages.activeEnrollmentsPerMonthTitle)}
           subtitle={intl.formatMessage(statsMessages.lastTwelveMonths)}
           info={intl.formatMessage(messages.statsEnrollmentsInfo)}
           type="bar"
