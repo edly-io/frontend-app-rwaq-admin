@@ -40,6 +40,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.stats.enrollmentsPerMonth.title',
     defaultMessage: 'Enrollments per month',
   },
+  activeEnrollmentsPerMonthTitle: {
+    id: 'rwaq.admin.stats.activeEnrollmentsPerMonth.title',
+    defaultMessage: 'Active enrollments per month',
+  },
   lastTwelveMonths: { id: 'rwaq.admin.stats.lastTwelveMonths', defaultMessage: 'Last 12 months' },
 });
 
