@@ -11,6 +11,7 @@ import { ActiveTabContext } from '@src/modules/payments/data/activeTab';
 import {
   createEnrollmentCode,
   deleteEnrollmentCode,
+  getEnrollmentCode,
   getEnrollmentCodeCard,
   getEnrollmentCodeItems,
   getEnrollmentCodes,
@@ -75,7 +76,9 @@ export const useItemCodeCount = (
   enabled = true,
 ) => useQuery({
   queryKey: enrollmentCodeQueryKeys.itemCount(item),
-  queryFn: () => getEnrollmentCodes({ ...item, page: 1, pageSize: 1 }),
+  queryFn: () => getEnrollmentCodes({
+    ...item, includeCovering: true, page: 1, pageSize: 1,
+  }),
   select: (data) => data.pagination?.count ?? data.results.length,
   enabled,
   staleTime: 0,
@@ -110,3 +113,9 @@ export const useDeleteEnrollmentCode = () => {
     onSuccess: invalidate,
   });
 };
+
+export const useEnrollmentCode = (id: number) => useQuery({
+  queryKey: [...enrollmentCodeQueryKeys.all, 'detail', id],
+  queryFn: () => getEnrollmentCode(id),
+  enabled: Number.isInteger(id) && id > 0,
+});

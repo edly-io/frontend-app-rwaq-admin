@@ -57,12 +57,12 @@ describe('CodeUsagePanel', () => {
 
   it('shows the header numbers of an organization code', () => {
     renderWrapper(<CodeUsagePanel code={orgCode} onClose={jest.fn()} />);
-    expect(screen.getByRole('heading', { name: 'Usage of EDR100' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Details of EDR100' })).toBeInTheDocument();
     const summary = within(screen.getByTestId('code-usage-summary'));
     expect(summary.getByText('Used 37 of 100')).toBeInTheDocument();
-    expect(summary.getByText(/63 left/)).toBeInTheDocument();
-    expect(summary.getByText(/51 items joined/)).toBeInTheDocument();
-    expect(summary.getByText(/Expires: Dec 31, 2026/)).toBeInTheDocument();
+    expect(summary.getByText('63')).toBeInTheDocument();
+    expect(summary.getByText('51')).toBeInTheDocument();
+    expect(summary.getByText('Dec 31, 2026')).toBeInTheDocument();
     expect(summary.getByText(/Covers 4 courses and programs/)).toBeInTheDocument();
     expect(hooks.useCodeItems).toHaveBeenLastCalledWith(9);
   });
@@ -76,7 +76,7 @@ describe('CodeUsagePanel', () => {
     />);
     const summary = within(screen.getByTestId('code-usage-summary'));
     expect(summary.getByText(/Never/)).toBeInTheDocument();
-    expect(summary.getByText(/0 left/)).toBeInTheDocument();
+    expect(summary.getByText('0')).toBeInTheDocument();
     expect(summary.queryByText(/Covers/)).not.toBeInTheDocument();
   });
 
@@ -100,9 +100,10 @@ describe('CodeUsagePanel', () => {
     expect(screen.getByText('Could not load the courses and programs.')).toBeInTheDocument();
   });
 
-  it('shows the learners of this code only', () => {
-    renderWrapper(<CodeUsagePanel code={orgCode} onClose={jest.fn()} />);
-    expect(screen.getByRole('heading', { name: 'Learners' })).toBeInTheDocument();
-    expect(screen.getByTestId('uses-tab')).toHaveTextContent('uses of 9 EDR100');
+  it('opens the uses of this code', () => {
+    const onClose = jest.fn();
+    renderWrapper(<CodeUsagePanel code={orgCode} onClose={onClose} />);
+    screen.getByRole('button', { name: 'View uses' }).click();
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

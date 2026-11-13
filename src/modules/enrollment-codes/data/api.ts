@@ -41,6 +41,11 @@ export const getEnrollmentCodes = async (params: CodeListParams = {}): Promise<P
   return camelCaseObject(data) as Paginated<EnrollmentCode>;
 };
 
+export const getEnrollmentCode = async (id: number): Promise<EnrollmentCode> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getBaseUrl()}/${id}/`);
+  return camelCaseObject(data) as EnrollmentCode;
+};
+
 export const createEnrollmentCode = async (payload: CodeCreatePayload): Promise<EnrollmentCode> => {
   const { data } = await getAuthenticatedHttpClient().post(`${getBaseUrl()}/`, toQuery(payload));
   return camelCaseObject(data) as EnrollmentCode;

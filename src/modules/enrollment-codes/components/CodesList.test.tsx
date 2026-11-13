@@ -118,6 +118,40 @@ describe('CodesList', () => {
     expect(second.getByText('Used up')).toBeInTheDocument();
   });
 
+  it('shows the linked program as an applied filter and clears it', () => {
+    const clearItem = jest.fn();
+    renderWrapper(<CodesList
+      programUuid={PROGRAM_UUID}
+      itemFilterLabel="Covers: Leadership"
+      onClearItemFilter={clearItem}
+      onViewUses={onViewUses}
+    />);
+    expect(screen.getByText('Covers: Leadership')).toBeInTheDocument();
+    expect(lastParams()).toMatchObject({ programUuid: PROGRAM_UUID, includeCovering: true });
+    fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
+    expect(clearItem).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the hint under the empty text when an item filter hides organization codes behind Scope', () => {
+    (hooks.useEnrollmentCodes as jest.Mock).mockReturnValue({
+      data: { results: [], count: 0 }, isLoading: false, isPlaceholderData: false, isError: false,
+    });
+    renderWrapper(<CodesList programUuid={PROGRAM_UUID} itemFilterLabel="Covers: Leadership" onClearItemFilter={jest.fn()} onViewUses={onViewUses} />);
+    expect(screen.queryByTestId('covering-hint')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Scope'), { target: { value: 'organization' } });
+    expect(screen.getByTestId('covering-hint')).toHaveTextContent(
+      'No codes were made for this program alone. Organization codes also cover it: set Scope to All to see them.',
+    );
+  });
+
+  it('shows no hint without an item filter', () => {
+    (hooks.useEnrollmentCodes as jest.Mock).mockReturnValue({
+      data: { results: [], count: 0 }, isLoading: false, isPlaceholderData: false, isError: false,
+    });
+    renderWrapper(<CodesList onViewUses={onViewUses} />);
+    expect(screen.queryByTestId('covering-hint')).not.toBeInTheDocument();
+  });
+
   it('copies a code from its copy icon', async () => {
     const writeText = jest.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
@@ -146,7 +180,7 @@ describe('CodesList', () => {
     renderWrapper(<CodesList onViewUses={onViewUses} />);
     fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
     const options = Array.from((screen.getByLabelText('Status') as HTMLSelectElement).options).map((o) => o.textContent);
-    expect(options).toEqual(['All', 'Active', 'Switched off', 'Expired', 'Used up']);
+    expect(options).toEqual(['All', 'Active', 'Inactive', 'Expired', 'Used up']);
   });
 
   it('offers delete only for a code with no uses', () => {
@@ -154,8 +188,11 @@ describe('CodesList', () => {
     renderWrapper(<CodesList onViewUses={onViewUses} />);
     expect(within(rowOf('ABC234')).getByRole('button', { name: 'Delete' })).toBeInTheDocument();
     expect(within(rowOf('USED23')).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+    // A used code is marked inactive instead of deleted. An unused active code has no such button.
+    expect(within(rowOf('USED23')).getByRole('button', { name: 'Mark inactive' })).toBeInTheDocument();
+    expect(within(rowOf('ABC234')).queryByRole('button', { name: 'Mark inactive' })).not.toBeInTheDocument();
     // The other actions are always there.
-    ['View card', 'View uses', 'Switch off', 'Edit'].forEach((name) => {
+    ['View card', 'View uses', 'Edit'].forEach((name) => {
       expect(within(rowOf('USED23')).getByRole('button', { name })).toBeInTheDocument();
     });
   });
@@ -178,15 +215,15 @@ describe('CodesList', () => {
     expect(await screen.findByText('This code has been used.')).toBeInTheDocument();
   });
 
-  it('switches a code off and on', async () => {
-    withCodes(makeCode({ isActive: true }), makeCode({
+  it('marks a used code inactive and an inactive code active again', async () => {
+    withCodes(makeCode({ isActive: true, usesCount: 2 }), makeCode({
       id: 2, code: 'OFF234', isActive: false, status: 'switched_off',
     }));
     renderWrapper(<CodesList onViewUses={onViewUses} />);
-    fireEvent.click(within(rowOf('ABC234')).getByRole('button', { name: 'Switch off' }));
+    fireEvent.click(within(rowOf('ABC234')).getByRole('button', { name: 'Mark inactive' }));
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({ id: 1, patch: { isActive: false } }));
-    expect(mockShowToast).toHaveBeenCalledWith('Code ABC234 is switched off.');
-    fireEvent.click(within(rowOf('OFF234')).getByRole('button', { name: 'Switch on' }));
+    expect(mockShowToast).toHaveBeenCalledWith('Code ABC234 is now inactive.');
+    fireEvent.click(within(rowOf('OFF234')).getByRole('button', { name: 'Mark active' }));
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({ id: 2, patch: { isActive: true } }));
   });
 
@@ -230,7 +267,7 @@ describe('CodesList', () => {
       openEdit();
       fireEvent.change(screen.getByLabelText('Number of uses'), { target: { value: '25' } });
       fireEvent.change(screen.getByLabelText('Expires on (optional)'), { target: { value: '' } });
-      fireEvent.click(screen.getByLabelText('Code is on'));
+      fireEvent.click(screen.getByLabelText('Code is active'));
       fireEvent.click(screen.getByRole('button', { name: 'Save' }));
       await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({
         id: 1, patch: { maxUses: 25, expiresAt: null, isActive: false },
@@ -322,16 +359,16 @@ describe('CodesList', () => {
     const row = within(rowOf('EDR100'));
     expect(row.getByRole('link', { name: 'Edrakk' })).toHaveAttribute('href', '/organizations/Edrakk');
     expect(row.getByText('Organization')).toBeInTheDocument();
-    expect(row.getByText('Covers 4 courses and programs')).toBeInTheDocument();
+    expect(row.getByRole('link', { name: 'Edrakk' })).toBeInTheDocument();
   });
 
   it('opens the usage panel from its action, only when the page gives a handler', () => {
     const onViewUsage = jest.fn();
     const { unmount } = renderWrapper(<CodesList onViewUses={onViewUses} />);
-    expect(screen.queryByRole('button', { name: 'View usage of ABC234' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'View details of ABC234' })).not.toBeInTheDocument();
     unmount();
     renderWrapper(<CodesList onViewUses={onViewUses} onViewUsage={onViewUsage} />);
-    fireEvent.click(screen.getByRole('button', { name: 'View usage of ABC234' }));
+    fireEvent.click(screen.getByRole('button', { name: 'View details of ABC234' }));
     expect(onViewUsage).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
   });
 

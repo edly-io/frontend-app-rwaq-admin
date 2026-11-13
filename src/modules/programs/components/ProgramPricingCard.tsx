@@ -47,15 +47,13 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
-  const [hideFromCatalog, setHideFromCatalog] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     setCategory(program.pricingCategory || 'is_free');
-    setHideFromCatalog(program.hideFromCatalog ?? false);
     setRegularPrice(program.regularPrice ?? '');
     setSalePrice(program.salePrice ?? '');
-  }, [program.pricingCategory, program.regularPrice, program.salePrice, program.hideFromCatalog]);
+  }, [program.pricingCategory, program.regularPrice, program.salePrice]);
 
   const isPaid = category === 'is_paid';
   // An Enrollment code program (stored, or just saved) with no code yet offers adding one.
@@ -102,7 +100,6 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
         pricingCategory: category,
         regularPrice: isPaid ? regularPrice.trim() : null,
         salePrice: isPaid && salePrice.trim() !== '' ? salePrice.trim() : null,
-        ...(isCodeType ? { hideFromCatalog } : {}),
       });
       setSaved(true);
     } catch (err) {
@@ -141,20 +138,6 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
         <Alert variant="success" className="mb-3">{intl.formatMessage(messages.pricingSaved)}</Alert>
       )}
 
-      {isCodeProgram && codeCount === 0 && (
-        <Alert variant="info" className="mb-3" data-testid="add-code-banner">
-          {intl.formatMessage(enrollmentCodeMessages.addCodeBanner)}
-          {' '}
-          <Button
-            variant="link"
-            size="inline"
-            onClick={() => navigate(`/enrollment-codes?create=1&scope=program&id=${encodeURIComponent(program.uuid)}`)}
-          >
-            {intl.formatMessage(enrollmentCodeMessages.addCodeAction)}
-          </Button>
-        </Alert>
-      )}
-
       <Form.Group isInvalid={!!fieldErrors.pricingCategory}>
         <Form.Label className="sr-only">{intl.formatMessage(messages.pricingCategoryLabel)}</Form.Label>
         <Form.RadioSet
@@ -186,32 +169,37 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
           >
             {intl.formatMessage(messages.pricingSubscription)}
           </Form.Radio>
-          <Form.Radio
-            value="is_enrollment_code"
-            disabled={isPending}
-            description={intl.formatMessage(messages.pricingEnrollmentCodeDescription)}
-          >
-            {intl.formatMessage(messages.pricingEnrollmentCode)}
-          </Form.Radio>
+          <div className="d-flex align-items-start justify-content-between w-100">
+            <Form.Radio
+              value="is_enrollment_code"
+              disabled={isPending}
+              description={intl.formatMessage(messages.pricingEnrollmentCodeDescription)}
+            >
+              {intl.formatMessage(messages.pricingEnrollmentCode)}
+            </Form.Radio>
+            {isCodeProgram && codeCount !== undefined && (
+              <Button
+                variant="outline-primary"
+                size="sm"
+                className="ml-3"
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(codeCount === 0
+                    ? `/enrollment-codes?create=1&scope=program&id=${encodeURIComponent(program.uuid)}`
+                    : `/enrollment-codes?programUuid=${encodeURIComponent(program.uuid)}`);
+                }}
+              >
+                {intl.formatMessage(codeCount === 0
+                  ? enrollmentCodeMessages.addCodeAction : enrollmentCodeMessages.viewCodesAction)}
+              </Button>
+            )}
+          </div>
         </Form.RadioSet>
         {fieldErrors.pricingCategory && (
           <Form.Control.Feedback type="invalid">{fieldErrors.pricingCategory}</Form.Control.Feedback>
         )}
       </Form.Group>
-
-      {isCodeType && (
-        <Form.Group controlId="program-hide-from-catalog">
-          <Form.Checkbox
-            name="hideFromCatalog"
-            checked={hideFromCatalog}
-            disabled={isPending}
-            description={intl.formatMessage(enrollmentCodeMessages.hideFromCatalogHelp)}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setHideFromCatalog(e.target.checked); touched(); }}
-          >
-            {intl.formatMessage(enrollmentCodeMessages.hideFromCatalog)}
-          </Form.Checkbox>
-        </Form.Group>
-      )}
 
       {isPaid && (
         <>

@@ -163,6 +163,7 @@ export const updateCoursePricing = async (
   if (patch.pricingCategory !== undefined) { body.pricing_category = patch.pricingCategory; }
   if (patch.regularPrice !== undefined) { body.regular_price = patch.regularPrice; }
   if (patch.salePrice !== undefined) { body.sale_price = patch.salePrice; }
+  if (patch.hideFromCatalog !== undefined) { body.hide_from_catalog = patch.hideFromCatalog; }
   if (patch.pricingManagedByAdmin !== undefined) {
     body.pricing_managed_by_admin = patch.pricingManagedByAdmin;
   }

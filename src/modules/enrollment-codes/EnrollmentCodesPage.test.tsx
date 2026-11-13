@@ -8,7 +8,14 @@ import * as whoami from '@src/data/whoami';
 import * as courseHooks from '@src/modules/courses/data/hooks';
 import * as programHooks from '@src/modules/programs/data/hooks';
 import EnrollmentCodesPage from './EnrollmentCodesPage';
+import * as codeHooks from './data/hooks';
 
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
+jest.mock('./data/hooks', () => ({ useEnrollmentCode: jest.fn() }));
 jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn() }));
 jest.mock('@src/modules/courses/data/hooks', () => ({ useCourse: jest.fn() }));
 jest.mock('@src/modules/programs/data/hooks', () => ({ useProgram: jest.fn() }));
@@ -33,10 +40,6 @@ jest.mock('./components/CodesList', () => ({
     </>
   ),
 }));
-jest.mock('./components/CodeUsagePanel', () => ({
-  __esModule: true,
-  default: ({ code }: { code: { code: string } | null }) => (code ? <div data-testid="usage-panel">{code.code}</div> : null),
-}));
 jest.mock('./components/UsesTab', () => ({
   __esModule: true,
   default: ({ codeId, codeLabel, onClearCode }: { codeId?: number; codeLabel?: string; onClearCode: () => void }) => (
@@ -54,6 +57,7 @@ const asUser = (isSuperuser: boolean) => (whoami.useAdminCapabilities as jest.Mo
 beforeEach(() => {
   jest.clearAllMocks();
   window.history.pushState({}, '', '/enrollment-codes');
+  (codeHooks.useEnrollmentCode as jest.Mock).mockReturnValue({ data: { id: 4, code: 'ABC234' } });
   (courseHooks.useCourse as jest.Mock).mockReturnValue({ data: undefined, isSuccess: false, isError: false });
   (programHooks.useProgram as jest.Mock).mockReturnValue({ data: undefined, isSuccess: false, isError: false });
 });
@@ -98,11 +102,20 @@ describe('EnrollmentCodesPage', () => {
     expect(window.location.search).toBe('?tab=uses');
   });
 
-  it('opens the usage panel of a code from the Codes tab', () => {
+  it('opens the usage page of a code from the Codes tab', () => {
     asUser(true);
     renderWrapper(<EnrollmentCodesPage />);
     fireEvent.click(screen.getByRole('button', { name: 'usage' }));
-    expect(screen.getByTestId('usage-panel')).toHaveTextContent('ABC234');
+    expect(mockNavigate).toHaveBeenCalledWith('/enrollment-codes/4/usage');
+  });
+
+  it('has two tabs and falls back to Codes for an old tab=usage link', () => {
+    asUser(true);
+    window.history.pushState({}, '', '/?tab=usage');
+    renderWrapper(<EnrollmentCodesPage />);
+    expect(screen.queryByRole('tab', { name: 'Code usage' })).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Uses' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Codes' })).toHaveAttribute('aria-selected', 'true');
   });
 
   describe('opening the create form from a link', () => {

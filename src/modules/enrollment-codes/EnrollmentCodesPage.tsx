@@ -1,8 +1,9 @@
 /**
  * Enrollment codes — free but restricted courses and programs that learners join with a code.
  *
- * Two tabs, like Orders & Payments: Codes (create, edit, switch off, share) and Uses (who joined with
- * which code). Superusers only. The tab and the code a Uses view is narrowed to live in the URL, so a
+ * Two tabs, like Orders & Payments: Codes (create, edit, switch off, share) and Uses (who
+ * joined with which code). A code's eye icon opens its own usage page.
+ * Superusers only. The tab and the code a Uses view is narrowed to live in the URL, so a
  * reload or a link keeps them. A tab stays mounted once opened, so it keeps its filters and page, and a
  * hidden one does not query (ActiveTabContext).
  *
@@ -10,7 +11,7 @@
  * button) opens the create form with that item fixed. The params are removed from the URL once it opens.
  */
 import { useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Tab, Tabs } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import ErrorState from '@src/components/ErrorState';
@@ -20,11 +21,9 @@ import { useCourse } from '@src/modules/courses/data/hooks';
 import { useProgram } from '@src/modules/programs/data/hooks';
 import { TabCard } from '@src/modules/payments/components/shared';
 import { ActiveTabContext } from '@src/modules/payments/data/activeTab';
-import CodeUsagePanel from './components/CodeUsagePanel';
 import CodesList from './components/CodesList';
 import UsesTab from './components/UsesTab';
 import type { PickedItem } from './components/ItemPicker';
-import type { EnrollmentCode } from './data/types';
 import messages from './messages';
 
 const TABS = ['codes', 'uses'] as const;
@@ -40,11 +39,14 @@ const readCreateRequest = (params: URLSearchParams): { kind: 'course' | 'program
 
 const EnrollmentCodesContent = () => {
   const intl = useIntl();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [usage, setUsage] = useState<EnrollmentCode | null>(null);
   const [createRequest, setCreateRequest] = useState(() => readCreateRequest(searchParams));
-  const course = useCourse(createRequest?.kind === 'course' ? createRequest.id : '');
-  const program = useProgram(createRequest?.kind === 'program' ? createRequest.id : '');
+  const courseId = searchParams.get('courseId') || '';
+  const programUuid = searchParams.get('programUuid') || '';
+  const organization = searchParams.get('organization') || '';
+  const course = useCourse(createRequest?.kind === 'course' ? createRequest.id : courseId);
+  const program = useProgram(createRequest?.kind === 'program' ? createRequest.id : programUuid);
 
   const tabParam = searchParams.get('tab') as CodesTab | null;
   const tab: CodesTab = tabParam && TABS.includes(tabParam) ? tabParam : 'codes';
@@ -81,6 +83,17 @@ const EnrollmentCodesContent = () => {
     }
   }
 
+  let itemFilterLabel: string | undefined;
+  if (courseId) {
+    itemFilterLabel = intl.formatMessage(messages.filterCovers, { name: course.data?.displayName || courseId });
+  } else if (programUuid) {
+    itemFilterLabel = intl.formatMessage(messages.filterCovers, { name: program.data?.name || programUuid });
+  } else if (organization) {
+    itemFilterLabel = intl.formatMessage(messages.filterCoveredItem, {
+      type: intl.formatMessage(messages.kindOrganization), name: organization,
+    });
+  }
+
   return (
     <div className="rwaq-page">
       <div className="rwaq-page-header">
@@ -104,9 +117,16 @@ const EnrollmentCodesContent = () => {
             <ActiveTabContext.Provider value={tab === 'codes'}>
               <TabCard>
                 <CodesList
+                  courseId={courseId || undefined}
+                  programUuid={programUuid || undefined}
+                  organization={organization || undefined}
+                  itemFilterLabel={itemFilterLabel}
+                  onClearItemFilter={() => updateParams({
+                    courseId: undefined, programUuid: undefined, organization: undefined,
+                  })}
                   prefillItem={prefillItem}
                   onPrefillHandled={() => setCreateRequest(null)}
-                  onViewUsage={setUsage}
+                  onViewUsage={(code) => navigate(`/enrollment-codes/${code.id}/usage`)}
                   onViewUses={(code) => updateParams({
                     tab: 'uses', codeId: String(code.id), code: code.code,
                   })}
@@ -127,7 +147,6 @@ const EnrollmentCodesContent = () => {
           </Tab>
         </Tabs>
       </div>
-      <CodeUsagePanel code={usage} onClose={() => setUsage(null)} />
     </div>
   );
 };

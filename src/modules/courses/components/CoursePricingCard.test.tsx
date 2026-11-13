@@ -57,8 +57,7 @@ describe('CoursePricingCard', () => {
     expect(screen.getByText('Sold on its own at the price set below.')).toBeInTheDocument();
     expect(screen.getByText('Offered only through the one program it is added to.')).toBeInTheDocument();
     expect(screen.getByText(
-      'When enabled, course authors see the pricing fields in Studio but cannot change them. '
-      + 'Org admin can still change them.',
+      'When enabled, course authors can see the course type and pricing in Studio but cannot change them. Org admins can still change them.',
     )).toBeInTheDocument();
     expect(screen.queryByLabelText('Price before VAT (SAR)')).not.toBeInTheDocument();
   });
@@ -205,7 +204,6 @@ describe('CoursePricingCard', () => {
     save();
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({
       pricingCategory: 'is_free',
-      pricingManagedByAdmin: false,
     }));
     expect(await screen.findByText('Pricing saved.')).toBeInTheDocument();
   });
@@ -215,14 +213,15 @@ describe('CoursePricingCard', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Paid' }));
     fireEvent.change(screen.getByLabelText('Price before VAT (SAR)'), { target: { value: '200' } });
     fireEvent.change(screen.getByLabelText('Discounted Price / Sale Price before VAT (SAR)'), { target: { value: '150' } });
-    fireEvent.click(screen.getByRole('checkbox', { name: /Manage pricing from the admin panel/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Manage course type and pricing from the admin panel/ }));
     save();
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({
       pricingCategory: 'is_paid',
       regularPrice: '200',
       salePrice: '150',
-      pricingManagedByAdmin: true,
     }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save settings' }));
+    await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({ pricingManagedByAdmin: true }));
   });
 
   it('keeps the card editable when the lock is on', () => {
@@ -272,7 +271,7 @@ describe('CoursePricingCard', () => {
       expect(values[values.length - 2]).toBe('is_part_of_subscription');
       expect(screen.getByRole('radio', { name: 'Enrollment code' })).not.toBeChecked();
       expect(screen.getByText(
-        'Learners enroll at no cost, but only with an enrollment code. It has no price of its own.',
+        'A free, restricted course that learners can only join with an enrollment code.',
       )).toBeInTheDocument();
     });
 
@@ -295,22 +294,41 @@ describe('CoursePricingCard', () => {
       await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
       const body = mockUpdate.mock.calls[0][0];
       expect(body.pricingCategory).toBe('is_enrollment_code');
-      expect(body.hideFromCatalog).toBe(false);
+      expect(body).not.toHaveProperty('hideFromCatalog');
       expect(body).not.toHaveProperty('regularPrice');
       expect(body).not.toHaveProperty('salePrice');
     });
 
-    it('shows the hide from catalog checkbox only for the Enrollment code type and sends it', async () => {
-      renderCard();
-      expect(screen.queryByRole('checkbox', { name: 'Hide from catalog' })).not.toBeInTheDocument();
+    it('tells the admin which categories the switch removed', async () => {
+      mockUpdate.mockResolvedValue({
+        ...basePricing, pricingCategory: 'is_enrollment_code', removedCategories: ['Art', 'Science'],
+      });
+      renderCard({ pricingCategory: 'is_free' });
       fireEvent.click(screen.getByRole('radio', { name: 'Enrollment code' }));
-      expect(screen.getByText('Learners can still open it by link, QR code and on the partner page.')).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('checkbox', { name: /Hide from catalog/ }));
       save();
-      await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
-      expect(mockUpdate.mock.calls[0][0].hideFromCatalog).toBe(true);
-      fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
-      expect(screen.queryByRole('checkbox', { name: /Hide from catalog/ })).not.toBeInTheDocument();
+      expect(await screen.findByText(/cannot have categories, so these were removed: Art, Science/)).toBeInTheDocument();
+    });
+
+    it('saves both options from the Settings section for an Enrollment code course', async () => {
+      renderCard({ pricingCategory: 'is_enrollment_code' });
+      expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('checkbox', { name: /Hide from catalog/ }));
+      fireEvent.click(screen.getByRole('checkbox', { name: /Manage course type and pricing/ }));
+      fireEvent.click(screen.getByRole('button', { name: 'Save settings' }));
+      await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({
+        pricingManagedByAdmin: true, hideFromCatalog: true,
+      }));
+    });
+
+    it('shows a disabled catalog setting with an explanation until the Enrollment code type is saved', async () => {
+      renderCard();
+      expect(screen.getByRole('checkbox', { name: /Hide from catalog/ })).toBeDisabled();
+      fireEvent.focus(screen.getByRole('group', { name: 'Hide from catalog' }));
+      expect(await screen.findByRole('tooltip')).toHaveTextContent(
+        'Save the course as an Enrollment code course to enable this setting.',
+      );
+      fireEvent.click(screen.getByRole('radio', { name: 'Enrollment code' }));
+      expect(screen.getByRole('checkbox', { name: /Hide from catalog/ })).toBeDisabled();
     });
 
     it('starts the checkbox from the stored value and never sends the flag for another type', async () => {
@@ -325,7 +343,7 @@ describe('CoursePricingCard', () => {
     it('offers Add enrollment code to a stored Enrollment code course with no code, linking to the codes page', () => {
       (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: 0 });
       renderCard({ pricingCategory: 'is_enrollment_code' });
-      expect(screen.getByTestId('add-code-banner')).toHaveTextContent('Add an enrollment code so learners can join.');
+      expect(screen.getByRole('button', { name: 'Add enrollment code' })).toBeInTheDocument();
       expect(codeHooks.useItemCodeCount).toHaveBeenLastCalledWith({ courseId }, true);
       fireEvent.click(screen.getByRole('button', { name: 'Add enrollment code' }));
       expect(window.location.pathname).toBe('/enrollment-codes');
@@ -339,7 +357,7 @@ describe('CoursePricingCard', () => {
       expect(codeHooks.useItemCodeCount).toHaveBeenLastCalledWith({ courseId }, false);
       fireEvent.click(screen.getByRole('radio', { name: 'Enrollment code' }));
       save();
-      expect(await screen.findByTestId('add-code-banner')).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'Add enrollment code' })).toBeInTheDocument();
     });
 
     it('shows no banner when the course already has a code, and never a switch-off warning', async () => {
@@ -356,7 +374,7 @@ describe('CoursePricingCard', () => {
       mockUpdate.mockRejectedValue({
         response: {
           status: 409,
-          data: { detail: 'This course has an enrollment code. Delete or switch off its code in the Enrollment code tab first.' },
+          data: { detail: 'This course has an enrollment code. Delete its code or mark it inactive on the Enrollment codes page first.' },
         },
       });
       renderCard({ pricingCategory: 'is_enrollment_code' });

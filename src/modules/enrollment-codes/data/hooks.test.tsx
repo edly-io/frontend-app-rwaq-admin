@@ -54,7 +54,7 @@ describe('enrollment codes hooks', () => {
 
     await waitFor(() => expect(result.current.data).toBe(3));
     expect(mockApi.getEnrollmentCodes).toHaveBeenCalledWith({
-      courseId: 'course-v1:A+B+C', page: 1, pageSize: 1,
+      courseId: 'course-v1:A+B+C', includeCovering: true, page: 1, pageSize: 1,
     });
   });
 
