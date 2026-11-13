@@ -68,7 +68,7 @@ export type CourseOrdering =
   | 'org' | '-org'
   | 'enrollment_count' | '-enrollment_count';
 
-export type CourseTypeFilter = 'free' | 'paid' | 'program_only' | 'subscription';
+export type CourseTypeFilter = 'free' | 'paid' | 'program_only' | 'subscription' | 'enrollment_code';
 
 export interface CourseListParams {
   search?: string;
@@ -155,7 +155,8 @@ export interface CourseStaffRemoveParams {
 }
 
 /** Mirrors rwaq_features.models.CoursePricing.PRICING_CATEGORY_CHOICES. */
-export type CoursePricingCategory = 'is_free' | 'is_paid' | 'is_program_only' | 'is_part_of_subscription';
+export type CoursePricingCategory =
+  | 'is_free' | 'is_paid' | 'is_program_only' | 'is_part_of_subscription' | 'is_enrollment_code';
 
 export interface CoursePricing {
   /** null when no type was chosen yet (a legacy course with no pricing row). It behaves as free. */
@@ -176,6 +177,10 @@ export interface CoursePricing {
    * Studio-facing endpoint refuses writes. Settable only from here.
    */
   pricingManagedByAdmin: boolean;
+  /** Names of the categories the last save removed. Only a switch to Enrollment code removes any. */
+  removedCategories?: string[];
+  /** Enrollment code courses only: kept out of the public catalog. The link and the partner page still show it. */
+  hideFromCatalog?: boolean;
   /**
    * program_key of the program the course is in, or null. Only a Program-only
    * course can be in a program, and its type cannot change while it is in one.
@@ -190,6 +195,8 @@ export interface CoursePricingPatch {
   regularPrice?: string | null;
   salePrice?: string | null;
   pricingManagedByAdmin?: boolean;
+  /** Sent only with the Enrollment code type. The backend refuses it on any other type. */
+  hideFromCatalog?: boolean;
 }
 
 // ── Stats strip (EDLYCSRWAQ-380) ──────────────────────────────────────────────

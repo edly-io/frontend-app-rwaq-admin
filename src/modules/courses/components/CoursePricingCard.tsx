@@ -6,14 +6,23 @@
  * applies here: the admin can always change the type and price.
  *
  * The backend refuses a type change while the course is in a program, and for
- * a free course that learners already joined. Those refusals come back as
- * `{ detail, field? }` and are shown as they are.
+ * a free course that learners already joined, and while an Enrollment code course has an active code or
+ * enrolled learners. Those refusals come back as `{ detail, field? }` and are shown as they are (a refusal
+ * with no field sits under the type choice).
+ *
+ * An Enrollment code course can be hidden from the public catalog. After saving that type on a course with no
+ * code yet, a banner offers adding one (the Enrollment codes page, opened with this course filled in).
  */
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Form } from '@openedx/paragon';
+import { useNavigate } from 'react-router-dom';
+import {
+  Alert, Button, Form, OverlayTrigger, Tooltip,
+} from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
 import { getDiscountPercent, getPriceWithVat } from '@src/data/discountPercent';
+import { useItemCodeCount } from '@src/modules/enrollment-codes/data/hooks';
+import enrollmentCodeMessages from '@src/modules/enrollment-codes/messages';
 import { useCoursePricing, useUpdateCoursePricing } from '../data/hooks';
 import type { CoursePricingCategory } from '../data/types';
 import { courseRoleMessages as messages } from '../messages';
@@ -42,9 +51,14 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   const [regularPrice, setRegularPrice] = useState('');
   const [salePrice, setSalePrice] = useState('');
   const [managedByAdmin, setManagedByAdmin] = useState(false);
+  const [hideFromCatalog, setHideFromCatalog] = useState(false);
+  const navigate = useNavigate();
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  const [removedCategories, setRemovedCategories] = useState<string[]>([]);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const [settingsError, setSettingsError] = useState(false);
 
   useEffect(() => {
     if (!pricing) { return; }
@@ -52,6 +66,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
     setRegularPrice(pricing.regularPrice ?? '');
     setSalePrice(pricing.salePrice ?? '');
     setManagedByAdmin(pricing.pricingManagedByAdmin);
+    setHideFromCatalog(pricing.hideFromCatalog ?? false);
   }, [pricing]);
 
   // Only a paid course is sold on its own, so only it carries a price.
@@ -65,6 +80,10 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   // The backend refuses a type change while the course is in a program.
   const inProgram = !!pricing?.partOfProgram;
   const isBusy = isLoading || isPending;
+  // An Enrollment code course (stored, or just saved) with no code yet offers adding one.
+  const isCodeType = category === 'is_enrollment_code';
+  const isCodeCourse = pricing?.pricingCategory === 'is_enrollment_code' || (saved && isCodeType);
+  const { data: codeCount } = useItemCodeCount({ courseId }, isCodeCourse);
 
   const validateRegularPrice = (): string => {
     if (regularPrice.trim() === '') { return intl.formatMessage(messages.pricingErrorPriceRequired); }
@@ -95,28 +114,49 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
       return;
     }
     setError('');
+    setRemovedCategories([]);
     try {
-      await updatePricing({
+      const result = await updatePricing({
         // A course with no type yet keeps none until the admin picks one.
         ...(category ? { pricingCategory: category } : {}),
         ...(showPriceFields ? {
           regularPrice: regularPrice.trim(),
           salePrice: salePrice.trim() === '' ? null : salePrice.trim(),
         } : {}),
-        pricingManagedByAdmin: managedByAdmin,
       });
+      setRemovedCategories(result?.removedCategories ?? []);
       setSaved(true);
     } catch (err) {
       logError(err);
-      const data = (err as { response?: { data?: { detail?: string; field?: string } } })?.response?.data;
+      const response = (err as {
+        response?: { status?: number; data?: { detail?: string; field?: string } };
+      })?.response;
+      const data = response?.data;
       const detail = data?.detail || intl.formatMessage(messages.pricingErrorSaveFailed);
-      const field = data?.field ? BACKEND_FIELDS[data.field] : undefined;
+      // A 409 with no field is a type-change refusal: it belongs under the type choice.
+      let field: PricingField | undefined = data?.field ? BACKEND_FIELDS[data.field] : undefined;
+      if (!data?.field && response?.status === 409) { field = 'pricingCategory'; }
       if (field) {
         setFieldError(field, detail);
       } else {
         setError(detail);
       }
       setSaved(false);
+    }
+  };
+
+  const handleSaveManagement = async () => {
+    setSettingsError(false);
+    try {
+      await updatePricing({
+        pricingManagedByAdmin: managedByAdmin,
+        ...(isCodeCourse ? { hideFromCatalog } : {}),
+      });
+      setSettingsSaved(true);
+    } catch (err) {
+      logError(err);
+      setSettingsSaved(false);
+      setSettingsError(true);
     }
   };
 
@@ -149,66 +189,98 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   }
 
   return (
-    <div className="rwaq-card">
-      {header}
+    <>
+      <div className="rwaq-card">
+        {header}
 
-      {inProgram && (
+        {inProgram && (
         <Alert variant="info" className="mb-3">
           {intl.formatMessage(messages.pricingPartOfProgramNotice, {
             program: pricing?.partOfProgramName ?? pricing?.partOfProgram,
           })}
         </Alert>
-      )}
-      {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
-      {saved && !error && (
-        <Alert variant="success" className="mb-3">{intl.formatMessage(messages.pricingSaved)}</Alert>
-      )}
-
-      <Form.Group isInvalid={!!fieldErrors.pricingCategory}>
-        <Form.Label className="sr-only">{intl.formatMessage(messages.pricingSectionTitle)}</Form.Label>
-        <Form.RadioSet
-          name="pricingCategory"
-          value={category ?? ''}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            setCategory(e.target.value as CoursePricingCategory);
-            touched('pricingCategory');
-          }}
-        >
-          <Form.Radio
-            value="is_free"
-            disabled={isBusy || inProgram}
-            description={intl.formatMessage(messages.pricingFreeDescription)}
-          >
-            {intl.formatMessage(messages.pricingFree)}
-          </Form.Radio>
-          <Form.Radio
-            value="is_paid"
-            disabled={isBusy || inProgram}
-            description={intl.formatMessage(messages.pricingPaidDescription)}
-          >
-            {intl.formatMessage(messages.pricingPaid)}
-          </Form.Radio>
-          <Form.Radio
-            value="is_program_only"
-            disabled={isBusy || inProgram}
-            description={intl.formatMessage(messages.pricingProgramOnlyDescription)}
-          >
-            {intl.formatMessage(messages.pricingProgramOnly)}
-          </Form.Radio>
-          <Form.Radio
-            value="is_part_of_subscription"
-            disabled={isBusy || inProgram}
-            description={intl.formatMessage(messages.pricingSubscriptionDescription)}
-          >
-            {intl.formatMessage(messages.pricingSubscription)}
-          </Form.Radio>
-        </Form.RadioSet>
-        {fieldErrors.pricingCategory && (
-          <Form.Control.Feedback type="invalid">{fieldErrors.pricingCategory}</Form.Control.Feedback>
         )}
-      </Form.Group>
+        {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
+        {saved && !error && (
+        <Alert variant="success" className="mb-3">{intl.formatMessage(messages.pricingSaved)}</Alert>
+        )}
+        {saved && !error && removedCategories.length > 0 && (
+        <Alert variant="warning" className="mb-3">
+          {intl.formatMessage(messages.pricingCategoriesRemoved, { categories: removedCategories.join(', ') })}
+        </Alert>
+        )}
 
-      {showPriceFields && (
+        <Form.Group isInvalid={!!fieldErrors.pricingCategory}>
+          <Form.Label className="sr-only">{intl.formatMessage(messages.pricingSectionTitle)}</Form.Label>
+          <Form.RadioSet
+            name="pricingCategory"
+            value={category ?? ''}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setCategory(e.target.value as CoursePricingCategory);
+              touched('pricingCategory');
+            }}
+          >
+            <Form.Radio
+              value="is_free"
+              disabled={isBusy || inProgram}
+              description={intl.formatMessage(messages.pricingFreeDescription)}
+            >
+              {intl.formatMessage(messages.pricingFree)}
+            </Form.Radio>
+            <Form.Radio
+              value="is_paid"
+              disabled={isBusy || inProgram}
+              description={intl.formatMessage(messages.pricingPaidDescription)}
+            >
+              {intl.formatMessage(messages.pricingPaid)}
+            </Form.Radio>
+            <Form.Radio
+              value="is_program_only"
+              disabled={isBusy || inProgram}
+              description={intl.formatMessage(messages.pricingProgramOnlyDescription)}
+            >
+              {intl.formatMessage(messages.pricingProgramOnly)}
+            </Form.Radio>
+            <Form.Radio
+              value="is_part_of_subscription"
+              disabled={isBusy || inProgram}
+              description={intl.formatMessage(messages.pricingSubscriptionDescription)}
+            >
+              {intl.formatMessage(messages.pricingSubscription)}
+            </Form.Radio>
+            <div className="d-flex align-items-start justify-content-between w-100">
+              <Form.Radio
+                value="is_enrollment_code"
+                disabled={isBusy || inProgram}
+                description={intl.formatMessage(messages.pricingEnrollmentCodeDescription)}
+              >
+                {intl.formatMessage(messages.pricingEnrollmentCode)}
+              </Form.Radio>
+              {isCodeCourse && codeCount !== undefined && (
+              <Button
+                variant="outline-primary"
+                size="sm"
+                className="ml-3"
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(codeCount === 0
+                    ? `/enrollment-codes?create=1&scope=course&id=${encodeURIComponent(courseId)}`
+                    : `/enrollment-codes?courseId=${encodeURIComponent(courseId)}`);
+                }}
+              >
+                {intl.formatMessage(codeCount === 0
+                  ? enrollmentCodeMessages.addCodeAction : enrollmentCodeMessages.viewCodesAction)}
+              </Button>
+              )}
+            </div>
+          </Form.RadioSet>
+          {fieldErrors.pricingCategory && (
+          <Form.Control.Feedback type="invalid">{fieldErrors.pricingCategory}</Form.Control.Feedback>
+          )}
+        </Form.Group>
+
+        {showPriceFields && (
         <>
           <Form.Group isInvalid={!!fieldErrors.regularPrice} controlId="course-pricing-regular-price">
             <Form.Label>{intl.formatMessage(messages.pricingPriceLabel, { currency })}</Form.Label>
@@ -260,24 +332,69 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
             )}
           </Form.Group>
         </>
-      )}
+        )}
 
-      <Form.Group controlId="pricing-managed-by-admin">
-        <Form.Checkbox
-          name="pricingManagedByAdmin"
-          checked={managedByAdmin}
-          disabled={isBusy}
-          description={intl.formatMessage(messages.pricingManagedHint)}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setManagedByAdmin(e.target.checked); touched(); }}
+        <Button variant="primary" size="sm" onClick={handleSave} disabled={isBusy}>
+          {intl.formatMessage(isPending ? messages.pricingSaving : messages.pricingSave)}
+        </Button>
+      </div>
+      <div className="rwaq-card mt-3">
+        <h2 className="rwaq-section-title mb-3">{intl.formatMessage(messages.settingsTitle)}</h2>
+        <Form.Group controlId="pricing-managed-by-admin">
+          <Form.Checkbox
+            name="pricingManagedByAdmin"
+            checked={managedByAdmin}
+            disabled={isBusy}
+            description={intl.formatMessage(messages.pricingManagedHint)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setManagedByAdmin(e.target.checked);
+              setSettingsSaved(false);
+              setSettingsError(false);
+            }}
+          >
+            {intl.formatMessage(messages.pricingManagedLabel)}
+          </Form.Checkbox>
+        </Form.Group>
+
+        <OverlayTrigger
+          placement="top"
+          trigger={isCodeCourse ? [] : ['hover', 'focus']}
+          overlay={(
+            <Tooltip id="course-hide-from-catalog-tooltip">
+              {intl.formatMessage(enrollmentCodeMessages.hideFromCatalogDisabled)}
+            </Tooltip>
+          )}
         >
-          {intl.formatMessage(messages.pricingManagedLabel)}
-        </Form.Checkbox>
-      </Form.Group>
+          <div
+            role="group"
+            aria-label={intl.formatMessage(enrollmentCodeMessages.hideFromCatalog)}
+            tabIndex={isCodeCourse ? undefined : 0}
+          >
+            <Form.Group controlId="course-hide-from-catalog">
+              <Form.Checkbox
+                name="hideFromCatalog"
+                checked={hideFromCatalog}
+                disabled={isBusy || !isCodeCourse}
+                description={intl.formatMessage(enrollmentCodeMessages.hideFromCatalogHelp)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setHideFromCatalog(e.target.checked);
+                  setSettingsSaved(false);
+                  setSettingsError(false);
+                }}
+              >
+                {intl.formatMessage(enrollmentCodeMessages.hideFromCatalog)}
+              </Form.Checkbox>
+            </Form.Group>
+          </div>
+        </OverlayTrigger>
 
-      <Button variant="primary" size="sm" onClick={handleSave} disabled={isBusy}>
-        {intl.formatMessage(isPending ? messages.pricingSaving : messages.pricingSave)}
-      </Button>
-    </div>
+        {settingsError && <Alert variant="danger">{intl.formatMessage(messages.pricingErrorSaveFailed)}</Alert>}
+        {settingsSaved && <Alert variant="success">{intl.formatMessage(messages.settingsSaved)}</Alert>}
+        <Button variant="primary" size="sm" onClick={handleSaveManagement} disabled={isBusy}>
+          {intl.formatMessage(isPending ? messages.pricingSaving : messages.settingsSave)}
+        </Button>
+      </div>
+    </>
   );
 };
 

@@ -20,6 +20,17 @@ describe('SideNav', () => {
     expect(screen.getByRole('link', { name: 'Orders & Payments' })).toHaveAttribute('href', '/payments');
   });
 
+  it('shows Enrollment codes to a superuser only', () => {
+    setCapabilities({ isSuperuser: true });
+    const { unmount } = renderWrapper(<SideNav />);
+    expect(screen.getByRole('link', { name: 'Enrollment codes' })).toHaveAttribute('href', '/enrollment-codes');
+    unmount();
+
+    setCapabilities({ isSuperuser: false });
+    renderWrapper(<SideNav />);
+    expect(screen.queryByRole('link', { name: 'Enrollment codes' })).not.toBeInTheDocument();
+  });
+
   it('hides Orders & Payments from global staff who are not superusers', () => {
     setCapabilities({ isSuperuser: false });
     renderWrapper(<SideNav />);

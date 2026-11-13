@@ -3,11 +3,13 @@
  */
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
+import * as codeHooks from '@src/modules/enrollment-codes/data/hooks';
 import * as hooks from '../data/hooks';
 import type { ProgramDetail } from '../data/types';
 import ProgramPricingCard from './ProgramPricingCard';
 
 jest.mock('../data/hooks');
+jest.mock('@src/modules/enrollment-codes/data/hooks', () => ({ useItemCodeCount: jest.fn() }));
 jest.mock('@edx/frontend-platform/logging', () => ({ logError: jest.fn() }));
 
 const mockUpdate = jest.fn();
@@ -30,16 +32,15 @@ const save = () => fireEvent.click(screen.getByRole('button', { name: 'Save pric
 
 beforeEach(() => {
   jest.clearAllMocks();
+  (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: undefined });
   mockUpdate.mockResolvedValue(makeProgram());
   (hooks.useUpdateProgram as jest.Mock).mockReturnValue({ mutateAsync: mockUpdate, isPending: false });
 });
 
 describe('ProgramPricingCard', () => {
-  it('shows the lock help text', () => {
+  it('shows the program type and pricing heading', () => {
     renderCard();
-    expect(screen.getByText(
-      'When enabled, the pricing fields are managed from the admin panel. Org admin can still change them.',
-    )).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Program type and pricing' })).toBeInTheDocument();
   });
 
   it('validates price and sale price on blur', () => {
@@ -189,7 +190,7 @@ describe('ProgramPricingCard', () => {
   it('disables the radios while saving', () => {
     (hooks.useUpdateProgram as jest.Mock).mockReturnValue({ mutateAsync: mockUpdate, isPending: true });
     renderCard();
-    ['Free', 'Paid', 'Part of Subscription'].forEach((name) => {
+    ['Free', 'Paid', 'Part of Subscription', 'Enrollment code'].forEach((name) => {
       expect(screen.getByRole('radio', { name })).toBeDisabled();
     });
   });
@@ -199,5 +200,68 @@ describe('ProgramPricingCard', () => {
     renderCard();
     save();
     expect(await screen.findByText('Something is off.')).toBeInTheDocument();
+  });
+  describe('Enrollment code type', () => {
+    it('offers the type after Part of Subscription, with its description', () => {
+      renderCard();
+      const values = screen.getAllByRole('radio').map((radio) => radio.getAttribute('value'));
+      expect(values[values.length - 1]).toBe('is_enrollment_code');
+      expect(values[values.length - 2]).toBe('is_part_of_subscription');
+      expect(screen.getByRole('radio', { name: 'Enrollment code' })).not.toBeChecked();
+      expect(screen.getByText(
+        'A free, restricted program that learners can only join with an enrollment code.',
+      )).toBeInTheDocument();
+    });
+
+    it('hides the price fields when selected and saves the type with no prices', async () => {
+      renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00' });
+      expect(screen.getByLabelText('Price before VAT (SAR)')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('radio', { name: 'Enrollment code' }));
+      expect(screen.queryByLabelText('Price before VAT (SAR)')).not.toBeInTheDocument();
+      save();
+      await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({
+        pricingCategory: 'is_enrollment_code', regularPrice: null, salePrice: null,
+      }));
+    });
+
+    it('offers Add enrollment code to a stored Enrollment code program with no code, linking to the codes page', () => {
+      (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: 0 });
+      renderCard({ pricingCategory: 'is_enrollment_code' });
+      expect(screen.getByRole('button', { name: 'Add enrollment code' })).toBeInTheDocument();
+      expect(codeHooks.useItemCodeCount).toHaveBeenLastCalledWith({ programUuid: makeProgram().uuid }, true);
+      fireEvent.click(screen.getByRole('button', { name: 'Add enrollment code' }));
+      expect(window.location.pathname).toBe('/enrollment-codes');
+      expect(window.location.search).toBe(`?create=1&scope=program&id=${makeProgram().uuid}`);
+    });
+
+    it('offers it right after saving the type too, and not for another type', async () => {
+      (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: 0 });
+      renderCard();
+      expect(screen.queryByTestId('add-code-banner')).not.toBeInTheDocument();
+      expect(codeHooks.useItemCodeCount).toHaveBeenLastCalledWith({ programUuid: makeProgram().uuid }, false);
+      fireEvent.click(screen.getByRole('radio', { name: 'Enrollment code' }));
+      save();
+      expect(await screen.findByRole('button', { name: 'Add enrollment code' })).toBeInTheDocument();
+    });
+
+    it('shows no banner when the program already has a code, and never a switch-off warning', async () => {
+      (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: 1 });
+      renderCard({ pricingCategory: 'is_enrollment_code' });
+      save();
+      await waitFor(() => expect(mockUpdate).toHaveBeenCalled());
+      expect(screen.queryByTestId('add-code-banner')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
+      expect(screen.queryByTestId('codes-switched-off-warning')).not.toBeInTheDocument();
+    });
+
+    it('shows the backend refusal to switch away on the type field', async () => {
+      mockUpdate.mockRejectedValue({
+        response: { status: 409, data: { pricing_category: ['Codes were used, so the type cannot change.'] } },
+      });
+      renderCard({ pricingCategory: 'is_enrollment_code' });
+      fireEvent.click(screen.getByRole('radio', { name: 'Free' }));
+      save();
+      expect(await screen.findByText('Codes were used, so the type cannot change.')).toBeInTheDocument();
+    });
   });
 });
