@@ -82,7 +82,14 @@ describe('CreateCodeModal', () => {
     expect(screen.getByText(
       'The code works for every Enrollment code course and program of this organization, now and later.',
     )).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Organization', { selector: 'select' }), { target: { value: 'Edrakk' } });
+    const field = screen.getByRole('combobox', { name: 'Organization' });
+    fireEvent.change(field, { target: { value: 'arb' } });
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['ArbisoftARB']);
+    fireEvent.change(field, { target: { value: 'zzz' } });
+    expect(screen.getByText('No matching organizations.')).toBeInTheDocument();
+    fireEvent.change(field, { target: { value: 'edr' } });
+    fireEvent.click(screen.getByRole('option', { name: /Edrakk/ }));
+    expect(field).toHaveValue('Edrakk');
     fireEvent.click(screen.getByLabelText(/Multiple Usage/));
     fireEvent.change(screen.getByLabelText('Number of uses'), { target: { value: '100' } });
     submit();
@@ -106,7 +113,8 @@ describe('CreateCodeModal', () => {
     });
     renderModal();
     pickScope('Organization');
-    fireEvent.change(screen.getByLabelText('Organization', { selector: 'select' }), { target: { value: 'Edrakk' } });
+    fireEvent.focus(screen.getByRole('combobox', { name: 'Organization' }));
+    fireEvent.click(screen.getByRole('option', { name: /Edrakk/ }));
     submit();
     expect(await screen.findByText('This organization was not found.')).toBeInTheDocument();
   });

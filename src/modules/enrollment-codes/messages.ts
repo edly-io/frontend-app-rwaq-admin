@@ -130,8 +130,11 @@ const messages = defineMessages({
     id: 'rwaq.admin.enrollmentCodes.form.organizationHelp',
     defaultMessage: 'The code works for every Enrollment code course and program of this organization, now and later.',
   },
-  organizationPlaceholder: {
-    id: 'rwaq.admin.enrollmentCodes.form.organizationPlaceholder', defaultMessage: 'Choose an organization…',
+  organizationSearch: {
+    id: 'rwaq.admin.enrollmentCodes.form.organizationSearch', defaultMessage: 'Search by name or short name',
+  },
+  organizationNoResults: {
+    id: 'rwaq.admin.enrollmentCodes.form.organizationNoResults', defaultMessage: 'No matching organizations.',
   },
   itemRequired: { id: 'rwaq.admin.enrollmentCodes.form.itemRequired', defaultMessage: 'Choose a course or a program.' },
   organizationRequired: {
