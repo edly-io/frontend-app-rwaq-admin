@@ -78,6 +78,8 @@ const CourseListStatsStrip = () => {
         {tile('listStatsRunning', 'listStatsRunningInfo', stats?.tiles.running)}
         {tile('listStatsEnrollments', 'listStatsEnrollmentsInfo', stats?.tiles.activeEnrollments)}
         {tile('listStatsCertificates', 'listStatsCertificatesInfo', stats?.tiles.certificatesIssued)}
+        {tile('listStatsHonor', 'listStatsHonorInfo', stats?.tiles.honorEnrollments)}
+        {tile('listStatsAudit', 'listStatsAuditInfo', stats?.tiles.auditEnrollments)}
         {tile(
           'listStatsFree',
           'listStatsFreeInfo',

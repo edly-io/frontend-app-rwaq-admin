@@ -11,6 +11,7 @@ export interface EnrollmentTiles {
   /** null when a status of an active course could not be read. */
   passed: number | null;
   inProgress: number | null;
+  notStarted: number | null;
 }
 
 const countStatus = (active: UserEnrollment[], status: string): number | null => (
@@ -25,6 +26,7 @@ export const enrollmentTiles = (rows: UserEnrollment[]): EnrollmentTiles => {
     total: rows.length,
     passed: countStatus(active, 'passed'),
     inProgress: countStatus(active, 'in_progress'),
+    notStarted: countStatus(active, 'not_started'),
   };
 };
 

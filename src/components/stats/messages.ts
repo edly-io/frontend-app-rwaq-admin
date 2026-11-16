@@ -26,6 +26,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.stats.excludedAccounts',
     defaultMessage: 'Staff, superusers and service accounts are not counted.',
   },
+  seriesOrganizations: { id: 'rwaq.admin.stats.series.organizations', defaultMessage: 'Organizations' },
   seriesEnrollments: { id: 'rwaq.admin.stats.series.enrollments', defaultMessage: 'Enrollments' },
   lifecycleTitle: { id: 'rwaq.admin.stats.lifecycle.title', defaultMessage: 'Course lifecycle' },
   lifecycleInfo: {

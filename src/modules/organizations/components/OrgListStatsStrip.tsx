@@ -1,8 +1,9 @@
 /**
  * OrgListStatsStrip — tiles and one compact chart above the Organizations table.
  *
- * Global totals: they do not follow the table's search and filters. The chart is the top 10
- * organizations by enrollments, and each name carries its course count in brackets.
+ * Global totals: they do not follow the table's search and filters. One chart is the top 10
+ * organizations by enrollments, and each name carries its course count in brackets. The other is
+ * the organizations added per month.
  */
 import { useMemo, useState } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -10,7 +11,7 @@ import { localizedName } from '@src/data/localizedName';
 import StatsChartCard from '@src/components/stats/StatsChartCard';
 import StatsStrip from '@src/components/stats/StatsStrip';
 import StatsTiles, { StatsTileCard } from '@src/components/stats/StatsTiles';
-import { formatCount } from '@src/components/stats/format';
+import { formatCount, isEmptySeries, monthlyChartData } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
 import StatTile from '@src/modules/dashboard/components/StatTile';
@@ -33,6 +34,12 @@ const OrgListStatsStrip = () => {
       enrollments: org.enrollments,
     })),
     [stats, intl],
+  );
+
+  const organizationsLabel = intl.formatMessage(statsMessages.seriesOrganizations);
+  const added = useMemo(
+    () => monthlyChartData(stats?.series?.organizationsByMonth, organizationsLabel, intl.locale),
+    [stats, organizationsLabel, intl.locale],
   );
 
   const tile = (label: keyof typeof messages, info: keyof typeof messages, value: number | undefined) => (
@@ -64,17 +71,31 @@ const OrgListStatsStrip = () => {
         {tile('listStatsEnrollments', 'listStatsEnrollmentsInfo', tiles?.enrollments)}
       </StatsTiles>
 
-      <StatsChartCard
-        title={intl.formatMessage(messages.listStatsTopTitle)}
-        info={intl.formatMessage(messages.listStatsTopInfo)}
-        type="bar"
-        data={top}
-        series={['enrollments']}
-        isLoading={isLoading}
-        isUnavailable={query.isError}
-        isEmpty={top.every((org) => org.enrollments === 0)}
-        categoryLabels
-      />
+      <div className="rwaq-dash-grid rwaq-dash-grid--halves">
+        <StatsChartCard
+          title={intl.formatMessage(messages.listStatsTopTitle)}
+          info={intl.formatMessage(messages.listStatsTopInfo)}
+          type="bar"
+          data={top}
+          series={['enrollments']}
+          isLoading={isLoading}
+          isUnavailable={query.isError}
+          isEmpty={top.every((org) => org.enrollments === 0)}
+          categoryLabels
+        />
+        <StatsChartCard
+          title={intl.formatMessage(messages.listStatsAddedTitle)}
+          subtitle={intl.formatMessage(statsMessages.lastTwelveMonths)}
+          info={intl.formatMessage(messages.listStatsAddedInfo)}
+          type="bar"
+          data={added}
+          maxXLabels={6}
+          series={[organizationsLabel]}
+          isLoading={isLoading}
+          isUnavailable={query.isError}
+          isEmpty={isEmptySeries(added, organizationsLabel)}
+        />
+      </div>
     </StatsStrip>
   );
 };

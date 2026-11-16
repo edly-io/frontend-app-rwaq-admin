@@ -65,6 +65,23 @@ describe('UserStatsStrip', () => {
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(2);
   });
 
+  it('shows the courses not started next to passed and in progress', () => {
+    mockStats(query());
+    renderStrip({
+      enrollments: [
+        row({ status: 'passed' }),
+        row({ courseId: 'b', status: 'in_progress' }),
+        row({ courseId: 'c', status: 'not_started' }),
+        row({ courseId: 'd', status: 'not_started' }),
+      ],
+    });
+
+    const tile = screen.getByText('Courses not started').closest('.rwaq-stat-tile') as HTMLElement;
+    expect(tile).toHaveTextContent('2');
+    expect(screen.getByText('Courses passed').closest('.rwaq-stat-tile')).toHaveTextContent('1');
+    expect(screen.getByText('Courses in progress').closest('.rwaq-stat-tile')).toHaveTextContent('1');
+  });
+
   it('shows programs, last activity and subscription from the stats endpoint', () => {
     mockStats(query());
     renderStrip();

@@ -18,6 +18,8 @@ const stats = {
     running: 45,
     activeEnrollments: 3400,
     certificatesIssued: 910,
+    honorEnrollments: 2100,
+    auditEnrollments: 1234,
     types: {
       free: 80, paid: 25, programOnly: 10, subscription: 5, noType: 6,
     },
@@ -41,6 +43,8 @@ describe('CourseListStatsStrip', () => {
     expect(screen.getByText('120')).toBeInTheDocument();
     expect(screen.getByText('3,400')).toBeInTheDocument();
     expect(screen.getByText('910')).toBeInTheDocument();
+    expect(screen.getByText('2,100')).toBeInTheDocument();
+    expect(screen.getByText('1,234')).toBeInTheDocument();
     expect(screen.getByText('80')).toBeInTheDocument();
     expect(screen.getByText('6 with no type set')).toBeInTheDocument();
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(3);
@@ -62,6 +66,16 @@ describe('CourseListStatsStrip', () => {
     renderWrapper(<CourseListStatsStrip />);
 
     expect(screen.getAllByText('Not available')).toHaveLength(2);
+  });
+
+  it('shows Not available for honor and audit enrollments that could not be read', () => {
+    mockQuery(query({
+      data: { ...stats, tiles: { ...stats.tiles, honorEnrollments: null, auditEnrollments: null } },
+    }));
+    renderWrapper(<CourseListStatsStrip />);
+
+    expect(screen.getByText('Honor enrollments').closest('.rwaq-stat-tile')).toHaveTextContent('Not available');
+    expect(screen.getByText('Audit enrollments').closest('.rwaq-stat-tile')).toHaveTextContent('Not available');
   });
 
   it('shows skeletons while loading', () => {
