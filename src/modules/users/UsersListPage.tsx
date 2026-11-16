@@ -17,7 +17,7 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import ErrorState from '@src/components/ErrorState';
-import { getErrorStatus } from '@src/data/httpError';
+import { getErrorReason, getErrorStatus } from '@src/data/httpError';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import ExportDateFilter from '@src/components/ExportDateFilter';
@@ -360,6 +360,7 @@ const UsersListPage = () => {
           <ErrorState
             statusCode={statusCode || undefined}
             title={intl.formatMessage(messages.errorTitle)}
+            body={statusCode === 400 ? getErrorReason(error) ?? undefined : undefined}
             onRetry={() => refetch()}
           />
         ) : (
