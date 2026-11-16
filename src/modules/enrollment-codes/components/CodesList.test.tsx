@@ -127,29 +127,11 @@ describe('CodesList', () => {
       onViewUses={onViewUses}
     />);
     expect(screen.getByText('Covers: Leadership')).toBeInTheDocument();
-    expect(lastParams()).toMatchObject({ programUuid: PROGRAM_UUID, includeCovering: true });
+    // Only the codes made for the program itself, not the organization codes that cover it.
+    expect(lastParams()).toMatchObject({ programUuid: PROGRAM_UUID });
+    expect(lastParams()).not.toHaveProperty('includeCovering');
     fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
     expect(clearItem).toHaveBeenCalledTimes(1);
-  });
-
-  it('shows the hint under the empty text when an item filter hides organization codes behind Scope', () => {
-    (hooks.useEnrollmentCodes as jest.Mock).mockReturnValue({
-      data: { results: [], count: 0 }, isLoading: false, isPlaceholderData: false, isError: false,
-    });
-    renderWrapper(<CodesList programUuid={PROGRAM_UUID} itemFilterLabel="Covers: Leadership" onClearItemFilter={jest.fn()} onViewUses={onViewUses} />);
-    expect(screen.queryByTestId('covering-hint')).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Scope'), { target: { value: 'organization' } });
-    expect(screen.getByTestId('covering-hint')).toHaveTextContent(
-      'No codes were made for this program alone. Organization codes also cover it: set Scope to All to see them.',
-    );
-  });
-
-  it('shows no hint without an item filter', () => {
-    (hooks.useEnrollmentCodes as jest.Mock).mockReturnValue({
-      data: { results: [], count: 0 }, isLoading: false, isPlaceholderData: false, isError: false,
-    });
-    renderWrapper(<CodesList onViewUses={onViewUses} />);
-    expect(screen.queryByTestId('covering-hint')).not.toBeInTheDocument();
   });
 
   it('copies a code from its copy icon', async () => {
