@@ -124,8 +124,8 @@ describe('CreateCodeModal', () => {
 
   it('creates a multi-use code for a program with a typed code, uppercased, and an expiry', async () => {
     renderModal();
-    fireEvent.change(screen.getByLabelText('Code'), { target: { value: 'riyadh26' } });
-    expect(screen.getByLabelText('Code')).toHaveValue('RIYADH26');
+    fireEvent.change(screen.getByLabelText('Code (optional)'), { target: { value: 'riyadh26' } });
+    expect(screen.getByLabelText('Code (optional)')).toHaveValue('RIYADH26');
     pickScope('Program');
     choose(`program:${PROGRAM_UUID}`);
     fireEvent.click(screen.getByLabelText(/Multiple Usage/));
@@ -151,17 +151,17 @@ describe('CreateCodeModal', () => {
   it('fills the field with a 6 character code from the unambiguous alphabet on Generate', () => {
     renderModal();
     fireEvent.click(screen.getByRole('button', { name: 'Generate' }));
-    expect((screen.getByLabelText('Code') as HTMLInputElement).value).toMatch(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/);
+    expect((screen.getByLabelText('Code (optional)') as HTMLInputElement).value).toMatch(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/);
     for (let i = 0; i < 50; i += 1) { expect(generateCode()).not.toMatch(/[01OI]/); }
   });
 
   it('requires an item and refuses a code that is not 6 to 8 letters and numbers', async () => {
     renderModal();
-    fireEvent.change(screen.getByLabelText('Code'), { target: { value: 'AB1' } });
+    fireEvent.change(screen.getByLabelText('Code (optional)'), { target: { value: 'AB1' } });
     submit();
     expect(await screen.findByText('Use 6 to 8 letters and numbers, nothing else.')).toBeInTheDocument();
     expect(screen.getByText('Choose a course or a program.')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Code'), { target: { value: 'AB-123' } });
+    fireEvent.change(screen.getByLabelText('Code (optional)'), { target: { value: 'AB-123' } });
     submit();
     expect(await screen.findByText('Use 6 to 8 letters and numbers, nothing else.')).toBeInTheDocument();
     expect(mockCreate).not.toHaveBeenCalled();
@@ -180,11 +180,11 @@ describe('CreateCodeModal', () => {
   it('shows a duplicate code on the Code field', async () => {
     mockCreate.mockRejectedValue({ response: { status: 409, data: { detail: 'This code already exists.', field: 'code' } } });
     renderModal();
-    fireEvent.change(screen.getByLabelText('Code'), { target: { value: 'ABC234' } });
+    fireEvent.change(screen.getByLabelText('Code (optional)'), { target: { value: 'ABC234' } });
     choose(`course:${COURSE_KEY}`);
     submit();
     const message = await screen.findByText('This code already exists.');
-    expect(message.closest('.pgn__form-group')).toContainElement(screen.getByLabelText('Code'));
+    expect(message.closest('.pgn__form-group')).toContainElement(screen.getByLabelText('Code (optional)'));
     expect(onCreated).not.toHaveBeenCalled();
   });
 

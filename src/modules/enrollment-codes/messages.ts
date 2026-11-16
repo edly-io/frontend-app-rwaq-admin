@@ -108,6 +108,7 @@ const messages = defineMessages({
   editSubmit: { id: 'rwaq.admin.enrollmentCodes.form.editSubmit', defaultMessage: 'Save' },
   cancel: { id: 'rwaq.admin.enrollmentCodes.form.cancel', defaultMessage: 'Cancel' },
   codeLabel: { id: 'rwaq.admin.enrollmentCodes.form.codeLabel', defaultMessage: 'Code' },
+  codeLabelOptional: { id: 'rwaq.admin.enrollmentCodes.form.codeLabelOptional', defaultMessage: 'Code (optional)' },
   codeHelp: {
     id: 'rwaq.admin.enrollmentCodes.form.codeHelp',
     defaultMessage: '6 to 8 letters and numbers. Leave it empty and the system generates one.',
