@@ -206,6 +206,7 @@ describe('CsvButton', () => {
         ordering: '-order_date',
         source: 'wordpress',
         coupon: 'with',
+        export_language: 'en',
       },
       responseType: 'blob',
       headers: { 'Accept-Language': 'en' },

@@ -82,7 +82,7 @@ export const downloadPaymentsCsv = async (
 ): Promise<{ blob: Blob; filename: string }> => {
   const { page, pageSize, ...filters } = params;
   const response = await getAuthenticatedHttpClient().get(`${getPaymentsBaseUrl()}/${report}/csv/`, {
-    params: toQuery(filters),
+    params: { ...toQuery(filters), ...(language ? { export_language: language } : {}) },
     responseType: 'blob',
     ...(language ? { headers: { 'Accept-Language': language } } : {}),
   });
