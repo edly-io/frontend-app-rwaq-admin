@@ -16,14 +16,6 @@ const messages = defineMessages({
   usageJoinedLabel: { id: 'rwaq.admin.enrollmentCodes.usage.joinedLabel', defaultMessage: 'Items joined' },
 
   filterCovers: { id: 'rwaq.admin.enrollmentCodes.filter.covers', defaultMessage: 'Covers: {name}' },
-  emptyCoveringHintProgram: {
-    id: 'rwaq.admin.enrollmentCodes.empty.coveringHintProgram',
-    defaultMessage: 'No codes were made for this program alone. Organization codes also cover it: set Scope to All to see them.',
-  },
-  emptyCoveringHintCourse: {
-    id: 'rwaq.admin.enrollmentCodes.empty.coveringHintCourse',
-    defaultMessage: 'No codes were made for this course alone. Organization codes also cover it: set Scope to All to see them.',
-  },
   filterCoveredItem: { id: 'rwaq.admin.enrollmentCodes.filter.coveredItem', defaultMessage: '{type}: {name}' },
   itemFilterActive: { id: 'rwaq.admin.enrollmentCodes.itemFilterActive', defaultMessage: 'Showing codes for this item.' },
   itemFilterClear: { id: 'rwaq.admin.enrollmentCodes.itemFilterClear', defaultMessage: 'Show all codes' },
@@ -43,6 +35,9 @@ const messages = defineMessages({
   colUsage: { id: 'rwaq.admin.enrollmentCodes.col.usage', defaultMessage: 'Used / limit' },
   colExpires: { id: 'rwaq.admin.enrollmentCodes.col.expires', defaultMessage: 'Expires' },
   colStatus: { id: 'rwaq.admin.enrollmentCodes.col.status', defaultMessage: 'Status' },
+  colActive: { id: 'rwaq.admin.enrollmentCodes.col.active', defaultMessage: 'Active' },
+  switchOn: { id: 'rwaq.admin.enrollmentCodes.switch.on', defaultMessage: 'On' },
+  switchOff: { id: 'rwaq.admin.enrollmentCodes.switch.off', defaultMessage: 'Off' },
   colActions: { id: 'rwaq.admin.enrollmentCodes.col.actions', defaultMessage: 'Actions' },
   usageUsedOf: { id: 'rwaq.admin.enrollmentCodes.usage.usedOf', defaultMessage: 'Used {count} of {max}' },
   usageRemaining: { id: 'rwaq.admin.enrollmentCodes.usage.remaining', defaultMessage: '{count} left' },
@@ -105,6 +100,7 @@ const messages = defineMessages({
   editSubmit: { id: 'rwaq.admin.enrollmentCodes.form.editSubmit', defaultMessage: 'Save' },
   cancel: { id: 'rwaq.admin.enrollmentCodes.form.cancel', defaultMessage: 'Cancel' },
   codeLabel: { id: 'rwaq.admin.enrollmentCodes.form.codeLabel', defaultMessage: 'Code' },
+  codeLabelOptional: { id: 'rwaq.admin.enrollmentCodes.form.codeLabelOptional', defaultMessage: 'Code (optional)' },
   codeHelp: {
     id: 'rwaq.admin.enrollmentCodes.form.codeHelp',
     defaultMessage: '6 to 8 letters and numbers. Leave it empty and the system generates one.',
@@ -126,15 +122,19 @@ const messages = defineMessages({
     id: 'rwaq.admin.enrollmentCodes.form.organizationHelp',
     defaultMessage: 'The code works for every Enrollment code course and program of this organization, now and later.',
   },
-  organizationPlaceholder: {
-    id: 'rwaq.admin.enrollmentCodes.form.organizationPlaceholder', defaultMessage: 'Choose an organization…',
+  organizationSearch: {
+    id: 'rwaq.admin.enrollmentCodes.form.organizationSearch', defaultMessage: 'Search by name or short name',
+  },
+  organizationNoResults: {
+    id: 'rwaq.admin.enrollmentCodes.form.organizationNoResults', defaultMessage: 'No matching organizations.',
   },
   itemRequired: { id: 'rwaq.admin.enrollmentCodes.form.itemRequired', defaultMessage: 'Choose a course or a program.' },
   organizationRequired: {
     id: 'rwaq.admin.enrollmentCodes.form.organizationRequired', defaultMessage: 'Choose an organization.',
   },
-  itemSearch: { id: 'rwaq.admin.enrollmentCodes.form.itemSearch', defaultMessage: 'Search by name' },
-  itemPlaceholder: { id: 'rwaq.admin.enrollmentCodes.form.itemPlaceholder', defaultMessage: 'Choose…' },
+  itemSearch: { id: 'rwaq.admin.enrollmentCodes.form.itemSearch', defaultMessage: 'Search by name or ID' },
+  itemNoResults: { id: 'rwaq.admin.enrollmentCodes.form.itemNoResults', defaultMessage: 'No matching courses or programs.' },
+  itemClear: { id: 'rwaq.admin.enrollmentCodes.form.itemClear', defaultMessage: 'Clear the choice' },
   itemGroupCourses: { id: 'rwaq.admin.enrollmentCodes.form.itemGroupCourses', defaultMessage: 'Courses' },
   itemGroupPrograms: { id: 'rwaq.admin.enrollmentCodes.form.itemGroupPrograms', defaultMessage: 'Programs' },
   itemHelp: {

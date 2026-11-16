@@ -175,7 +175,8 @@ describe('UsesTab', () => {
       target: { value: 'sara' },
     });
     fireEvent.submit(screen.getByPlaceholderText('Search by student name, username or email').closest('form') as HTMLElement);
-    fireEvent.change(screen.getByLabelText('Course or program'), { target: { value: `course:${COURSE_KEY}` } });
+    fireEvent.focus(screen.getByRole('combobox', { name: 'Course or program' }));
+    fireEvent.click(screen.getByRole('option', { name: /Safety basics/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Pick dates' }));
 
     expect(lastParams()).toMatchObject({

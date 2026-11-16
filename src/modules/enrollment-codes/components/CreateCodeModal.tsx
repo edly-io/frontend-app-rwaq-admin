@@ -158,7 +158,7 @@ const CreateCodeModal = ({
       {error && <p className="text-danger small">{error}</p>}
 
       <Form.Group isInvalid={!!fieldErrors.code} controlId="enrollment-code-code">
-        <Form.Label>{intl.formatMessage(messages.codeLabel)}</Form.Label>
+        <Form.Label>{intl.formatMessage(messages.codeLabelOptional)}</Form.Label>
         <div className="d-flex align-items-start gap-2">
           <Form.Control
             value={code}
