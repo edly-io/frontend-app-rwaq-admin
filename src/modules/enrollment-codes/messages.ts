@@ -16,14 +16,6 @@ const messages = defineMessages({
   usageJoinedLabel: { id: 'rwaq.admin.enrollmentCodes.usage.joinedLabel', defaultMessage: 'Items joined' },
 
   filterCovers: { id: 'rwaq.admin.enrollmentCodes.filter.covers', defaultMessage: 'Covers: {name}' },
-  emptyCoveringHintProgram: {
-    id: 'rwaq.admin.enrollmentCodes.empty.coveringHintProgram',
-    defaultMessage: 'No codes were made for this program alone. Organization codes also cover it: set Scope to All to see them.',
-  },
-  emptyCoveringHintCourse: {
-    id: 'rwaq.admin.enrollmentCodes.empty.coveringHintCourse',
-    defaultMessage: 'No codes were made for this course alone. Organization codes also cover it: set Scope to All to see them.',
-  },
   filterCoveredItem: { id: 'rwaq.admin.enrollmentCodes.filter.coveredItem', defaultMessage: '{type}: {name}' },
   itemFilterActive: { id: 'rwaq.admin.enrollmentCodes.itemFilterActive', defaultMessage: 'Showing codes for this item.' },
   itemFilterClear: { id: 'rwaq.admin.enrollmentCodes.itemFilterClear', defaultMessage: 'Show all codes' },

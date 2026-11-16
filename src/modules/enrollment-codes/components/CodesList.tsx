@@ -118,7 +118,6 @@ const CodesList = ({
     status: (list.filters.status || undefined) as CodeStatus | undefined,
     kind: kindFilter,
     organization: item?.kind === 'organization' ? item.id : organization,
-    includeCovering: Boolean(courseId || programUuid) || undefined,
     courseId: item?.kind === 'course' ? item.id : courseId,
     programUuid: item?.kind === 'program' ? item.id : programUuid,
     search: list.search || undefined,
@@ -128,12 +127,6 @@ const CodesList = ({
   const {
     data, isLoading, isPlaceholderData, isError, error, refetch,
   } = useEnrollmentCodes(listParams);
-
-  // The item filter also returns organization codes that cover the item, so an empty list may only be
-  // hidden by the Scope filter.
-  const showCoveringHint = Boolean(courseId || programUuid)
-    && Boolean(list.filters.kind)
-    && !isLoading && !isPlaceholderData && (data?.results ?? []).length === 0;
 
   const statusOptions = [
     { value: '', label: intl.formatMessage(messages.filterAll) },
@@ -383,20 +376,13 @@ const CodesList = ({
           onRetry={() => refetch()}
         />
       ) : (
-        <>
-          <AdminDataTable
-            columns={columns}
-            data={data?.results ?? []}
-            isLoading={isLoading || isPlaceholderData}
-            caption={intl.formatMessage(messages.tabCodes)}
-            pagination={tablePagination(data, list.page, list.setPage)}
-          />
-          {showCoveringHint && (
-            <p className="text-muted text-center small mt-2" data-testid="covering-hint">
-              {intl.formatMessage(programUuid ? messages.emptyCoveringHintProgram : messages.emptyCoveringHintCourse)}
-            </p>
-          )}
-        </>
+        <AdminDataTable
+          columns={columns}
+          data={data?.results ?? []}
+          isLoading={isLoading || isPlaceholderData}
+          caption={intl.formatMessage(messages.tabCodes)}
+          pagination={tablePagination(data, list.page, list.setPage)}
+        />
       )}
 
       <CreateCodeModal
