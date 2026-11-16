@@ -138,16 +138,15 @@ describe('ProgramReportsPage — layout (AC22)', () => {
     expect(screen.getByText(/Generates a CSV of all program enrollments/)).toBeInTheDocument();
   });
 
-  it('renders the completion report row with its label and description', () => {
+  it('does not offer the retired completion report', () => {
     renderWrapper(<ProgramReportsPage />);
-    expect(screen.getByText('Completion Summary')).toBeInTheDocument();
-    expect(screen.getByText(/Generates a CSV summary of program completion/)).toBeInTheDocument();
+    expect(screen.queryByText('Completion Summary')).not.toBeInTheDocument();
   });
 
-  it('renders four Generate buttons — one per report type', () => {
+  it('renders three Generate buttons', () => {
     renderWrapper(<ProgramReportsPage />);
     const btns = screen.getAllByRole('button', { name: 'Generate' });
-    expect(btns).toHaveLength(4);
+    expect(btns).toHaveLength(3);
   });
 
   it('renders the breadcrumb linking to /programs', () => {
@@ -181,7 +180,7 @@ describe('ProgramReportsPage — duplicate in-flight guard (AC28a)', () => {
     const enrollmentRow = screen.getByText('Enrollment & Progress Report').closest('div[class*="py-4"]') as HTMLElement;
     expect(within(enrollmentRow).queryByRole('button', { name: 'Generate' })).not.toBeInTheDocument();
     // Three Generate buttons still visible for the other report types
-    expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(3);
+    expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(2);
   });
 
   it('shows running status message below spinner when in_progress task exists', () => {
@@ -206,7 +205,7 @@ describe('ProgramReportsPage — duplicate in-flight guard (AC28a)', () => {
     ).toBeInTheDocument();
   });
 
-  it('still shows the Completion Generate button when only enrollment is in-flight', () => {
+  it('still shows the Learner Summary Generate button when only enrollment is in-flight', () => {
     (reportsHooks.useProgramReportTasks as jest.Mock).mockReturnValue({
       data: {
         ...emptyTasksPage,
@@ -223,7 +222,7 @@ describe('ProgramReportsPage — duplicate in-flight guard (AC28a)', () => {
       isError: false,
     });
     renderWrapper(<ProgramReportsPage />);
-    const completionRow = screen.getByText('Completion Summary').closest('div[class*="py-4"]') as HTMLElement;
+    const completionRow = screen.getByText('Learner Summary').closest('div[class*="py-4"]') as HTMLElement;
     expect(within(completionRow).getByRole('button', { name: 'Generate' })).toBeInTheDocument();
   });
 
@@ -240,7 +239,7 @@ describe('ProgramReportsPage — duplicate in-flight guard (AC28a)', () => {
     });
     renderWrapper(<ProgramReportsPage />);
     // All four rows show Generate buttons (no trackedTaskId set, so no inline download widget)
-    expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(4);
+    expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(3);
   });
 });
 
@@ -266,7 +265,7 @@ describe('ProgramReportsPage — task list error (AC29)', () => {
       isError: true,
     });
     renderWrapper(<ProgramReportsPage />);
-    expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(4);
+    expect(screen.getAllByRole('button', { name: 'Generate' })).toHaveLength(3);
   });
 });
 
@@ -308,10 +307,10 @@ describe('ProgramReportsPage — generate triggers mutation', () => {
     expect(mockMutate).toHaveBeenCalledWith('enrollment_progress', expect.any(Object));
   });
 
-  it('calls mutate with completion_summary when completion Generate is clicked', () => {
+  it('calls mutate with learner_summary when Learner Summary Generate is clicked', () => {
     renderWrapper(<ProgramReportsPage />);
-    const completionRow = screen.getByText('Completion Summary').closest('div[class*="py-4"]') as HTMLElement;
+    const completionRow = screen.getByText('Learner Summary').closest('div[class*="py-4"]') as HTMLElement;
     fireEvent.click(within(completionRow).getByRole('button', { name: 'Generate' }));
-    expect(mockMutate).toHaveBeenCalledWith('completion_summary', expect.any(Object));
+    expect(mockMutate).toHaveBeenCalledWith('learner_summary', expect.any(Object));
   });
 });

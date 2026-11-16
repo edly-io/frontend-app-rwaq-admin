@@ -161,6 +161,12 @@ const messages = defineMessages({
   colNet: { id: 'rwaq.admin.payments.col.net', defaultMessage: 'Net (SAR)' },
   colPaid: { id: 'rwaq.admin.payments.col.paid', defaultMessage: 'Total (SAR)' },
   colSource: { id: 'rwaq.admin.payments.col.source', defaultMessage: 'Source' },
+  colPaymentMethod: { id: 'rwaq.admin.payments.col.paymentMethod', defaultMessage: 'Payment method' },
+  infoColPaymentMethod: {
+    id: 'rwaq.admin.payments.info.col.paymentMethod',
+    defaultMessage: 'How the buyer paid, such as mada, Visa or Mastercard. '
+      + 'Orders received before this was recorded show the gateway name.',
+  },
   infoColOrder: {
     id: 'rwaq.admin.payments.info.col.order',
     defaultMessage: 'The WordPress order ID. Admin grants have no WordPress order and show as Admin grant order.',

@@ -10,6 +10,7 @@ import { screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from './data/hooks';
 import UserDetailPage from './UserDetailPage';
+import { getUserEnrollmentsCsvUrl } from './data/api';
 
 jest.mock('./data/hooks');
 jest.mock('@edx/frontend-platform', () => ({
@@ -89,6 +90,12 @@ describe('UserDetailPage — Bug 1 regression: empty fields render "—" not raw
   it('never shows the raw message id for an empty field', () => {
     renderWrapper(<UserDetailPage />);
     expect(screen.queryByText('rwaq.admin.users.detail.none')).not.toBeInTheDocument();
+  });
+
+  it('offers a CSV download for this user enrollment endpoint', () => {
+    renderWrapper(<UserDetailPage />);
+    expect(screen.getByRole('button', { name: 'Download CSV' })).toBeInTheDocument();
+    expect(getUserEnrollmentsCsvUrl(42)).toContain('/api/v1/admin/users/42/enrollments/csv/');
   });
 
   it('shows at least one em-dash when job, country, biography, and orgAdminOf are all empty', () => {

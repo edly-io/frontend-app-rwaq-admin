@@ -64,6 +64,7 @@ const order = (id: number) => ({
   status: 'completed',
   orderDate: '2026-09-10T10:00:00Z',
   paidVia: 'moyasar',
+  paymentMethod: 'mada',
   currency: 'SAR',
   userId: 5,
   username: 'buyer5',

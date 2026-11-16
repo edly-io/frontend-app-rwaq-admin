@@ -86,6 +86,8 @@ export type OrgFilter = 'all' | 'active' | 'inactive' | 'has_admins' | 'no_admin
 
 /** Query params for the org list endpoint */
 export interface OrgListParams {
+  createdFrom?: string;
+  createdTo?: string;
   search?: string;
   filter?: OrgFilter;
   ordering?: OrgOrdering;
@@ -94,7 +96,7 @@ export interface OrgListParams {
 }
 
 /** The six org reports, named as in the API path (`<name>/csv/`). */
-export type OrgReportName = 'courses' | 'learners' | 'revenue' | 'funnel' | 'lifecycle' | 'certificates';
+export type OrgReportName = 'courses' | 'learners' | 'learners-detail' | 'revenue' | 'funnel' | 'lifecycle' | 'certificates';
 
 /**
  * GET /rwaq/api/organizations/stats/ — global, the table's filters do not apply.
