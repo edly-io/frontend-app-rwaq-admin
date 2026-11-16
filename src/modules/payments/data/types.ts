@@ -131,6 +131,7 @@ export interface OrderRow {
   status: OrderStatus;
   orderDate: string;
   paidVia: string;
+  paymentMethod: string;
   currency: string;
   userId: number;
   username: string;

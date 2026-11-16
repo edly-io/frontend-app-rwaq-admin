@@ -229,6 +229,8 @@ export type UserOrdering =
 
 /** Query params for GET /api/v1/admin/users/ */
 export interface UserListParams {
+  joinedFrom?: string;
+  joinedTo?: string;
   searchBy?: SearchBy;
   searchTerm?: string;
   filter?: UserFilter;
