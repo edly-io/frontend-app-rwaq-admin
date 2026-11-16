@@ -7,7 +7,7 @@
  * button links to the page with it), and `onPrefillHandled` then tells the page it was used.
  *
  * Row actions: view card, view usage (opens the code's usage page, `onViewUsage`), view the learners in the Uses
- * tab, edit, and delete (a code with no uses, its slot stays empty otherwise). The last column is an Active
+ * tab, edit, and delete (a code with no uses, its slot stays empty otherwise). The Active column (before Actions) is a
  * switch (shown for a used or inactive code) so every icon keeps its position.
  */
 import {
@@ -263,6 +263,20 @@ const CodesList = ({
       ),
     },
     {
+      label: intl.formatMessage(messages.colActive),
+      key: 'isActive',
+      id: 'active',
+      renderCell: (_value, row) => ((row.usesCount > 0 || !row.isActive) ? (
+        <Form.Switch
+          checked={row.isActive}
+          disabled={updateMutation.isPending}
+          onChange={() => handleToggle(row)}
+        >
+          {intl.formatMessage(row.isActive ? messages.switchOn : messages.switchOff)}
+        </Form.Switch>
+      ) : null),
+    },
+    {
       label: intl.formatMessage(messages.colActions),
       key: 'actions',
       id: 'actions',
@@ -324,20 +338,6 @@ const CodesList = ({
           ) : <span className="d-inline-block" style={{ width: '2.25rem' }} aria-hidden="true" />}
         </span>
       ),
-    },
-    {
-      label: intl.formatMessage(messages.colActive),
-      key: 'isActive',
-      id: 'active',
-      renderCell: (_value, row) => ((row.usesCount > 0 || !row.isActive) ? (
-        <Form.Switch
-          checked={row.isActive}
-          disabled={updateMutation.isPending}
-          onChange={() => handleToggle(row)}
-        >
-          {intl.formatMessage(row.isActive ? messages.switchOn : messages.switchOff)}
-        </Form.Switch>
-      ) : null),
     },
   ];
 
