@@ -9,7 +9,9 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import StatsChartCard from '@src/components/stats/StatsChartCard';
 import StatsStrip from '@src/components/stats/StatsStrip';
 import StatsTiles, { StatsTileCard } from '@src/components/stats/StatsTiles';
-import { formatCount, isEmptySeries, monthlyChartData } from '@src/components/stats/format';
+import {
+  formatCount, formatPercent, isEmptySeries, monthlyChartData,
+} from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
 import StatTile from '@src/modules/dashboard/components/StatTile';
@@ -83,6 +85,14 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
         {tile('statsInProgress', 'statsInProgressInfo', stats?.tiles.inProgress)}
         {tile('statsNotStarted', 'statsNotStartedInfo', stats?.tiles.notStarted)}
         {tile('statsFunnelStarted', 'statsStartedInfo', stats?.funnel.started)}
+        <StatsTileCard>
+          <StatTile
+            label={intl.formatMessage(messages.statsAvgProgress)}
+            info={intl.formatMessage(messages.statsAvgProgressInfo)}
+            value={formatPercent(stats?.tiles.avgProgressPercent)}
+            isLoading={isLoading}
+          />
+        </StatsTileCard>
       </StatsTiles>
 
       <div className="rwaq-dash-grid rwaq-dash-grid--thirds">

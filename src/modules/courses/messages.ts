@@ -558,6 +558,12 @@ const messages = defineMessages({
   },
   statsFunnelEnrolled: { id: 'rwaq.admin.courses.stats.funnel.enrolled', defaultMessage: 'Enrolled' },
   statsFunnelStarted: { id: 'rwaq.admin.courses.stats.funnel.started', defaultMessage: 'Started' },
+  statsAvgProgress: { id: 'rwaq.admin.courses.stats.avgProgress', defaultMessage: 'Avg progress of started learners' },
+  statsAvgProgressInfo: {
+    id: 'rwaq.admin.courses.stats.avgProgress.info',
+    defaultMessage: 'Average course progress of enrolled learners whose progress is above 0%. '
+      + 'Learners whose progress rounds to 0% are left out.',
+  },
   statsStartedInfo: {
     id: 'rwaq.admin.courses.stats.started.info',
     defaultMessage: 'Enrolled learners who completed at least one block or passed this course.',
@@ -585,6 +591,18 @@ const messages = defineMessages({
   listStatsCertificatesInfo: {
     id: 'rwaq.admin.courses.listStats.certificates.info',
     defaultMessage: 'Downloadable certificates in courses that offer one, the same figure as the Dashboard.',
+  },
+  listStatsHonor: { id: 'rwaq.admin.courses.listStats.honor', defaultMessage: 'Honor enrollments' },
+  listStatsHonorInfo: {
+    id: 'rwaq.admin.courses.listStats.honor.info',
+    defaultMessage: 'Active enrollments in honor mode. Staff, superusers and service accounts are not counted. '
+      + 'Other modes are not in this tile.',
+  },
+  listStatsAudit: { id: 'rwaq.admin.courses.listStats.audit', defaultMessage: 'Audit enrollments' },
+  listStatsAuditInfo: {
+    id: 'rwaq.admin.courses.listStats.audit.info',
+    defaultMessage: 'Active enrollments in audit mode. Staff, superusers and service accounts are not counted. '
+      + 'Other modes are not in this tile.',
   },
   listStatsFree: { id: 'rwaq.admin.courses.listStats.free', defaultMessage: 'Free courses' },
   listStatsFreeInfo: {

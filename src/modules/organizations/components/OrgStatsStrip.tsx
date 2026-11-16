@@ -1,15 +1,20 @@
 /**
  * OrgStatsStrip — tiles and compact charts of one organization, above its facts.
  *
- * No endpoint of its own: it reads the Dashboard's summary, trends and breakdowns with the
- * `org` parameter, so every figure matches the Dashboard filtered to this organization.
+ * Six tiles and three charts read the Dashboard's summary, trends and breakdowns with the `org`
+ * parameter, so every figure matches the Dashboard filtered to this organization. Seven more tiles
+ * (passed, pass rate, progress stages, unenrolled, honor, audit) come from the organization's own
+ * stats endpoint. That request is not part of the strip's failure state: when only it fails, the rest
+ * still shows and its tiles say Not available.
  */
 import { useMemo, useState } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import StatsChartCard from '@src/components/stats/StatsChartCard';
 import StatsStrip from '@src/components/stats/StatsStrip';
 import StatsTiles, { StatsTileCard } from '@src/components/stats/StatsTiles';
-import { formatCount, isEmptySeries, monthlyChartData } from '@src/components/stats/format';
+import {
+  formatCount, formatPercent, isEmptySeries, monthlyChartData,
+} from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
 import {
@@ -18,6 +23,7 @@ import {
   useAnalyticsTrends,
 } from '@src/modules/dashboard/data/hooks';
 import StatTile from '@src/modules/dashboard/components/StatTile';
+import { useOrgStats } from '../data/hooks';
 import messages from '../messages';
 
 const TREND_MONTHS = 12;
@@ -35,10 +41,12 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
   const trendsQuery = useAnalyticsTrends({ org, months: TREND_MONTHS });
   const breakdownsQuery = useAnalyticsBreakdowns({ org });
   const state = summarizeQueries([summaryQuery, trendsQuery, breakdownsQuery]);
+  const orgStatsQuery = useOrgStats(org, isOpen);
 
   const summary = summaryQuery.isError ? undefined : summaryQuery.data;
   const trends = trendsQuery.isError ? undefined : trendsQuery.data;
   const breakdowns = breakdownsQuery.isError ? undefined : breakdownsQuery.data;
+  const orgTiles = orgStatsQuery.isError ? undefined : orgStatsQuery.data?.tiles;
   const { locale } = intl;
 
   const enrollmentSeries = useMemo(
@@ -64,6 +72,18 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
 
   const summaryLoading = summaryQuery.isLoading;
   const breakdownsLoading = breakdownsQuery.isLoading;
+  const orgStatsLoading = orgStatsQuery.isLoading;
+
+  const orgTile = (label: keyof typeof messages, info: keyof typeof messages, value: string | null) => (
+    <StatsTileCard>
+      <StatTile
+        label={intl.formatMessage(messages[label])}
+        info={intl.formatMessage(messages[info])}
+        value={value}
+        isLoading={orgStatsLoading}
+      />
+    </StatsTileCard>
+  );
 
   return (
     <StatsStrip
@@ -121,6 +141,13 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
             isLoading={breakdownsLoading}
           />
         </StatsTileCard>
+        {orgTile('statsPassedLearners', 'statsPassedLearnersInfo', formatCount(orgTiles?.passed))}
+        {orgTile('statsPassRate', 'statsPassRateInfo', formatPercent(orgTiles?.passRatePercent))}
+        {orgTile('statsNotStarted', 'statsNotStartedInfo', formatCount(orgTiles?.notStarted))}
+        {orgTile('statsInProgress', 'statsInProgressInfo', formatCount(orgTiles?.inProgress))}
+        {orgTile('statsUnenrolled', 'statsUnenrolledInfo', formatCount(orgTiles?.unenrolled))}
+        {orgTile('statsHonor', 'statsHonorInfo', formatCount(orgTiles?.honorEnrollments))}
+        {orgTile('statsAudit', 'statsAuditInfo', formatCount(orgTiles?.auditEnrollments))}
       </StatsTiles>
 
       <div className="rwaq-dash-grid rwaq-dash-grid--thirds">

@@ -101,6 +101,12 @@ export type OrgReportName = 'courses' | 'learners' | 'revenue' | 'funnel' | 'lif
  *
  * Figures come from the Dashboard's organization table.
  */
+/** One month of a zero-filled series. */
+export interface OrgStatsSeriesPoint {
+  period: string;
+  value: number;
+}
+
 export interface OrgListStats {
   tiles: {
     activeOrganizations: number;
@@ -111,5 +117,21 @@ export interface OrgListStats {
   };
   /** Top 10 by active enrollments, then name. */
   topOrganizations: { shortName: string; name: string; arabicName: string; courses: number; enrollments: number }[];
+  series: { organizationsByMonth: OrgStatsSeriesPoint[] };
+  generatedAt: string;
+}
+
+/** GET /rwaq/api/organizations/<short_name>/stats/. A figure that cannot be read is null. */
+export interface OrgStats {
+  tiles: {
+    enrolled: number | null;
+    passed: number | null;
+    passRatePercent: number | null;
+    notStarted: number | null;
+    inProgress: number | null;
+    unenrolled: number | null;
+    honorEnrollments: number | null;
+    auditEnrollments: number | null;
+  };
   generatedAt: string;
 }

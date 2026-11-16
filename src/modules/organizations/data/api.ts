@@ -27,6 +27,7 @@ import type {
   OrgListStats,
   OrgProfilePatch,
   OrgReportName,
+  OrgStats,
 } from './types';
 
 const getOrgsBaseUrl = () => getStudioApiUrl('/rwaq/api/organizations');
@@ -144,4 +145,12 @@ export const getOrgReportCsvUrl = (name: OrgReportName): string => (
 export const getOrgListStats = async (): Promise<OrgListStats> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getOrgsBaseUrl()}/stats/`);
   return camelCaseObject(data) as OrgListStats;
+};
+
+/** GET /rwaq/api/organizations/<short_name>/stats/ — passed, pass rate, stages, unenrolled and modes of one org. */
+export const getOrgStats = async (shortName: string): Promise<OrgStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getOrgsBaseUrl()}/${encodeURIComponent(shortName)}/stats/`,
+  );
+  return camelCaseObject(data) as OrgStats;
 };

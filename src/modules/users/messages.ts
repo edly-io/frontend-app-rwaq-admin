@@ -450,6 +450,11 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.stats.inProgress.info',
     defaultMessage: 'Active courses where the user completed at least one block and has not passed yet.',
   },
+  statsNotStarted: { id: 'rwaq.admin.users.stats.notStarted', defaultMessage: 'Courses not started' },
+  statsNotStartedInfo: {
+    id: 'rwaq.admin.users.stats.notStarted.info',
+    defaultMessage: 'Active courses where the user has completed no block and has not passed.',
+  },
   statsCompletion: { id: 'rwaq.admin.users.stats.completion', defaultMessage: 'Overall completion' },
   statsCompletionInfo: {
     id: 'rwaq.admin.users.stats.completion.info',
