@@ -226,6 +226,7 @@ export interface CourseStats {
     passed: number | null;
     inProgress: number | null;
     notStarted: number | null;
+    avgProgressPercent: number | null;
     modes: ModeCount[];
   };
   funnel: {
@@ -249,6 +250,8 @@ export interface CourseListStats {
     running: number;
     activeEnrollments: number | null;
     certificatesIssued: number | null;
+    honorEnrollments: number | null;
+    auditEnrollments: number | null;
     types: {
       /** Includes the courses with no type set, as Studio treats them. */
       free: number;

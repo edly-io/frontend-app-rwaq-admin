@@ -22,6 +22,7 @@ const stats = {
     completionPct: 40,
     averageCoursesPassed: 1.6,
     averageDaysToComplete: 33.5,
+    avgProgressPercent: 57.5,
   },
   series: {
     enrollmentsByMonth: [{ period: '2026-09', value: 5 }, { period: '2026-10', value: 8 }],
@@ -46,8 +47,20 @@ describe('ProgramStatsStrip', () => {
     expect(screen.getByText('33.5 days')).toBeInTheDocument();
     expect(screen.getByText('Total courses')).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
-    expect(document.querySelectorAll('.rwaq-stats-tiles > .rwaq-card')).toHaveLength(8);
+    expect(document.querySelectorAll('.rwaq-stats-tiles > .rwaq-card')).toHaveLength(9);
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(2);
+  });
+
+  it('shows the average progress of started learners, and Not available when it is null', () => {
+    mockQuery(query());
+    const { unmount } = renderWrapper(<ProgramStatsStrip uuid={UUID} totalCourses={3} />);
+    const label = 'Avg progress of started learners';
+    expect((screen.getByText(label).closest('.rwaq-stat-tile') as HTMLElement)).toHaveTextContent('57.5%');
+    unmount();
+
+    mockQuery(query({ data: { ...stats, tiles: { ...stats.tiles, avgProgressPercent: null } } }));
+    renderWrapper(<ProgramStatsStrip uuid={UUID} totalCourses={3} />);
+    expect((screen.getByText(label).closest('.rwaq-stat-tile') as HTMLElement)).toHaveTextContent('Not available');
   });
 
   it('shows Not available when grades or certificates cannot be read, never zero', () => {

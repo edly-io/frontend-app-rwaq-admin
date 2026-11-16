@@ -74,6 +74,7 @@ const ProgramStatsStrip = ({ uuid, totalCourses }: { uuid: string; totalCourses:
         {tile('statsNotStarted', 'statsNotStartedInfo', formatCount(tiles?.notStarted))}
         {tile('statsCompletion', 'statsCompletionInfo', formatPercent(tiles?.completionPct))}
         {tile('statsAverage', 'statsAverageInfo', average === undefined || average === null ? null : average.toLocaleString(locale))}
+        {tile('statsAvgProgress', 'statsAvgProgressInfo', formatPercent(tiles?.avgProgressPercent))}
         {tile(
           'statsDays',
           'statsDaysInfo',

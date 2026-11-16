@@ -213,6 +213,7 @@ export interface ProgramStats {
     completionPct: number | null;
     averageCoursesPassed: number | null;
     averageDaysToComplete: number | null;
+    avgProgressPercent: number | null;
   };
   series: {
     enrollmentsByMonth: ProgramStatsSeriesPoint[];

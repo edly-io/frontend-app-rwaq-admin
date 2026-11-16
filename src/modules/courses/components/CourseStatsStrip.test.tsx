@@ -21,6 +21,7 @@ const stats = {
     passed: 10,
     inProgress: 20,
     notStarted: 10,
+    avgProgressPercent: 60,
     modes: [{ mode: 'honor', count: 40 }],
   },
   funnel: {
@@ -49,10 +50,26 @@ describe('CourseStatsStrip', () => {
     expect(screen.getByText('Not started')).toBeInTheDocument();
     expect(screen.getByText('Started')).toBeInTheDocument();
     expect(screen.getAllByText('30')).toHaveLength(2);
-    expect(document.querySelectorAll('.rwaq-stats-tiles > .rwaq-card')).toHaveLength(8);
+    expect(document.querySelectorAll('.rwaq-stats-tiles > .rwaq-card')).toHaveLength(9);
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(3);
     expect(screen.queryByText(/pass rate/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/%/)).not.toBeInTheDocument();
+  });
+
+  it('shows the average progress of started learners as a percent', () => {
+    mockQuery(query());
+    renderWrapper(<CourseStatsStrip courseId="course-v1:Org+C1+2026" />);
+
+    const tile = screen.getByText('Avg progress of started learners').closest('.rwaq-stat-tile') as HTMLElement;
+    expect(tile).toHaveTextContent('60%');
+  });
+
+  it('shows Not available for the average progress when it could not be read', () => {
+    mockQuery(query({ data: { ...stats, tiles: { ...stats.tiles, avgProgressPercent: null } } }));
+    renderWrapper(<CourseStatsStrip courseId="course-v1:Org+C1+2026" />);
+
+    const tile = screen.getByText('Avg progress of started learners').closest('.rwaq-stat-tile') as HTMLElement;
+    expect(tile).toHaveTextContent('Not available');
+    expect(screen.queryByText('0%')).not.toBeInTheDocument();
   });
 
   it('shows Not available for figures that could not be read, never zero', () => {
