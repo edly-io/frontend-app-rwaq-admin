@@ -189,8 +189,8 @@ describe('CodesList', () => {
     expect(within(rowOf('ABC234')).getByRole('button', { name: 'Delete' })).toBeInTheDocument();
     expect(within(rowOf('USED23')).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
     // A used code is marked inactive instead of deleted. An unused active code has no such button.
-    expect(within(rowOf('USED23')).getByRole('button', { name: 'Mark inactive' })).toBeInTheDocument();
-    expect(within(rowOf('ABC234')).queryByRole('button', { name: 'Mark inactive' })).not.toBeInTheDocument();
+    expect(within(rowOf('USED23')).getByRole('switch', { name: 'On' })).toBeInTheDocument();
+    expect(within(rowOf('ABC234')).queryByRole('switch')).not.toBeInTheDocument();
     // The other actions are always there.
     ['View card', 'View uses', 'Edit'].forEach((name) => {
       expect(within(rowOf('USED23')).getByRole('button', { name })).toBeInTheDocument();
@@ -220,10 +220,10 @@ describe('CodesList', () => {
       id: 2, code: 'OFF234', isActive: false, status: 'switched_off',
     }));
     renderWrapper(<CodesList onViewUses={onViewUses} />);
-    fireEvent.click(within(rowOf('ABC234')).getByRole('button', { name: 'Mark inactive' }));
+    fireEvent.click(within(rowOf('ABC234')).getByRole('switch', { name: 'On' }));
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({ id: 1, patch: { isActive: false } }));
     expect(mockShowToast).toHaveBeenCalledWith('Code ABC234 is now inactive.');
-    fireEvent.click(within(rowOf('OFF234')).getByRole('button', { name: 'Mark active' }));
+    fireEvent.click(within(rowOf('OFF234')).getByRole('switch', { name: 'Off' }));
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({ id: 2, patch: { isActive: true } }));
   });
 
