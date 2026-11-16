@@ -109,6 +109,7 @@ const UserStatsStrip = ({
         })}
         {tile('statsPassed', 'statsPassedInfo', formatCount(tiles?.passed))}
         {tile('statsInProgress', 'statsInProgressInfo', formatCount(tiles?.inProgress))}
+        {tile('statsNotStarted', 'statsNotStartedInfo', formatCount(tiles?.notStarted))}
         <StatsTileCard>
           {isProgressLoading ? (
             <div className="rwaq-stat-tile">

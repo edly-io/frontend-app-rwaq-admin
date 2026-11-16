@@ -344,6 +344,11 @@ const messages = defineMessages({
     id: 'rwaq.admin.programs.stats.average.info',
     defaultMessage: 'The courses of this program a learner passed, averaged over its learners.',
   },
+  statsAvgProgress: { id: 'rwaq.admin.programs.stats.avgProgress', defaultMessage: 'Avg progress of started learners' },
+  statsAvgProgressInfo: {
+    id: 'rwaq.admin.programs.stats.avgProgress.info',
+    defaultMessage: 'Average progress over the learner and course pairs of this program whose progress is above 0%.',
+  },
   statsDays: { id: 'rwaq.admin.programs.stats.days', defaultMessage: 'Days to complete' },
   statsDaysInfo: {
     id: 'rwaq.admin.programs.stats.days.info',
