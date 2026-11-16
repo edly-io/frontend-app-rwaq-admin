@@ -14,7 +14,7 @@ jest.mock('@src/components/DownloadButton', () => ({
   saveBlob: jest.fn(),
 }));
 
-const TITLES = ['Courses', 'Learners', 'Net sales','Program funnel', 'Course lifecycle', 'Certificates'];
+const TITLES = ['Courses', 'Learners', 'Learner details', 'Net sales', 'Program funnel', 'Course lifecycle', 'Certificates'];
 
 describe('OrgReportList', () => {
   beforeEach(() => {
@@ -22,11 +22,11 @@ describe('OrgReportList', () => {
     (downloadCsv as jest.Mock).mockResolvedValue({ blob: new Blob(['a']), filename: 'x.csv' });
   });
 
-  it('lists the six reports with their details', () => {
+  it('lists the seven reports with their details', () => {
     renderWrapper(<OrgReportList org="QAOrg" />);
 
     TITLES.forEach((title) => expect(screen.getByRole('cell', { name: title })).toBeInTheDocument());
-    expect(screen.getAllByRole('button', { name: 'Download CSV' })).toHaveLength(6);
+    expect(screen.getAllByRole('button', { name: 'Download CSV' })).toHaveLength(7);
     expect(screen.getByText(/One row per course/)).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Report' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Details' })).toBeInTheDocument();
@@ -38,17 +38,19 @@ describe('OrgReportList', () => {
     const buttons = screen.getAllByRole('button', { name: 'Download CSV' });
     buttons.forEach((button) => fireEvent.click(button));
 
-    await waitFor(() => expect(downloadCsv).toHaveBeenCalledTimes(6));
+    await waitFor(() => expect(downloadCsv).toHaveBeenCalledTimes(7));
     const { calls } = (downloadCsv as jest.Mock).mock;
     expect(calls.map(([url]) => url.split('/org-reports/')[1])).toEqual([
-      'courses/csv/', 'learners/csv/', 'revenue/csv/', 'funnel/csv/', 'lifecycle/csv/', 'certificates/csv/',
+      'courses/csv/', 'learners/csv/', 'learners-detail/csv/', 'revenue/csv/', 'funnel/csv/', 'lifecycle/csv/',
+      'certificates/csv/',
     ]);
     calls.forEach(([, params, , language]) => {
       expect(params).toEqual({ org: 'QAOrg' });
       expect(language).toBe('en');
     });
     expect(calls.map(([, , fallbackName]) => fallbackName)).toEqual([
-      'org_courses', 'org_learners', 'org_revenue', 'org_program_funnel', 'org_course_lifecycle', 'org_certificate_split',
+      'org_courses', 'org_learners', 'org_learners_detail', 'org_revenue', 'org_program_funnel', 'org_course_lifecycle',
+      'org_certificate_split',
     ]);
   });
 });

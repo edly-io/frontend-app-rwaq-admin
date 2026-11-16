@@ -162,6 +162,13 @@ const messages = defineMessages({
     defaultMessage: 'One row per course: enrolled and passed learners, pass rate, average grade and certificates.',
   },
   reportsLearnersTitle: { id: 'rwaq.admin.orgs.reports.learners.title', defaultMessage: 'Learners' },
+  reportsLearnersDetailTitle: {
+    id: 'rwaq.admin.orgs.reports.learnersDetail.title', defaultMessage: 'Learner details',
+  },
+  reportsLearnersDetailDetails: {
+    id: 'rwaq.admin.orgs.reports.learnersDetail.details',
+    defaultMessage: 'One row per learner and course, with progress and activity. Staff enrollments are flagged.',
+  },
   reportsLearnersDetails: {
     id: 'rwaq.admin.orgs.reports.learners.details',
     defaultMessage: 'One row per learner: courses enrolled and passed, average grade and certificates earned.',
@@ -174,7 +181,7 @@ const messages = defineMessages({
   reportsFunnelTitle: { id: 'rwaq.admin.orgs.reports.funnel.title', defaultMessage: 'Program funnel' },
   reportsFunnelDetails: {
     id: 'rwaq.admin.orgs.reports.funnel.details',
-    defaultMessage: 'Programs, program enrollments and completions, and the completion rate.',
+    defaultMessage: 'One row per program: courses, enrollments, completions and payment totals.',
   },
   reportsLifecycleTitle: { id: 'rwaq.admin.orgs.reports.lifecycle.title', defaultMessage: 'Course lifecycle' },
   reportsLifecycleDetails: {
