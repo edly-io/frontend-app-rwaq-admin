@@ -58,7 +58,6 @@ export interface CodeListParams {
   organization?: string;
   courseId?: string;
   programUuid?: string;
-  includeCovering?: boolean;
   createdBy?: string;
   search?: string;
   page?: number;

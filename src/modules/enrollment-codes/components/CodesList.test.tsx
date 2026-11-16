@@ -127,29 +127,11 @@ describe('CodesList', () => {
       onViewUses={onViewUses}
     />);
     expect(screen.getByText('Covers: Leadership')).toBeInTheDocument();
-    expect(lastParams()).toMatchObject({ programUuid: PROGRAM_UUID, includeCovering: true });
+    // Only the codes made for the program itself, not the organization codes that cover it.
+    expect(lastParams()).toMatchObject({ programUuid: PROGRAM_UUID });
+    expect(lastParams()).not.toHaveProperty('includeCovering');
     fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
     expect(clearItem).toHaveBeenCalledTimes(1);
-  });
-
-  it('shows the hint under the empty text when an item filter hides organization codes behind Scope', () => {
-    (hooks.useEnrollmentCodes as jest.Mock).mockReturnValue({
-      data: { results: [], count: 0 }, isLoading: false, isPlaceholderData: false, isError: false,
-    });
-    renderWrapper(<CodesList programUuid={PROGRAM_UUID} itemFilterLabel="Covers: Leadership" onClearItemFilter={jest.fn()} onViewUses={onViewUses} />);
-    expect(screen.queryByTestId('covering-hint')).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Scope'), { target: { value: 'organization' } });
-    expect(screen.getByTestId('covering-hint')).toHaveTextContent(
-      'No codes were made for this program alone. Organization codes also cover it: set Scope to All to see them.',
-    );
-  });
-
-  it('shows no hint without an item filter', () => {
-    (hooks.useEnrollmentCodes as jest.Mock).mockReturnValue({
-      data: { results: [], count: 0 }, isLoading: false, isPlaceholderData: false, isError: false,
-    });
-    renderWrapper(<CodesList onViewUses={onViewUses} />);
-    expect(screen.queryByTestId('covering-hint')).not.toBeInTheDocument();
   });
 
   it('copies a code from its copy icon', async () => {
@@ -189,8 +171,8 @@ describe('CodesList', () => {
     expect(within(rowOf('ABC234')).getByRole('button', { name: 'Delete' })).toBeInTheDocument();
     expect(within(rowOf('USED23')).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
     // A used code is marked inactive instead of deleted. An unused active code has no such button.
-    expect(within(rowOf('USED23')).getByRole('button', { name: 'Mark inactive' })).toBeInTheDocument();
-    expect(within(rowOf('ABC234')).queryByRole('button', { name: 'Mark inactive' })).not.toBeInTheDocument();
+    expect(within(rowOf('USED23')).getByRole('switch', { name: 'On' })).toBeInTheDocument();
+    expect(within(rowOf('ABC234')).queryByRole('switch')).not.toBeInTheDocument();
     // The other actions are always there.
     ['View card', 'View uses', 'Edit'].forEach((name) => {
       expect(within(rowOf('USED23')).getByRole('button', { name })).toBeInTheDocument();
@@ -220,10 +202,10 @@ describe('CodesList', () => {
       id: 2, code: 'OFF234', isActive: false, status: 'switched_off',
     }));
     renderWrapper(<CodesList onViewUses={onViewUses} />);
-    fireEvent.click(within(rowOf('ABC234')).getByRole('button', { name: 'Mark inactive' }));
+    fireEvent.click(within(rowOf('ABC234')).getByRole('switch', { name: 'On' }));
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({ id: 1, patch: { isActive: false } }));
     expect(mockShowToast).toHaveBeenCalledWith('Code ABC234 is now inactive.');
-    fireEvent.click(within(rowOf('OFF234')).getByRole('button', { name: 'Mark active' }));
+    fireEvent.click(within(rowOf('OFF234')).getByRole('switch', { name: 'Off' }));
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({ id: 2, patch: { isActive: true } }));
   });
 
