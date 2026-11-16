@@ -1,9 +1,11 @@
 /**
- * Picks one course or program of type Enrollment code. Courses and programs are listed in two groups,
- * with a search box that narrows both. Only items of that type can have codes, so only they are offered.
+ * Picks one course or program of type Enrollment code with a single field: type to search, pick from the list.
+ * The search matches the name and the id (course key or program key). Courses and programs are listed in two
+ * groups. Only items of that type can have codes, so only they are offered.
  */
-import { useState } from 'react';
-import { Form } from '@openedx/paragon';
+import { useRef, useState } from 'react';
+import { Form, Icon, IconButton } from '@openedx/paragon';
+import { Close } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { useCourses } from '@src/modules/courses/data/hooks';
 import { usePrograms } from '@src/modules/programs/data/hooks';
@@ -23,15 +25,20 @@ interface ItemPickerProps {
   label: string;
   value: PickedItem | null;
   onChange: (item: PickedItem | null) => void;
-  /** Text of the empty choice. */
+  /** Placeholder while nothing is chosen. */
   emptyLabel?: string;
   error?: string;
   help?: string;
   disabled?: boolean;
-  /** Only the select, with no label or search box: for a filter bar. */
+  /** No visible label: for a filter bar. */
   compact?: boolean;
   /** Which kinds to offer. Both by default. */
   kinds?: ItemKind[];
+}
+
+interface Option extends PickedItem {
+  /** What the list shows under the name: the course key or the program key. */
+  code: string;
 }
 
 const LIST_SIZE = 50;
@@ -42,8 +49,13 @@ const ItemPicker = ({
   controlId, label, value, onChange, emptyLabel, error, help, disabled, compact = false, kinds = ['course', 'program'],
 }: ItemPickerProps) => {
   const intl = useIntl();
-  const [search, setSearch] = useState('');
-  const term = useDebounced(search.trim());
+  const containerRef = useRef<HTMLDivElement>(null);
+  // `text` is only what the admin typed. While not typing, the field shows the chosen item.
+  const [text, setText] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const term = useDebounced(editing ? text.trim() : '');
 
   const withCourses = kinds.includes('course');
   const withPrograms = kinds.includes('program');
@@ -54,62 +66,148 @@ const ItemPicker = ({
     pricing: 'enrollment_code', search: term || undefined, ordering: 'name', pageSize: LIST_SIZE,
   });
 
-  const courseOptions: PickedItem[] = (withCourses ? courses.data?.results ?? [] : []).map((course) => ({
-    kind: 'course', id: course.courseId, name: course.displayName,
+  const courseOptions: Option[] = (withCourses ? courses.data?.results ?? [] : []).map((course) => ({
+    kind: 'course', id: course.courseId, name: course.displayName, code: course.courseId,
   }));
-  const programOptions: PickedItem[] = (withPrograms ? programs.data?.results ?? [] : []).map((program) => ({
-    kind: 'program', id: program.uuid, name: program.name,
+  const programOptions: Option[] = (withPrograms ? programs.data?.results ?? [] : []).map((program) => ({
+    kind: 'program', id: program.uuid, name: program.name, code: program.programKey ?? '',
   }));
-  const all = [...courseOptions, ...programOptions];
-  // A chosen item stays selectable even when the search no longer lists it.
-  const extra = value && !all.some((item) => encode(item) === encode(value)) ? value : null;
+  const options = [...courseOptions, ...programOptions];
   const loadFailed = (withCourses && courses.isError) || (withPrograms && programs.isError);
 
-  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const chosen = [...(extra ? [extra] : []), ...all].find((item) => encode(item) === event.target.value);
-    onChange(chosen ?? null);
+  const select = (option: Option) => {
+    onChange({ kind: option.kind, id: option.id, name: option.name });
+    setEditing(false);
+    setText('');
+    setOpen(false);
+    setActiveIndex(-1);
   };
 
-  const renderOption = (item: PickedItem) => (
-    <option key={encode(item)} value={encode(item)}>{item.name}</option>
-  );
+  const clear = () => {
+    onChange(null);
+    setEditing(false);
+    setText('');
+    setOpen(false);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setOpen(true);
+      setActiveIndex((index) => Math.min(index + 1, options.length - 1));
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setActiveIndex((index) => Math.max(index - 1, 0));
+    } else if (event.key === 'Enter' && open && activeIndex >= 0 && options[activeIndex]) {
+      event.preventDefault();
+      select(options[activeIndex]);
+    } else if (event.key === 'Escape') {
+      setOpen(false);
+      setEditing(false);
+      setText('');
+    }
+  };
+
+  // Focus leaving the whole field (not moving to the clear button or the list) ends the typing.
+  const handleBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+    if (containerRef.current?.contains(event.relatedTarget as Node | null)) { return; }
+    setOpen(false);
+    setEditing(false);
+    setText('');
+  };
+
+  const listId = `${controlId}-list`;
+  const renderOption = (option: Option) => {
+    const index = options.indexOf(option);
+    return (
+      // Keyboard use goes through the field (arrows and Enter), so the options need no key handler of their own.
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+      <li
+        key={encode(option)}
+        id={`${controlId}-option-${index}`}
+        role="option"
+        aria-selected={value ? encode(value) === encode(option) : false}
+        className={`px-3 py-2${index === activeIndex ? ' bg-light' : ''}`}
+        style={{ cursor: 'pointer' }}
+        // Keeps the focus in the field, so choosing does not trigger the blur first.
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={() => select(option)}
+      >
+        <div>{option.name}</div>
+        {option.code && <div className="small text-muted">{option.code}</div>}
+      </li>
+    );
+  };
+
+  const showList = open && !disabled;
 
   return (
     <Form.Group isInvalid={!!error} controlId={controlId} className={compact ? 'mb-0' : undefined}>
       {compact
         ? <Form.Label className="sr-only">{label}</Form.Label>
         : <Form.Label>{label}</Form.Label>}
-      {!compact && (
-        // A plain input: a Form.Control here would take the group's id and steal the label from the select.
-        <input
-          type="search"
-          className="form-control mb-2"
-          value={search}
-          placeholder={intl.formatMessage(messages.itemSearch)}
-          aria-label={intl.formatMessage(messages.itemSearch)}
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+      <div ref={containerRef} className="position-relative" onBlur={handleBlur}>
+        <Form.Control
+          role="combobox"
+          aria-expanded={showList}
+          aria-controls={listId}
+          aria-autocomplete="list"
+          aria-activedescendant={showList && activeIndex >= 0 ? `${controlId}-option-${activeIndex}` : undefined}
+          autoComplete="off"
+          value={editing ? text : value?.name ?? ''}
+          placeholder={emptyLabel ?? intl.formatMessage(messages.itemSearch)}
           disabled={disabled}
-          onChange={(event) => setSearch(event.target.value)}
+          onFocus={() => setOpen(true)}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            setText(event.target.value);
+            setEditing(true);
+            setOpen(true);
+            setActiveIndex(0);
+          }}
+          onKeyDown={handleKeyDown}
+          trailingElement={value && !disabled ? (
+            <IconButton
+              src={Close}
+              iconAs={Icon}
+              alt={intl.formatMessage(messages.itemClear)}
+              size="sm"
+              onClick={clear}
+            />
+          ) : undefined}
         />
-      )}
-      <Form.Control
-        as="select"
-        value={value ? encode(value) : ''}
-        disabled={disabled}
-        onChange={handleChange}
-      >
-        <option value="">{emptyLabel ?? intl.formatMessage(messages.itemPlaceholder)}</option>
-        {extra && renderOption(extra)}
-        {courseOptions.length > 0 && (
-          <optgroup label={intl.formatMessage(messages.itemGroupCourses)}>
-            {courseOptions.map(renderOption)}
-          </optgroup>
+        {showList && (
+          <ul
+            id={listId}
+            role="listbox"
+            aria-label={label}
+            className="list-unstyled bg-white border rounded shadow-sm position-absolute w-100 mb-0 mt-1 overflow-auto"
+            style={{ maxHeight: '16rem', zIndex: 1050 }}
+          >
+            {courseOptions.length > 0 && (
+              <>
+                <li role="presentation" className="px-3 pt-2 small font-weight-bold text-muted">
+                  {intl.formatMessage(messages.itemGroupCourses)}
+                </li>
+                {courseOptions.map(renderOption)}
+              </>
+            )}
+            {programOptions.length > 0 && (
+              <>
+                <li role="presentation" className="px-3 pt-2 small font-weight-bold text-muted">
+                  {intl.formatMessage(messages.itemGroupPrograms)}
+                </li>
+                {programOptions.map(renderOption)}
+              </>
+            )}
+            {options.length === 0 && (
+              <li role="presentation" className="px-3 py-2 text-muted">
+                {intl.formatMessage(messages.itemNoResults)}
+              </li>
+            )}
+          </ul>
         )}
-        {programOptions.length > 0 && (
-          <optgroup label={intl.formatMessage(messages.itemGroupPrograms)}>
-            {programOptions.map(renderOption)}
-          </optgroup>
-        )}
-      </Form.Control>
+      </div>
       {error && <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>}
       {!error && loadFailed && (
         <Form.Control.Feedback type="invalid" className="d-block">

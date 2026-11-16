@@ -28,10 +28,11 @@ const renderModal = (props: Partial<React.ComponentProps<typeof CreateCodeModal>
   <CreateCodeModal isOpen onClose={onClose} onCreated={onCreated} {...props} />,
 );
 
-const choose = (value: string) => fireEvent.change(
-  screen.getByLabelText(value.startsWith('program:') ? 'Program' : 'Course', { selector: 'select' }),
-  { target: { value } },
-);
+const choose = (value: string) => {
+  const isProgram = value.startsWith('program:');
+  fireEvent.focus(screen.getByRole('combobox', { name: isProgram ? 'Program' : 'Course' }));
+  fireEvent.click(screen.getByRole('option', { name: isProgram ? /Leadership program/ : /Safety basics/ }));
+};
 const pickScope = (name: string) => fireEvent.click(screen.getByRole('radio', { name }));
 const submit = () => fireEvent.click(screen.getByRole('button', { name: 'Create' }));
 
@@ -44,7 +45,7 @@ beforeEach(() => {
     data: { results: [{ courseId: COURSE_KEY, displayName: 'Safety basics' }] },
   });
   (programHooks.usePrograms as jest.Mock).mockReturnValue({
-    data: { results: [{ uuid: PROGRAM_UUID, name: 'Leadership program' }] },
+    data: { results: [{ uuid: PROGRAM_UUID, name: 'Leadership program', programKey: 'LEAD-1' }] },
   });
 });
 
@@ -56,11 +57,23 @@ describe('CreateCodeModal', () => {
     expect(screen.getByRole('radio', { name: 'Course' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Program' })).not.toBeChecked();
     expect(screen.getByRole('radio', { name: 'Organization' })).not.toBeChecked();
-    const courses = screen.getByLabelText('Course', { selector: 'select' }) as HTMLSelectElement;
-    expect(Array.from(courses.options).map((o) => o.textContent)).toEqual(['Choose…', 'Safety basics']);
+    fireEvent.focus(screen.getByRole('combobox', { name: 'Course' }));
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([`Safety basics${COURSE_KEY}`]);
     pickScope('Program');
-    const programs = screen.getByLabelText('Program', { selector: 'select' }) as HTMLSelectElement;
-    expect(Array.from(programs.options).map((o) => o.textContent)).toEqual(['Choose…', 'Leadership program']);
+    fireEvent.focus(screen.getByRole('combobox', { name: 'Program' }));
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['Leadership programLEAD-1']);
+  });
+
+  it('searches the name and the id with one field and picks the item', () => {
+    renderModal();
+    const field = screen.getByRole('combobox', { name: 'Course' });
+    fireEvent.change(field, { target: { value: 'safety' } });
+    expect(field).toHaveAttribute('placeholder', 'Search by name or ID');
+    fireEvent.click(screen.getByRole('option', { name: /Safety basics/ }));
+    expect(field).toHaveValue('Safety basics');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear the choice' }));
+    expect(field).toHaveValue('');
   });
 
   it('creates an organization code with the organization short name', async () => {

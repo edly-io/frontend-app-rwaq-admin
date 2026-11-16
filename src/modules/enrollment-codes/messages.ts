@@ -136,8 +136,9 @@ const messages = defineMessages({
   organizationRequired: {
     id: 'rwaq.admin.enrollmentCodes.form.organizationRequired', defaultMessage: 'Choose an organization.',
   },
-  itemSearch: { id: 'rwaq.admin.enrollmentCodes.form.itemSearch', defaultMessage: 'Search by name' },
-  itemPlaceholder: { id: 'rwaq.admin.enrollmentCodes.form.itemPlaceholder', defaultMessage: 'Choose…' },
+  itemSearch: { id: 'rwaq.admin.enrollmentCodes.form.itemSearch', defaultMessage: 'Search by name or ID' },
+  itemNoResults: { id: 'rwaq.admin.enrollmentCodes.form.itemNoResults', defaultMessage: 'No matching courses or programs.' },
+  itemClear: { id: 'rwaq.admin.enrollmentCodes.form.itemClear', defaultMessage: 'Clear the choice' },
   itemGroupCourses: { id: 'rwaq.admin.enrollmentCodes.form.itemGroupCourses', defaultMessage: 'Courses' },
   itemGroupPrograms: { id: 'rwaq.admin.enrollmentCodes.form.itemGroupPrograms', defaultMessage: 'Programs' },
   itemHelp: {
