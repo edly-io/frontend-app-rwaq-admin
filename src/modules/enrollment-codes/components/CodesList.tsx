@@ -7,17 +7,18 @@
  * button links to the page with it), and `onPrefillHandled` then tells the page it was used.
  *
  * Row actions: view card, view usage (opens the code's usage page, `onViewUsage`), view the learners in the Uses
- * tab, mark inactive or active (a code that was used), edit, and delete (a code with no uses).
+ * tab, edit, and delete (a code with no uses, its slot stays empty otherwise). The last column is an Active
+ * switch (shown for a used or inactive code) so every icon keeps its position.
  */
 import {
   Suspense, lazy, useEffect, useState,
 } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Badge, Button, Icon, IconButton, OverlayTrigger, Tooltip,
+  Badge, Button, Form, Icon, IconButton, OverlayTrigger, Tooltip,
 } from '@openedx/paragon';
 import {
-  Add, ContentCopy, Delete, Edit, People, QrCode2, ToggleOff, ToggleOn, Visibility,
+  Add, ContentCopy, Delete, Edit, People, QrCode2, Visibility,
 } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
@@ -263,7 +264,6 @@ const CodesList = ({
     },
     {
       label: intl.formatMessage(messages.colActions),
-      isLabelHidden: true,
       key: 'actions',
       id: 'actions',
       renderCell: (_value, row) => (
@@ -300,18 +300,6 @@ const CodesList = ({
             />
             </span>
           </OverlayTrigger>
-          {(row.usesCount > 0 || !row.isActive) && (
-            <OverlayTrigger placement="top" overlay={<Tooltip id={`code-${row.id}-toggle`}>{intl.formatMessage(row.isActive ? messages.actionSwitchOff : messages.actionSwitchOn)}</Tooltip>}>
-              <span><IconButton
-                size="sm"
-                src={row.isActive ? ToggleOn : ToggleOff}
-                iconAs={Icon}
-                alt={intl.formatMessage(row.isActive ? messages.actionSwitchOff : messages.actionSwitchOn)}
-                onClick={() => handleToggle(row)}
-              />
-              </span>
-            </OverlayTrigger>
-          )}
           <OverlayTrigger placement="top" overlay={<Tooltip id={`code-${row.id}-Edit`}>{intl.formatMessage(messages.actionEdit)}</Tooltip>}>
             <span><IconButton
               size="sm"
@@ -322,7 +310,7 @@ const CodesList = ({
             />
             </span>
           </OverlayTrigger>
-          {row.usesCount === 0 && (
+          {row.usesCount === 0 ? (
             <OverlayTrigger placement="top" overlay={<Tooltip id={`code-${row.id}-Delete`}>{intl.formatMessage(messages.actionDelete)}</Tooltip>}>
               <span><IconButton
                 size="sm"
@@ -333,9 +321,23 @@ const CodesList = ({
               />
               </span>
             </OverlayTrigger>
-          )}
+          ) : <span className="d-inline-block" style={{ width: '2.25rem' }} aria-hidden="true" />}
         </span>
       ),
+    },
+    {
+      label: intl.formatMessage(messages.colActive),
+      key: 'isActive',
+      id: 'active',
+      renderCell: (_value, row) => ((row.usesCount > 0 || !row.isActive) ? (
+        <Form.Switch
+          checked={row.isActive}
+          disabled={updateMutation.isPending}
+          onChange={() => handleToggle(row)}
+        >
+          {intl.formatMessage(row.isActive ? messages.switchOn : messages.switchOff)}
+        </Form.Switch>
+      ) : null),
     },
   ];
 
