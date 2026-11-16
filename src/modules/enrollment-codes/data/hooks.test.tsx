@@ -47,14 +47,14 @@ beforeEach(() => {
 });
 
 describe('enrollment codes hooks', () => {
-  it('counts the codes of one course, in any state, from the list filtered to the course', async () => {
+  it('counts the codes made for one course itself, in any state, not the organization codes covering it', async () => {
     mockApi.getEnrollmentCodes.mockResolvedValue(page(3) as never);
     const { wrapper } = createWrapper();
     const { result } = renderHook(() => useItemCodeCount({ courseId: 'course-v1:A+B+C' }), { wrapper });
 
     await waitFor(() => expect(result.current.data).toBe(3));
     expect(mockApi.getEnrollmentCodes).toHaveBeenCalledWith({
-      courseId: 'course-v1:A+B+C', includeCovering: true, page: 1, pageSize: 1,
+      courseId: 'course-v1:A+B+C', page: 1, pageSize: 1,
     });
   });
 

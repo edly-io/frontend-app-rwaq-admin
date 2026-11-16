@@ -68,8 +68,9 @@ export const useCodeItems = (id: number | null) => useQuery({
 });
 
 /**
- * How many codes (in any state) one course or program has: the count of the list filtered to the item.
- * Used by the pricing cards to offer adding a first code after the type became Enrollment code.
+ * How many codes (in any state) were made for one course or program itself: the count of the list filtered to
+ * the item, without the organization codes that cover it. Used by the pricing cards to offer adding a code of its
+ * own after the type became Enrollment code, even when an organization code already covers it.
  */
 export const useItemCodeCount = (
   item: { courseId?: string; programUuid?: string },
@@ -77,7 +78,7 @@ export const useItemCodeCount = (
 ) => useQuery({
   queryKey: enrollmentCodeQueryKeys.itemCount(item),
   queryFn: () => getEnrollmentCodes({
-    ...item, includeCovering: true, page: 1, pageSize: 1,
+    ...item, page: 1, pageSize: 1,
   }),
   select: (data) => data.pagination?.count ?? data.results.length,
   enabled,
