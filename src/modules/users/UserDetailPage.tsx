@@ -112,6 +112,7 @@ const UserDetailPage = () => {
             <Button variant="outline-primary" onClick={() => setIsEditing(true)}>
               {intl.formatMessage(messages.editUser)}
             </Button>
+            <CsvDownloadButton url={getUserEnrollmentsCsvUrl(userId)} params={{}} fallbackName="user_courses" />
             <Button variant="primary" onClick={() => setIsEnrolling(true)}>
               {intl.formatMessage(messages.enrollAction)}
             </Button>
@@ -209,7 +210,6 @@ const UserDetailPage = () => {
         <h2 className="rwaq-section-title mb-4">
           {intl.formatMessage(messages.enrollmentCount, { count: rows.length })}
         </h2>
-        <CsvDownloadButton url={getUserEnrollmentsCsvUrl(userId)} params={{}} fallbackName="user_courses" />
 
         {isEnrollmentsError && (
           <Alert variant="danger">{intl.formatMessage(messages.enrollmentsError)}</Alert>
