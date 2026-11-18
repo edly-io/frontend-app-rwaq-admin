@@ -74,7 +74,6 @@ describe('getUserListStats', () => {
           new_previous_month: 0,
           new_delta_pct: null,
           active_last_30_days: null,
-          legacy: { legacy_accounts: 5, signed_in_at_least_once: 2, progress_pct: 40 },
           subscribed: 1,
         },
         series: { registrations_by_month: [{ period: '2026-10', value: 3 }] },
@@ -86,7 +85,6 @@ describe('getUserListStats', () => {
 
     expect(mockGet).toHaveBeenCalledWith('http://studio.local:8001/api/v1/admin/users/stats/');
     expect(stats.tiles.learners).toBeNull();
-    expect(stats.tiles.legacy.signedInAtLeastOnce).toBe(2);
     expect(stats.signInMethods).toBeNull();
   });
 });

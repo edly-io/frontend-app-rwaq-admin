@@ -57,15 +57,6 @@ const messages = defineMessages({
     id: 'rwaq.admin.dashboard.program.completionHint',
     defaultMessage: '{completions} of {enrollments} program enrollments completed',
   },
-  legacyTitle: { id: 'rwaq.admin.dashboard.legacy.title', defaultMessage: 'Legacy Registration' },
-  legacyHint: {
-    id: 'rwaq.admin.dashboard.legacy.hint',
-    defaultMessage: '{signedIn} of {total} imported accounts have signed in',
-  },
-  legacyNone: {
-    id: 'rwaq.admin.dashboard.legacy.none',
-    defaultMessage: 'No imported accounts registered in this period.',
-  },
   modesTitle: { id: 'rwaq.admin.dashboard.modes.title', defaultMessage: 'Enrollment modes' },
   modeColMode: { id: 'rwaq.admin.dashboard.modes.colMode', defaultMessage: 'Mode' },
   modeColShare: { id: 'rwaq.admin.dashboard.modes.colShare', defaultMessage: 'Share' },
@@ -221,10 +212,6 @@ const messages = defineMessages({
   infoProgramCompletion: {
     id: 'rwaq.admin.dashboard.info.programCompletion',
     defaultMessage: 'Share of all-time program enrollments that resulted in a completion. When a date range is selected, only completions in that period are counted.',
-  },
-  infoLegacyMigration: {
-    id: 'rwaq.admin.dashboard.info.legacyMigration',
-    defaultMessage: 'Share of legacy accounts (imported from the old platform) that have set their password and signed in at least once. Always all-time — not affected by the date range filter.',
   },
   infoEnrollmentTrend: {
     id: 'rwaq.admin.dashboard.info.enrollmentTrend',

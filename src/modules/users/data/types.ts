@@ -259,7 +259,6 @@ export interface UserListStats {
     /** null when there is no previous month to compare. */
     newDeltaPct: number | null;
     activeLast30Days: number | null;
-    legacy: { legacyAccounts: number; signedInAtLeastOnce: number; progressPct: number | null };
     subscribed: number;
   };
   series: { registrationsByMonth: UserStatsSeriesPoint[] };

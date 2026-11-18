@@ -509,15 +509,6 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.listStats.active.info',
     defaultMessage: 'Learners with courseware activity in the last 30 days and an active enrollment. Staff, superusers and service accounts are not counted.',
   },
-  listStatsLegacy: { id: 'rwaq.admin.users.listStats.legacy', defaultMessage: 'Legacy accounts migrated' },
-  listStatsLegacyInfo: {
-    id: 'rwaq.admin.users.listStats.legacy.info',
-    defaultMessage: 'Accounts imported from the old platform that have signed in on the new one, out of all imported accounts.',
-  },
-  listStatsLegacyHint: {
-    id: 'rwaq.admin.users.listStats.legacy.hint',
-    defaultMessage: '{remaining} of {total} still to sign in',
-  },
   listStatsSubscribed: { id: 'rwaq.admin.users.listStats.subscribed', defaultMessage: 'Subscribed learners' },
   listStatsSubscribedInfo: {
     id: 'rwaq.admin.users.listStats.subscribed.info',

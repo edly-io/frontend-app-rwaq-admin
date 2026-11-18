@@ -49,7 +49,6 @@ const UserListStatsStrip = () => {
     </StatsTileCard>
   );
 
-  const legacy = stats?.tiles.legacy;
   return (
     <StatsStrip
       isOpen={isOpen}
@@ -69,17 +68,6 @@ const UserListStatsStrip = () => {
           isLoading={isLoading}
         />
         {tile('listStatsActive', 'listStatsActiveInfo', stats?.tiles.activeLast30Days)}
-        {tile(
-          'listStatsLegacy',
-          'listStatsLegacyInfo',
-          legacy?.signedInAtLeastOnce,
-          legacy
-            ? intl.formatMessage(messages.listStatsLegacyHint, {
-              remaining: (legacy.legacyAccounts - legacy.signedInAtLeastOnce).toLocaleString(),
-              total: legacy.legacyAccounts.toLocaleString(),
-            })
-            : undefined,
-        )}
         {tile('listStatsSubscribed', 'listStatsSubscribedInfo', stats?.tiles.subscribed)}
       </StatsTiles>
 

@@ -19,7 +19,6 @@ const stats = {
     newPreviousMonth: 32,
     newDeltaPct: 25,
     activeLast30Days: 800,
-    legacy: { legacyAccounts: 500, signedInAtLeastOnce: 200, progressPct: 40 },
     subscribed: 77,
   },
   series: { registrationsByMonth: [{ period: '2026-09', value: 10 }, { period: '2026-10', value: 12 }] },
@@ -38,7 +37,6 @@ describe('UserListStatsStrip', () => {
     expect(screen.getByText('1,200')).toBeInTheDocument();
     expect(screen.getByText('800')).toBeInTheDocument();
     expect(screen.getByText('77')).toBeInTheDocument();
-    expect(screen.getByText('300 of 500 still to sign in')).toBeInTheDocument();
     expect(screen.getByText('Totals for the whole platform, whatever the filters of the table.')).toBeInTheDocument();
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(1);
   });
