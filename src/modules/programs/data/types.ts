@@ -78,7 +78,7 @@ export interface ProgramDetail extends ProgramSummary {
 }
 
 /** Mirrors rwaq_features.programs.models.Program.PRICING_CATEGORY_CHOICES. */
-export type ProgramPricingCategory = 'is_free' | 'is_paid' | 'is_part_of_subscription';
+export type ProgramPricingCategory = 'is_free' | 'is_paid' | 'is_part_of_subscription' | 'is_enrollment_code';
 
 /** One row of GET /api/v1/admin/programs/{uuid}/courses/ */
 export interface ProgramCourse {
@@ -114,7 +114,7 @@ export type ProgramOrdering =
  * Separate params so they can be combined (e.g. status=active + is_hide=true).
  * Per discovery plan §3.1 and §6.
  */
-export type ProgramPricingFilter = 'free' | 'paid' | 'subscription';
+export type ProgramPricingFilter = 'free' | 'paid' | 'subscription' | 'enrollment_code';
 
 export interface ProgramListParams {
   search?: string;
@@ -174,4 +174,52 @@ export interface BulkEnrollResult {
   alreadyEnrolled: BulkEnrollRow[];
   failed: BulkEnrollFailure[];
   courseFailures: BulkEnrollCourseFailure[];
+}
+
+// ── Stats strips (EDLYCSRWAQ-380) ─────────────────────────────────────────────
+
+/** One month of a zero-filled series. */
+export interface ProgramStatsSeriesPoint {
+  period: string;
+  value: number;
+}
+
+/**
+ * GET /api/v1/admin/programs/stats/ — global, the table's filters do not apply.
+ *
+ * A null figure could not be read on the server. It is shown as "Not available", never as zero.
+ */
+export interface ProgramListStats {
+  tiles: {
+    programs: { active: number; draft: number; archived: number };
+    /** Active program enrollments, the Dashboard's program funnel figure. Hidden programs are left out. */
+    enrollments: number;
+    learners: number;
+    completionPct: number | null;
+    averageCoursesPassed: number | null;
+  };
+  funnel: { enrolled: number; started: number | null; completed: number };
+  series: { enrollmentsByMonth: ProgramStatsSeriesPoint[] };
+  generatedAt: string;
+}
+
+/** GET /api/v1/admin/programs/{uuid}/stats/ */
+export interface ProgramStats {
+  tiles: {
+    enrolled: number;
+    completed: number;
+    inProgress: number | null;
+    notStarted: number | null;
+    completionPct: number | null;
+    averageCoursesPassed: number | null;
+    averageDaysToComplete: number | null;
+    avgProgressPercent: number | null;
+  };
+  series: {
+    enrollmentsByMonth: ProgramStatsSeriesPoint[];
+    completionsByMonth: ProgramStatsSeriesPoint[];
+  };
+  /** One entry per course of the program. null when grades or certificates cannot be read. */
+  courses: { courseId: string; courseName: string; passed: number }[] | null;
+  generatedAt: string;
 }

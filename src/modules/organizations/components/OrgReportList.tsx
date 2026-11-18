@@ -27,6 +27,10 @@ const REPORTS: ReportDef[] = [
     name: 'learners', title: 'reportsLearnersTitle', details: 'reportsLearnersDetails', fallbackName: 'org_learners',
   },
   {
+    name: 'learners-detail', title: 'reportsLearnersDetailTitle', details: 'reportsLearnersDetailDetails',
+    fallbackName: 'org_learners_detail',
+  },
+  {
     name: 'revenue', title: 'reportsRevenueTitle', details: 'reportsRevenueDetails', fallbackName: 'org_revenue',
   },
   {

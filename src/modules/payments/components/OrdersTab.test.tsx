@@ -56,6 +56,7 @@ const wholeOrder = {
   status: 'completed',
   orderDate: '2026-09-10T10:00:00Z',
   paidVia: 'moyasar',
+  paymentMethod: 'mada',
   currency: 'SAR',
   userId: 5,
   username: 'buyer5',
@@ -134,6 +135,18 @@ describe('Payment history amounts', () => {
     expect(row['Discount (SAR)']).toBe('10.00');
     expect(row['Total collected (SAR)']).toBe('140.00');
     expect(screen.queryByText(/this partner/)).not.toBeInTheDocument();
+  });
+
+  it('shows the real payment method, a known brand by its name and an old order by its gateway', () => {
+    mockOrders([
+      { ...wholeOrder, paymentMethod: 'visa' },
+      { ...wholeOrder, id: 2, wordpressOrderId: 'wp-2', paymentMethod: 'moyasar_cc' },
+    ]);
+    renderTab();
+
+    const rows = screen.getAllByRole('row').slice(1);
+    expect(rows[0]).toHaveTextContent('Visa');
+    expect(rows[1]).toHaveTextContent('moyasar_cc');
   });
 
   it('shows only the partner\'s part under a partner', () => {

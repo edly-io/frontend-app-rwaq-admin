@@ -10,6 +10,7 @@ import { screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from './data/hooks';
 import UserDetailPage from './UserDetailPage';
+import { getUserEnrollmentsCsvUrl } from './data/api';
 
 jest.mock('./data/hooks');
 jest.mock('@edx/frontend-platform', () => ({
@@ -70,6 +71,10 @@ describe('UserDetailPage — Bug 1 regression: empty fields render "—" not raw
     (hooks.useUserEnrollments as jest.Mock).mockReturnValue({
       data: [], isLoading: false, isError: false,
     });
+    (hooks.useUserEnrollmentProgress as jest.Mock).mockReturnValue({ data: [], isLoading: false });
+    (hooks.useUserStats as jest.Mock).mockReturnValue({
+      data: undefined, isLoading: true, isError: false, error: null, refetch: jest.fn(),
+    });
     // Child modal components call these hooks; mock them all so nothing
     // crashes trying to read .isPending on an undefined return value.
     (hooks.useUpdateUser as jest.Mock).mockReturnValue(mockMutation);
@@ -85,6 +90,12 @@ describe('UserDetailPage — Bug 1 regression: empty fields render "—" not raw
   it('never shows the raw message id for an empty field', () => {
     renderWrapper(<UserDetailPage />);
     expect(screen.queryByText('rwaq.admin.users.detail.none')).not.toBeInTheDocument();
+  });
+
+  it('offers a CSV download for this user enrollment endpoint', () => {
+    renderWrapper(<UserDetailPage />);
+    expect(screen.getByRole('button', { name: 'Download CSV' })).toBeInTheDocument();
+    expect(getUserEnrollmentsCsvUrl(42)).toContain('/api/v1/admin/users/42/enrollments/csv/');
   });
 
   it('shows at least one em-dash when job, country, biography, and orgAdminOf are all empty', () => {

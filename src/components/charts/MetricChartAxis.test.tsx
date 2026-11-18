@@ -4,10 +4,23 @@
  * without the optional valueFormatter and yAxisWidth, every existing chart
  * (the dashboard's) gets exactly the axis props it got before.
  */
+import type { ReactElement } from 'react';
+import { render } from '@testing-library/react';
+import { IntlProvider } from '@edx/frontend-platform/i18n';
 import { renderWrapper } from '@src/setupTest';
-import MetricChart from './MetricChart';
+import MetricChart, { CategoryTick, categoryLabel } from './MetricChart';
+import { categoryLabelAreaHeight } from './categoryLabels';
 
 const mockSeen: Record<string, Record<string, unknown>> = {};
+
+/** The text the axis draws for one category, rendered through the tick element MetricChart hands the XAxis. */
+const drawnLabel = (name: string, rtl: boolean): string | null | undefined => {
+  const tick = mockSeen.XAxis.tick as ReactElement<{ rtl: boolean; truncate: boolean }>;
+  expect(tick.type).toBe(CategoryTick);
+  expect(tick.props.rtl).toBe(rtl);
+  const { container } = render(<svg><CategoryTick {...tick.props} payload={{ value: name }} /></svg>);
+  return container.querySelector('text')?.lastChild?.textContent;
+};
 
 jest.mock('recharts', () => {
   const passThrough = ({ children }: { children?: unknown }) => children ?? null;
@@ -18,7 +31,7 @@ jest.mock('recharts', () => {
   return {
     ResponsiveContainer: passThrough,
     LineChart: passThrough,
-    BarChart: passThrough,
+    BarChart: (props: Record<string, unknown>) => { mockSeen.BarChart = props; return props.children ?? null; },
     PieChart: passThrough,
     Line: recorder('Line'),
     Bar: passThrough,
@@ -110,5 +123,39 @@ describe('MetricChart with valueFormatter and yAxisWidth', () => {
     renderWrapper(<MetricChart type="bar" data={data} ariaLabel="Chart" valueFormatter={format} />);
 
     expect(mockSeen.YAxis.ticks).toEqual([0, 63, 126, 189, 252]);
+  });
+});
+
+describe('named categories below vertical bars', () => {
+  const categories = [
+    { name: 'A very long organization name (7)', value: 3 },
+    { name: 'Rwaq (40)', value: 9 },
+  ];
+
+  it('keeps full names in the tooltip and shortens only angled axis labels', () => {
+    renderWrapper(<MetricChart type="bar" data={categories} ariaLabel="Organizations" categoryLabels />);
+
+    expect(mockSeen.BarChart.layout).toBe('horizontal');
+    expect(mockSeen.XAxis.dataKey).toBe('name');
+    expect(mockSeen.XAxis.angle).toBe(-55);
+    expect(mockSeen.XAxis.height).toBe(categoryLabelAreaHeight(categories.map((c) => c.name), false));
+    expect(mockSeen.YAxis.allowDecimals).toBe(false);
+    expect(drawnLabel(categories[0].name, false)).toBe('A very long organ… (7)');
+    expect(drawnLabel(categories[1].name, false)).toBe('Rwaq (40)');
+    expect(categories[0].name).toBe('A very long organization name (7)');
+    expect(categoryLabel(categories[0].name, false)).toBe('A very long o… (7)');
+  });
+
+  it('shortens Arabic labels and leaves enough space below the axis', () => {
+    render(<IntlProvider locale="ar"><MetricChart type="bar" data={categories} ariaLabel="Organizations" categoryLabels /></IntlProvider>);
+
+    expect(mockSeen.XAxis.height).toBe(categoryLabelAreaHeight(categories.map((c) => c.name), true));
+    expect(mockSeen.XAxis.interval).toBe(0);
+    expect(drawnLabel('مؤسسة التعليم العالي (4)', true)).toBe('مؤسسة التعليم… (4)');
+  });
+
+  it('keeps every label on a top-ten vertical chart', () => {
+    renderWrapper(<MetricChart type="bar" data={Array.from({ length: 10 }, (_, i) => ({ name: `Course ${i}`, value: i }))} ariaLabel="Courses" categoryLabels />);
+    expect(mockSeen.XAxis.interval).toBe(0);
   });
 });

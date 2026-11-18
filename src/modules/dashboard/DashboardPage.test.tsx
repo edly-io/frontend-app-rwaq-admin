@@ -97,11 +97,6 @@ const mockBreakdowns = {
     completionPct: 20,
     avgCoursesPerProgram: 5,
   },
-  legacyMigration: {
-    legacyAccounts: 200,
-    signedInAtLeastOnce: 150,
-    progressPct: 75,
-  },
   enrollmentModes: [{
     mode: 'honor', count: 5000, sharePct: 88,
   }],

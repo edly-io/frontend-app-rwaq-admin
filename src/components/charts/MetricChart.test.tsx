@@ -1,9 +1,9 @@
 /**
  * MetricChart tests — covers rendering, a11y, and reduced-motion.
  */
-import { screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
-import MetricChart, { labelInterval } from './MetricChart';
+import MetricChart, { CategoryTick, categoryLabelAreaHeight, labelInterval } from './MetricChart';
 import type { ChartDataPoint } from './MetricChart';
 
 // jsdom does not implement window.matchMedia — mock it
@@ -128,5 +128,55 @@ describe('labelInterval', () => {
     expect(labelInterval(30, 28)).toBe(1);
     expect(labelInterval(100, 45)).toBe(2);
     expect(labelInterval(400, undefined)).toBe(0);
+  });
+});
+
+describe('CategoryTick', () => {
+  const shown = (container: HTMLElement) => container.querySelector('text')?.lastChild?.textContent;
+
+  it('shows a cut label with the full name as the hover title', () => {
+    const full = 'Course Enrollment Codes QA Test';
+    const { container } = render(<svg><CategoryTick payload={{ value: full }} angle={-55} rtl={false} /></svg>);
+    expect(container.querySelector('title')?.textContent).toBe(full);
+    expect(shown(container)).toBe('Course Enrollment Cod…');
+  });
+
+  it('keeps the label left-to-right so Arabic pages do not flip the rotated text onto the bars', () => {
+    const { container } = render(<svg><CategoryTick payload={{ value: 'مساق' }} angle={-55} rtl /></svg>);
+    expect((container.querySelector('text') as SVGTextElement).style.direction).toBe('ltr');
+  });
+
+  it('can leave long names whole for charts that only rotate short labels', () => {
+    const full = 'A very long month name that stays whole';
+    const { container } = render(<svg><CategoryTick payload={{ value: full }} rtl={false} truncate={false} /></svg>);
+    expect(shown(container)).toBe(full);
+  });
+
+  it('keeps a short name whole', () => {
+    const { container } = render(<svg><CategoryTick payload={{ value: 'PFC2 - Paid' }} rtl={false} /></svg>);
+    expect(shown(container)).toBe('PFC2 - Paid');
+  });
+});
+
+describe('categoryLabelAreaHeight', () => {
+  it('grows with the longest label and stops at the cap', () => {
+    const short = categoryLabelAreaHeight(['Free', 'Paid'], false);
+    const medium = categoryLabelAreaHeight(['Course EnrollTest'], false);
+    const long = categoryLabelAreaHeight(['A very long course name that is cut for sure'], false);
+    expect(short).toBeLessThan(medium);
+    expect(medium).toBeLessThan(long);
+    expect(long).toBeGreaterThan(110);
+    expect(long).toBeLessThanOrEqual(120);
+  });
+
+  it('keeps a floor for short or empty labels', () => {
+    expect(categoryLabelAreaHeight([], false)).toBe(48);
+    expect(categoryLabelAreaHeight(['A'], false)).toBe(48);
+  });
+
+  it('measures the cut label, not the full name', () => {
+    const a = categoryLabelAreaHeight(['x'.repeat(40)], false);
+    const b = categoryLabelAreaHeight(['x'.repeat(200)], false);
+    expect(a).toBe(b);
   });
 });

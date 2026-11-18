@@ -162,6 +162,13 @@ const messages = defineMessages({
     defaultMessage: 'One row per course: enrolled and passed learners, pass rate, average grade and certificates.',
   },
   reportsLearnersTitle: { id: 'rwaq.admin.orgs.reports.learners.title', defaultMessage: 'Learners' },
+  reportsLearnersDetailTitle: {
+    id: 'rwaq.admin.orgs.reports.learnersDetail.title', defaultMessage: 'Learner details',
+  },
+  reportsLearnersDetailDetails: {
+    id: 'rwaq.admin.orgs.reports.learnersDetail.details',
+    defaultMessage: 'One row per learner and course, with progress and activity. Staff enrollments are flagged.',
+  },
   reportsLearnersDetails: {
     id: 'rwaq.admin.orgs.reports.learners.details',
     defaultMessage: 'One row per learner: courses enrolled and passed, average grade and certificates earned.',
@@ -174,7 +181,7 @@ const messages = defineMessages({
   reportsFunnelTitle: { id: 'rwaq.admin.orgs.reports.funnel.title', defaultMessage: 'Program funnel' },
   reportsFunnelDetails: {
     id: 'rwaq.admin.orgs.reports.funnel.details',
-    defaultMessage: 'Programs, program enrollments and completions, and the completion rate.',
+    defaultMessage: 'One row per program: courses, enrollments, completions and payment totals.',
   },
   reportsLifecycleTitle: { id: 'rwaq.admin.orgs.reports.lifecycle.title', defaultMessage: 'Course lifecycle' },
   reportsLifecycleDetails: {
@@ -186,6 +193,123 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.reports.certificates.details',
     defaultMessage: 'Courses with a certificate, certificates issued and the issuance rate.',
   },
+  // ── Stats strip (EDLYCSRWAQ-380) ───────────────────────────────────────────
+  statsCourses: { id: 'rwaq.admin.orgs.stats.courses', defaultMessage: 'Courses' },
+  statsCoursesInfo: {
+    id: 'rwaq.admin.orgs.stats.courses.info',
+    defaultMessage: 'Published course runs of this organization.',
+  },
+  statsPrograms: { id: 'rwaq.admin.orgs.stats.programs', defaultMessage: 'Programs' },
+  statsProgramsInfo: {
+    id: 'rwaq.admin.orgs.stats.programs.info',
+    defaultMessage: 'Programs of this organization that are not hidden.',
+  },
+  statsAdmins: { id: 'rwaq.admin.orgs.stats.admins', defaultMessage: 'Admins' },
+  statsAdminsInfo: {
+    id: 'rwaq.admin.orgs.stats.admins.info',
+    defaultMessage: 'People with the organization admin role in this organization.',
+  },
+  statsLearners: { id: 'rwaq.admin.orgs.stats.learners', defaultMessage: 'Learners' },
+  statsLearnersInfo: {
+    id: 'rwaq.admin.orgs.stats.learners.info',
+    defaultMessage: 'People with activity in a course of this organization and an active enrollment in it. Same figure as the Dashboard for this organization. Staff, superusers and service accounts are not counted.',
+  },
+  statsActiveEnrollments: { id: 'rwaq.admin.orgs.stats.activeEnrollments', defaultMessage: 'Active enrollments' },
+  statsActiveEnrollmentsInfo: {
+    id: 'rwaq.admin.orgs.stats.activeEnrollments.info',
+    defaultMessage: 'Learner and course pairs with activity and an active enrollment. Same figure as the Dashboard for this organization.',
+  },
+  statsCertificates: { id: 'rwaq.admin.orgs.stats.certificates', defaultMessage: 'Certificates issued' },
+  statsCertificatesInfo: {
+    id: 'rwaq.admin.orgs.stats.certificates.info',
+    defaultMessage: 'Downloadable certificates in this organization. Not available when certificates cannot be read.',
+  },
+  statsEnrollmentsInfo: {
+    id: 'rwaq.admin.orgs.stats.enrollments.info',
+    defaultMessage: 'Learner and course pairs with activity in each month, with an active enrollment. Same series as the Dashboard for this organization.',
+  },
+  statsPassedLearners: { id: 'rwaq.admin.orgs.stats.passedLearners', defaultMessage: 'Passed learners' },
+  statsPassedLearnersInfo: {
+    id: 'rwaq.admin.orgs.stats.passedLearners.info',
+    defaultMessage: 'Learner and course pairs passed in this organization\'s courses, with a passing grade or a '
+      + 'certificate. A learner who passed two courses counts twice.',
+  },
+  statsPassRate: { id: 'rwaq.admin.orgs.stats.passRate', defaultMessage: 'Pass rate' },
+  statsPassRateInfo: {
+    id: 'rwaq.admin.orgs.stats.passRate.info',
+    defaultMessage: 'Passed over enrolled, summed over the organization\'s courses.',
+  },
+  statsNotStarted: { id: 'rwaq.admin.orgs.stats.notStarted', defaultMessage: 'Learners not started' },
+  statsNotStartedInfo: {
+    id: 'rwaq.admin.orgs.stats.notStarted.info',
+    defaultMessage: 'Enrolled learners who completed no block and have not passed, summed over the '
+      + 'organization\'s courses.',
+  },
+  statsInProgress: { id: 'rwaq.admin.orgs.stats.inProgress', defaultMessage: 'Learners in progress' },
+  statsInProgressInfo: {
+    id: 'rwaq.admin.orgs.stats.inProgress.info',
+    defaultMessage: 'Enrolled learners who completed at least one block and have not passed yet.',
+  },
+  statsUnenrolled: { id: 'rwaq.admin.orgs.stats.unenrolled', defaultMessage: 'Unenrolled' },
+  statsUnenrolledInfo: {
+    id: 'rwaq.admin.orgs.stats.unenrolled.info',
+    defaultMessage: 'Learners who left a course of this organization. Their enrollment is kept but no longer active.',
+  },
+  statsHonor: { id: 'rwaq.admin.orgs.stats.honor', defaultMessage: 'Honor enrollments' },
+  statsHonorInfo: {
+    id: 'rwaq.admin.orgs.stats.honor.info',
+    defaultMessage: 'Active enrollments in honor mode. Staff, superusers and service accounts are not counted. '
+      + 'Other modes are not in this tile.',
+  },
+  statsAudit: { id: 'rwaq.admin.orgs.stats.audit', defaultMessage: 'Audit enrollments' },
+  statsAuditInfo: {
+    id: 'rwaq.admin.orgs.stats.audit.info',
+    defaultMessage: 'Active enrollments in audit mode. Staff, superusers and service accounts are not counted. '
+      + 'Other modes are not in this tile.',
+  },
+  statsTopCoursesTitle: { id: 'rwaq.admin.orgs.stats.topCourses.title', defaultMessage: 'Top courses' },
+  statsTopCoursesInfo: {
+    id: 'rwaq.admin.orgs.stats.topCourses.info',
+    defaultMessage: 'The courses of this organization with the most active enrollments.',
+  },
+
+  // ── Organizations list stats strip (EDLYCSRWAQ-380) ────────────────────────
+  listStatsActive: { id: 'rwaq.admin.orgs.listStats.active', defaultMessage: 'Active organizations' },
+  listStatsActiveInfo: {
+    id: 'rwaq.admin.orgs.listStats.active.info',
+    defaultMessage: 'Organizations marked active.',
+  },
+  listStatsWithCourses: { id: 'rwaq.admin.orgs.listStats.withCourses', defaultMessage: 'Organizations with courses' },
+  listStatsWithCoursesInfo: {
+    id: 'rwaq.admin.orgs.listStats.withCourses.info',
+    defaultMessage: 'Organizations with at least one published course run, including inactive organizations.',
+  },
+  listStatsCourses: { id: 'rwaq.admin.orgs.listStats.courses', defaultMessage: 'Courses' },
+  listStatsCoursesInfo: {
+    id: 'rwaq.admin.orgs.listStats.courses.info',
+    defaultMessage: 'Published course runs across all organizations.',
+  },
+  listStatsPrograms: { id: 'rwaq.admin.orgs.listStats.programs', defaultMessage: 'Programs' },
+  listStatsProgramsInfo: {
+    id: 'rwaq.admin.orgs.listStats.programs.info',
+    defaultMessage: 'Programs across all organizations, hidden ones included.',
+  },
+  listStatsEnrollments: { id: 'rwaq.admin.orgs.listStats.enrollments', defaultMessage: 'Enrollments' },
+  listStatsEnrollmentsInfo: {
+    id: 'rwaq.admin.orgs.listStats.enrollments.info',
+    defaultMessage: 'Active enrollments in the courses of all organizations, the same as the Dashboard table.',
+  },
+  listStatsTopTitle: { id: 'rwaq.admin.orgs.listStats.top.title', defaultMessage: 'Top organizations by enrollments' },
+  listStatsTopInfo: {
+    id: 'rwaq.admin.orgs.listStats.top.info',
+    defaultMessage: 'The 10 organizations with the most active enrollments. The number in brackets after each name is its number of courses.',
+  },
+  listStatsAddedTitle: { id: 'rwaq.admin.orgs.listStats.added.title', defaultMessage: 'Organizations added per month' },
+  listStatsAddedInfo: {
+    id: 'rwaq.admin.orgs.listStats.added.info',
+    defaultMessage: 'Organizations by the month they were added to the platform, active or not.',
+  },
+  listStatsTopLabel: { id: 'rwaq.admin.orgs.listStats.top.label', defaultMessage: '{name} ({courses})' },
 });
 
 export default messages;

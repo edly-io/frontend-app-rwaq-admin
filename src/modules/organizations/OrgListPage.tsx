@@ -16,8 +16,10 @@ import type { ColumnDef } from '@src/components/AdminDataTable';
 import ErrorState from '@src/components/ErrorState';
 import { getErrorStatus } from '@src/data/httpError';
 import CsvDownloadButton from '@src/components/CsvDownloadButton';
+import ExportDateFilter from '@src/components/ExportDateFilter';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
+import OrgListStatsStrip from './components/OrgListStatsStrip';
 import OrgFormModal from './modals/OrgFormModal';
 import { getOrganizationsCsvUrl, organizationsCsvParams } from './data/api';
 import { useOrganization, useOrganizations } from './data/hooks';
@@ -86,6 +88,8 @@ const OrgListPage = () => {
   );
 
   const listParams = {
+    createdFrom: searchParams.get('created_from') || undefined,
+    createdTo: searchParams.get('created_to') || undefined,
     search: search || undefined,
     filter: filter !== 'all' ? filter : undefined,
     ordering,
@@ -227,6 +231,8 @@ const OrgListPage = () => {
         </div>
       </div>
 
+      <OrgListStatsStrip />
+
       <div className="rwaq-card rwaq-card--fit">
         <SearchFilterBar
           searchTerm={search}
@@ -251,7 +257,7 @@ const OrgListPage = () => {
             },
           ]}
           appliedChips={appliedChips}
-          onClearAll={() => updateParams({ search: '', filter: '', ordering: '' })}
+          onClearAll={() => updateParams({ search: '', filter: '', ordering: '', created_from: '', created_to: '' })}
           downloadAction={(
             <CsvDownloadButton
               url={getOrganizationsCsvUrl()}
@@ -261,6 +267,12 @@ const OrgListPage = () => {
           )}
         />
 
+        <ExportDateFilter
+          kind="created"
+          from={listParams.createdFrom ?? ''}
+          to={listParams.createdTo ?? ''}
+          onChange={(from, to) => updateParams({ created_from: from, created_to: to })}
+        />
         {isError ? (
           <ErrorState
             statusCode={statusCode || undefined}

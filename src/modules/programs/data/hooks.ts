@@ -11,6 +11,8 @@ import {
   getProgram,
   getProgramCourses,
   getProgramLearners,
+  getProgramListStats,
+  getProgramStats,
   getPrograms,
   unenrollProgramLearner,
   updateProgram,
@@ -29,6 +31,8 @@ const programQueryKeys = {
   detail: (uuid: string) => [...programQueryKeys.details(), uuid] as const,
   courses: (uuid: string) => [...programQueryKeys.detail(uuid), 'courses'] as const,
   learners: (uuid: string) => [...programQueryKeys.detail(uuid), 'learners'] as const,
+  stats: (uuid: string) => [...programQueryKeys.detail(uuid), 'stats'] as const,
+  listStats: () => [...programQueryKeys.all, 'listStats'] as const,
 };
 
 // ── Queries ──────────────────────────────────────────────────────────────────
@@ -113,3 +117,19 @@ export const useBulkEnrollLearners = (uuid: string) => {
     },
   });
 };
+
+/** Tiles and series of the Programs list strip. Global, so it has no params. Pass `enabled: false` while collapsed. */
+export const useProgramListStats = (enabled = true) => useQuery({
+  queryKey: programQueryKeys.listStats(),
+  queryFn: getProgramListStats,
+  enabled,
+  staleTime: 5 * 60 * 1000,
+});
+
+/** Tiles and series of one program. Pass `enabled: false` while the strip is collapsed. */
+export const useProgramStats = (uuid: string, enabled = true) => useQuery({
+  queryKey: programQueryKeys.stats(uuid),
+  queryFn: () => getProgramStats(uuid),
+  enabled: enabled && !!uuid,
+  staleTime: 5 * 60 * 1000,
+});

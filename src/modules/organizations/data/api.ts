@@ -24,8 +24,10 @@ import type {
   OrgFilter,
   OrgListParams,
   OrgListResponse,
+  OrgListStats,
   OrgProfilePatch,
   OrgReportName,
+  OrgStats,
 } from './types';
 
 const getOrgsBaseUrl = () => getStudioApiUrl('/rwaq/api/organizations');
@@ -138,3 +140,17 @@ export const removeOrgAdmin = async (shortName: string, email: string): Promise<
 export const getOrgReportCsvUrl = (name: OrgReportName): string => (
   getStudioApiUrl(`/api/v1/admin/org-reports/${name}/csv/`)
 );
+
+/** GET /rwaq/api/organizations/stats/ — tiles and the top-organizations chart of the Organizations list strip. */
+export const getOrgListStats = async (): Promise<OrgListStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getOrgsBaseUrl()}/stats/`);
+  return camelCaseObject(data) as OrgListStats;
+};
+
+/** GET /rwaq/api/organizations/<short_name>/stats/ — passed, pass rate, stages, unenrolled and modes of one org. */
+export const getOrgStats = async (shortName: string): Promise<OrgStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getOrgsBaseUrl()}/${encodeURIComponent(shortName)}/stats/`,
+  );
+  return camelCaseObject(data) as OrgStats;
+};

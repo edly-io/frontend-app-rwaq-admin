@@ -78,7 +78,9 @@ describe('CsvDownloadButton', () => {
 
     await waitFor(() => expect(get).toHaveBeenCalledTimes(1));
     expect(get).toHaveBeenCalledWith(CSV_URL, {
-      params: { search: 'math', start_date: '2026-03-01', end_date: '2026-03-31' },
+      params: {
+        search: 'math', start_date: '2026-03-01', end_date: '2026-03-31', export_language: 'en',
+      },
       responseType: 'blob',
       headers: { 'Accept-Language': 'en' },
     });

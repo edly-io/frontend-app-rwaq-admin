@@ -29,9 +29,12 @@ export const downloadCsv = async (
 ): Promise<{ blob: Blob; filename: string }> => {
   const { page, pageSize, ...filters } = params;
   const response = await getAuthenticatedHttpClient().get(url, {
-    params: snakeCaseObject(
-      Object.fromEntries(Object.entries(filters).filter(([, value]) => value !== undefined && value !== '')),
-    ),
+    params: {
+      ...snakeCaseObject(
+        Object.fromEntries(Object.entries(filters).filter(([, value]) => value !== undefined && value !== '')),
+      ),
+      ...(language ? { export_language: language } : {}),
+    },
     responseType: 'blob',
     ...(language ? { headers: { 'Accept-Language': language } } : {}),
   });

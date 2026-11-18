@@ -1052,6 +1052,21 @@ html[data-paragon-theme-variant='dark'] {
   overflow-wrap: anywhere;
 }
 
+// The learner's enrollments have many columns. Keep the course title and key
+// intact and let the table scroll sideways rather than breaking either word.
+.rwaq-enrollments-table {
+  .rwaq-table-scroll > * { min-width: 100%; }
+  .rwaq-table-scroll table { width: max-content; min-width: 100%; }
+  .rwaq-table-scroll tbody td:first-child { max-width: none; overflow: visible; }
+
+  .rwaq-enrollments__course {
+    width: max-content;
+
+    .rwaq-user-cell__name,
+    .rwaq-user-cell__meta { white-space: nowrap; overflow-wrap: normal; }
+  }
+}
+
 // Mode is an enum value, so it is set as one rather than as prose.
 .rwaq-enrollments__mode {
   display: inline-block;
@@ -1369,6 +1384,23 @@ body {
 
 .rwaq-page--fit > .rwaq-page-header { flex: 0 0 auto; }
 
+// Expanded list statistics need their full height so the charts do not scroll
+// inside the strip. The main content scrolls, and the table keeps its own
+// bounded scroll area. Collapsed lists retain the viewport-fitted layout.
+.rwaq-page--fit:has(> .rwaq-stats-strip [aria-expanded='true']) {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+
+.rwaq-page--fit > .rwaq-stats-strip {
+  flex: 0 0 auto;
+}
+
+.rwaq-page--fit:has(> .rwaq-stats-strip [aria-expanded='true']) > .rwaq-card--fit {
+  max-height: 32rem;
+}
+
 .rwaq-card--fit {
   display: flex;
   flex-direction: column;
@@ -1453,6 +1485,34 @@ body {
 }
 
 .rwaq-dash-grid--kpi { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
+
+// Statistics strips with many tiles keep balanced rows and enough width for labels.
+// The home dashboard retains its own grid and KPI sizes.
+.rwaq-stats-tiles {
+  > * { min-width: 0; }
+
+  .rwaq-stat-tile__label,
+  .pgn__card p.small { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; }
+
+  .rwaq-stat-tile__value--muted { font-size: 1rem; font-weight: 600; line-height: 1.35; }
+  .rwaq-stat-tile__value--text { font-size: 1rem; font-weight: 600; line-height: 1.35; letter-spacing: 0; }
+
+  // KpiCard uses inline type styles and Paragon padding, so scope the
+  // overrides to strips where it sits beside StatTile.
+  > .pgn__card > .card-body { padding: 1.125rem 1.25rem !important; }
+  > .pgn__card p.small { font-size: 0.75rem !important; letter-spacing: 0.04em !important; }
+  > .pgn__card p.mb-0 { font-size: 1.5rem !important; line-height: 1.15 !important; }
+}
+
+@media (min-width: 70rem) {
+  .rwaq-stats-tiles:has(> :nth-child(6):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .rwaq-stats-tiles:has(> :nth-child(7)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 69.99rem) {
+  .rwaq-stats-tiles:has(> :nth-child(6)) { grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); }
+}
+
 .rwaq-dash-grid--thirds { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
 .rwaq-dash-grid--halves { grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr)); }
 

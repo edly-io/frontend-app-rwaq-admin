@@ -25,6 +25,7 @@ import type { AppliedChip } from '@src/components/SearchFilterBar';
 import { localizedName } from '@src/data/localizedName';
 import { useOrgFilterOptions } from '@src/modules/organizations/data/hooks';
 import ProgramImage from './components/ProgramImage';
+import ProgramListStatsStrip from './components/ProgramListStatsStrip';
 import { getProgramsCsvUrl } from './data/api';
 import { usePrograms } from './data/hooks';
 import type {
@@ -63,6 +64,7 @@ const TYPE_OPTIONS: { value: ProgramPricingFilter; label: MessageKey }[] = [
   { value: 'free', label: 'typeFree' },
   { value: 'paid', label: 'typePaid' },
   { value: 'subscription', label: 'typeSubscription' },
+  { value: 'enrollment_code', label: 'typeEnrollmentCode' },
 ];
 
 const SORT_OPTIONS: { value: ProgramOrdering; label: MessageKey }[] = [
@@ -361,6 +363,8 @@ const ProgramListPage = () => {
       <div className="rwaq-page-header">
         <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
       </div>
+
+      <ProgramListStatsStrip />
 
       <div className="rwaq-card rwaq-card--fit">
         <SearchFilterBar

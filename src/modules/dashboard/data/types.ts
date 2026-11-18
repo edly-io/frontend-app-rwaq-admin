@@ -65,12 +65,6 @@ export interface ProgramFunnel {
   avgCoursesPerProgram: number | null;
 }
 
-export interface LegacyMigration {
-  legacyAccounts: number;
-  signedInAtLeastOnce: number;
-  progressPct: number | null;
-}
-
 export interface EnrollmentMode {
   mode: string;
   count: number;
@@ -102,7 +96,6 @@ export interface AnalyticsBreakdowns {
   courseLifecycle: CourseLifecycle;
   certificates: CertificateSplit;
   programs: ProgramFunnel;
-  legacyMigration: LegacyMigration;
   enrollmentModes: EnrollmentMode[];
   organizations: OrganizationRow[];
   catalogConcentration: CatalogConcentration;

@@ -502,19 +502,6 @@ const DashboardPage = () => {
           info={intl.formatMessage(messages.infoProgramCompletion)}
         />
       </div>
-      <div className="rwaq-card">
-        <StatTile
-          label={intl.formatMessage(messages.legacyTitle)}
-          value={formatPercent(data.legacyMigration.progressPct)}
-          hint={intl.formatMessage(messages.legacyHint, {
-            signedIn: data.legacyMigration.signedInAtLeastOnce,
-            total: data.legacyMigration.legacyAccounts,
-          })}
-          unavailableHint={intl.formatMessage(messages.legacyNone)}
-          badge={intl.formatMessage(messages.allTimeBadge)}
-          info={intl.formatMessage(messages.infoLegacyMigration)}
-        />
-      </div>
     </div>
   );
 

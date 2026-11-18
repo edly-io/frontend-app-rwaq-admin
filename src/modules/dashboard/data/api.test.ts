@@ -81,11 +81,6 @@ const snakeBreakdownsResponse = {
     completion_pct: 20,
     avg_courses_per_program: 4,
   },
-  legacy_migration: {
-    legacy_accounts: 100,
-    signed_in_at_least_once: 70,
-    progress_pct: 70,
-  },
   enrollment_modes: [{ mode: 'honor', count: 2800, share_pct: 93 }],
   organizations: [],
   catalog_concentration: { total_enrollments: 3000, top_share_pct: 40, courses: [] },

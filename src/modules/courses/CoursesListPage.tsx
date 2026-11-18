@@ -21,6 +21,7 @@ import ProfileAvatar from '@src/components/ProfileAvatar';
 import { localizedName } from '@src/data/localizedName';
 import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
 import { useOrgFilterOptions } from '@src/modules/organizations/data/hooks';
+import CourseListStatsStrip from './components/CourseListStatsStrip';
 import { getCoursesCsvUrl } from './data/api';
 import { useCourses } from './data/hooks';
 import type { CourseSummary, CourseOrdering, CourseTypeFilter } from './data/types';
@@ -36,6 +37,7 @@ const COURSE_TYPE_OPTIONS: { value: CourseTypeFilter; label: MessageKey }[] = [
   { value: 'paid', label: 'typePaid' },
   { value: 'program_only', label: 'typeProgramOnly' },
   { value: 'subscription', label: 'typeSubscription' },
+  { value: 'enrollment_code', label: 'typeEnrollmentCode' },
 ];
 
 const SORT_OPTIONS: { value: CourseOrdering; label: MessageKey }[] = [
@@ -256,6 +258,8 @@ const CoursesListPage = () => {
       <div className="rwaq-page-header">
         <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
       </div>
+
+      <CourseListStatsStrip />
 
       <div className="rwaq-card rwaq-card--fit">
         <SearchFilterBar

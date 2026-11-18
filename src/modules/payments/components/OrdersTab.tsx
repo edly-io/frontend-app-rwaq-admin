@@ -30,6 +30,15 @@ import {
 } from './shared';
 import type { ListTabProps } from './shared';
 
+const PAYMENT_BRANDS: Record<string, string> = {
+  mada: 'mada', visa: 'Visa', mastercard: 'Mastercard', amex: 'American Express', applepay: 'Apple Pay',
+};
+
+/** Brand names are proper nouns, so they are not translated. An unknown value shows as sent. */
+const paymentMethodLabel = (value: string | null | undefined): string => (
+  value ? (PAYMENT_BRANDS[value.toLowerCase()] ?? value) : '—'
+);
+
 const boldText = (chunks: ReactNode[]) => <strong>{chunks}</strong>;
 
 const DEFAULT_ORDERING = '-order_date';
@@ -249,6 +258,12 @@ const OrdersTab = ({
       info: intl.formatMessage(messages.infoColSource),
       key: 'source',
       renderCell: (value) => <Badge variant="light">{optionLabel(sourceOptions, value as string)}</Badge>,
+    },
+    {
+      label: intl.formatMessage(messages.colPaymentMethod),
+      info: intl.formatMessage(messages.infoColPaymentMethod),
+      key: 'paymentMethod',
+      renderCell: (value) => paymentMethodLabel(value as string),
     },
   ];
 

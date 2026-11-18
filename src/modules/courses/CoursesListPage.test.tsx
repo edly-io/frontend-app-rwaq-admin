@@ -12,6 +12,7 @@ import * as hooks from './data/hooks';
 import CoursesListPage from './CoursesListPage';
 
 jest.mock('./data/hooks', () => ({ useCourses: jest.fn() }));
+jest.mock('./components/CourseListStatsStrip', () => ({ __esModule: true, default: () => null }));
 jest.mock('@src/modules/organizations/data/hooks', () => ({
   useOrgFilterOptions: jest.fn(() => [
     { value: 'QAOrg', label: 'QA Org' },
@@ -130,6 +131,20 @@ describe('CoursesListPage organization filter', () => {
     expect(lastCall().org).toBe('QAOrg');
     expect(csvParams()).toMatchObject({ org: 'QAOrg' });
     expect(screen.getByText('Organization: QAOrg')).toBeInTheDocument();
+  });
+
+  it('offers the Enrollment code type and sends course_type=enrollment_code to the list and the CSV', () => {
+    renderWrapper(<CoursesListPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+    const select = screen.getByLabelText('Type') as HTMLSelectElement;
+    expect(Array.from(select.options).map((option) => option.textContent)).toContain('Enrollment code');
+    fireEvent.change(select, { target: { value: 'enrollment_code' } });
+
+    expect(window.location.search).toBe('?type=enrollment_code');
+    expect(lastCall().courseType).toBe('enrollment_code');
+    expect(csvParams()).toMatchObject({ courseType: 'enrollment_code' });
+    expect(screen.getByText('Type: Enrollment code')).toBeInTheDocument();
   });
 
   it('starts from the organization in the URL, and clears it with its chip or Clear all', () => {
