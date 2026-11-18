@@ -5,7 +5,7 @@ const messages = defineMessages({
   title: { id: 'rwaq.admin.enrollmentCodes.title', defaultMessage: 'Enrollment codes' },
   forbiddenTitle: {
     id: 'rwaq.admin.enrollmentCodes.forbidden',
-    defaultMessage: 'Enrollment codes are visible to Rwaq superadmins only.',
+    defaultMessage: 'Enrollment codes are visible to {siteName} superadmins only.',
   },
   errorTitle: { id: 'rwaq.admin.enrollmentCodes.error', defaultMessage: 'Could not load enrollment codes.' },
   tabCodes: { id: 'rwaq.admin.enrollmentCodes.tab.codes', defaultMessage: 'Codes' },

@@ -1,4 +1,5 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { getSiteName } from '@src/data/siteName';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Button } from '@openedx/paragon';
 import { ArrowBack } from '@openedx/paragon/icons';
@@ -43,7 +44,7 @@ const EnrollmentCodeUsagePage = () => {
   const { data, isLoading } = useAdminCapabilities();
   if (isLoading) { return <LoadingPage />; }
   if (!data?.isSuperuser) {
-    return <ErrorState statusCode={403} title={intl.formatMessage(messages.forbiddenTitle)} />;
+    return <ErrorState statusCode={403} title={intl.formatMessage(messages.forbiddenTitle, { siteName: getSiteName() })} />;
   }
   return <UsageContent />;
 };

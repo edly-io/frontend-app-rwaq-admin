@@ -11,6 +11,7 @@
  * button) opens the create form with that item fixed. The params are removed from the URL once it opens.
  */
 import { useCallback, useEffect, useState } from 'react';
+import { getSiteName } from '@src/data/siteName';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Tab, Tabs } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -163,7 +164,7 @@ const EnrollmentCodesPage = () => {
   if (!capabilities?.isSuperuser) {
     return (
       <div className="rwaq-page">
-        <ErrorState statusCode={403} title={intl.formatMessage(messages.forbiddenTitle)} />
+        <ErrorState statusCode={403} title={intl.formatMessage(messages.forbiddenTitle, { siteName: getSiteName() })} />
       </div>
     );
   }

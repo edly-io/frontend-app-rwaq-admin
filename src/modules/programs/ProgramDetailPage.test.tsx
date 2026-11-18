@@ -18,6 +18,7 @@ jest.mock('./data/hooks', () => ({
   useProgramLearners: jest.fn(),
   useUpdateProgram: jest.fn(),
 }));
+jest.mock('./components/ProgramStatsStrip', () => ({ __esModule: true, default: () => null }));
 jest.mock('./components/ProgramPricingCard', () => ({ __esModule: true, default: () => null }));
 jest.mock('./components/ProgramStatusChips', () => ({ __esModule: true, default: () => null }));
 jest.mock('./modals/BulkEnrollModal', () => ({ __esModule: true, default: () => null }));

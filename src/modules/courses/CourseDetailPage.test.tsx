@@ -24,6 +24,7 @@ jest.mock('./data/hooks', () => ({
 jest.mock('@src/modules/users/data/hooks', () => ({
   useEnrollableCourses: () => ({ data: [], isLoading: false }),
 }));
+jest.mock('./components/CourseStatsStrip', () => ({ __esModule: true, default: () => null }));
 jest.mock('./components/CoursePricingCard', () => ({ __esModule: true, default: () => <div data-testid="pricing-card" /> }));
 jest.mock('./modals/EnrollUserModal', () => ({ __esModule: true, default: () => null }));
 jest.mock('./modals/AddStaffModal', () => ({ __esModule: true, default: () => null }));
