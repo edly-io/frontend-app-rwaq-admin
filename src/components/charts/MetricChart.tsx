@@ -52,12 +52,15 @@ export const resolveParagonToken = (token: string, fallback: string): string => 
  * is an error. They are four parts of the same total, so they read better as
  * one hue stepping down in weight.
  */
-export const getSequentialChartColors = (): string[] => [
-  resolveParagonToken('--rwaq-accent', '#0A76DB'),
-  'rgba(68, 156, 194, 0.72)',
-  'rgba(68, 156, 194, 0.48)',
-  'rgba(68, 156, 194, 0.26)',
-];
+export const getSequentialChartColors = (): string[] => {
+  const accent = resolveParagonToken('--rwaq-accent', '#0A76DB');
+  return [
+    accent,
+    `color-mix(in srgb, ${accent} 72%, transparent)`,
+    `color-mix(in srgb, ${accent} 48%, transparent)`,
+    `color-mix(in srgb, ${accent} 26%, transparent)`,
+  ];
+};
 
 /** Brand-aligned chart palette sourced from Paragon tokens. */
 export const getChartColors = (): string[] => [

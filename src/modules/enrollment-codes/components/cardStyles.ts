@@ -6,7 +6,7 @@ export const CARD_CSS = `
 /* Scoped to the card: this string is also injected into the admin page. */
 .coupon-wrap,.coupon-wrap *,.coupon-wrap *::before,.coupon-wrap *::after{box-sizing:border-box}
 .coupon-wrap{width:100%;max-width:840px;container-type:inline-size;font-family:'Cairo','Segoe UI',Tahoma,sans-serif}
-.coupon-card{display:flex;width:100%;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#131f3c 0%,#1a2c55 55%,#2a4785 100%);color:#fff;text-align:left}
+.coupon-card{display:flex;width:100%;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#082a5e 0%,#0D3F8A 55%,#0A76DB 100%);color:#fff;text-align:left}
 .coupon-card__main{flex:1;display:flex;flex-direction:column;gap:20px;padding:30px 36px 24px;min-width:0}
 .coupon-card__header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
 .coupon-card__logo-tile{background:#fff;border-radius:12px;padding:6px 14px;display:flex;align-items:center}
@@ -18,11 +18,11 @@ export const CARD_CSS = `
 .coupon-card__quiz{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
 .coupon-card__quiz-title{font-size:20px;font-weight:700;color:#fff;max-width:100%;line-height:1.5;text-align:center;overflow-wrap:anywhere}
 .coupon-card__identity{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:16px;border-top:1px solid rgba(255,255,255,.18);text-align:center}
-.coupon-card__slogan{font-size:17px;font-weight:700;color:#5accff;max-width:100%;overflow-wrap:anywhere}
+.coupon-card__slogan{font-size:17px;font-weight:700;color:#a8d4ff;max-width:100%;overflow-wrap:anywhere}
 .coupon-card__about{font-size:13px;color:#ffffffbf;max-width:100%;overflow-wrap:anywhere;line-height:1.6}
 .coupon-card__contacts{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;margin-top:8px}
 .coupon-card__contact{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:#ffffffd9;max-width:100%;overflow-wrap:anywhere}
-.coupon-card__contact svg{font-size:14px;color:#5accff;width:1em;height:1em}
+.coupon-card__contact svg{font-size:14px;color:#a8d4ff;width:1em;height:1em}
 .coupon-card__divider{width:0;border-left:2px dashed rgba(255,255,255,.35);margin:24px 0}
 .coupon-card__stub{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:30px}
 .coupon-card__qr{padding:14px;background-color:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center}
