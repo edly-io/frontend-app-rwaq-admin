@@ -30,8 +30,20 @@ describe('enrollmentTiles', () => {
     ]);
 
     expect(tiles).toEqual({
-      active: 2, total: 3, passed: 1, inProgress: 1,
+      active: 2, total: 3, passed: 1, inProgress: 1, notStarted: 0,
     });
+  });
+
+  it('counts the active courses not started, and ignores inactive ones', () => {
+    const tiles = enrollmentTiles([
+      row({ status: 'passed' }),
+      row({ courseId: 'b', status: 'in_progress' }),
+      row({ courseId: 'c', status: 'not_started' }),
+      row({ courseId: 'd', status: 'not_started' }),
+      row({ courseId: 'e', status: 'not_started', isActive: false }),
+    ]);
+
+    expect([tiles.passed, tiles.inProgress, tiles.notStarted]).toEqual([1, 1, 2]);
   });
 
   it('gives null when the status of an active course could not be read', () => {
@@ -39,11 +51,12 @@ describe('enrollmentTiles', () => {
 
     expect(tiles.passed).toBeNull();
     expect(tiles.inProgress).toBeNull();
+    expect(tiles.notStarted).toBeNull();
   });
 
   it('counts zero for a user with no enrollments', () => {
     expect(enrollmentTiles([])).toEqual({
-      active: 0, total: 0, passed: 0, inProgress: 0,
+      active: 0, total: 0, passed: 0, inProgress: 0, notStarted: 0,
     });
   });
 });

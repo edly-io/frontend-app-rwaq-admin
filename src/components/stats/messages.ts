@@ -26,6 +26,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.stats.excludedAccounts',
     defaultMessage: 'Staff, superusers and service accounts are not counted.',
   },
+  seriesOrganizations: { id: 'rwaq.admin.stats.series.organizations', defaultMessage: 'Organizations' },
   seriesEnrollments: { id: 'rwaq.admin.stats.series.enrollments', defaultMessage: 'Enrollments' },
   lifecycleTitle: { id: 'rwaq.admin.stats.lifecycle.title', defaultMessage: 'Course lifecycle' },
   lifecycleInfo: {
@@ -39,6 +40,10 @@ const messages = defineMessages({
   enrollmentsPerMonthTitle: {
     id: 'rwaq.admin.stats.enrollmentsPerMonth.title',
     defaultMessage: 'Enrollments per month',
+  },
+  activeEnrollmentsPerMonthTitle: {
+    id: 'rwaq.admin.stats.activeEnrollmentsPerMonth.title',
+    defaultMessage: 'Active enrollments per month',
   },
   lastTwelveMonths: { id: 'rwaq.admin.stats.lastTwelveMonths', defaultMessage: 'Last 12 months' },
 });

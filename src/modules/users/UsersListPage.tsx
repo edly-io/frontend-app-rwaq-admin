@@ -17,9 +17,10 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import ErrorState from '@src/components/ErrorState';
-import { getErrorStatus } from '@src/data/httpError';
+import { getErrorReason, getErrorStatus } from '@src/data/httpError';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import CsvDownloadButton from '@src/components/CsvDownloadButton';
+import ExportDateFilter from '@src/components/ExportDateFilter';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip, SelectOption } from '@src/components/SearchFilterBar';
 import RoleBadges from './components/RoleBadges';
@@ -135,6 +136,8 @@ const UsersListPage = () => {
   );
 
   const listParams = {
+    joinedFrom: searchParams.get('joined_from') || undefined,
+    joinedTo: searchParams.get('joined_to') || undefined,
     searchBy: searchTerm ? searchBy : undefined,
     searchTerm: searchTerm || undefined,
     filter: filter !== 'all' ? filter : undefined,
@@ -342,15 +345,22 @@ const UsersListPage = () => {
           ]}
           appliedChips={appliedChips}
           onClearAll={() => updateParams({
-            search_by: '', search_term: '', filter: '', ordering: '',
+            search_by: '', search_term: '', filter: '', ordering: '', joined_from: '', joined_to: '',
           })}
           downloadAction={<CsvDownloadButton url={getUsersCsvUrl()} params={listParams} fallbackName="users" />}
         />
 
+        <ExportDateFilter
+          kind="joined"
+          from={listParams.joinedFrom ?? ''}
+          to={listParams.joinedTo ?? ''}
+          onChange={(from, to) => updateParams({ joined_from: from, joined_to: to })}
+        />
         {isError ? (
           <ErrorState
             statusCode={statusCode || undefined}
             title={intl.formatMessage(messages.errorTitle)}
+            body={statusCode === 400 ? getErrorReason(error) ?? undefined : undefined}
             onRetry={() => refetch()}
           />
         ) : (

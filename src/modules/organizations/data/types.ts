@@ -86,6 +86,8 @@ export type OrgFilter = 'all' | 'active' | 'inactive' | 'has_admins' | 'no_admin
 
 /** Query params for the org list endpoint */
 export interface OrgListParams {
+  createdFrom?: string;
+  createdTo?: string;
   search?: string;
   filter?: OrgFilter;
   ordering?: OrgOrdering;
@@ -94,13 +96,19 @@ export interface OrgListParams {
 }
 
 /** The six org reports, named as in the API path (`<name>/csv/`). */
-export type OrgReportName = 'courses' | 'learners' | 'revenue' | 'funnel' | 'lifecycle' | 'certificates';
+export type OrgReportName = 'courses' | 'learners' | 'learners-detail' | 'revenue' | 'funnel' | 'lifecycle' | 'certificates';
 
 /**
  * GET /rwaq/api/organizations/stats/ — global, the table's filters do not apply.
  *
  * Figures come from the Dashboard's organization table.
  */
+/** One month of a zero-filled series. */
+export interface OrgStatsSeriesPoint {
+  period: string;
+  value: number;
+}
+
 export interface OrgListStats {
   tiles: {
     activeOrganizations: number;
@@ -111,5 +119,21 @@ export interface OrgListStats {
   };
   /** Top 10 by active enrollments, then name. */
   topOrganizations: { shortName: string; name: string; arabicName: string; courses: number; enrollments: number }[];
+  series: { organizationsByMonth: OrgStatsSeriesPoint[] };
+  generatedAt: string;
+}
+
+/** GET /rwaq/api/organizations/<short_name>/stats/. A figure that cannot be read is null. */
+export interface OrgStats {
+  tiles: {
+    enrolled: number | null;
+    passed: number | null;
+    passRatePercent: number | null;
+    notStarted: number | null;
+    inProgress: number | null;
+    unenrolled: number | null;
+    honorEnrollments: number | null;
+    auditEnrollments: number | null;
+  };
   generatedAt: string;
 }

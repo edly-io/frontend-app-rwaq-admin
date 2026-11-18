@@ -120,6 +120,7 @@ const messages = defineMessages({
   typePaid: { id: 'rwaq.admin.courses.type.paid', defaultMessage: 'Paid' },
   typeProgramOnly: { id: 'rwaq.admin.courses.type.programOnly', defaultMessage: 'Program-only' },
   typeSubscription: { id: 'rwaq.admin.courses.type.subscription', defaultMessage: 'Part of Subscription' },
+  typeEnrollmentCode: { id: 'rwaq.admin.courses.type.enrollmentCode', defaultMessage: 'Enrollment code' },
   chipType: { id: 'rwaq.admin.courses.chip.type', defaultMessage: 'Type: {label}' },
   chipSort: {
     id: 'rwaq.admin.courses.chip.sort',
@@ -557,6 +558,12 @@ const messages = defineMessages({
   },
   statsFunnelEnrolled: { id: 'rwaq.admin.courses.stats.funnel.enrolled', defaultMessage: 'Enrolled' },
   statsFunnelStarted: { id: 'rwaq.admin.courses.stats.funnel.started', defaultMessage: 'Started' },
+  statsAvgProgress: { id: 'rwaq.admin.courses.stats.avgProgress', defaultMessage: 'Avg progress of started learners' },
+  statsAvgProgressInfo: {
+    id: 'rwaq.admin.courses.stats.avgProgress.info',
+    defaultMessage: 'Average course progress of enrolled learners whose progress is above 0%. '
+      + 'Learners whose progress rounds to 0% are left out.',
+  },
   statsStartedInfo: {
     id: 'rwaq.admin.courses.stats.started.info',
     defaultMessage: 'Enrolled learners who completed at least one block or passed this course.',
@@ -584,6 +591,18 @@ const messages = defineMessages({
   listStatsCertificatesInfo: {
     id: 'rwaq.admin.courses.listStats.certificates.info',
     defaultMessage: 'Downloadable certificates in courses that offer one, the same figure as the Dashboard.',
+  },
+  listStatsHonor: { id: 'rwaq.admin.courses.listStats.honor', defaultMessage: 'Honor enrollments' },
+  listStatsHonorInfo: {
+    id: 'rwaq.admin.courses.listStats.honor.info',
+    defaultMessage: 'Active enrollments in honor mode. Staff, superusers and service accounts are not counted. '
+      + 'Other modes are not in this tile.',
+  },
+  listStatsAudit: { id: 'rwaq.admin.courses.listStats.audit', defaultMessage: 'Audit enrollments' },
+  listStatsAuditInfo: {
+    id: 'rwaq.admin.courses.listStats.audit.info',
+    defaultMessage: 'Active enrollments in audit mode. Staff, superusers and service accounts are not counted. '
+      + 'Other modes are not in this tile.',
   },
   listStatsFree: { id: 'rwaq.admin.courses.listStats.free', defaultMessage: 'Free courses' },
   listStatsFreeInfo: {
@@ -770,11 +789,11 @@ export const courseRoleMessages = defineMessages({
   },
   pricingManagedLabel: {
     id: 'rwaq.admin.courses.pricing.managed-label',
-    defaultMessage: 'Manage pricing from the admin panel',
+    defaultMessage: 'Manage course type and pricing from the admin panel',
   },
   pricingManagedHint: {
     id: 'rwaq.admin.courses.pricing.managed-hint',
-    defaultMessage: 'When enabled, course authors see the pricing fields in Studio but cannot change them. Org admin can still change them.',
+    defaultMessage: 'When enabled, course authors can see the course type and pricing in Studio but cannot change them. Org admins can still change them.',
   },
   pricingFree: {
     id: 'rwaq.admin.courses.pricing.free',
@@ -799,6 +818,14 @@ export const courseRoleMessages = defineMessages({
   pricingSubscriptionDescription: {
     id: 'rwaq.admin.courses.pricing.subscription-description',
     defaultMessage: 'Learners reach this course through the Rwaq subscription. It has no price of its own.',
+  },
+  pricingEnrollmentCode: {
+    id: 'rwaq.admin.courses.pricing.enrollment-code',
+    defaultMessage: 'Enrollment code',
+  },
+  pricingEnrollmentCodeDescription: {
+    id: 'rwaq.admin.courses.pricing.enrollment-code-description',
+    defaultMessage: 'A free, restricted course that learners can only join with an enrollment code.',
   },
   pricingProgramOnly: {
     id: 'rwaq.admin.courses.pricing.program-only',
@@ -840,9 +867,25 @@ export const courseRoleMessages = defineMessages({
     id: 'rwaq.admin.courses.pricing.save',
     defaultMessage: 'Save pricing',
   },
+  settingsTitle: {
+    id: 'rwaq.admin.courses.settings.title',
+    defaultMessage: 'Settings',
+  },
+  settingsSaved: {
+    id: 'rwaq.admin.courses.settings.saved',
+    defaultMessage: 'Settings saved.',
+  },
+  settingsSave: {
+    id: 'rwaq.admin.courses.pricing.settings-save',
+    defaultMessage: 'Save settings',
+  },
   pricingSaving: {
     id: 'rwaq.admin.courses.pricing.saving',
     defaultMessage: 'Saving…',
+  },
+  pricingCategoriesRemoved: {
+    id: 'rwaq.admin.courses.pricing.categoriesRemoved',
+    defaultMessage: 'An Enrollment code course cannot have categories, so these were removed: {categories}.',
   },
   pricingSaved: {
     id: 'rwaq.admin.courses.pricing.saved',

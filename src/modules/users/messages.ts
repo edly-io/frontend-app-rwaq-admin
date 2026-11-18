@@ -450,6 +450,11 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.stats.inProgress.info',
     defaultMessage: 'Active courses where the user completed at least one block and has not passed yet.',
   },
+  statsNotStarted: { id: 'rwaq.admin.users.stats.notStarted', defaultMessage: 'Courses not started' },
+  statsNotStartedInfo: {
+    id: 'rwaq.admin.users.stats.notStarted.info',
+    defaultMessage: 'Active courses where the user has completed no block and has not passed.',
+  },
   statsCompletion: { id: 'rwaq.admin.users.stats.completion', defaultMessage: 'Overall completion' },
   statsCompletionInfo: {
     id: 'rwaq.admin.users.stats.completion.info',
@@ -494,7 +499,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.users.listStats.learners.info',
     defaultMessage: 'People with activity in a course and an active enrollment in it, the same figure as the Dashboard. Staff, superusers and service accounts are not counted.',
   },
-  listStatsNewThisMonth: { id: 'rwaq.admin.users.listStats.newThisMonth', defaultMessage: 'New this month' },
+  listStatsNewThisMonth: { id: 'rwaq.admin.users.listStats.newThisMonth', defaultMessage: 'New learners this month' },
   listStatsNewThisMonthInfo: {
     id: 'rwaq.admin.users.listStats.newThisMonth.info',
     defaultMessage: 'Active accounts created this calendar month, compared with last month. Staff, superusers and service accounts are not counted.',

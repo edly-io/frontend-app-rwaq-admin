@@ -4,14 +4,21 @@
  * Same rules as the Studio program page, enforced by the shared backend
  * validation: a paid program needs a price above 0, and the sale price must be
  * below it. Switching back to Free clears both prices. The backend reports
- * refusals as DRF field errors, shown on the field they name.
+ * refusals as DRF field errors, shown on the field they name (an Enrollment code program with an active code
+ * or enrolled learners cannot change type: the text sits under the type choice).
+ *
+ * An Enrollment code program can be hidden from the public catalog. After saving that type on a program with
+ * no code yet, a banner offers adding one (the Enrollment codes page, opened with this program filled in).
  */
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Alert, Button, Form } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { logError } from '@edx/frontend-platform/logging';
 import { getDiscountPercent, getPriceWithVat } from '@src/data/discountPercent';
 import { getErrorReason } from '@src/data/httpError';
+import { useItemCodeCount } from '@src/modules/enrollment-codes/data/hooks';
+import enrollmentCodeMessages from '@src/modules/enrollment-codes/messages';
 import { useUpdateProgram } from '../data/hooks';
 import type { ProgramDetail, ProgramPricingCategory } from '../data/types';
 import messages from '../messages';
@@ -40,6 +47,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setCategory(program.pricingCategory || 'is_free');
@@ -48,6 +56,10 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   }, [program.pricingCategory, program.regularPrice, program.salePrice]);
 
   const isPaid = category === 'is_paid';
+  // An Enrollment code program (stored, or just saved) with no code yet offers adding one.
+  const isCodeType = category === 'is_enrollment_code';
+  const isCodeProgram = program.pricingCategory === 'is_enrollment_code' || (saved && isCodeType);
+  const { data: codeCount } = useItemCodeCount({ programUuid: program.uuid }, isCodeProgram);
   // Live from the inputs, before saving.
   const discountPercent = getDiscountPercent(regularPrice, salePrice);
   const { vatRate, vatLabel } = program;
@@ -157,6 +169,32 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
           >
             {intl.formatMessage(messages.pricingSubscription)}
           </Form.Radio>
+          <div className="d-flex align-items-start justify-content-between w-100">
+            <Form.Radio
+              value="is_enrollment_code"
+              disabled={isPending}
+              description={intl.formatMessage(messages.pricingEnrollmentCodeDescription)}
+            >
+              {intl.formatMessage(messages.pricingEnrollmentCode)}
+            </Form.Radio>
+            {isCodeProgram && codeCount !== undefined && (
+              <Button
+                variant="outline-primary"
+                size="sm"
+                className="ml-3"
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(codeCount === 0
+                    ? `/enrollment-codes?create=1&scope=program&id=${encodeURIComponent(program.uuid)}`
+                    : `/enrollment-codes?programUuid=${encodeURIComponent(program.uuid)}`);
+                }}
+              >
+                {intl.formatMessage(codeCount === 0
+                  ? enrollmentCodeMessages.addCodeAction : enrollmentCodeMessages.viewCodesAction)}
+              </Button>
+            )}
+          </div>
         </Form.RadioSet>
         {fieldErrors.pricingCategory && (
           <Form.Control.Feedback type="invalid">{fieldErrors.pricingCategory}</Form.Control.Feedback>

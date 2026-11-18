@@ -78,6 +78,8 @@ const CourseListStatsStrip = () => {
         {tile('listStatsRunning', 'listStatsRunningInfo', stats?.tiles.running)}
         {tile('listStatsEnrollments', 'listStatsEnrollmentsInfo', stats?.tiles.activeEnrollments)}
         {tile('listStatsCertificates', 'listStatsCertificatesInfo', stats?.tiles.certificatesIssued)}
+        {tile('listStatsHonor', 'listStatsHonorInfo', stats?.tiles.honorEnrollments)}
+        {tile('listStatsAudit', 'listStatsAuditInfo', stats?.tiles.auditEnrollments)}
         {tile(
           'listStatsFree',
           'listStatsFreeInfo',
@@ -109,7 +111,7 @@ const CourseListStatsStrip = () => {
           categoryLabels
         />
         <StatsChartCard
-          title={intl.formatMessage(statsMessages.enrollmentsPerMonthTitle)}
+          title={intl.formatMessage(statsMessages.activeEnrollmentsPerMonthTitle)}
           subtitle={intl.formatMessage(statsMessages.lastTwelveMonths)}
           info={intl.formatMessage(messages.listStatsTrendInfo)}
           type="bar"

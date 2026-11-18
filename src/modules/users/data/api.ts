@@ -41,6 +41,8 @@ import type {
 
 const getUsersBaseUrl = () => getStudioApiUrl('/api/v1/admin/users');
 
+export const getUserEnrollmentsCsvUrl = (userId: number) => `${getUsersBaseUrl()}/${userId}/enrollments/csv/`;
+
 // ── List ───────────────────────────────────────────────────────────────────────
 
 /** GET /api/v1/admin/users/?search_by=&search_term=&filter=&ordering=&page=&page_size= */

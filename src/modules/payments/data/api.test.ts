@@ -140,7 +140,7 @@ describe('payments api', () => {
     await downloadPaymentsCsv('orders', {}, 'ar');
 
     expect(get).toHaveBeenCalledWith(`${BASE}/orders/csv/`, {
-      params: {},
+      params: { export_language: 'ar' },
       responseType: 'blob',
       headers: { 'Accept-Language': 'ar' },
     });

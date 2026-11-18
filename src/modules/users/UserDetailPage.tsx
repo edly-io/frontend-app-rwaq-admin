@@ -19,6 +19,8 @@ import {
 import { useIntl } from '@edx/frontend-platform/i18n';
 import DetailGrid from '@src/components/DetailGrid';
 import ProfileAvatar from '@src/components/ProfileAvatar';
+import CsvDownloadButton from '@src/components/CsvDownloadButton';
+import { getUserEnrollmentsCsvUrl } from './data/api';
 import { countryName } from './data/countries';
 import EnrollmentsTable from './components/EnrollmentsTable';
 import UserStatsStrip from './components/UserStatsStrip';
@@ -110,6 +112,7 @@ const UserDetailPage = () => {
             <Button variant="outline-primary" onClick={() => setIsEditing(true)}>
               {intl.formatMessage(messages.editUser)}
             </Button>
+            <CsvDownloadButton url={getUserEnrollmentsCsvUrl(userId)} params={{}} fallbackName="user_courses" />
             <Button variant="primary" onClick={() => setIsEnrolling(true)}>
               {intl.formatMessage(messages.enrollAction)}
             </Button>
