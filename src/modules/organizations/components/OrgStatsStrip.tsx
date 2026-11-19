@@ -17,13 +17,15 @@ import {
 } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import {
+  analyticsStatsRefresh,
   useAnalyticsBreakdowns,
   useAnalyticsSummary,
   useAnalyticsTrends,
 } from '@src/modules/dashboard/data/hooks';
 import StatTile from '@src/modules/dashboard/components/StatTile';
-import { useOrgStats } from '../data/hooks';
+import { orgStatsRefresh, useOrgStats } from '../data/hooks';
 import messages from '../messages';
 
 const TREND_MONTHS = 12;
@@ -41,6 +43,7 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
   const trendsQuery = useAnalyticsTrends({ org, months: TREND_MONTHS });
   const breakdownsQuery = useAnalyticsBreakdowns({ org });
   const state = summarizeQueries([summaryQuery, trendsQuery, breakdownsQuery]);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const orgStatsQuery = useOrgStats(org, isOpen);
 
   const summary = summaryQuery.isError ? undefined : summaryQuery.data;
@@ -70,9 +73,9 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
     [breakdowns],
   );
 
-  const summaryLoading = summaryQuery.isLoading;
-  const breakdownsLoading = breakdownsQuery.isLoading;
-  const orgStatsLoading = orgStatsQuery.isLoading;
+  const summaryLoading = summaryQuery.isLoading || isRefreshing;
+  const breakdownsLoading = breakdownsQuery.isLoading || isRefreshing;
+  const orgStatsLoading = orgStatsQuery.isLoading || isRefreshing;
 
   const orgTile = (label: keyof typeof messages, info: keyof typeof messages, value: string | null) => (
     <StatsTileCard>
@@ -92,6 +95,13 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
+      generatedAt={summary?.generatedAt}
+      onRefresh={() => refresh([
+        ...analyticsStatsRefresh({ org }, { org, months: TREND_MONTHS }),
+        orgStatsRefresh(org),
+      ])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         <StatsTileCard>
@@ -159,7 +169,7 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
           data={enrollmentSeries}
           maxXLabels={4}
           series={['enrollments']}
-          isLoading={trendsQuery.isLoading}
+          isLoading={trendsQuery.isLoading || isRefreshing}
           isUnavailable={trendsQuery.isError}
           isEmpty={isEmptySeries(enrollmentSeries, 'enrollments')}
         />

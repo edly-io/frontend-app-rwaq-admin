@@ -5,6 +5,7 @@
 import {
   keepPreviousData, useQuery, useMutation, useQueryClient,
 } from '@tanstack/react-query';
+import type { RefreshEntry } from '@src/components/stats/useStatsRefresh';
 import { appId } from '@src/constants';
 import type {
   ChangeModePayload,
@@ -101,7 +102,7 @@ export const useUserEnrollmentProgress = (id: number, enabled = true) => useQuer
 /** Tiles and series of the Users list strip. Global, so it has no params. Pass `enabled: false` while collapsed. */
 export const useUserListStats = (enabled = true) => useQuery({
   queryKey: userQueryKeys.listStats(),
-  queryFn: getUserListStats,
+  queryFn: () => getUserListStats(),
   enabled,
   staleTime: 5 * 60 * 1000,
 });
@@ -256,3 +257,15 @@ export const useUnenrollUser = (id: number) => {
     onSuccess: () => invalidateAfterEnrollmentChange(queryClient, id),
   });
 };
+
+/** What the Users list strip's refresh button fetches again. */
+export const userListStatsRefresh = (): RefreshEntry => ({
+  queryKey: userQueryKeys.listStats(),
+  fetch: () => getUserListStats(true),
+});
+
+/** What the user page strip's refresh button fetches again. */
+export const userStatsRefresh = (id: number): RefreshEntry => ({
+  queryKey: userQueryKeys.stats(id),
+  fetch: () => getUserStats(id, true),
+});

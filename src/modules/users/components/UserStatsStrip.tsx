@@ -16,8 +16,9 @@ import {
 } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import StatTile from '@src/modules/dashboard/components/StatTile';
-import { useUserStats } from '../data/hooks';
+import { useUserStats, userStatsRefresh } from '../data/hooks';
 import type { EnrollmentProgress, SubscriptionState, UserEnrollment } from '../data/types';
 import {
   enrollmentsByMonth, enrollmentTiles, modeCounts, overallCompletion,
@@ -49,9 +50,10 @@ const UserStatsStrip = ({
   const [isOpen, setIsOpen] = useState(true);
   const statsQuery = useUserStats(userId, isOpen);
   const state = summarizeQueries([statsQuery]);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = statsQuery.isError ? undefined : statsQuery.data;
   const { locale } = intl;
-  const { isLoading: isStatsLoading } = statsQuery;
+  const isStatsLoading = statsQuery.isLoading || isRefreshing;
 
   const rows = enrollments;
   const tiles = rows ? enrollmentTiles(rows) : undefined;
@@ -99,6 +101,10 @@ const UserStatsStrip = ({
       isForbidden={state.isForbidden}
       hasFailedAll={false}
       onRetry={state.retry}
+      generatedAt={stats?.generatedAt}
+      onRefresh={() => refresh([userStatsRefresh(userId)])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         {tile('statsActiveEnrollments', 'statsActiveEnrollmentsInfo', formatCount(tiles?.active), {

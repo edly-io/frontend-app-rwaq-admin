@@ -87,6 +87,25 @@ describe('getCourseListStats', () => {
   });
 });
 
+describe('refresh', () => {
+  it('sends force_refresh=1 only when a refresh asks for it', async () => {
+    await getCourseListStats(true);
+    expect(mockGet).toHaveBeenLastCalledWith('http://studio.local:8001/api/v1/admin/courses/stats/', {
+      params: { force_refresh: 1 },
+    });
+
+    await getCourseStats('course-v1:Org+C1+2026', true);
+    expect(mockGet).toHaveBeenLastCalledWith(
+      'http://studio.local:8001/api/v1/admin/courses/course-v1%3AOrg%2BC1%2B2026/stats/',
+      { params: { force_refresh: 1 } },
+    );
+
+    mockGet.mockClear();
+    await getCourseListStats();
+    expect(mockGet).toHaveBeenCalledWith('http://studio.local:8001/api/v1/admin/courses/stats/');
+  });
+});
+
 describe('useCourseStats', () => {
   it('loads the stats', async () => {
     const { result } = renderHook(() => useCourseStats('course-v1:Org+C1+2026'), { wrapper });

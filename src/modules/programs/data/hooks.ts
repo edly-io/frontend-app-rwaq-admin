@@ -5,6 +5,7 @@
 import {
   keepPreviousData, useMutation, useQuery, useQueryClient,
 } from '@tanstack/react-query';
+import type { RefreshEntry } from '@src/components/stats/useStatsRefresh';
 import { appId } from '@src/constants';
 import {
   bulkEnrollLearners,
@@ -121,7 +122,7 @@ export const useBulkEnrollLearners = (uuid: string) => {
 /** Tiles and series of the Programs list strip. Global, so it has no params. Pass `enabled: false` while collapsed. */
 export const useProgramListStats = (enabled = true) => useQuery({
   queryKey: programQueryKeys.listStats(),
-  queryFn: getProgramListStats,
+  queryFn: () => getProgramListStats(),
   enabled,
   staleTime: 5 * 60 * 1000,
 });
@@ -132,4 +133,16 @@ export const useProgramStats = (uuid: string, enabled = true) => useQuery({
   queryFn: () => getProgramStats(uuid),
   enabled: enabled && !!uuid,
   staleTime: 5 * 60 * 1000,
+});
+
+/** What the Programs list strip's refresh button fetches again. */
+export const programListStatsRefresh = (): RefreshEntry => ({
+  queryKey: programQueryKeys.listStats(),
+  fetch: () => getProgramListStats(true),
+});
+
+/** What the program page strip's refresh button fetches again. */
+export const programStatsRefresh = (uuid: string): RefreshEntry => ({
+  queryKey: programQueryKeys.stats(uuid),
+  fetch: () => getProgramStats(uuid, true),
 });

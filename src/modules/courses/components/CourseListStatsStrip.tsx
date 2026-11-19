@@ -12,8 +12,9 @@ import StatsTiles, { StatsTileCard } from '@src/components/stats/StatsTiles';
 import { formatCount, isEmptySeries, monthlyChartData } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import StatTile from '@src/modules/dashboard/components/StatTile';
-import { useCourseListStats } from '../data/hooks';
+import { useCourseListStats, courseListStatsRefresh } from '../data/hooks';
 import messages from '../messages';
 
 const CourseListStatsStrip = () => {
@@ -21,9 +22,10 @@ const CourseListStatsStrip = () => {
   const [isOpen, setIsOpen] = useState(true);
   const query = useCourseListStats(isOpen);
   const state = summarizeQueries([query]);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
   const { locale } = intl;
-  const { isLoading } = query;
+  const isLoading = query.isLoading || isRefreshing;
 
   const trend = useMemo(
     () => monthlyChartData(stats?.series.enrollmentsByMonth, 'enrollments', locale),
@@ -72,6 +74,10 @@ const CourseListStatsStrip = () => {
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
+      generatedAt={stats?.generatedAt}
+      onRefresh={() => refresh([courseListStatsRefresh()])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         {tile('listStatsCourses', 'listStatsCoursesInfo', stats?.tiles.courses)}
