@@ -25,7 +25,7 @@ const ProgramStatsStrip = ({ uuid, totalCourses }: { uuid: string; totalCourses:
   const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
   const { locale } = intl;
-  const isLoading = query.isLoading || isRefreshing;
+  const { isLoading } = query;
 
   const enrolledLabel = intl.formatMessage(messages.statsSeriesEnrolled);
   const completedLabel = intl.formatMessage(messages.statsSeriesCompleted);

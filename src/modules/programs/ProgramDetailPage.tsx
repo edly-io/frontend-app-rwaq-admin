@@ -415,7 +415,7 @@ const ProgramDetailPage = () => {
         </div>
       </div>
 
-      <ProgramStatsStrip uuid={program.uuid} totalCourses={program.totalCourses} />
+      <ProgramStatsStrip key={program.uuid} uuid={program.uuid} totalCourses={program.totalCourses} />
 
       {/* Overview */}
       <div className="rwaq-card">

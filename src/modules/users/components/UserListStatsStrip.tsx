@@ -27,7 +27,7 @@ const UserListStatsStrip = () => {
   const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
   const { locale } = intl;
-  const isLoading = query.isLoading || isRefreshing;
+  const { isLoading } = query;
 
   const registrations = useMemo(
     () => monthlyChartData(stats?.series.registrationsByMonth, 'registrations', locale),

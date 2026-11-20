@@ -73,9 +73,9 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
     [breakdowns],
   );
 
-  const summaryLoading = summaryQuery.isLoading || isRefreshing;
-  const breakdownsLoading = breakdownsQuery.isLoading || isRefreshing;
-  const orgStatsLoading = orgStatsQuery.isLoading || isRefreshing;
+  const summaryLoading = summaryQuery.isLoading;
+  const breakdownsLoading = breakdownsQuery.isLoading;
+  const orgStatsLoading = orgStatsQuery.isLoading;
 
   const orgTile = (label: keyof typeof messages, info: keyof typeof messages, value: string | null) => (
     <StatsTileCard>
@@ -169,7 +169,7 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
           data={enrollmentSeries}
           maxXLabels={4}
           series={['enrollments']}
-          isLoading={trendsQuery.isLoading || isRefreshing}
+          isLoading={trendsQuery.isLoading}
           isUnavailable={trendsQuery.isError}
           isEmpty={isEmptySeries(enrollmentSeries, 'enrollments')}
         />

@@ -62,6 +62,16 @@ describe('CourseListStatsStrip', () => {
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
   });
 
+  it('keeps existing figures visible while refreshing', async () => {
+    const fetch = jest.fn(() => new Promise(() => {}));
+    (hooks.courseListStatsRefresh as jest.Mock).mockReturnValue({ queryKey: ['x'], fetch });
+    mockQuery(query());
+    renderWrapper(<CourseListStatsStrip />);
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('120')).toBeInTheDocument();
+  });
+
   it('fetches only while expanded, because it runs over the whole catalog', () => {
     mockQuery(query());
     renderWrapper(<CourseListStatsStrip />);

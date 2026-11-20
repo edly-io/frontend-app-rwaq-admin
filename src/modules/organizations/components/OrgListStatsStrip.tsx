@@ -26,7 +26,7 @@ const OrgListStatsStrip = () => {
   const state = summarizeQueries([query]);
   const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
-  const isLoading = query.isLoading || isRefreshing;
+  const { isLoading } = query;
 
   const top = useMemo(
     () => (stats?.topOrganizations ?? []).map((org) => ({

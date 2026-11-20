@@ -53,7 +53,7 @@ const UserStatsStrip = ({
   const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = statsQuery.isError ? undefined : statsQuery.data;
   const { locale } = intl;
-  const isStatsLoading = statsQuery.isLoading || isRefreshing;
+  const isStatsLoading = statsQuery.isLoading;
 
   const rows = enrollments;
   const tiles = rows ? enrollmentTiles(rows) : undefined;
