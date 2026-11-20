@@ -12,7 +12,7 @@
  * The UUID (not program_key) is used in the URL because program_key contains
  * ':' and '+' that would require URL encoding.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   Alert,
@@ -22,13 +22,16 @@ import {
 } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
+import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import DetailGrid from '@src/components/DetailGrid';
 import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
+import { getStudioApiUrl } from '@src/data/utils';
 import ProgramPricingCard from './components/ProgramPricingCard';
 import ProgramStatsStrip from './components/ProgramStatsStrip';
+import ProgramEmailTab from './components/ProgramEmailTab';
 import ProgramStatusChips from './components/ProgramStatusChips';
 import BulkEnrollModal from './modals/BulkEnrollModal';
 import UnenrollLearnerModal from './modals/UnenrollLearnerModal';
@@ -39,11 +42,12 @@ import {
   useProgram,
   useProgramCourses,
   useProgramLearners,
+  useCancelProgramInvite,
   useUpdateProgram,
 } from './data/hooks';
 import messages, { programReportsMessages } from './messages';
 
-type Tab = 'courses' | 'learners';
+type Tab = 'courses' | 'learners' | 'email';
 
 // ── Settings card ─────────────────────────────────────────────────────────────
 
@@ -185,13 +189,30 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
   const [unenrollTarget, setUnenrollTarget] = useState<ProgramLearner | null>(null);
   const dash = intl.formatMessage(messages.detailNone);
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError } = useProgramLearners(uuid, page);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  useEffect(() => {
+    const timer = setTimeout(() => { setDebouncedSearch(search.trim()); setPage(1); }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+  const [cancelError, setCancelError] = useState(false);
+  const cancelInvite = useCancelProgramInvite(uuid);
+  const { data, isLoading, isError } = useProgramLearners(uuid, page, debouncedSearch);
 
   const columns: ColumnDef<ProgramLearner>[] = [
     {
       label: intl.formatMessage(messages.colLearnerName),
       key: 'name',
-      renderCell: (value) => <span>{value as string}</span>,
+      renderCell: (value, row) => (
+        <div>
+          <span>{value as string}</span>
+          {row.courseFailures?.map((course) => (
+            <div key={course} className="text-danger small">
+              {intl.formatMessage(messages.courseEnrollmentFailed, { course })}
+            </div>
+          ))}
+        </div>
+      ),
     },
     {
       label: intl.formatMessage(messages.colLearnerEmail),
@@ -220,29 +241,55 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
       ),
     },
     {
+      label: intl.formatMessage(messages.colLearnerStatus),
+      key: 'status',
+      renderCell: (value) => intl.formatMessage(value === 'invited' ? messages.learnerStatusInvited : messages.learnerStatusEnrolled),
+    },
+    {
       label: intl.formatMessage(messages.colLearnerActions),
       key: 'id',
       // A subscription program is joined and left only through the learner's own subscription.
-      renderCell: (_value, row) => (isSubscription ? (
-        <DisabledButtonWithTooltip
-          id={`program-unenroll-subscription-${row.id}`}
-          variant="outline-secondary"
-          size="sm"
-          tooltip={intl.formatMessage(messages.learnersSubscriptionNote)}
-          ariaLabel={`${intl.formatMessage(messages.unenrollLearnerAction)}, ${row.name}`}
-        >
-          {intl.formatMessage(messages.unenrollLearnerAction)}
-        </DisabledButtonWithTooltip>
-      ) : (
-        <Button
-          variant="outline-secondary"
-          size="sm"
-          onClick={() => setUnenrollTarget(row)}
-          aria-label={`${intl.formatMessage(messages.unenrollLearnerAction)}, ${row.name}`}
-        >
-          {intl.formatMessage(messages.unenrollLearnerAction)}
-        </Button>
-      )),
+      renderCell: (_value, row) => {
+        if (row.status === 'invited') {
+          return (
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              disabled={cancelInvite.isPending && cancelInvite.variables === row.id}
+              aria-label={`${intl.formatMessage(messages.cancelInvite)}: ${row.email}`}
+              onClick={() => {
+                setCancelError(false);
+                cancelInvite.mutate(row.id, { onError: () => setCancelError(true) });
+              }}
+            >
+              {intl.formatMessage(messages.cancelInvite)}
+            </Button>
+          );
+        }
+        if (isSubscription) {
+          return (
+            <DisabledButtonWithTooltip
+              id={`program-unenroll-subscription-${row.id}`}
+              variant="outline-secondary"
+              size="sm"
+              tooltip={intl.formatMessage(messages.learnersSubscriptionNote)}
+              ariaLabel={`${intl.formatMessage(messages.unenrollLearnerAction)}, ${row.name}`}
+            >
+              {intl.formatMessage(messages.unenrollLearnerAction)}
+            </DisabledButtonWithTooltip>
+          );
+        }
+        return (
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            onClick={() => setUnenrollTarget(row)}
+            aria-label={`${intl.formatMessage(messages.unenrollLearnerAction)}, ${row.name}`}
+          >
+            {intl.formatMessage(messages.unenrollLearnerAction)}
+          </Button>
+        );
+      },
     },
   ];
 
@@ -256,6 +303,19 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
 
   return (
     <>
+      {cancelError && <Alert variant="danger">{intl.formatMessage(messages.cancelInviteError)}</Alert>}
+      <Form.Control
+        aria-label={intl.formatMessage(messages.learnerSearch)}
+        placeholder={intl.formatMessage(messages.learnerSearch)}
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+      />
+      {data && <p className="small mt-2">{intl.formatMessage(messages.invitedCount, { count: data.invitedCount })}</p>}
+      <CsvDownloadButton
+        url={getStudioApiUrl(`/api/v1/admin/programs/${uuid}/learners/csv/`)}
+        params={{ search: debouncedSearch }}
+        fallbackName="program_learners"
+      />
       <div className="d-flex justify-content-end mb-3">
         {isSubscription ? (
           <DisabledButtonWithTooltip
@@ -415,7 +475,7 @@ const ProgramDetailPage = () => {
         </div>
       </div>
 
-      <ProgramStatsStrip uuid={program.uuid} totalCourses={program.totalCourses} />
+      <ProgramStatsStrip key={program.uuid} uuid={program.uuid} totalCourses={program.totalCourses} />
 
       {/* Overview */}
       <div className="rwaq-card">
@@ -488,6 +548,7 @@ const ProgramDetailPage = () => {
           labels={{
             courses: intl.formatMessage(messages.tabCourses),
             learners: intl.formatMessage(messages.tabLearners),
+            email: intl.formatMessage(messages.tabEmail),
           }}
         />
 
@@ -498,6 +559,9 @@ const ProgramDetailPage = () => {
         </div>
         <div id="tabpanel-learners" role="tabpanel" aria-labelledby="tab-learners" hidden={activeTab !== 'learners'}>
           <LearnersTab uuid={program.uuid} isSubscription={program.pricingCategory === 'is_part_of_subscription'} />
+        </div>
+        <div id="tabpanel-email" role="tabpanel" aria-labelledby="tab-email" hidden={activeTab !== 'email'}>
+          {activeTab === 'email' && <ProgramEmailTab uuid={program.uuid} />}
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@
 import {
   keepPreviousData, useQuery, useMutation, useQueryClient,
 } from '@tanstack/react-query';
+import type { RefreshEntry } from '@src/components/stats/useStatsRefresh';
 import { appId } from '@src/constants';
 import type {
   ChangeModePayload,
@@ -42,8 +43,8 @@ export const userQueryKeys = {
   enrollments: (id: number) => [...userQueryKeys.detail(id), 'enrollments'] as const,
   // Under `enrollments`, so an enroll, a mode change or an unenroll refetches the progress too.
   enrollmentProgress: (id: number) => [...userQueryKeys.enrollments(id), 'progress'] as const,
-  stats: (id: number) => [...userQueryKeys.detail(id), 'stats'] as const,
-  listStats: () => [...userQueryKeys.all, 'listStats'] as const,
+  stats: (id: number, startDate?: string, endDate?: string) => [...userQueryKeys.detail(id), 'stats', startDate, endDate] as const,
+  listStats: (startDate?: string, endDate?: string) => [...userQueryKeys.all, 'listStats', startDate, endDate] as const,
 };
 
 /**
@@ -99,17 +100,17 @@ export const useUserEnrollmentProgress = (id: number, enabled = true) => useQuer
 });
 
 /** Tiles and series of the Users list strip. Global, so it has no params. Pass `enabled: false` while collapsed. */
-export const useUserListStats = (enabled = true) => useQuery({
-  queryKey: userQueryKeys.listStats(),
-  queryFn: getUserListStats,
+export const useUserListStats = (enabled = true, startDate?: string, endDate?: string) => useQuery({
+  queryKey: userQueryKeys.listStats(startDate, endDate),
+  queryFn: () => getUserListStats(false, startDate, endDate),
   enabled,
   staleTime: 5 * 60 * 1000,
 });
 
 /** Programs, last activity and subscription of one user, for the strip above the tables. */
-export const useUserStats = (id: number, enabled = true) => useQuery({
-  queryKey: userQueryKeys.stats(id),
-  queryFn: () => getUserStats(id),
+export const useUserStats = (id: number, enabled = true, startDate?: string, endDate?: string) => useQuery({
+  queryKey: userQueryKeys.stats(id, startDate, endDate),
+  queryFn: () => getUserStats(id, false, startDate, endDate),
   enabled: enabled && id > 0,
   staleTime: 5 * 60 * 1000,
 });
@@ -256,3 +257,15 @@ export const useUnenrollUser = (id: number) => {
     onSuccess: () => invalidateAfterEnrollmentChange(queryClient, id),
   });
 };
+
+/** What the Users list strip's refresh button fetches again. */
+export const userListStatsRefresh = (startDate?: string, endDate?: string): RefreshEntry => ({
+  queryKey: userQueryKeys.listStats(startDate, endDate),
+  fetch: () => getUserListStats(true, startDate, endDate),
+});
+
+/** What the user page strip's refresh button fetches again. */
+export const userStatsRefresh = (id: number, startDate?: string, endDate?: string): RefreshEntry => ({
+  queryKey: userQueryKeys.stats(id, startDate, endDate),
+  fetch: () => getUserStats(id, true, startDate, endDate),
+});

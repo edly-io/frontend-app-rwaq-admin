@@ -210,4 +210,29 @@ describe('CoursesListPage period', () => {
     expect(window.location.search).toBe('');
     expect(lastCall().startDate).toBeUndefined();
   });
+
+  it('passes a separate enrollment range to the list and CSV and removes only that range', () => {
+    withCourses(COURSE);
+    window.history.pushState({}, '', '/?start_date=2026-01-01&enrollment_start_date=2026-03-01&enrollment_end_date=2026-03-31&page=3');
+    renderWrapper(<CoursesListPage />);
+    expect(lastCall()).toMatchObject({
+      startDate: '2026-01-01', enrollmentStartDate: '2026-03-01', enrollmentEndDate: '2026-03-31',
+    });
+    expect(csvParams()).toMatchObject({ enrollmentStartDate: '2026-03-01', enrollmentEndDate: '2026-03-31' });
+    expect(screen.getByText('Enrollments (2026-03-01 – 2026-03-31)')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Remove Enrollment date/ }));
+    expect(window.location.search).toBe('?start_date=2026-01-01');
+    expect(lastCall().enrollmentStartDate).toBeUndefined();
+  });
+
+  it('shows and clears an enrollment range with only an end date', () => {
+    withCourses(COURSE);
+    window.history.pushState({}, '', '/?enrollment_end_date=2026-03-31');
+    renderWrapper(<CoursesListPage />);
+    expect(lastCall().enrollmentEndDate).toBe('2026-03-31');
+    expect(csvParams()).toMatchObject({ enrollmentEndDate: '2026-03-31' });
+    expect(screen.getByText('Enrollments (… – 2026-03-31)')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Remove Enrollment date/ }));
+    expect(window.location.search).toBe('');
+  });
 });

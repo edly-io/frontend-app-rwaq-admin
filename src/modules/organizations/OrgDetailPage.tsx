@@ -183,7 +183,7 @@ const OrgDetailPage = () => {
         </div>
       </div>
 
-      <OrgStatsStrip org={organization.shortName} adminCount={organization.adminCount} />
+      <OrgStatsStrip key={organization.shortName} org={organization.shortName} adminCount={organization.adminCount} />
 
       <div className="rwaq-card">
         <DetailGrid

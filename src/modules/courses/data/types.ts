@@ -78,6 +78,8 @@ export interface CourseListParams {
   startDate?: string;
   /** With startDate: and on or before this day, inclusive. */
   endDate?: string;
+  enrollmentStartDate?: string;
+  enrollmentEndDate?: string;
   /** The course's stored type. */
   courseType?: CourseTypeFilter;
   ordering?: CourseOrdering;

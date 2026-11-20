@@ -14,15 +14,20 @@ import {
 } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import StatTile from '@src/modules/dashboard/components/StatTile';
-import { useProgramListStats } from '../data/hooks';
+import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
+import { useProgramListStats, programListStatsRefresh } from '../data/hooks';
 import messages from '../messages';
 
 const ProgramListStatsStrip = () => {
   const intl = useIntl();
   const [isOpen, setIsOpen] = useState(true);
-  const query = useProgramListStats(isOpen);
+  const [startDate, setStartDate] = useState<string | undefined>();
+  const [endDate, setEndDate] = useState<string | undefined>();
+  const query = useProgramListStats(isOpen, startDate, endDate);
   const state = summarizeQueries([query]);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
   const { locale } = intl;
   const { isLoading } = query;
@@ -62,10 +67,24 @@ const ProgramListStatsStrip = () => {
     <StatsStrip
       isOpen={isOpen}
       onToggle={() => setIsOpen((open) => !open)}
-      note={intl.formatMessage(statsMessages.globalNote)}
+      note={intl.formatMessage(startDate || endDate ? statsMessages.rangeNote : statsMessages.globalNote)}
+      datePicker={(
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+        />
+)}
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
+      generatedAt={stats?.generatedAt}
+      onRefresh={() => refresh([programListStatsRefresh(startDate, endDate)])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         {tile('listStatsActive', 'listStatsActiveInfo', formatCount(tiles?.programs.active))}
@@ -104,7 +123,7 @@ const ProgramListStatsStrip = () => {
         />
         <StatsChartCard
           title={intl.formatMessage(statsMessages.enrollmentsPerMonthTitle)}
-          subtitle={intl.formatMessage(statsMessages.lastTwelveMonths)}
+          subtitle={startDate || endDate ? undefined : intl.formatMessage(statsMessages.lastTwelveMonths)}
           info={intl.formatMessage(messages.listStatsEnrollmentsMonthInfo)}
           type="bar"
           data={trend}

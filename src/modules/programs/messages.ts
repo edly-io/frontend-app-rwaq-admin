@@ -200,6 +200,7 @@ const messages = defineMessages({
 
   // ── Detail — learners tab ──────────────────────────────────────────────────
   tabLearners: { id: 'rwaq.admin.programs.tab.learners', defaultMessage: 'Learners' },
+  tabEmail: { id: 'rwaq.admin.programs.tab.email', defaultMessage: 'Email' },
   learnersEmpty: { id: 'rwaq.admin.programs.learners.empty', defaultMessage: 'No learners enrolled in this program.' },
   learnersError: { id: 'rwaq.admin.programs.learners.error', defaultMessage: 'Could not load learners.' },
   colLearnerName: { id: 'rwaq.admin.programs.learners.col.name', defaultMessage: 'Learner' },
@@ -208,6 +209,17 @@ const messages = defineMessages({
   colLearnerCompleted: { id: 'rwaq.admin.programs.learners.col.completed', defaultMessage: 'Completed' },
   colLearnerActive: { id: 'rwaq.admin.programs.learners.col.active', defaultMessage: 'Enrollment' },
   colLearnerActions: { id: 'rwaq.admin.programs.learners.col.actions', defaultMessage: 'Actions' },
+  colLearnerStatus: { id: 'rwaq.admin.programs.learners.col.status', defaultMessage: 'Status' },
+  learnerStatusEnrolled: { id: 'rwaq.admin.programs.learners.status.enrolled', defaultMessage: 'Enrolled' },
+  learnerStatusInvited: { id: 'rwaq.admin.programs.learners.status.invited', defaultMessage: 'Invited' },
+  cancelInvite: { id: 'rwaq.admin.programs.learners.cancelInvite', defaultMessage: 'Cancel invite' },
+  cancelInviteError: { id: 'rwaq.admin.programs.learners.cancelInviteError', defaultMessage: 'Could not cancel the invite.' },
+  invitedCount: { id: 'rwaq.admin.programs.learners.invitedCount', defaultMessage: '{count} invited' },
+  courseEnrollmentFailed: {
+    id: 'rwaq.admin.programs.learners.courseEnrollmentFailed',
+    defaultMessage: 'Course enrollment failed: {course}',
+  },
+  learnerSearch: { id: 'rwaq.admin.programs.learners.search', defaultMessage: 'Search learners and invites' },
   unenrollLearnerAction: { id: 'rwaq.admin.programs.learners.unenroll.action', defaultMessage: 'Unenroll' },
   unenrollLearnerTitle: { id: 'rwaq.admin.programs.learners.unenroll.title', defaultMessage: 'Unenroll from program' },
   unenrollLearnerBody: {
@@ -237,6 +249,27 @@ const messages = defineMessages({
     defaultMessage: 'Learners join and leave this program through their Rwaq subscription.',
   },
   bulkEnrollButton: { id: 'rwaq.admin.programs.bulkEnroll.button', defaultMessage: 'Bulk enroll' },
+  bulkEnrollAutoEnroll: {
+    id: 'rwaq.admin.programs.bulkEnroll.autoEnroll',
+    defaultMessage: 'Auto enroll people when they register with this email address',
+  },
+  bulkEnrollNotify: { id: 'rwaq.admin.programs.bulkEnroll.notify', defaultMessage: 'Notify by email' },
+  bulkEnrollNotificationFailures: {
+    id: 'rwaq.admin.programs.bulkEnroll.notificationFailures',
+    defaultMessage: 'Could not queue notifications for:',
+  },
+  bulkEnrollInvited: {
+    id: 'rwaq.admin.programs.bulkEnroll.invited',
+    defaultMessage: '{count, plural, one {# person invited} other {# people invited}}.',
+  },
+  bulkEnrollPendingWithoutAutoEnroll: {
+    id: 'rwaq.admin.programs.bulkEnroll.pendingWithoutAutoEnroll',
+    defaultMessage: 'Invitations remain pending and will not enroll learners automatically.',
+  },
+  bulkEnrollPendingWithoutNotification: {
+    id: 'rwaq.admin.programs.bulkEnroll.pendingWithoutNotification',
+    defaultMessage: 'No invitation email was sent.',
+  },
   bulkEnrollTitle: { id: 'rwaq.admin.programs.bulkEnroll.title', defaultMessage: 'Enroll learners' },
   bulkEnrollHelp: { id: 'rwaq.admin.programs.bulkEnroll.help', defaultMessage: 'Paste email addresses, separated by commas or new lines. Learners are enrolled in the program and all of its courses.' },
   bulkEnrollLabel: { id: 'rwaq.admin.programs.bulkEnroll.label', defaultMessage: 'Email addresses' },
@@ -362,7 +395,7 @@ const messages = defineMessages({
   statsMonthTitle: { id: 'rwaq.admin.programs.stats.month.title', defaultMessage: 'Enrollments and completions' },
   statsMonthInfo: {
     id: 'rwaq.admin.programs.stats.month.info',
-    defaultMessage: 'Active enrollments by month of their enrollment date, and completions by month of their completion date.',
+    defaultMessage: 'Active enrollments by enrollment date and completions by completion date. Completions include learners enrolled outside the selected range.',
   },
   statsSeriesEnrolled: { id: 'rwaq.admin.programs.stats.series.enrolled', defaultMessage: 'Enrolled' },
   statsSeriesCompleted: { id: 'rwaq.admin.programs.stats.series.completed', defaultMessage: 'Completed' },

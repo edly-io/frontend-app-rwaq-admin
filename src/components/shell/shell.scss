@@ -2099,6 +2099,11 @@ html[data-paragon-theme-variant='dark'] {
   }
 }
 
+// The refresh button of a stats strip spins while the figures are recomputed.
+.rwaq-stats-refreshing svg {
+  animation: rwaq-spin 0.8s linear infinite;
+}
+
 @keyframes rwaq-spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }

@@ -5,6 +5,7 @@
 import {
   keepPreviousData, useQuery, useMutation, useQueryClient,
 } from '@tanstack/react-query';
+import type { RefreshEntry } from '@src/components/stats/useStatsRefresh';
 import { appId } from '@src/constants';
 import type {
   CoursePricingPatch,
@@ -42,8 +43,10 @@ export const courseQueryKeys = {
   ),
   staff: (courseId: string) => [...courseQueryKeys.detail(courseId), 'staff'] as const,
   pricing: (courseId: string) => [...courseQueryKeys.detail(courseId), 'pricing'] as const,
-  stats: (courseId: string) => [...courseQueryKeys.detail(courseId), 'stats'] as const,
-  listStats: () => [...courseQueryKeys.all, 'listStats'] as const,
+  stats: (courseId: string, startDate?: string, endDate?: string) => (
+    [...courseQueryKeys.detail(courseId), 'stats', startDate, endDate] as const
+  ),
+  listStats: (startDate?: string, endDate?: string) => [...courseQueryKeys.all, 'listStats', startDate, endDate] as const,
 };
 
 // ── Queries ───────────────────────────────────────────────────────────────────
@@ -163,9 +166,9 @@ export const useUpdateCoursePricing = (courseId: string) => {
  * Tiles and series of one course. The server keeps them for 5 minutes, so the client does too.
  * Pass `enabled: false` while the strip is collapsed.
  */
-export const useCourseStats = (courseId: string, enabled = true) => useQuery({
-  queryKey: courseQueryKeys.stats(courseId),
-  queryFn: () => getCourseStats(courseId),
+export const useCourseStats = (courseId: string, enabled = true, startDate?: string, endDate?: string) => useQuery({
+  queryKey: courseQueryKeys.stats(courseId, startDate, endDate),
+  queryFn: () => getCourseStats(courseId, false, startDate, endDate),
   enabled: enabled && !!courseId,
   staleTime: 5 * 60 * 1000,
 });
@@ -174,9 +177,21 @@ export const useCourseStats = (courseId: string, enabled = true) => useQuery({
  * Tiles and series of the Courses list strip. Global, so it has no params. It runs over the whole
  * catalog, so pass `enabled: false` while the strip is collapsed.
  */
-export const useCourseListStats = (enabled = true) => useQuery({
-  queryKey: courseQueryKeys.listStats(),
-  queryFn: getCourseListStats,
+export const useCourseListStats = (enabled = true, startDate?: string, endDate?: string) => useQuery({
+  queryKey: courseQueryKeys.listStats(startDate, endDate),
+  queryFn: () => getCourseListStats(false, startDate, endDate),
   enabled,
   staleTime: 5 * 60 * 1000,
+});
+
+/** What the Courses list strip's refresh button fetches again. */
+export const courseListStatsRefresh = (startDate?: string, endDate?: string): RefreshEntry => ({
+  queryKey: courseQueryKeys.listStats(startDate, endDate),
+  fetch: () => getCourseListStats(true, startDate, endDate),
+});
+
+/** What the course page strip's refresh button fetches again. */
+export const courseStatsRefresh = (courseId: string, startDate?: string, endDate?: string): RefreshEntry => ({
+  queryKey: courseQueryKeys.stats(courseId, startDate, endDate),
+  fetch: () => getCourseStats(courseId, true, startDate, endDate),
 });
