@@ -14,8 +14,9 @@ import {
 } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import StatTile from '@src/modules/dashboard/components/StatTile';
-import { useProgramListStats } from '../data/hooks';
+import { useProgramListStats, programListStatsRefresh } from '../data/hooks';
 import messages from '../messages';
 
 const ProgramListStatsStrip = () => {
@@ -23,6 +24,7 @@ const ProgramListStatsStrip = () => {
   const [isOpen, setIsOpen] = useState(true);
   const query = useProgramListStats(isOpen);
   const state = summarizeQueries([query]);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
   const { locale } = intl;
   const { isLoading } = query;
@@ -66,6 +68,10 @@ const ProgramListStatsStrip = () => {
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
+      generatedAt={stats?.generatedAt}
+      onRefresh={() => refresh([programListStatsRefresh()])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         {tile('listStatsActive', 'listStatsActiveInfo', formatCount(tiles?.programs.active))}

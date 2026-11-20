@@ -14,9 +14,10 @@ import {
 } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import StatTile from '@src/modules/dashboard/components/StatTile';
 import modeLabel from '@src/modules/users/modeLabel';
-import { useCourseStats } from '../data/hooks';
+import { useCourseStats, courseStatsRefresh } from '../data/hooks';
 import messages from '../messages';
 
 const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
@@ -24,6 +25,7 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
   const [isOpen, setIsOpen] = useState(true);
   const query = useCourseStats(courseId, isOpen);
   const state = summarizeQueries([query]);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
   const { locale } = intl;
   const { isLoading } = query;
@@ -75,6 +77,10 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
+      generatedAt={stats?.generatedAt}
+      onRefresh={() => refresh([courseStatsRefresh(courseId)])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         {tile('statsActiveLearners', 'statsActiveLearnersInfo', stats?.tiles.activeLearners)}

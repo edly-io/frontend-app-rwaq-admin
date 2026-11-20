@@ -1,12 +1,12 @@
 /**
  * CourseListStatsStrip — global tiles over the whole catalog, three compact charts, Not available instead of zero.
  */
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from '../data/hooks';
 import CourseListStatsStrip from './CourseListStatsStrip';
 
-jest.mock('../data/hooks', () => ({ useCourseListStats: jest.fn() }));
+jest.mock('../data/hooks', () => ({ useCourseListStats: jest.fn(), courseListStatsRefresh: jest.fn() }));
 jest.mock('@src/components/charts/MetricChart', () => ({
   __esModule: true,
   default: ({ ariaLabel }: { ariaLabel: string }) => <div data-testid="metric-chart" aria-label={ariaLabel} />,
@@ -48,6 +48,28 @@ describe('CourseListStatsStrip', () => {
     expect(screen.getByText('80')).toBeInTheDocument();
     expect(screen.getByText('6 with no type set')).toBeInTheDocument();
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(3);
+  });
+
+  it('refreshes the strip with the cache bypass and shows the new figures', async () => {
+    const fresh = { ...stats, tiles: { ...stats.tiles, courses: 777 } };
+    const fetch = jest.fn().mockResolvedValue(fresh);
+    (hooks.courseListStatsRefresh as jest.Mock).mockReturnValue({ queryKey: ['x'], fetch });
+    mockQuery(query());
+    renderWrapper(<CourseListStatsStrip />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+  });
+
+  it('keeps existing figures visible while refreshing', async () => {
+    const fetch = jest.fn(() => new Promise(() => {}));
+    (hooks.courseListStatsRefresh as jest.Mock).mockReturnValue({ queryKey: ['x'], fetch });
+    mockQuery(query());
+    renderWrapper(<CourseListStatsStrip />);
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('120')).toBeInTheDocument();
   });
 
   it('fetches only while expanded, because it runs over the whole catalog', () => {

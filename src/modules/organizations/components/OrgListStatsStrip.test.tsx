@@ -2,6 +2,7 @@
  * OrgListStatsStrip — global tiles and one compact chart of the top organizations.
  */
 import { fireEvent, render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { IntlProvider } from '@edx/frontend-platform/i18n';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from '../data/hooks';
@@ -85,7 +86,11 @@ describe('OrgListStatsStrip', () => {
 
   it('uses Arabic organization names in Arabic and English when an Arabic name is missing', () => {
     mockQuery(query());
-    render(<IntlProvider locale="ar"><OrgListStatsStrip /></IntlProvider>);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <IntlProvider locale="ar"><OrgListStatsStrip /></IntlProvider>
+      </QueryClientProvider>,
+    );
 
     const { data } = chartProps.mock.calls.find((call) => call[0].categoryLabels)[0];
     expect(data.map((point: { name: string }) => point.name)).toEqual([

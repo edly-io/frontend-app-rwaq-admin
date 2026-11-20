@@ -46,6 +46,11 @@ const messages = defineMessages({
     defaultMessage: 'Active enrollments per month',
   },
   lastTwelveMonths: { id: 'rwaq.admin.stats.lastTwelveMonths', defaultMessage: 'Last 12 months' },
+  refresh: { id: 'rwaq.admin.stats.refresh', defaultMessage: 'Refresh statistics' },
+  refreshFailed: {
+    id: 'rwaq.admin.stats.refreshFailed',
+    defaultMessage: 'Could not refresh the statistics. Try again in a moment.',
+  },
 });
 
 export default messages;

@@ -2,6 +2,7 @@
  * Organizations TanStack Query hooks.
  * Components import from this file only — never from api.ts directly.
  */
+import type { RefreshEntry } from '@src/components/stats/useStatsRefresh';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { localizedName } from '@src/data/localizedName';
@@ -134,7 +135,7 @@ export const useRemoveOrgAdmin = (shortName: string) => {
 /** Tiles and chart of the Organizations list strip. Global, no params. Pass `enabled: false` while collapsed. */
 export const useOrgListStats = (enabled = true) => useQuery({
   queryKey: orgQueryKeys.listStats(),
-  queryFn: getOrgListStats,
+  queryFn: () => getOrgListStats(),
   enabled,
   staleTime: 5 * 60 * 1000,
 });
@@ -145,4 +146,16 @@ export const useOrgStats = (shortName: string, enabled = true) => useQuery({
   queryFn: () => getOrgStats(shortName),
   enabled,
   staleTime: 5 * 60 * 1000,
+});
+
+/** What the Organizations list strip's refresh button fetches again. */
+export const orgListStatsRefresh = (): RefreshEntry => ({
+  queryKey: orgQueryKeys.listStats(),
+  fetch: () => getOrgListStats(true),
+});
+
+/** What the organization page strip fetches again from its own stats endpoint (Dashboard queries are separate). */
+export const orgStatsRefresh = (shortName: string): RefreshEntry => ({
+  queryKey: orgQueryKeys.stats(shortName),
+  fetch: () => getOrgStats(shortName, true),
 });

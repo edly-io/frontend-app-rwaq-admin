@@ -14,8 +14,9 @@ import StatsTiles, { StatsTileCard } from '@src/components/stats/StatsTiles';
 import { formatCount, isEmptySeries, monthlyChartData } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import StatTile from '@src/modules/dashboard/components/StatTile';
-import { useUserListStats } from '../data/hooks';
+import { useUserListStats, userListStatsRefresh } from '../data/hooks';
 import messages from '../messages';
 
 const UserListStatsStrip = () => {
@@ -23,6 +24,7 @@ const UserListStatsStrip = () => {
   const [isOpen, setIsOpen] = useState(true);
   const query = useUserListStats(isOpen);
   const state = summarizeQueries([query]);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
   const { locale } = intl;
   const { isLoading } = query;
@@ -58,6 +60,10 @@ const UserListStatsStrip = () => {
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
+      generatedAt={stats?.generatedAt}
+      onRefresh={() => refresh([userListStatsRefresh()])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         {tile('listStatsLearners', 'listStatsLearnersInfo', stats?.tiles.learners)}

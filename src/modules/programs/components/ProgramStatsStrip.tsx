@@ -12,8 +12,9 @@ import StatsStrip from '@src/components/stats/StatsStrip';
 import StatsTiles, { StatsTileCard } from '@src/components/stats/StatsTiles';
 import { formatCount, formatMonth, formatPercent } from '@src/components/stats/format';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import StatTile from '@src/modules/dashboard/components/StatTile';
-import { useProgramStats } from '../data/hooks';
+import { useProgramStats, programStatsRefresh } from '../data/hooks';
 import messages from '../messages';
 
 const ProgramStatsStrip = ({ uuid, totalCourses }: { uuid: string; totalCourses: number }) => {
@@ -21,6 +22,7 @@ const ProgramStatsStrip = ({ uuid, totalCourses }: { uuid: string; totalCourses:
   const [isOpen, setIsOpen] = useState(true);
   const query = useProgramStats(uuid, isOpen);
   const state = summarizeQueries([query]);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
   const { locale } = intl;
   const { isLoading } = query;
@@ -66,6 +68,10 @@ const ProgramStatsStrip = ({ uuid, totalCourses }: { uuid: string; totalCourses:
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
+      generatedAt={stats?.generatedAt}
+      onRefresh={() => refresh([programStatsRefresh(uuid)])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         {tile('statsEnrolled', 'statsEnrolledInfo', formatCount(tiles?.enrolled))}

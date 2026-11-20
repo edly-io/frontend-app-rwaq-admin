@@ -5,6 +5,7 @@
 import {
   keepPreviousData, useQuery, useMutation, useQueryClient,
 } from '@tanstack/react-query';
+import type { RefreshEntry } from '@src/components/stats/useStatsRefresh';
 import { appId } from '@src/constants';
 import type {
   CoursePricingPatch,
@@ -176,7 +177,19 @@ export const useCourseStats = (courseId: string, enabled = true) => useQuery({
  */
 export const useCourseListStats = (enabled = true) => useQuery({
   queryKey: courseQueryKeys.listStats(),
-  queryFn: getCourseListStats,
+  queryFn: () => getCourseListStats(),
   enabled,
   staleTime: 5 * 60 * 1000,
+});
+
+/** What the Courses list strip's refresh button fetches again. */
+export const courseListStatsRefresh = (): RefreshEntry => ({
+  queryKey: courseQueryKeys.listStats(),
+  fetch: () => getCourseListStats(true),
+});
+
+/** What the course page strip's refresh button fetches again. */
+export const courseStatsRefresh = (courseId: string): RefreshEntry => ({
+  queryKey: courseQueryKeys.stats(courseId),
+  fetch: () => getCourseStats(courseId, true),
 });
