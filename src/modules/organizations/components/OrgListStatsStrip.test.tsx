@@ -50,7 +50,7 @@ describe('OrgListStatsStrip', () => {
     (hooks.orgListStatsRefresh as jest.Mock).mockReturnValue({ queryKey: ['org'], fetch: jest.fn() });
     renderWrapper(<OrgListStatsStrip />);
     fireEvent.click(screen.getByRole('button', { name: /All time/ }));
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 30 days' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Last 30 days' }));
     expect(hooks.useOrgListStats).toHaveBeenLastCalledWith(true, expect.any(String), expect.any(String));
     expect(screen.getByText('Showing data for the selected range. Current-state figures are unchanged.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));

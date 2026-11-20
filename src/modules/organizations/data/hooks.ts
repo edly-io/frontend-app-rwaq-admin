@@ -30,7 +30,9 @@ const orgQueryKeys = {
   details: () => [...orgQueryKeys.all, 'detail'] as const,
   detail: (shortName: string) => [...orgQueryKeys.details(), shortName] as const,
   listStats: (startDate?: string, endDate?: string) => [...orgQueryKeys.all, 'listStats', startDate, endDate] as const,
-  stats: (shortName: string) => [...orgQueryKeys.all, 'stats', shortName] as const,
+  stats: (shortName: string, startDate?: string, endDate?: string) => (
+    [...orgQueryKeys.all, 'stats', shortName, startDate, endDate] as const
+  ),
 };
 
 // ── Queries ──────────────────────────────────────────────────────────────────
@@ -141,9 +143,9 @@ export const useOrgListStats = (enabled = true, startDate?: string, endDate?: st
 });
 
 /** Extra tiles of one organization page. Pass `enabled: false` while the strip is collapsed. */
-export const useOrgStats = (shortName: string, enabled = true) => useQuery({
-  queryKey: orgQueryKeys.stats(shortName),
-  queryFn: () => getOrgStats(shortName),
+export const useOrgStats = (shortName: string, enabled = true, startDate?: string, endDate?: string) => useQuery({
+  queryKey: orgQueryKeys.stats(shortName, startDate, endDate),
+  queryFn: () => getOrgStats(shortName, false, startDate, endDate),
   enabled,
   staleTime: 5 * 60 * 1000,
 });
@@ -155,7 +157,7 @@ export const orgListStatsRefresh = (startDate?: string, endDate?: string): Refre
 });
 
 /** What the organization page strip fetches again from its own stats endpoint (Dashboard queries are separate). */
-export const orgStatsRefresh = (shortName: string): RefreshEntry => ({
-  queryKey: orgQueryKeys.stats(shortName),
-  fetch: () => getOrgStats(shortName, true),
+export const orgStatsRefresh = (shortName: string, startDate?: string, endDate?: string): RefreshEntry => ({
+  queryKey: orgQueryKeys.stats(shortName, startDate, endDate),
+  fetch: () => getOrgStats(shortName, true, startDate, endDate),
 });

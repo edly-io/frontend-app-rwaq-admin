@@ -156,10 +156,17 @@ export const getOrgListStats = async (
 };
 
 /** GET /rwaq/api/organizations/<short_name>/stats/ — passed, pass rate, stages, unenrolled and modes of one org. */
-export const getOrgStats = async (shortName: string, forceRefresh = false): Promise<OrgStats> => {
+export const getOrgStats = async (
+  shortName: string,
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
+): Promise<OrgStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getOrgsBaseUrl()}/${encodeURIComponent(shortName)}/stats/`,
-    ...forceRefreshArgs(forceRefresh),
+    ...(startDate || endDate
+      ? [{ params: { start_date: startDate, end_date: endDate, ...(forceRefresh ? { force_refresh: 1 } : {}) } }]
+      : forceRefreshArgs(forceRefresh)),
   );
   return camelCaseObject(data) as OrgStats;
 };

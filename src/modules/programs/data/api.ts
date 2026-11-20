@@ -101,7 +101,21 @@ export const bulkEnrollLearners = async (
       emails, reason, auto_enroll: autoEnroll, notify,
     },
   );
-  return camelCaseObject(data) as BulkEnrollResult;
+  // Only map indices to addresses when JavaScript and Python parsing agree.
+  const addresses = /^[\x20-\x7e\t\r\n]*$/.test(emails)
+    ? [...new Set(emails.toLowerCase().split(/[,;\s]+/).filter(Boolean))] : [];
+  const addressFor = (index: number) => addresses[index] ?? `#${index + 1}`;
+  const result = camelCaseObject(data) as Omit<BulkEnrollResult, 'failed' | 'courseFailures' | 'notificationFailures'> & {
+    failed: { index: number; reason: string }[];
+    courseFailures: { index: number; courseId: string; reason: string }[];
+    notificationFailures: { index: number }[];
+  };
+  return {
+    ...result,
+    failed: result.failed.map((item) => ({ ...item, email: addressFor(item.index) })),
+    courseFailures: result.courseFailures.map((item) => ({ ...item, email: addressFor(item.index) })),
+    notificationFailures: result.notificationFailures.map((item) => ({ ...item, email: addressFor(item.index) })),
+  };
 };
 
 /**

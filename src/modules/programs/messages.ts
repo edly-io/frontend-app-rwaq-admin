@@ -383,7 +383,7 @@ const messages = defineMessages({
   statsMonthTitle: { id: 'rwaq.admin.programs.stats.month.title', defaultMessage: 'Enrollments and completions' },
   statsMonthInfo: {
     id: 'rwaq.admin.programs.stats.month.info',
-    defaultMessage: 'Active enrollments by month of their enrollment date, and completions by month of their completion date.',
+    defaultMessage: 'Active enrollments by enrollment date and completions by completion date. Completions include learners enrolled outside the selected range.',
   },
   statsSeriesEnrolled: { id: 'rwaq.admin.programs.stats.series.enrolled', defaultMessage: 'Enrolled' },
   statsSeriesCompleted: { id: 'rwaq.admin.programs.stats.series.completed', defaultMessage: 'Completed' },
