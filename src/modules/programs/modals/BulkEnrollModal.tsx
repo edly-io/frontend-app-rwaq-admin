@@ -12,7 +12,7 @@
  * afterwards to show it: closing on success would throw away the one piece of
  * information the admin needs, which addresses did not go through.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Alert } from '@openedx/paragon';
 import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
@@ -40,7 +40,7 @@ const CHUNK_SIZE = 25;
 
 /** Same split the backend applies, so chunks line up with what it will act on. */
 const splitAddresses = (value: string): string[] => (
-  value.split(/[,;\s]+/).filter(Boolean)
+  [...new Set(value.toLowerCase().split(/[,;\s]+/).filter(Boolean))]
 );
 
 /**
@@ -63,6 +63,7 @@ const BulkEnrollModal = ({
 }: BulkEnrollModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
+  const submitting = useRef(false);
   const [emails, setEmails] = useState('');
   const [reason, setReason] = useState('');
   const [autoEnroll, setAutoEnroll] = useState(false);
@@ -96,11 +97,12 @@ const BulkEnrollModal = ({
   const overMax = count > MAX_EMAILS;
   // Nothing to send, too many, or something that is not an address: the button
   // is disabled rather than silently doing nothing when clicked.
-  const cannotSubmit = count === 0 || overMax || invalid.length > 0;
+  const cannotSubmit = count === 0 || overMax || invalid.length > 0 || isPending || progress !== null;
 
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    if (cannotSubmit) { return; }
+    if (cannotSubmit || submitting.current) { return; }
+    submitting.current = true;
     setError('');
     setProgress({ done: 0, total: count });
 
@@ -144,6 +146,7 @@ const BulkEnrollModal = ({
       }
       setError(getErrorReason(err) ?? intl.formatMessage(messages.bulkEnrollError));
     } finally {
+      submitting.current = false;
       setProgress(null);
     }
   };

@@ -241,7 +241,8 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
             <Button
               variant="outline-secondary"
               size="sm"
-              disabled={cancelInvite.isPending}
+              disabled={cancelInvite.isPending && cancelInvite.variables === row.id}
+              aria-label={`${intl.formatMessage(messages.cancelInvite)}: ${row.email}`}
               onClick={() => {
                 setCancelError(false);
                 cancelInvite.mutate(row.id, { onError: () => setCancelError(true) });

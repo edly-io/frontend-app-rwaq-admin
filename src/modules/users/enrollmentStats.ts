@@ -69,8 +69,12 @@ export const enrollmentsByMonth = (
     counts.set(period, (counts.get(period) ?? 0) + 1);
   });
   const end = endDate ? new Date(`${endDate}T00:00:00Z`) : now;
-  const start = startDate ? new Date(`${startDate}T00:00:00Z`) : new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - months + 1, 1));
-  const length = Math.max(0, (end.getUTCFullYear() - start.getUTCFullYear()) * 12 + end.getUTCMonth() - start.getUTCMonth() + 1);
+  let start = startDate ? new Date(`${startDate}T00:00:00Z`) : new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - months + 1, 1));
+  let length = Math.max(0, (end.getUTCFullYear() - start.getUTCFullYear()) * 12 + end.getUTCMonth() - start.getUTCMonth() + 1);
+  if (length > 24) {
+    start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 23, 1));
+    length = 24;
+  }
   return Array.from({ length }, (_unused, index) => {
     const date = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + index, 1));
     const period = key(date.getUTCFullYear(), date.getUTCMonth());

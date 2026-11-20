@@ -112,9 +112,9 @@ export const bulkEnrollLearners = async (
   };
   return {
     ...result,
-    failed: result.failed.map((item) => ({ ...item, email: addressFor(item.index) })),
-    courseFailures: result.courseFailures.map((item) => ({ ...item, email: addressFor(item.index) })),
-    notificationFailures: result.notificationFailures.map((item) => ({ ...item, email: addressFor(item.index) })),
+    failed: (result.failed ?? []).map((item) => ({ ...item, email: addressFor(item.index) })),
+    courseFailures: (result.courseFailures ?? []).map((item) => ({ ...item, email: addressFor(item.index) })),
+    notificationFailures: (result.notificationFailures ?? []).map((item) => ({ ...item, email: addressFor(item.index) })),
   };
 };
 

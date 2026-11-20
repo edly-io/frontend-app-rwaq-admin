@@ -1,7 +1,7 @@
 /**
  * ProgramListStatsStrip — global tiles and two compact charts, Not available instead of zero.
  */
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from '../data/hooks';
 import ProgramListStatsStrip from './ProgramListStatsStrip';
@@ -33,7 +33,7 @@ describe('ProgramListStatsStrip', () => {
     mockQuery(query());
     renderWrapper(<ProgramListStatsStrip />);
     fireEvent.click(screen.getByRole('button', { name: /All time/ }));
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 30 days' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Last 30 days' }));
     expect(hooks.useProgramListStats).toHaveBeenLastCalledWith(true, expect.any(String), expect.any(String));
     expect(screen.getByText('Showing data for the selected range. Current-state figures are unchanged.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));

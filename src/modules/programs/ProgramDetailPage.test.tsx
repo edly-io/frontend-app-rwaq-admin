@@ -88,7 +88,7 @@ describe('ProgramDetailPage', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Learners' }));
     expect(screen.getByText('1 invited')).toBeInTheDocument();
     expect(screen.getByText('invite@example.com')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel invite' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel invite: invite@example.com' }));
     expect(cancel).toHaveBeenCalledWith(12, expect.objectContaining({ onError: expect.any(Function) }));
   });
 });

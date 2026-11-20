@@ -1,7 +1,7 @@
 /**
  * CourseStatsStrip — plain counts, a learner funnel, and Not available instead of zero.
  */
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from '../data/hooks';
 import CourseStatsStrip from './CourseStatsStrip';
@@ -59,11 +59,11 @@ describe('CourseStatsStrip', () => {
     mockQuery(query());
     renderWrapper(<CourseStatsStrip courseId="c" />);
     fireEvent.click(screen.getByRole('button', { name: /all time/i }));
-    fireEvent.click(screen.getByRole('menuitem', { name: /last 30 days/i }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: /last 30 days/i }));
     expect(hooks.useCourseStats).toHaveBeenLastCalledWith('c', true, expect.any(String), expect.any(String));
     expect(screen.getByText(/showing data for the selected range/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /last 30 days/i }));
-    fireEvent.click(screen.getByRole('menuitem', { name: /all time/i }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: /all time/i }));
     expect(hooks.useCourseStats).toHaveBeenLastCalledWith('c', true, undefined, undefined);
     expect(screen.getByText('Showing all time data.')).toBeInTheDocument();
   });

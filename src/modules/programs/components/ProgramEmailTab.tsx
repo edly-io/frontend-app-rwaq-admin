@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Button, Form } from '@openedx/paragon';
+import { ActionRow, Alert, AlertModal, Button, Form } from '@openedx/paragon';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -56,6 +56,7 @@ const ProgramEmailTab = ({ uuid }: { uuid: string }) => {
   const history = useQuery({
     queryKey: ['programEmailHistory', uuid],
     queryFn: async () => (await getAuthenticatedHttpClient().get(`${base}/emails/`)).data as HistoryItem[],
+    refetchInterval: (query) => (query.state.data?.some((item) => item.status === 'queued' || item.status === 'sending') ? 5000 : false),
   });
   const send = useMutation({
     mutationFn: async () => getAuthenticatedHttpClient().post(`${base}/emails/`, { subject, body, recipients }),
@@ -102,17 +103,24 @@ const ProgramEmailTab = ({ uuid }: { uuid: string }) => {
       >
         {intl.formatMessage(messages.send)}
       </Button>
-      {confirming && preview.data && (
-        <Alert variant="info" className="mt-3">
-          <p>{intl.formatMessage(messages.confirm, { count: preview.data.count })}</p>
-          <Button onClick={() => { setConfirming(false); send.mutate(); }}>
-            {intl.formatMessage(messages.confirmSend)}
-          </Button>
-          <Button variant="outline-primary" onClick={() => setConfirming(false)}>
-            {intl.formatMessage(messages.cancel)}
-          </Button>
-        </Alert>
-      )}
+      <AlertModal
+        title={intl.formatMessage(messages.send)}
+        isOpen={confirming && !!preview.data}
+        onClose={() => setConfirming(false)}
+        variant="default"
+        footerNode={(
+          <ActionRow>
+            <Button variant="outline-primary" onClick={() => setConfirming(false)}>
+              {intl.formatMessage(messages.cancel)}
+            </Button>
+            <Button onClick={() => { setConfirming(false); send.mutate(); }}>
+              {intl.formatMessage(messages.confirmSend)}
+            </Button>
+          </ActionRow>
+        )}
+      >
+        {intl.formatMessage(messages.confirm, { count: preview.data?.count ?? 0 })}
+      </AlertModal>
       <h3 className="mt-4">{intl.formatMessage(messages.history)}</h3>
       {history.isError && <Alert variant="danger">{intl.formatMessage(messages.historyError)}</Alert>}
       {history.data?.map((item) => (

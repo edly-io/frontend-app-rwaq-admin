@@ -114,7 +114,7 @@ const StatsStrip = ({
           {intl.formatMessage(isOpen ? messages.hide : messages.show)}
         </Button>
       </div>
-      <div className="d-flex align-items-center justify-content-end flex-wrap mb-3" style={{ gap: '0.75rem' }}>
+      {isOpen && <div className="d-flex align-items-center justify-content-end flex-wrap mb-3" style={{ gap: '0.75rem' }}>
         {datePicker}
         {generatedAt && (
           <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
@@ -140,7 +140,7 @@ const StatsStrip = ({
             }} />
           </button>
         )}
-      </div>
+      </div>}
       <div id={bodyId} hidden={!isOpen}>
         {isOpen && renderBody()}
       </div>
