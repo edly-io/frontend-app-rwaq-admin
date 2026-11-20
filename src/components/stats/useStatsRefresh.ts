@@ -26,8 +26,15 @@ const useStatsRefresh = () => {
     setIsRefreshing(true);
     setHasFailed(false);
     try {
-      const fresh = await Promise.all(entries.map((entry) => entry.fetch()));
-      entries.forEach((entry, index) => queryClient.setQueryData(entry.queryKey, fresh[index]));
+      const fresh = await Promise.allSettled(entries.map((entry) => Promise.resolve().then(() => entry.fetch())));
+      if (fresh.some((item) => item.status === 'rejected')) {
+        setHasFailed(true);
+      } else {
+        entries.forEach((entry, index) => {
+          const item = fresh[index];
+          if (item.status === 'fulfilled') { queryClient.setQueryData(entry.queryKey, item.value); }
+        });
+      }
     } catch {
       setHasFailed(true);
     } finally {

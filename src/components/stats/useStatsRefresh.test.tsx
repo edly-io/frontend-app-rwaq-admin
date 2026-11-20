@@ -73,6 +73,28 @@ describe('useStatsRefresh', () => {
     expect(client.getQueryData(['a'])).toBe('done');
   });
 
+  it('remains busy until all requests settle after one fails', async () => {
+    const client = new QueryClient();
+    const { result } = renderHook(() => useStatsRefresh(), { wrapper: makeWrapper(client) });
+    let release: (value: string) => void = () => {};
+    const slow = jest.fn(() => new Promise<string>((resolve) => { release = resolve; }));
+    let first: Promise<void> = Promise.resolve();
+    await act(async () => {
+      first = result.current.refresh([
+        { queryKey: ['a'], fetch: () => Promise.reject(new Error('429')) },
+        { queryKey: ['b'], fetch: slow },
+      ]);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(result.current.isRefreshing).toBe(true);
+    await act(async () => { await result.current.refresh([{ queryKey: ['b'], fetch: slow }]); });
+    expect(slow).toHaveBeenCalledTimes(1);
+    await act(async () => { release('done'); await first; });
+    expect(result.current.hasFailed).toBe(true);
+    expect(result.current.isRefreshing).toBe(false);
+  });
+
   it('clears an earlier failure when the next refresh starts', async () => {
     const client = new QueryClient();
     const { result } = renderHook(() => useStatsRefresh(), { wrapper: makeWrapper(client) });

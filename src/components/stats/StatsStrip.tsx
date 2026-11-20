@@ -9,7 +9,7 @@ import {
   ReactNode, useEffect, useId, useState,
 } from 'react';
 import {
-  Alert, Button, Icon, IconButton,
+  Alert, Button, Icon,
 } from '@openedx/paragon';
 import { ExpandLess, ExpandMore, Refresh } from '@openedx/paragon/icons';
 import { IntlShape, useIntl } from '@edx/frontend-platform/i18n';
@@ -103,21 +103,22 @@ const StatsStrip = ({
           {note && <span className="rwaq-dash-card__sub">{note}</span>}
         </div>
         <div className="d-flex align-items-center" style={{ gap: '0.5rem' }}>
-          {generatedAt && (
+          {isOpen && generatedAt && (
             <span className="small" style={{ color: 'var(--rwaq-muted, #6B757F)' }}>
               {intl.formatMessage(dashboardMessages.lastUpdated, { time: formatRelativeTime(generatedAt, intl) })}
             </span>
           )}
-          {onRefresh && (
-            <IconButton
-              src={Refresh}
-              iconAs={Icon}
-              alt={intl.formatMessage(messages.refresh)}
+          {isOpen && onRefresh && (
+            <button
+              type="button"
+              aria-label={intl.formatMessage(messages.refresh)}
               onClick={onRefresh}
               aria-busy={isRefreshing}
-              size="sm"
-              className={isRefreshing ? 'rwaq-stats-refreshing' : undefined}
-            />
+              disabled={isRefreshing}
+              className={`btn btn-tertiary btn-sm${isRefreshing ? ' rwaq-stats-refreshing' : ''}`}
+            >
+              <Icon src={Refresh} />
+            </button>
           )}
           <Button
             variant="tertiary"

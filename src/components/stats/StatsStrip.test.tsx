@@ -30,6 +30,13 @@ describe('StatsStrip refresh', () => {
   it('marks the button busy while refreshing', () => {
     strip({ onRefresh: jest.fn(), isRefreshing: true });
     expect(screen.getByRole('button', { name: 'Refresh statistics' })).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('button', { name: 'Refresh statistics' })).toBeDisabled();
+  });
+
+  it('hides refresh controls while the strip is collapsed', () => {
+    strip({ isOpen: false, onRefresh: jest.fn(), generatedAt: minutesAgo(3) });
+    expect(screen.queryByRole('button', { name: 'Refresh statistics' })).not.toBeInTheDocument();
+    expect(screen.queryByText('updated 3 min ago')).not.toBeInTheDocument();
   });
 
   it('says how long ago the figures were computed', () => {
