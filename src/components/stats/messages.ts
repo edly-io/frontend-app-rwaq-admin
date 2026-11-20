@@ -9,7 +9,7 @@ const messages = defineMessages({
   show: { id: 'rwaq.admin.stats.show', defaultMessage: 'Show statistics' },
   globalNote: {
     id: 'rwaq.admin.stats.globalNote',
-    defaultMessage: 'Totals for the whole platform, whatever the filters of the table.',
+    defaultMessage: 'Showing all time data.',
   },
   forbidden: {
     id: 'rwaq.admin.stats.forbidden',

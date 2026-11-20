@@ -2,7 +2,7 @@
  * ProgramDetailPage tabs: Courses and Learners only, also for an Enrollment code program (its codes are managed
  * on the Enrollment codes page). The cards, modals and tables are stubbed, they have their own tests.
  */
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from './data/hooks';
 import type { ProgramDetail } from './data/types';
@@ -16,9 +16,12 @@ jest.mock('./data/hooks', () => ({
   useProgram: jest.fn(),
   useProgramCourses: jest.fn(),
   useProgramLearners: jest.fn(),
+  useCancelProgramInvite: jest.fn(),
   useUpdateProgram: jest.fn(),
 }));
 jest.mock('./components/ProgramPricingCard', () => ({ __esModule: true, default: () => null }));
+jest.mock('./components/ProgramStatsStrip', () => ({ __esModule: true, default: () => null }));
+jest.mock('./components/ProgramEmailTab', () => ({ __esModule: true, default: () => null }));
 jest.mock('./components/ProgramStatusChips', () => ({ __esModule: true, default: () => null }));
 jest.mock('./modals/BulkEnrollModal', () => ({ __esModule: true, default: () => null }));
 jest.mock('./modals/UnenrollLearnerModal', () => ({ __esModule: true, default: () => null }));
@@ -49,13 +52,14 @@ beforeEach(() => {
   window.history.pushState({}, '', '/programs/uuid-1');
   (hooks.useProgramCourses as jest.Mock).mockReturnValue(empty);
   (hooks.useProgramLearners as jest.Mock).mockReturnValue(empty);
+  (hooks.useCancelProgramInvite as jest.Mock).mockReturnValue({ mutate: jest.fn(), isPending: false });
   (hooks.useUpdateProgram as jest.Mock).mockReturnValue({ mutate: jest.fn(), isPending: false });
 });
 
 describe('ProgramDetailPage', () => {
-  it.each(['is_paid', 'is_enrollment_code'])('has only the Courses and Learners tabs for %s', (category) => {
+  it.each(['is_paid', 'is_enrollment_code'])('has the Courses, Learners and Email tabs for %s', (category) => {
     renderPage(category);
-    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['Courses', 'Learners']);
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['Courses', 'Learners', 'Email']);
     expect(screen.getByRole('tab', { name: 'Courses' })).toHaveAttribute('aria-selected', 'true');
   });
 
@@ -64,5 +68,27 @@ describe('ProgramDetailPage', () => {
     renderPage('is_enrollment_code');
     expect(screen.getByRole('tab', { name: 'Courses' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.queryByRole('tab', { name: 'Enrollment code' })).not.toBeInTheDocument();
+  });
+
+  it('shows and cancels an invited learner', () => {
+    const cancel = jest.fn();
+    (hooks.useCancelProgramInvite as jest.Mock).mockReturnValue({ mutate: cancel, isPending: false });
+    (hooks.useProgramLearners as jest.Mock).mockReturnValue({
+      data: {
+        results: [{
+          id: 12, email: 'invite@example.com', name: '', status: 'invited', isActive: false,
+        }],
+        invitedCount: 1,
+        pagination: { count: 1, numPages: 1 },
+      },
+      isLoading: false,
+      isError: false,
+    });
+    renderPage('is_free');
+    fireEvent.click(screen.getByRole('tab', { name: 'Learners' }));
+    expect(screen.getByText('1 invited')).toBeInTheDocument();
+    expect(screen.getByText('invite@example.com')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel invite' }));
+    expect(cancel).toHaveBeenCalledWith(12, expect.objectContaining({ onError: expect.any(Function) }));
   });
 });

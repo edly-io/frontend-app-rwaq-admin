@@ -65,6 +65,8 @@ const BulkEnrollModal = ({
   const { showToast } = useToast();
   const [emails, setEmails] = useState('');
   const [reason, setReason] = useState('');
+  const [autoEnroll, setAutoEnroll] = useState(false);
+  const [notify, setNotify] = useState(false);
   const [result, setResult] = useState<BulkEnrollResult | null>(null);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
@@ -76,6 +78,8 @@ const BulkEnrollModal = ({
     if (isOpen) {
       setEmails('');
       setReason('');
+      setAutoEnroll(false);
+      setNotify(false);
       setResult(null);
       setError('');
       setProgress(null);
@@ -103,7 +107,7 @@ const BulkEnrollModal = ({
     // Accumulated across chunks so the admin sees one breakdown rather than
     // one per request.
     const merged: BulkEnrollResult = {
-      enrolled: [], alreadyEnrolled: [], failed: [], courseFailures: [],
+      enrolled: [], alreadyEnrolled: [], failed: [], courseFailures: [], invited: [], notificationFailures: [],
     };
 
     try {
@@ -113,11 +117,15 @@ const BulkEnrollModal = ({
         // into the same courses at once, and pile concurrent writes onto the
         // LMS for no gain in an operation that is already fast per chunk.
         // eslint-disable-next-line no-await-in-loop
-        const res = await mutateAsync({ emails: chunk.join(','), reason: reason.trim() });
+        const res = await mutateAsync({
+          emails: chunk.join(','), reason: reason.trim(), autoEnroll, notify,
+        });
         merged.enrolled.push(...res.enrolled);
         merged.alreadyEnrolled.push(...res.alreadyEnrolled);
         merged.failed.push(...res.failed);
         merged.courseFailures.push(...res.courseFailures);
+        merged.invited.push(...(res.invited ?? []));
+        merged.notificationFailures.push(...(res.notificationFailures ?? []));
         setProgress({ done: Math.min(i + CHUNK_SIZE, valid.length), total: count });
       }
       setResult(merged);
@@ -198,6 +206,29 @@ const BulkEnrollModal = ({
             {intl.formatMessage(messages.bulkEnrollReasonHelp)}
           </span>
 
+          <label className="d-flex align-items-center mt-3" htmlFor="program-auto-enroll">
+            <input
+              id="program-auto-enroll"
+              type="checkbox"
+              className="mr-2"
+              checked={autoEnroll}
+              disabled={isPending}
+              onChange={(event) => setAutoEnroll(event.target.checked)}
+            />
+            {intl.formatMessage(messages.bulkEnrollAutoEnroll)}
+          </label>
+          <label className="d-flex align-items-center mt-3" htmlFor="program-notify">
+            <input
+              id="program-notify"
+              type="checkbox"
+              className="mr-2"
+              checked={notify}
+              disabled={isPending}
+              onChange={(event) => setNotify(event.target.checked)}
+            />
+            {intl.formatMessage(messages.bulkEnrollNotify)}
+          </label>
+
           <div className="d-flex justify-content-between align-items-baseline mt-1">
             {/* The cap is stated up front rather than only once it is breached —
                 an admin pasting a long list needs to know before they paste. */}
@@ -232,6 +263,13 @@ const BulkEnrollModal = ({
 
       {isDone && result && (
         <div className="d-flex flex-column" style={{ gap: '1rem' }}>
+          {result.notificationFailures.length > 0 && (
+            <Alert variant="warning">
+              {intl.formatMessage(messages.bulkEnrollNotificationFailures)}
+              {' '}
+              {result.notificationFailures.map((item) => item.email).join(', ')}
+            </Alert>
+          )}
           <Alert variant={result.enrolled.length > 0 ? 'success' : 'info'} className="mb-0">
             {result.enrolled.length > 0
               ? intl.formatMessage(messages.bulkEnrollSuccess, { count: result.enrolled.length })
@@ -241,6 +279,11 @@ const BulkEnrollModal = ({
                 {intl.formatMessage(messages.bulkEnrollAlready, {
                   count: result.alreadyEnrolled.length,
                 })}
+              </div>
+            )}
+            {result.invited.length > 0 && (
+              <div className="small mt-1">
+                {intl.formatMessage(messages.bulkEnrollInvited, { count: result.invited.length })}
               </div>
             )}
           </Alert>

@@ -39,7 +39,7 @@ describe('UserListStatsStrip', () => {
     expect(screen.getByText('800')).toBeInTheDocument();
     expect(screen.getByText('77')).toBeInTheDocument();
     expect(screen.getByText('300 of 500 still to sign in')).toBeInTheDocument();
-    expect(screen.getByText('Totals for the whole platform, whatever the filters of the table.')).toBeInTheDocument();
+    expect(screen.getByText('Showing all time data.')).toBeInTheDocument();
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(1);
   });
 

@@ -72,6 +72,7 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
 
   return (
     <StatsStrip
+      note={intl.formatMessage(statsMessages.globalNote)}
       isOpen={isOpen}
       onToggle={() => setIsOpen((open) => !open)}
       isForbidden={state.isForbidden}

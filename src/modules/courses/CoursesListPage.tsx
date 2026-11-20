@@ -61,6 +61,8 @@ const CoursesListPage = () => {
   const org = searchParams.get('org') ?? '';
   const startDate = searchParams.get('start_date') || undefined;
   const endDate = searchParams.get('end_date') || undefined;
+  const enrollmentStartDate = searchParams.get('enrollment_start_date') || undefined;
+  const enrollmentEndDate = searchParams.get('enrollment_end_date') || undefined;
   const courseType = searchParams.get('type') ?? '';
   const hasExplicitOrdering = searchParams.get('ordering') !== null;
   const ordering = (searchParams.get('ordering') as CourseOrdering | null) ?? DEFAULT_ORDERING;
@@ -95,6 +97,8 @@ const CoursesListPage = () => {
     org: org || undefined,
     startDate,
     endDate,
+    enrollmentStartDate,
+    enrollmentEndDate,
     courseType: COURSE_TYPE_OPTIONS.find((o) => o.value === courseType)?.value,
     ordering,
   };
@@ -143,6 +147,15 @@ const CoursesListPage = () => {
         onRemove: () => updateParams({ start_date: '', end_date: '' }),
       });
     }
+    if (enrollmentStartDate || enrollmentEndDate) {
+      chips.push({
+        key: 'enrollmentDate',
+        label: intl.formatMessage(messages.chipEnrollmentDate, {
+          from: enrollmentStartDate ?? '…', to: enrollmentEndDate ?? '…',
+        }),
+        onRemove: () => updateParams({ enrollment_start_date: '', enrollment_end_date: '' }),
+      });
+    }
     const typeOption = COURSE_TYPE_OPTIONS.find((o) => o.value === courseType);
     if (typeOption) {
       chips.push({
@@ -162,7 +175,10 @@ const CoursesListPage = () => {
     }
     return chips;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, org, startDate, endDate, courseType, ordering, hasExplicitOrdering, intl, updateParams]);
+  }, [
+    search, org, startDate, endDate, enrollmentStartDate, enrollmentEndDate,
+    courseType, ordering, hasExplicitOrdering, intl, updateParams,
+  ]);
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -232,7 +248,11 @@ const CoursesListPage = () => {
       renderCell: (value) => formatDate(value as string | null),
     },
     {
-      label: intl.formatMessage(messages.colEnrollments),
+      label: enrollmentStartDate || enrollmentEndDate
+        ? intl.formatMessage(messages.colEnrollmentsPeriod, {
+          from: enrollmentStartDate ?? '…', to: enrollmentEndDate ?? '…',
+        })
+        : intl.formatMessage(messages.colEnrollments),
       key: 'enrollmentCount',
       renderCell: (_value, row) => formatEnrollments(row as CourseSummary),
     },
@@ -291,7 +311,14 @@ const CoursesListPage = () => {
           ]}
           appliedChips={appliedChips}
           onClearAll={() => updateParams({
-            search: '', org: '', type: '', start_date: '', end_date: '', ordering: '',
+            search: '',
+            org: '',
+            type: '',
+            start_date: '',
+            end_date: '',
+            ordering: '',
+            enrollment_start_date: '',
+            enrollment_end_date: '',
           })}
           downloadAction={(
             <>
@@ -301,6 +328,13 @@ const CoursesListPage = () => {
                 endDate={endDate}
                 size="md"
                 onChange={(from, to) => updateParams({ start_date: from ?? '', end_date: to ?? '' })}
+              />
+              <DateRangePicker
+                label={intl.formatMessage(messages.enrollmentDateLabel)}
+                startDate={enrollmentStartDate}
+                endDate={enrollmentEndDate}
+                size="md"
+                onChange={(from, to) => updateParams({ enrollment_start_date: from ?? '', enrollment_end_date: to ?? '' })}
               />
               <CsvDownloadButton url={getCoursesCsvUrl()} params={listParams} fallbackName="courses" />
             </>

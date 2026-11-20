@@ -91,11 +91,15 @@ export const bulkEnrollLearners = async (
   uuid: string,
   emails: string,
   reason = '',
+  autoEnroll = false,
+  notify = false,
 ): Promise<BulkEnrollResult> => {
   // reason is kept on the 0-price order recorded for each learner of a paid program.
   const { data } = await getAuthenticatedHttpClient().post(
     `${getProgramsBaseUrl()}/${uuid}/bulk-enroll/`,
-    { emails, reason },
+    {
+      emails, reason, auto_enroll: autoEnroll, notify,
+    },
   );
   return camelCaseObject(data) as BulkEnrollResult;
 };
@@ -123,6 +127,11 @@ export const getProgramLearners = async (uuid: string, page = 1, search = ''): P
     params: { page, page_size: 10, ...(search ? { search } : {}) },
   });
   return camelCaseObject(data) as ProgramSubPage<ProgramLearner>;
+};
+
+/** Cancel a pending invitation. */
+export const cancelProgramInvite = async (uuid: string, inviteId: number): Promise<void> => {
+  await getAuthenticatedHttpClient().delete(`${getProgramsBaseUrl()}/${uuid}/invites/${inviteId}/`);
 };
 
 // ── Report tasks ───────────────────────────────────────────────────────────────

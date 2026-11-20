@@ -9,6 +9,7 @@ import type { RefreshEntry } from '@src/components/stats/useStatsRefresh';
 import { appId } from '@src/constants';
 import {
   bulkEnrollLearners,
+  cancelProgramInvite,
   getProgram,
   getProgramCourses,
   getProgramLearners,
@@ -110,12 +111,24 @@ export const useUnenrollProgramLearner = (uuid: string) => {
 export const useBulkEnrollLearners = (uuid: string) => {
   const queryClient = useQueryClient();
 
-  return useMutation<BulkEnrollResult, Error, { emails: string; reason: string }>({
-    mutationFn: ({ emails, reason }) => bulkEnrollLearners(uuid, emails, reason),
+  return useMutation<BulkEnrollResult, Error, {
+    emails: string; reason: string; autoEnroll: boolean; notify: boolean;
+  }>({
+    mutationFn: ({
+      emails, reason, autoEnroll, notify,
+    }) => bulkEnrollLearners(uuid, emails, reason, autoEnroll, notify),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: programQueryKeys.learners(uuid) });
       queryClient.invalidateQueries({ queryKey: programQueryKeys.detail(uuid) });
     },
+  });
+};
+
+export const useCancelProgramInvite = (uuid: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (inviteId: number) => cancelProgramInvite(uuid, inviteId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: programQueryKeys.learners(uuid) }),
   });
 };
 
