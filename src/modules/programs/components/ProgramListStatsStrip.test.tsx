@@ -6,7 +6,7 @@ import { renderWrapper } from '@src/setupTest';
 import * as hooks from '../data/hooks';
 import ProgramListStatsStrip from './ProgramListStatsStrip';
 
-jest.mock('../data/hooks', () => ({ useProgramListStats: jest.fn() }));
+jest.mock('../data/hooks', () => ({ useProgramListStats: jest.fn(), programListStatsRefresh: jest.fn() }));
 jest.mock('@src/components/charts/MetricChart', () => ({
   __esModule: true,
   default: ({ ariaLabel }: { ariaLabel: string }) => <div data-testid="metric-chart" aria-label={ariaLabel} />,
@@ -29,6 +29,17 @@ const query = (overrides = {}) => ({
 const mockQuery = (value: unknown) => (hooks.useProgramListStats as jest.Mock).mockReturnValue(value);
 
 describe('ProgramListStatsStrip', () => {
+  it('passes the selected date range to the query and refresh', () => {
+    mockQuery(query());
+    renderWrapper(<ProgramListStatsStrip />);
+    fireEvent.click(screen.getByRole('button', { name: /All time/ }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 30 days' }));
+    expect(hooks.useProgramListStats).toHaveBeenLastCalledWith(true, expect.any(String), expect.any(String));
+    expect(screen.getByText('Showing data for the selected range. Current-state figures are unchanged.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
+    expect(hooks.programListStatsRefresh).toHaveBeenCalledWith(expect.any(String), expect.any(String));
+  });
+
   it('shows the global tiles and two charts', () => {
     mockQuery(query());
     renderWrapper(<ProgramListStatsStrip />);
@@ -44,9 +55,9 @@ describe('ProgramListStatsStrip', () => {
     mockQuery(query());
     renderWrapper(<ProgramListStatsStrip />);
 
-    expect(hooks.useProgramListStats).toHaveBeenCalledWith(true);
+    expect(hooks.useProgramListStats).toHaveBeenCalledWith(true, undefined, undefined);
     fireEvent.click(screen.getByRole('button', { name: 'Hide statistics' }));
-    expect(hooks.useProgramListStats).toHaveBeenLastCalledWith(false);
+    expect(hooks.useProgramListStats).toHaveBeenLastCalledWith(false, undefined, undefined);
   });
 
   it('shows Not available for the rate and the average when they cannot be worked out, never zero', () => {

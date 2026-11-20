@@ -45,12 +45,13 @@ export interface StatsStripProps {
   isRefreshing?: boolean;
   /** The last refresh failed. The tiles keep the figures they had. */
   hasRefreshFailed?: boolean;
+  datePicker?: ReactNode;
   children: ReactNode;
 }
 
 const StatsStrip = ({
   isOpen, onToggle, note, info, isForbidden = false, hasFailedAll = false, onRetry,
-  generatedAt, onRefresh, isRefreshing = false, hasRefreshFailed = false, children,
+  generatedAt, onRefresh, isRefreshing = false, hasRefreshFailed = false, datePicker, children,
 }: StatsStripProps) => {
   const intl = useIntl();
   const bodyId = useId();
@@ -91,7 +92,7 @@ const StatsStrip = ({
 
   return (
     <section className="rwaq-stats-strip mb-3" aria-label={intl.formatMessage(messages.stripTitle)}>
-      <div className="d-flex justify-content-between align-items-center mb-2" style={{ gap: '0.75rem' }}>
+      <div className="d-flex justify-content-between align-items-start mb-2" style={{ gap: '0.75rem' }}>
         <div className="rwaq-dash-card__head">
           {info ? (
             <InfoTooltip text={info}>
@@ -102,35 +103,43 @@ const StatsStrip = ({
           )}
           {note && <span className="rwaq-dash-card__sub">{note}</span>}
         </div>
-        <div className="d-flex align-items-center" style={{ gap: '0.5rem' }}>
-          {isOpen && generatedAt && (
-            <span className="small" style={{ color: 'var(--rwaq-muted, #6B757F)' }}>
-              {intl.formatMessage(dashboardMessages.lastUpdated, { time: formatRelativeTime(generatedAt, intl) })}
-            </span>
-          )}
-          {isOpen && onRefresh && (
-            <button
-              type="button"
-              aria-label={intl.formatMessage(messages.refresh)}
-              onClick={onRefresh}
-              aria-busy={isRefreshing}
-              disabled={isRefreshing}
-              className={`btn btn-tertiary btn-sm${isRefreshing ? ' rwaq-stats-refreshing' : ''}`}
-            >
-              <Icon src={Refresh} />
-            </button>
-          )}
-          <Button
-            variant="tertiary"
-            size="sm"
-            aria-expanded={isOpen}
-            aria-controls={bodyId}
-            onClick={onToggle}
-            iconAfter={isOpen ? ExpandLessIcon : ExpandMoreIcon}
+        <Button
+          variant="tertiary"
+          size="sm"
+          aria-expanded={isOpen}
+          aria-controls={bodyId}
+          onClick={onToggle}
+          iconAfter={isOpen ? ExpandLessIcon : ExpandMoreIcon}
+        >
+          {intl.formatMessage(isOpen ? messages.hide : messages.show)}
+        </Button>
+      </div>
+      <div className="d-flex align-items-center justify-content-end flex-wrap mb-3" style={{ gap: '0.75rem' }}>
+        {datePicker}
+        {generatedAt && (
+          <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
+            {intl.formatMessage(dashboardMessages.lastUpdated, { time: formatRelativeTime(generatedAt, intl) })}
+          </span>
+        )}
+        {onRefresh && (
+          <button
+            type="button"
+            aria-label={intl.formatMessage(messages.refresh)}
+            onClick={onRefresh}
+            aria-busy={isRefreshing}
+            disabled={isRefreshing}
+            style={{
+              border: 'none', background: 'transparent', padding: '0.25rem',
+              cursor: isRefreshing ? 'not-allowed' : 'pointer', opacity: isRefreshing ? 0.5 : 1,
+              color: 'var(--rwaq-muted, #6B757F)', display: 'inline-flex', alignItems: 'center',
+            }}
           >
-            {intl.formatMessage(isOpen ? messages.hide : messages.show)}
-          </Button>
-        </div>
+            <Icon src={Refresh} style={{
+              width: '1.125rem', height: '1.125rem',
+              animation: isRefreshing ? 'rwaq-spin 0.8s linear infinite' : 'none',
+            }} />
+          </button>
+        )}
       </div>
       <div id={bodyId} hidden={!isOpen}>
         {isOpen && renderBody()}

@@ -16,6 +16,7 @@ import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
 import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import StatTile from '@src/modules/dashboard/components/StatTile';
+import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
 import modeLabel from '@src/modules/users/modeLabel';
 import { useCourseStats, courseStatsRefresh } from '../data/hooks';
 import messages from '../messages';
@@ -23,7 +24,9 @@ import messages from '../messages';
 const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
   const intl = useIntl();
   const [isOpen, setIsOpen] = useState(true);
-  const query = useCourseStats(courseId, isOpen);
+  const [startDate, setStartDate] = useState<string | undefined>();
+  const [endDate, setEndDate] = useState<string | undefined>();
+  const query = useCourseStats(courseId, isOpen, startDate, endDate);
   const state = summarizeQueries([query]);
   const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
@@ -72,14 +75,18 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
 
   return (
     <StatsStrip
-      note={intl.formatMessage(statsMessages.globalNote)}
+      note={intl.formatMessage(startDate || endDate ? statsMessages.rangeNote : statsMessages.globalNote)}
+      datePicker={<DateRangePicker startDate={startDate} endDate={endDate} onChange={(start, end) => {
+        setStartDate(start);
+        setEndDate(end);
+      }} />}
       isOpen={isOpen}
       onToggle={() => setIsOpen((open) => !open)}
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
       generatedAt={stats?.generatedAt}
-      onRefresh={() => refresh([courseStatsRefresh(courseId)])}
+      onRefresh={() => refresh([courseStatsRefresh(courseId, startDate, endDate)])}
       isRefreshing={isRefreshing}
       hasRefreshFailed={hasRefreshFailed}
     >
@@ -105,7 +112,7 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
       <div className="rwaq-dash-grid rwaq-dash-grid--thirds">
         <StatsChartCard
           title={intl.formatMessage(statsMessages.enrollmentsPerMonthTitle)}
-          subtitle={intl.formatMessage(statsMessages.lastTwelveMonths)}
+          subtitle={startDate || endDate ? undefined : intl.formatMessage(statsMessages.lastTwelveMonths)}
           info={intl.formatMessage(messages.statsEnrollmentsInfo)}
           type="bar"
           data={enrollmentSeries}

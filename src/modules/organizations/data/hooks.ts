@@ -29,7 +29,7 @@ const orgQueryKeys = {
   list: (params: OrgListParams) => [...orgQueryKeys.lists(), params] as const,
   details: () => [...orgQueryKeys.all, 'detail'] as const,
   detail: (shortName: string) => [...orgQueryKeys.details(), shortName] as const,
-  listStats: () => [...orgQueryKeys.all, 'listStats'] as const,
+  listStats: (startDate?: string, endDate?: string) => [...orgQueryKeys.all, 'listStats', startDate, endDate] as const,
   stats: (shortName: string) => [...orgQueryKeys.all, 'stats', shortName] as const,
 };
 
@@ -133,9 +133,9 @@ export const useRemoveOrgAdmin = (shortName: string) => {
 };
 
 /** Tiles and chart of the Organizations list strip. Global, no params. Pass `enabled: false` while collapsed. */
-export const useOrgListStats = (enabled = true) => useQuery({
-  queryKey: orgQueryKeys.listStats(),
-  queryFn: () => getOrgListStats(),
+export const useOrgListStats = (enabled = true, startDate?: string, endDate?: string) => useQuery({
+  queryKey: orgQueryKeys.listStats(startDate, endDate),
+  queryFn: () => getOrgListStats(false, startDate, endDate),
   enabled,
   staleTime: 5 * 60 * 1000,
 });
@@ -149,9 +149,9 @@ export const useOrgStats = (shortName: string, enabled = true) => useQuery({
 });
 
 /** What the Organizations list strip's refresh button fetches again. */
-export const orgListStatsRefresh = (): RefreshEntry => ({
-  queryKey: orgQueryKeys.listStats(),
-  fetch: () => getOrgListStats(true),
+export const orgListStatsRefresh = (startDate?: string, endDate?: string): RefreshEntry => ({
+  queryKey: orgQueryKeys.listStats(startDate, endDate),
+  fetch: () => getOrgListStats(true, startDate, endDate),
 });
 
 /** What the organization page strip fetches again from its own stats endpoint (Dashboard queries are separate). */

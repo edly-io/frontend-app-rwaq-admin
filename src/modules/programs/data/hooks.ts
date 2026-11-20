@@ -33,8 +33,8 @@ const programQueryKeys = {
   detail: (uuid: string) => [...programQueryKeys.details(), uuid] as const,
   courses: (uuid: string) => [...programQueryKeys.detail(uuid), 'courses'] as const,
   learners: (uuid: string) => [...programQueryKeys.detail(uuid), 'learners'] as const,
-  stats: (uuid: string) => [...programQueryKeys.detail(uuid), 'stats'] as const,
-  listStats: () => [...programQueryKeys.all, 'listStats'] as const,
+  stats: (uuid: string, startDate?: string, endDate?: string) => [...programQueryKeys.detail(uuid), 'stats', startDate, endDate] as const,
+  listStats: (startDate?: string, endDate?: string) => [...programQueryKeys.all, 'listStats', startDate, endDate] as const,
 };
 
 // ── Queries ──────────────────────────────────────────────────────────────────
@@ -133,29 +133,29 @@ export const useCancelProgramInvite = (uuid: string) => {
 };
 
 /** Tiles and series of the Programs list strip. Global, so it has no params. Pass `enabled: false` while collapsed. */
-export const useProgramListStats = (enabled = true) => useQuery({
-  queryKey: programQueryKeys.listStats(),
-  queryFn: () => getProgramListStats(),
+export const useProgramListStats = (enabled = true, startDate?: string, endDate?: string) => useQuery({
+  queryKey: programQueryKeys.listStats(startDate, endDate),
+  queryFn: () => getProgramListStats(false, startDate, endDate),
   enabled,
   staleTime: 5 * 60 * 1000,
 });
 
 /** Tiles and series of one program. Pass `enabled: false` while the strip is collapsed. */
-export const useProgramStats = (uuid: string, enabled = true) => useQuery({
-  queryKey: programQueryKeys.stats(uuid),
-  queryFn: () => getProgramStats(uuid),
+export const useProgramStats = (uuid: string, enabled = true, startDate?: string, endDate?: string) => useQuery({
+  queryKey: programQueryKeys.stats(uuid, startDate, endDate),
+  queryFn: () => getProgramStats(uuid, false, startDate, endDate),
   enabled: enabled && !!uuid,
   staleTime: 5 * 60 * 1000,
 });
 
 /** What the Programs list strip's refresh button fetches again. */
-export const programListStatsRefresh = (): RefreshEntry => ({
-  queryKey: programQueryKeys.listStats(),
-  fetch: () => getProgramListStats(true),
+export const programListStatsRefresh = (startDate?: string, endDate?: string): RefreshEntry => ({
+  queryKey: programQueryKeys.listStats(startDate, endDate),
+  fetch: () => getProgramListStats(true, startDate, endDate),
 });
 
 /** What the program page strip's refresh button fetches again. */
-export const programStatsRefresh = (uuid: string): RefreshEntry => ({
-  queryKey: programQueryKeys.stats(uuid),
-  fetch: () => getProgramStats(uuid, true),
+export const programStatsRefresh = (uuid: string, startDate?: string, endDate?: string): RefreshEntry => ({
+  queryKey: programQueryKeys.stats(uuid, startDate, endDate),
+  fetch: () => getProgramStats(uuid, true, startDate, endDate),
 });

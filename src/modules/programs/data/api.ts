@@ -163,19 +163,23 @@ export const triggerProgramReport = async (
 // ── Stats ─────────────────────────────────────────────────────────────────────
 
 /** GET /api/v1/admin/programs/stats/ — tiles and series of the Programs list strip. */
-export const getProgramListStats = async (forceRefresh = false): Promise<ProgramListStats> => {
+export const getProgramListStats = async (forceRefresh = false, startDate?: string, endDate?: string): Promise<ProgramListStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getProgramsBaseUrl()}/stats/`,
-    ...forceRefreshArgs(forceRefresh),
+    ...(startDate || endDate
+      ? [{ params: { start_date: startDate, end_date: endDate, ...(forceRefresh ? { force_refresh: 1 } : {}) } }]
+      : forceRefreshArgs(forceRefresh)),
   );
   return camelCaseObject(data) as ProgramListStats;
 };
 
 /** GET /api/v1/admin/programs/{uuid}/stats/ — tiles and series of one program. */
-export const getProgramStats = async (uuid: string, forceRefresh = false): Promise<ProgramStats> => {
+export const getProgramStats = async (uuid: string, forceRefresh = false, startDate?: string, endDate?: string): Promise<ProgramStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getProgramsBaseUrl()}/${uuid}/stats/`,
-    ...forceRefreshArgs(forceRefresh),
+    ...(startDate || endDate
+      ? [{ params: { start_date: startDate, end_date: endDate, ...(forceRefresh ? { force_refresh: 1 } : {}) } }]
+      : forceRefreshArgs(forceRefresh)),
   );
   return camelCaseObject(data) as ProgramStats;
 };

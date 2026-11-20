@@ -55,17 +55,24 @@ export const modeCounts = (rows: UserEnrollment[]): { mode: string; count: numbe
 };
 
 /** Enrollments per month of `enrolledAt`, zero-filled over the last `months` months ending at `now`. */
-export const enrollmentsByMonth = (rows: UserEnrollment[], now: Date, months = 12): SeriesPoint[] => {
+export const enrollmentsByMonth = (
+  rows: UserEnrollment[], now: Date, months = 12, startDate?: string, endDate?: string,
+): SeriesPoint[] => {
   const key = (year: number, month: number) => `${year}-${String(month + 1).padStart(2, '0')}`;
   const counts = new Map<string, number>();
   rows.forEach((row) => {
     if (!row.enrolledAt) { return; }
+    const day = row.enrolledAt.slice(0, 10);
+    if ((startDate && day < startDate) || (endDate && day > endDate)) { return; }
     const date = new Date(row.enrolledAt);
     const period = key(date.getUTCFullYear(), date.getUTCMonth());
     counts.set(period, (counts.get(period) ?? 0) + 1);
   });
-  return Array.from({ length: months }, (_unused, index) => {
-    const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (months - 1 - index), 1));
+  const end = endDate ? new Date(`${endDate}T00:00:00Z`) : now;
+  const start = startDate ? new Date(`${startDate}T00:00:00Z`) : new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - months + 1, 1));
+  const length = Math.max(0, (end.getUTCFullYear() - start.getUTCFullYear()) * 12 + end.getUTCMonth() - start.getUTCMonth() + 1);
+  return Array.from({ length }, (_unused, index) => {
+    const date = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + index, 1));
     const period = key(date.getUTCFullYear(), date.getUTCMonth());
     return { period, value: counts.get(period) ?? 0 };
   });

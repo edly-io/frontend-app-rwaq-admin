@@ -8,7 +8,7 @@ import { renderWrapper } from '@src/setupTest';
 import * as hooks from '../data/hooks';
 import OrgListStatsStrip from './OrgListStatsStrip';
 
-jest.mock('../data/hooks', () => ({ useOrgListStats: jest.fn() }));
+jest.mock('../data/hooks', () => ({ useOrgListStats: jest.fn(), orgListStatsRefresh: jest.fn() }));
 
 const chartProps = jest.fn();
 jest.mock('@src/components/charts/MetricChart', () => ({
@@ -44,6 +44,18 @@ const mockQuery = (value: unknown) => (hooks.useOrgListStats as jest.Mock).mockR
 
 describe('OrgListStatsStrip', () => {
   beforeEach(() => chartProps.mockClear());
+
+  it('passes the selected range to the query and refresh', () => {
+    mockQuery(query());
+    (hooks.orgListStatsRefresh as jest.Mock).mockReturnValue({ queryKey: ['org'], fetch: jest.fn() });
+    renderWrapper(<OrgListStatsStrip />);
+    fireEvent.click(screen.getByRole('button', { name: /All time/ }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 30 days' }));
+    expect(hooks.useOrgListStats).toHaveBeenLastCalledWith(true, expect.any(String), expect.any(String));
+    expect(screen.getByText('Showing data for the selected range. Current-state figures are unchanged.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
+    expect(hooks.orgListStatsRefresh).toHaveBeenCalledWith(expect.any(String), expect.any(String));
+  });
 
   it('shows the global tiles and two charts', () => {
     mockQuery(query());
@@ -102,9 +114,9 @@ describe('OrgListStatsStrip', () => {
     mockQuery(query());
     renderWrapper(<OrgListStatsStrip />);
 
-    expect(hooks.useOrgListStats).toHaveBeenCalledWith(true);
+    expect(hooks.useOrgListStats).toHaveBeenCalledWith(true, undefined, undefined);
     fireEvent.click(screen.getByRole('button', { name: 'Hide statistics' }));
-    expect(hooks.useOrgListStats).toHaveBeenLastCalledWith(false);
+    expect(hooks.useOrgListStats).toHaveBeenLastCalledWith(false, undefined, undefined);
   });
 
   it('shows skeletons while loading', () => {

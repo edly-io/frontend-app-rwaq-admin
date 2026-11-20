@@ -44,7 +44,7 @@ describe('CourseStatsStrip', () => {
     mockQuery(query());
     renderWrapper(<CourseStatsStrip courseId="course-v1:Org+C1+2026" />);
 
-    expect(hooks.useCourseStats).toHaveBeenCalledWith('course-v1:Org+C1+2026', true);
+    expect(hooks.useCourseStats).toHaveBeenCalledWith('course-v1:Org+C1+2026', true, undefined, undefined);
     expect(screen.getByText('Passed')).toBeInTheDocument();
     expect(screen.getByText('In progress')).toBeInTheDocument();
     expect(screen.getByText('Not started')).toBeInTheDocument();
@@ -53,6 +53,19 @@ describe('CourseStatsStrip', () => {
     expect(document.querySelectorAll('.rwaq-stats-tiles > .rwaq-card')).toHaveLength(9);
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(3);
     expect(screen.queryByText(/pass rate/i)).not.toBeInTheDocument();
+  });
+
+  it('passes a selected range to the query and restores all time', () => {
+    mockQuery(query());
+    renderWrapper(<CourseStatsStrip courseId="c" />);
+    fireEvent.click(screen.getByRole('button', { name: /all time/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /last 30 days/i }));
+    expect(hooks.useCourseStats).toHaveBeenLastCalledWith('c', true, expect.any(String), expect.any(String));
+    expect(screen.getByText(/showing data for the selected range/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /last 30 days/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /all time/i }));
+    expect(hooks.useCourseStats).toHaveBeenLastCalledWith('c', true, undefined, undefined);
+    expect(screen.getByText('Showing all time data.')).toBeInTheDocument();
   });
 
   it('shows the average progress of started learners as a percent', () => {
@@ -120,7 +133,7 @@ describe('CourseStatsStrip', () => {
     renderWrapper(<CourseStatsStrip courseId="c" />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Hide statistics' }));
-    expect(hooks.useCourseStats).toHaveBeenLastCalledWith('c', false);
+    expect(hooks.useCourseStats).toHaveBeenLastCalledWith('c', false, undefined, undefined);
   });
 
   it('shows an empty chart when every month is zero', () => {

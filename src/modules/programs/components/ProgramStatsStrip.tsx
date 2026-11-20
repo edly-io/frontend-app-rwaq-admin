@@ -9,18 +9,22 @@ import { useMemo, useState } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import StatsChartCard from '@src/components/stats/StatsChartCard';
 import StatsStrip from '@src/components/stats/StatsStrip';
+import statsMessages from '@src/components/stats/messages';
 import StatsTiles, { StatsTileCard } from '@src/components/stats/StatsTiles';
 import { formatCount, formatMonth, formatPercent } from '@src/components/stats/format';
 import summarizeQueries from '@src/components/stats/queryState';
 import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import StatTile from '@src/modules/dashboard/components/StatTile';
+import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
 import { useProgramStats, programStatsRefresh } from '../data/hooks';
 import messages from '../messages';
 
 const ProgramStatsStrip = ({ uuid, totalCourses }: { uuid: string; totalCourses: number }) => {
   const intl = useIntl();
   const [isOpen, setIsOpen] = useState(true);
-  const query = useProgramStats(uuid, isOpen);
+  const [startDate, setStartDate] = useState<string | undefined>();
+  const [endDate, setEndDate] = useState<string | undefined>();
+  const query = useProgramStats(uuid, isOpen, startDate, endDate);
   const state = summarizeQueries([query]);
   const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
@@ -65,11 +69,16 @@ const ProgramStatsStrip = ({ uuid, totalCourses }: { uuid: string; totalCourses:
     <StatsStrip
       isOpen={isOpen}
       onToggle={() => setIsOpen((open) => !open)}
+      note={intl.formatMessage(startDate || endDate ? statsMessages.rangeNote : statsMessages.globalNote)}
+      datePicker={<DateRangePicker startDate={startDate} endDate={endDate} onChange={(start, end) => {
+        setStartDate(start);
+        setEndDate(end);
+      }} />}
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
       generatedAt={stats?.generatedAt}
-      onRefresh={() => refresh([programStatsRefresh(uuid)])}
+      onRefresh={() => refresh([programStatsRefresh(uuid, startDate, endDate)])}
       isRefreshing={isRefreshing}
       hasRefreshFailed={hasRefreshFailed}
     >

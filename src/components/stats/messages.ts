@@ -11,6 +11,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.stats.globalNote',
     defaultMessage: 'Showing all time data.',
   },
+  rangeNote: {
+    id: 'rwaq.admin.stats.rangeNote',
+    defaultMessage: 'Showing data for the selected range. Current-state figures are unchanged.',
+  },
   forbidden: {
     id: 'rwaq.admin.stats.forbidden',
     defaultMessage: 'Only superusers can see these statistics.',

@@ -143,10 +143,14 @@ export const getOrgReportCsvUrl = (name: OrgReportName): string => (
 );
 
 /** GET /rwaq/api/organizations/stats/ — tiles and the top-organizations chart of the Organizations list strip. */
-export const getOrgListStats = async (forceRefresh = false): Promise<OrgListStats> => {
+export const getOrgListStats = async (
+  forceRefresh = false, startDate?: string, endDate?: string,
+): Promise<OrgListStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getOrgsBaseUrl()}/stats/`,
-    ...forceRefreshArgs(forceRefresh),
+    ...(startDate || endDate
+      ? [{ params: { start_date: startDate, end_date: endDate, ...(forceRefresh ? { force_refresh: 1 } : {}) } }]
+      : forceRefreshArgs(forceRefresh)),
   );
   return camelCaseObject(data) as OrgListStats;
 };
