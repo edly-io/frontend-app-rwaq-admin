@@ -181,7 +181,10 @@ export const updateCoursePricing = async (
 
 /** GET /api/v1/admin/courses/{courseId}/stats/ — tiles and series of one course. */
 export const getCourseStats = async (
-  courseId: string, forceRefresh = false, startDate?: string, endDate?: string,
+  courseId: string,
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
 ): Promise<CourseStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getCoursesBaseUrl()}/${encodeURIComponent(courseId)}/stats/`,
@@ -194,7 +197,9 @@ export const getCourseStats = async (
 
 /** GET /api/v1/admin/courses/stats/ — tiles and series of the Courses list strip. */
 export const getCourseListStats = async (
-  forceRefresh = false, startDate?: string, endDate?: string,
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
 ): Promise<CourseListStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getCoursesBaseUrl()}/stats/`,

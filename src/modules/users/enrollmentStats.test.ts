@@ -94,7 +94,10 @@ describe('enrollmentsByMonth', () => {
   it('uses the selected dates and fills the selected months', () => {
     const series = enrollmentsByMonth(
       [row({ enrolledAt: '2025-01-01T00:00:00Z' }), row({ enrolledAt: '2025-02-15T00:00:00Z' })],
-      new Date('2026-11-01T00:00:00Z'), 12, '2025-01-15', '2025-03-31',
+      new Date('2026-11-01T00:00:00Z'),
+      12,
+      '2025-01-15',
+      '2025-03-31',
     );
     expect(series).toEqual([
       { period: '2025-01', value: 0 },

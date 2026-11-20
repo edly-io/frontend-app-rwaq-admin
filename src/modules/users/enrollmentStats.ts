@@ -56,7 +56,11 @@ export const modeCounts = (rows: UserEnrollment[]): { mode: string; count: numbe
 
 /** Enrollments per month of `enrolledAt`, zero-filled over the last `months` months ending at `now`. */
 export const enrollmentsByMonth = (
-  rows: UserEnrollment[], now: Date, months = 12, startDate?: string, endDate?: string,
+  rows: UserEnrollment[],
+  now: Date,
+  months = 12,
+  startDate?: string,
+  endDate?: string,
 ): SeriesPoint[] => {
   const key = (year: number, month: number) => `${year}-${String(month + 1).padStart(2, '0')}`;
   const counts = new Map<string, number>();
@@ -69,8 +73,11 @@ export const enrollmentsByMonth = (
     counts.set(period, (counts.get(period) ?? 0) + 1);
   });
   const end = endDate ? new Date(`${endDate}T00:00:00Z`) : now;
-  let start = startDate ? new Date(`${startDate}T00:00:00Z`) : new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - months + 1, 1));
-  let length = Math.max(0, (end.getUTCFullYear() - start.getUTCFullYear()) * 12 + end.getUTCMonth() - start.getUTCMonth() + 1);
+  let start = startDate
+    ? new Date(`${startDate}T00:00:00Z`)
+    : new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - months + 1, 1));
+  const elapsedMonths = (end.getUTCFullYear() - start.getUTCFullYear()) * 12;
+  let length = Math.max(0, elapsedMonths + end.getUTCMonth() - start.getUTCMonth() + 1);
   if (length > 24) {
     start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 23, 1));
     length = 24;

@@ -99,6 +99,7 @@ export interface ProgramLearner {
   completionDate: string | null;
   isActive: boolean;
   status?: 'enrolled' | 'invited';
+  courseFailures?: string[];
 }
 
 /** Sortable ordering values for the program list. */

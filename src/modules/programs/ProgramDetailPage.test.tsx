@@ -91,4 +91,26 @@ describe('ProgramDetailPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancel invite: invite@example.com' }));
     expect(cancel).toHaveBeenCalledWith(12, expect.objectContaining({ onError: expect.any(Function) }));
   });
+
+  it('shows courses that failed when an invitation was claimed', () => {
+    (hooks.useProgramLearners as jest.Mock).mockReturnValue({
+      data: {
+        results: [{
+          id: 12,
+          email: 'learner@example.com',
+          name: 'Learner',
+          status: 'enrolled',
+          isActive: true,
+          courseFailures: ['course-v1:Org+Course+2026'],
+        }],
+        invitedCount: 0,
+        pagination: { count: 1, numPages: 1 },
+      },
+      isLoading: false,
+      isError: false,
+    });
+    renderPage('is_free');
+    fireEvent.click(screen.getByRole('tab', { name: 'Learners' }));
+    expect(screen.getByText('Course enrollment failed: course-v1:Org+Course+2026')).toBeInTheDocument();
+  });
 });

@@ -1,7 +1,9 @@
 /**
  * CourseListStatsStrip — global tiles over the whole catalog, three compact charts, Not available instead of zero.
  */
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import {
+  fireEvent, screen, waitFor, within,
+} from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from '../data/hooks';
 import CourseListStatsStrip from './CourseListStatsStrip';
@@ -53,10 +55,10 @@ describe('CourseListStatsStrip', () => {
   it('passes a selected range to the query and refresh', () => {
     mockQuery(query());
     renderWrapper(<CourseListStatsStrip />);
-    fireEvent.click(screen.getByRole('button', { name: /All time/ }));
-    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Last 30 days' }));
+    fireEvent.click(screen.getByRole('button', { name: /Statistics period/ }));
+    fireEvent.click(within(screen.getByRole('group', { name: 'Select time period' })).getByRole('button', { name: 'Last 30 days' }));
     expect(hooks.useCourseListStats).toHaveBeenLastCalledWith(true, expect.any(String), expect.any(String));
-    expect(screen.getByText('Showing data for the selected range. Current-state figures are unchanged.')).toBeInTheDocument();
+    expect(screen.getByText('Showing data for the selected range in UTC. Current-state figures are unchanged.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
     expect(hooks.courseListStatsRefresh).toHaveBeenCalledWith(expect.any(String), expect.any(String));
   });

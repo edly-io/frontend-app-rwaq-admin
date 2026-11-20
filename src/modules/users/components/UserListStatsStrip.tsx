@@ -60,10 +60,16 @@ const UserListStatsStrip = () => {
       isOpen={isOpen}
       onToggle={() => setIsOpen((open) => !open)}
       note={intl.formatMessage(startDate || endDate ? statsMessages.rangeNote : statsMessages.globalNote)}
-      datePicker={<DateRangePicker startDate={startDate} endDate={endDate} onChange={(start, end) => {
-        setStartDate(start);
-        setEndDate(end);
-      }} />}
+      datePicker={(
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+        />
+)}
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}

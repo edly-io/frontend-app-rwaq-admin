@@ -60,9 +60,9 @@ describe('UserStatsStrip', () => {
     mockStats(query());
     renderStrip();
     fireEvent.click(screen.getByRole('button', { name: /All time/ }));
-    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Last 30 days' }));
+    fireEvent.click(within(screen.getByRole('group', { name: 'Select time period' })).getByRole('button', { name: 'Last 30 days' }));
     expect(hooks.useUserStats).toHaveBeenLastCalledWith(7, true, expect.any(String), expect.any(String));
-    expect(screen.getByText('Showing data for the selected range. Current-state figures are unchanged.')).toBeInTheDocument();
+    expect(screen.getByText('Showing data for the selected range in UTC. Current-state figures are unchanged.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
     expect(hooks.userStatsRefresh).toHaveBeenCalledWith(7, expect.any(String), expect.any(String));
   });

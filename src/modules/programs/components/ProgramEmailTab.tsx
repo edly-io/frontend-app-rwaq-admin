@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { ActionRow, Alert, AlertModal, Button, Form } from '@openedx/paragon';
+import {
+  ActionRow, Alert, AlertModal, Button, Form,
+} from '@openedx/paragon';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -75,12 +77,20 @@ const ProgramEmailTab = ({ uuid }: { uuid: string }) => {
         <Form.Control
           value={subject}
           maxLength={128}
-          onChange={(event) => { setConfirming(false); setSubject(event.target.value); }}
+          onChange={(event) => {
+            setConfirming(false); setSubject(event.target.value); if (send.isSuccess) { send.reset(); }
+          }}
         />
       </Form.Group>
       <Form.Group controlId="program-email-recipients">
         <Form.Label>{intl.formatMessage(messages.recipients)}</Form.Label>
-        <Form.Control as="select" value={recipients} onChange={(event) => { setConfirming(false); setRecipients(event.target.value); }}>
+        <Form.Control
+          as="select"
+          value={recipients}
+          onChange={(event) => {
+            setConfirming(false); setRecipients(event.target.value); if (send.isSuccess) { send.reset(); }
+          }}
+        >
           <option value="myself">{intl.formatMessage(messages.myself)}</option>
           <option value="active">{intl.formatMessage(messages.active)}</option>
           <option value="not_completed">{intl.formatMessage(messages.notCompleted)}</option>
@@ -93,7 +103,7 @@ const ProgramEmailTab = ({ uuid }: { uuid: string }) => {
       <p>{intl.formatMessage(messages.body)}</p>
       <RichTextEditor
         value={body}
-        onChange={(value) => { setConfirming(false); setBody(value); }}
+        onChange={(value) => { setConfirming(false); setBody(value); if (send.isSuccess) { send.reset(); } }}
         ariaLabel={intl.formatMessage(messages.body)}
       />
       <Button

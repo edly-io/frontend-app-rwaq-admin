@@ -106,15 +106,19 @@ export const bulkEnrollLearners = async (
     ? [...new Set(emails.toLowerCase().split(/[,;\s]+/).filter(Boolean))] : [];
   const addressFor = (index: number) => addresses[index] ?? `#${index + 1}`;
   const result = camelCaseObject(data) as Omit<BulkEnrollResult, 'failed' | 'courseFailures' | 'notificationFailures'> & {
-    failed: { index: number; reason: string }[];
-    courseFailures: { index: number; courseId: string; reason: string }[];
-    notificationFailures: { index: number }[];
+    failed: { index: number; email?: string; reason: string }[];
+    courseFailures: { index: number; email?: string; courseId: string; reason: string }[];
+    notificationFailures: { index: number; email?: string }[];
   };
   return {
     ...result,
-    failed: (result.failed ?? []).map((item) => ({ ...item, email: addressFor(item.index) })),
-    courseFailures: (result.courseFailures ?? []).map((item) => ({ ...item, email: addressFor(item.index) })),
-    notificationFailures: (result.notificationFailures ?? []).map((item) => ({ ...item, email: addressFor(item.index) })),
+    failed: (result.failed ?? []).map((item) => ({ ...item, email: item.email ?? addressFor(item.index) })),
+    courseFailures: (result.courseFailures ?? []).map((item) => ({
+      ...item, email: item.email ?? addressFor(item.index),
+    })),
+    notificationFailures: (result.notificationFailures ?? []).map((item) => ({
+      ...item, email: item.email ?? addressFor(item.index),
+    })),
   };
 };
 
@@ -136,7 +140,11 @@ export const unenrollProgramLearner = async (
   );
 };
 
-export const getProgramLearners = async (uuid: string, page = 1, search = ''): Promise<ProgramSubPage<ProgramLearner>> => {
+export const getProgramLearners = async (
+  uuid: string,
+  page = 1,
+  search = '',
+): Promise<ProgramSubPage<ProgramLearner>> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/learners/`, {
     params: { page, page_size: 10, ...(search ? { search } : {}) },
   });
@@ -177,7 +185,11 @@ export const triggerProgramReport = async (
 // ── Stats ─────────────────────────────────────────────────────────────────────
 
 /** GET /api/v1/admin/programs/stats/ — tiles and series of the Programs list strip. */
-export const getProgramListStats = async (forceRefresh = false, startDate?: string, endDate?: string): Promise<ProgramListStats> => {
+export const getProgramListStats = async (
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
+): Promise<ProgramListStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getProgramsBaseUrl()}/stats/`,
     ...(startDate || endDate
@@ -188,7 +200,12 @@ export const getProgramListStats = async (forceRefresh = false, startDate?: stri
 };
 
 /** GET /api/v1/admin/programs/{uuid}/stats/ — tiles and series of one program. */
-export const getProgramStats = async (uuid: string, forceRefresh = false, startDate?: string, endDate?: string): Promise<ProgramStats> => {
+export const getProgramStats = async (
+  uuid: string,
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
+): Promise<ProgramStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getProgramsBaseUrl()}/${uuid}/stats/`,
     ...(startDate || endDate

@@ -76,10 +76,16 @@ const CourseStatsStrip = ({ courseId }: { courseId: string }) => {
   return (
     <StatsStrip
       note={intl.formatMessage(startDate || endDate ? statsMessages.rangeNote : statsMessages.globalNote)}
-      datePicker={<DateRangePicker startDate={startDate} endDate={endDate} onChange={(start, end) => {
-        setStartDate(start);
-        setEndDate(end);
-      }} />}
+      datePicker={(
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+        />
+)}
       isOpen={isOpen}
       onToggle={() => setIsOpen((open) => !open)}
       isForbidden={state.isForbidden}

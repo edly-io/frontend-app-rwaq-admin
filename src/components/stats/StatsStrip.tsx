@@ -114,33 +114,44 @@ const StatsStrip = ({
           {intl.formatMessage(isOpen ? messages.hide : messages.show)}
         </Button>
       </div>
-      {isOpen && <div className="d-flex align-items-center justify-content-end flex-wrap mb-3" style={{ gap: '0.75rem' }}>
+      {isOpen && (
+      <div className="d-flex align-items-center justify-content-end flex-wrap mb-3" style={{ gap: '0.75rem' }}>
         {datePicker}
         {generatedAt && (
-          <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
-            {intl.formatMessage(dashboardMessages.lastUpdated, { time: formatRelativeTime(generatedAt, intl) })}
-          </span>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--rwaq-muted, #6B757F)' }}>
+          {intl.formatMessage(dashboardMessages.lastUpdated, { time: formatRelativeTime(generatedAt, intl) })}
+        </span>
         )}
         {onRefresh && (
-          <button
-            type="button"
-            aria-label={intl.formatMessage(messages.refresh)}
-            onClick={onRefresh}
-            aria-busy={isRefreshing}
-            disabled={isRefreshing}
+        <button
+          type="button"
+          aria-label={intl.formatMessage(messages.refresh)}
+          onClick={onRefresh}
+          aria-busy={isRefreshing}
+          disabled={isRefreshing}
+          style={{
+            border: 'none',
+            background: 'transparent',
+            padding: '0.25rem',
+            cursor: isRefreshing ? 'not-allowed' : 'pointer',
+            opacity: isRefreshing ? 0.5 : 1,
+            color: 'var(--rwaq-muted, #6B757F)',
+            display: 'inline-flex',
+            alignItems: 'center',
+          }}
+        >
+          <Icon
+            src={Refresh}
             style={{
-              border: 'none', background: 'transparent', padding: '0.25rem',
-              cursor: isRefreshing ? 'not-allowed' : 'pointer', opacity: isRefreshing ? 0.5 : 1,
-              color: 'var(--rwaq-muted, #6B757F)', display: 'inline-flex', alignItems: 'center',
-            }}
-          >
-            <Icon src={Refresh} style={{
-              width: '1.125rem', height: '1.125rem',
+              width: '1.125rem',
+              height: '1.125rem',
               animation: isRefreshing ? 'rwaq-spin 0.8s linear infinite' : 'none',
-            }} />
-          </button>
+            }}
+          />
+        </button>
         )}
-      </div>}
+      </div>
+      )}
       <div id={bodyId} hidden={!isOpen}>
         {isOpen && renderBody()}
       </div>

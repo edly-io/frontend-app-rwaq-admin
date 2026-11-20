@@ -40,9 +40,9 @@ describe('ProgramStatsStrip', () => {
     mockQuery(query());
     renderWrapper(<ProgramStatsStrip uuid={UUID} totalCourses={3} />);
     fireEvent.click(screen.getByRole('button', { name: /All time/ }));
-    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Last 30 days' }));
+    fireEvent.click(within(screen.getByRole('group', { name: 'Select time period' })).getByRole('button', { name: 'Last 30 days' }));
     expect(hooks.useProgramStats).toHaveBeenLastCalledWith(UUID, true, expect.any(String), expect.any(String));
-    expect(screen.getByText('Showing data for the selected range. Current-state figures are unchanged.')).toBeInTheDocument();
+    expect(screen.getByText('Showing data for the selected range in UTC. Current-state figures are unchanged.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
     expect(hooks.programStatsRefresh).toHaveBeenCalledWith(UUID, expect.any(String), expect.any(String));
   });

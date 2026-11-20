@@ -78,7 +78,11 @@ export const getUserEnrollmentProgress = async (id: number): Promise<EnrollmentP
 };
 
 /** GET /api/v1/admin/users/stats/ — tiles and series of the Users list strip. */
-export const getUserListStats = async (forceRefresh = false, startDate?: string, endDate?: string): Promise<UserListStats> => {
+export const getUserListStats = async (
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
+): Promise<UserListStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getUsersBaseUrl()}/stats/`,
     ...(startDate || endDate
@@ -89,7 +93,12 @@ export const getUserListStats = async (forceRefresh = false, startDate?: string,
 };
 
 /** GET /api/v1/admin/users/{id}/stats/ — programs, last activity and subscription of one user. */
-export const getUserStats = async (id: number, forceRefresh = false, startDate?: string, endDate?: string): Promise<UserStats> => {
+export const getUserStats = async (
+  id: number,
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
+): Promise<UserStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getUsersBaseUrl()}/${id}/stats/`,
     ...(startDate || endDate

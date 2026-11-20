@@ -215,6 +215,10 @@ const messages = defineMessages({
   cancelInvite: { id: 'rwaq.admin.programs.learners.cancelInvite', defaultMessage: 'Cancel invite' },
   cancelInviteError: { id: 'rwaq.admin.programs.learners.cancelInviteError', defaultMessage: 'Could not cancel the invite.' },
   invitedCount: { id: 'rwaq.admin.programs.learners.invitedCount', defaultMessage: '{count} invited' },
+  courseEnrollmentFailed: {
+    id: 'rwaq.admin.programs.learners.courseEnrollmentFailed',
+    defaultMessage: 'Course enrollment failed: {course}',
+  },
   learnerSearch: { id: 'rwaq.admin.programs.learners.search', defaultMessage: 'Search learners and invites' },
   unenrollLearnerAction: { id: 'rwaq.admin.programs.learners.unenroll.action', defaultMessage: 'Unenroll' },
   unenrollLearnerTitle: { id: 'rwaq.admin.programs.learners.unenroll.title', defaultMessage: 'Unenroll from program' },
@@ -257,6 +261,14 @@ const messages = defineMessages({
   bulkEnrollInvited: {
     id: 'rwaq.admin.programs.bulkEnroll.invited',
     defaultMessage: '{count, plural, one {# person invited} other {# people invited}}.',
+  },
+  bulkEnrollPendingWithoutAutoEnroll: {
+    id: 'rwaq.admin.programs.bulkEnroll.pendingWithoutAutoEnroll',
+    defaultMessage: 'Invitations remain pending and will not enroll learners automatically.',
+  },
+  bulkEnrollPendingWithoutNotification: {
+    id: 'rwaq.admin.programs.bulkEnroll.pendingWithoutNotification',
+    defaultMessage: 'No invitation email was sent.',
   },
   bulkEnrollTitle: { id: 'rwaq.admin.programs.bulkEnroll.title', defaultMessage: 'Enroll learners' },
   bulkEnrollHelp: { id: 'rwaq.admin.programs.bulkEnroll.help', defaultMessage: 'Paste email addresses, separated by commas or new lines. Learners are enrolled in the program and all of its courses.' },

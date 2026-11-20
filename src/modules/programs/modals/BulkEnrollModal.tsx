@@ -287,6 +287,8 @@ const BulkEnrollModal = ({
             {result.invited.length > 0 && (
               <div className="small mt-1">
                 {intl.formatMessage(messages.bulkEnrollInvited, { count: result.invited.length })}
+                {!autoEnroll && <div>{intl.formatMessage(messages.bulkEnrollPendingWithoutAutoEnroll)}</div>}
+                {!notify && <div>{intl.formatMessage(messages.bulkEnrollPendingWithoutNotification)}</div>}
               </div>
             )}
           </Alert>

@@ -12,7 +12,7 @@
  * The UUID (not program_key) is used in the URL because program_key contains
  * ':' and '+' that would require URL encoding.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   Alert,
@@ -190,15 +190,29 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
   const dash = intl.formatMessage(messages.detailNone);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  useEffect(() => {
+    const timer = setTimeout(() => { setDebouncedSearch(search.trim()); setPage(1); }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
   const [cancelError, setCancelError] = useState(false);
   const cancelInvite = useCancelProgramInvite(uuid);
-  const { data, isLoading, isError } = useProgramLearners(uuid, page, search);
+  const { data, isLoading, isError } = useProgramLearners(uuid, page, debouncedSearch);
 
   const columns: ColumnDef<ProgramLearner>[] = [
     {
       label: intl.formatMessage(messages.colLearnerName),
       key: 'name',
-      renderCell: (value) => <span>{value as string}</span>,
+      renderCell: (value, row) => (
+        <div>
+          <span>{value as string}</span>
+          {row.courseFailures?.map((course) => (
+            <div key={course} className="text-danger small">
+              {intl.formatMessage(messages.courseEnrollmentFailed, { course })}
+            </div>
+          ))}
+        </div>
+      ),
     },
     {
       label: intl.formatMessage(messages.colLearnerEmail),
@@ -294,12 +308,12 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
         aria-label={intl.formatMessage(messages.learnerSearch)}
         placeholder={intl.formatMessage(messages.learnerSearch)}
         value={search}
-        onChange={(event) => { setSearch(event.target.value); setPage(1); }}
+        onChange={(event) => setSearch(event.target.value)}
       />
-      <p className="small mt-2">{intl.formatMessage(messages.invitedCount, { count: data?.invitedCount ?? 0 })}</p>
+      {data && <p className="small mt-2">{intl.formatMessage(messages.invitedCount, { count: data.invitedCount })}</p>}
       <CsvDownloadButton
         url={getStudioApiUrl(`/api/v1/admin/programs/${uuid}/learners/csv/`)}
-        params={{ search }}
+        params={{ search: debouncedSearch }}
         fallbackName="program_learners"
       />
       <div className="d-flex justify-content-end mb-3">
