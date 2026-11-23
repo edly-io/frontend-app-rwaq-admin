@@ -126,6 +126,23 @@ describe('MetricChart with valueFormatter and yAxisWidth', () => {
   });
 });
 
+describe('registration count axis', () => {
+  it.each([
+    ['en', '2,409,628'],
+    ['ar-SA', '٢٬٤٠٩٬٦٢٨'],
+  ])('groups full counts and reserves enough width in %s', (locale, expected) => {
+    render(
+      <IntlProvider locale={locale}>
+        <MetricChart type="bar" data={[{ name: 'Jan', value: 2409628 }]} ariaLabel="Chart" formatCountAxis />
+      </IntlProvider>,
+    );
+
+    const { tickFormatter, width } = mockSeen.YAxis;
+    expect((tickFormatter as (value: number) => string)(2409628)).toBe(expected);
+    expect(width).toBeGreaterThan(36);
+  });
+});
+
 describe('named categories below vertical bars', () => {
   const categories = [
     { name: 'A very long organization name (7)', value: 3 },

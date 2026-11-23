@@ -100,6 +100,8 @@ export interface MetricChartProps {
   maxXLabels?: number;
   /** Formats the y-axis ticks and the tooltip values, for money and the like. Omit to show the plain number. */
   valueFormatter?: (value: number) => string;
+  /** Show localized whole numbers and reserve space for the longest count. */
+  formatCountAxis?: boolean;
   /** Width in px kept for the y-axis labels. 36 fits small whole numbers, wider figures need more. */
   yAxisWidth?: number;
 }
@@ -249,6 +251,7 @@ const MetricChart = ({
   categoryLabels = false,
   maxXLabels,
   valueFormatter,
+  formatCountAxis = false,
   yAxisWidth = 36,
 }: MetricChartProps) => {
   const layoutIntl = useIntl();
@@ -285,6 +288,15 @@ const MetricChart = ({
     const step = Math.ceil(max / (TICK_COUNT - 1));
     return Array.from({ length: TICK_COUNT }, (_, i) => i * step);
   })();
+
+  const countFormatter = formatCountAxis
+    ? new Intl.NumberFormat(layoutIntl.locale, { useGrouping: true, maximumFractionDigits: 0 }).format
+    : undefined;
+  const tickFormatter = valueFormatter ?? countFormatter;
+  // Allow up to one em per character at the tick font size, plus the tick offset.
+  const tickWidth = countFormatter && yTicks
+    ? Math.max(yAxisWidth, Math.max(...yTicks.map((tick) => countFormatter(tick).length)) * mutedTick.fontSize + 8)
+    : yAxisWidth;
 
   const xLabelInterval = labelInterval(data.length, categoryLabels ? undefined : maxXLabels);
   const labelAngle = xLabelAngle ?? (categoryLabels ? CATEGORY_LABEL_ANGLE : undefined);
@@ -329,9 +341,9 @@ const MetricChart = ({
           axisLine={false}
           tickLine={false}
           allowDecimals={false}
-          width={yAxisWidth}
+          width={tickWidth}
           ticks={yTicks}
-          {...(valueFormatter ? { tickFormatter: valueFormatter } : {})}
+          {...(tickFormatter ? { tickFormatter } : {})}
           domain={yTicks ? [0, yTicks[yTicks.length - 1]] : [0, 'auto']}
         />
       ),

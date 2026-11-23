@@ -36,6 +36,7 @@ export interface StatsChartCardProps {
   xLabelAngle?: number;
   categoryLabels?: boolean;
   maxXLabels?: number;
+  formatCountAxis?: boolean;
   unavailableLabels?: string[];
   /** Show the legend of a bar or line chart. Needed with more than one series. */
   showLegend?: boolean;
@@ -43,7 +44,7 @@ export interface StatsChartCardProps {
 
 const StatsChartCard = ({
   title, info, subtitle, type, data, series, isLoading = false, isUnavailable = false, isEmpty = false,
-  xLabelAngle, categoryLabels = false, maxXLabels, unavailableLabels = [], showLegend = false,
+  xLabelAngle, categoryLabels = false, maxXLabels, formatCountAxis, unavailableLabels = [], showLegend = false,
 }: StatsChartCardProps) => {
   const intl = useIntl();
 
@@ -82,6 +83,7 @@ const StatsChartCard = ({
             xLabelAngle={xLabelAngle}
             categoryLabels={categoryLabels}
             maxXLabels={maxXLabels}
+            formatCountAxis={formatCountAxis}
           />
         </div>
       </div>

@@ -3,7 +3,10 @@
  * settings that are set, and very long Arabic names and about lines. The layout itself is CSS
  * (a container query), so what is checked here is the markup the CSS works on.
  */
+import type { ReactElement } from 'react';
 import { render, screen } from '@testing-library/react';
+import { IntlProvider } from '@edx/frontend-platform/i18n';
+import { formatDate } from './codeDates';
 import type { CodeCard } from '../data/types';
 import { CARD_CSS, EXPORT_WIDTH } from './cardStyles';
 import EnrollmentCodeCard from './EnrollmentCodeCard';
@@ -36,9 +39,18 @@ const LONG_ARABIC_NAME = `مقدمة شاملة في أساسيات السلام
 const LONG_ABOUT = `إحدى مبادرات جمعية أروقة المعرفة المتخصصة في دعم التعليم المفتوح ونشر المعرفة باللغة العربية ${
   'لجميع المتعلمين في العالم العربي وخارجه '.repeat(4)}`;
 
+const renderCard = (ui: ReactElement, locale = 'en') => render(
+  <IntlProvider
+    locale={locale}
+    messages={locale === 'ar' ? { 'rwaq.admin.enrollmentCodes.card.expires': 'ينتهي في {date}' } : {}}
+  >
+    {ui}
+  </IntlProvider>,
+);
+
 describe('EnrollmentCodeCard', () => {
   it('leaves out the QR part when there is no link, and names an organization code by its organization', () => {
-    const { container } = render(
+    const { container } = renderCard(
       <EnrollmentCodeCard card={{
         ...baseCard, qrUrl: '', qrMissing: true, itemKind: 'organization', itemName: 'إدراك',
       }}
@@ -49,9 +61,36 @@ describe('EnrollmentCodeCard', () => {
     expect(container.querySelector('.coupon-card__quiz-title')).toHaveTextContent('صالح للتسجيل في: إدراك');
   });
 
+  it.each([
+    ['en', 'Rwaq'],
+    ['ar', 'رواق'],
+  ])('shows the organization name for the %s interface', (locale, expected) => {
+    renderCard(<EnrollmentCodeCard card={{ ...baseCard, itemKind: 'organization', itemName: 'Rwaq' }} />, locale);
+    expect(screen.getByText(expected, { selector: 'bdi' })).toBeInTheDocument();
+  });
+
+  it('falls back to the stored name if the Arabic name is blank', () => {
+    renderCard(<EnrollmentCodeCard card={{
+      ...baseCard, itemKind: 'organization', itemName: 'Rwaq', organizationArabicName: ' ',
+    }}
+    />, 'ar');
+    expect(screen.getByText('Rwaq', { selector: 'bdi' })).toBeInTheDocument();
+  });
+
+  it('keeps the stored program name and formats the expiry like the Codes table', () => {
+    const expiresAt = '2026-12-31T23:59:59Z';
+    renderCard(<EnrollmentCodeCard card={{
+      ...baseCard, itemKind: 'program', itemName: 'Leadership', expiresAt,
+    }}
+    />, 'ar');
+    expect(screen.getByText('Leadership')).toBeInTheDocument();
+    expect(screen.getByText(`ينتهي في ${formatDate(expiresAt, 'ar')}`)).toBeInTheDocument();
+  });
+
   it('shows the fixed bilingual texts and the code', () => {
-    const { container } = render(<EnrollmentCodeCard card={baseCard} />);
+    const { container } = renderCard(<EnrollmentCodeCard card={baseCard} />);
     expect(screen.getByText('V4WPTB')).toBeInTheDocument();
+    expect(container.querySelector('.coupon-card__expiry')).not.toBeInTheDocument();
     expect(container.querySelector('.coupon-card__badge')).toHaveTextContent('ENROLLMENT CODE · رمز التسجيل');
     expect(container.querySelector('.coupon-card__code-label')).toHaveTextContent('الرمز · CODE');
     expect(container.querySelector('.coupon-card__quiz-title')).toHaveTextContent('صالح للتسجيل في: أساسيات السلامة');
@@ -60,7 +99,7 @@ describe('EnrollmentCodeCard', () => {
   });
 
   it('marks the Arabic parts right-to-left and Arabic', () => {
-    const { container } = render(<EnrollmentCodeCard card={baseCard} />);
+    const { container } = renderCard(<EnrollmentCodeCard card={baseCard} />);
     expect(container.querySelector('.coupon-card')).toHaveAttribute('dir', 'ltr');
     ['.coupon-card__quiz-title', '.coupon-card__identity'].forEach((selector) => {
       const node = container.querySelector(selector);
@@ -72,14 +111,14 @@ describe('EnrollmentCodeCard', () => {
   });
 
   it('shows the logo on its white tile and the QR code', () => {
-    const { container } = render(<EnrollmentCodeCard card={baseCard} />);
+    const { container } = renderCard(<EnrollmentCodeCard card={baseCard} />);
     const logo = container.querySelector('.coupon-card__logo-tile img');
     expect(logo).toHaveAttribute('src', baseCard.logo);
     expect(container.querySelector('.coupon-card__qr svg[data-qr]')).toBeInTheDocument();
   });
 
   it('shows the slogan, the about line and every link with its text', () => {
-    const { container } = render(<EnrollmentCodeCard card={baseCard} />);
+    const { container } = renderCard(<EnrollmentCodeCard card={baseCard} />);
     expect(screen.getByText('رواق .. المنصة العربية للتعليم المفتوح')).toBeInTheDocument();
     expect(screen.getByText('إحدى مبادرات جمعية أروقة المعرفة')).toBeInTheDocument();
     const links = Array.from(container.querySelectorAll('.coupon-card__contact')).map((n) => n.textContent?.trim());
@@ -88,7 +127,7 @@ describe('EnrollmentCodeCard', () => {
   });
 
   it('shows only the platform settings that are set', () => {
-    const { container } = render(
+    const { container } = renderCard(
       <EnrollmentCodeCard card={{ ...baseCard, logo: '', platform: { slogan: 'Only a slogan', about: '', links: [] } }} />,
     );
     expect(screen.getByText('Only a slogan')).toBeInTheDocument();
@@ -98,7 +137,7 @@ describe('EnrollmentCodeCard', () => {
   });
 
   it('leaves the identity block out when the platform set nothing, and skips a link with no text', () => {
-    const { container } = render(
+    const { container } = renderCard(
       <EnrollmentCodeCard
         card={{
           ...baseCard,
@@ -110,7 +149,7 @@ describe('EnrollmentCodeCard', () => {
   });
 
   it('keeps a very long Arabic item name and a very long about line in the markup the CSS wraps', () => {
-    const { container } = render(
+    const { container } = renderCard(
       <EnrollmentCodeCard
         card={{ ...baseCard, itemName: LONG_ARABIC_NAME, platform: { ...baseCard.platform, about: LONG_ABOUT } }}
       />,

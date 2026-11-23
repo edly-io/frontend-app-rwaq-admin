@@ -284,6 +284,7 @@ const DashboardPage = () => {
     type: ChartType,
     title: string,
     fillHeight = false,
+    formatCountAxis = false,
   ) => {
     const fillStyle = fillHeight ? { flex: 1 as const } : undefined;
     if (trendsLoading) {
@@ -321,6 +322,7 @@ const DashboardPage = () => {
           ariaLabel={`${title}. ${seriesLabel}.`}
           height={fillHeight ? '100%' : CHART_HEIGHT}
           hideLegend
+          formatCountAxis={formatCountAxis}
         />
       </div>
     );
@@ -685,7 +687,7 @@ const DashboardPage = () => {
               columns={[
                 { label: intl.formatMessage(messages.modeColMode), render: (row) => modeLabel(intl, row.mode) },
                 {
-                  label: intl.formatMessage(messages.kpiEnrollments),
+                  label: intl.formatMessage(messages.modeColEnrollments),
                   render: (row) => formatCount(row.count),
                   isNumeric: true,
                 },
@@ -904,6 +906,7 @@ const DashboardPage = () => {
             intl.formatMessage(messages.seriesRegistrations),
             'bar',
             intl.formatMessage(messages.registrationTrend),
+            true,
             true,
           )}
         </div>

@@ -135,6 +135,7 @@ export interface OrderRow {
   currency: string;
   userId: number;
   username: string;
+  fullName?: string;
   email: string;
   orderBy: string;
   actualPrice: string;
@@ -178,6 +179,7 @@ export interface SubscriptionRow {
   /** WooCommerce subscription ID. Empty for admin subscriptions. */
   subscriptionId: string;
   learner: string;
+  fullName?: string;
   email: string;
   plan: 'monthly' | 'yearly';
   source: 'wordpress' | 'admin';
