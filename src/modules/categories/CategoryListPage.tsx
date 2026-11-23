@@ -156,19 +156,29 @@ const CategoryListPage = () => {
       [descending]: ArrowDropDown,
     }[ordering] ?? ArrowDropUpDown;
     const nextSortLabel = sortOptions.find((option) => option.value === nextOrder)?.label;
+    // Screen readers hear how the table is sorted now (a description, so the button keeps its name).
+    const currentSortLabel = ordering === orderingField || ordering === descending
+      ? sortOptions.find((option) => option.value === ordering)?.label
+      : undefined;
+    const stateId = `categories-sort-state-${key}`;
     return {
       key,
       label,
       renderHeader: () => (
-        <button
-          type="button"
-          className="btn btn-link p-0 text-reset font-weight-bold d-inline-flex align-items-center"
-          title={nextSortLabel}
-          onClick={() => updateParams({ ordering: nextOrder })}
-        >
-          {label}
-          <Icon src={sortIcon} aria-hidden />
-        </button>
+        <>
+          <Button
+            variant="link"
+            size="sm"
+            className="p-0 text-reset font-weight-bold d-inline-flex align-items-center"
+            title={nextSortLabel}
+            aria-describedby={currentSortLabel ? stateId : undefined}
+            onClick={() => updateParams({ ordering: nextOrder })}
+          >
+            {label}
+            <Icon src={sortIcon} aria-hidden />
+          </Button>
+          {currentSortLabel && <span id={stateId} className="sr-only">{currentSortLabel}</span>}
+        </>
       ),
     };
   };
