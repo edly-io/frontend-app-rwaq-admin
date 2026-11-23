@@ -17,6 +17,7 @@ export const CARD_CSS = `
 .coupon-card__code{font-size:48px;font-weight:800;letter-spacing:12px;text-transform:uppercase;color:#fff;line-height:1.15;text-indent:12px;max-width:100%;text-align:center;white-space:nowrap}
 .coupon-card__quiz{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
 .coupon-card__quiz-title{font-size:20px;font-weight:700;color:#fff;max-width:100%;line-height:1.5;text-align:center;overflow-wrap:anywhere}
+.coupon-card__expiry{font-size:13px;color:#ffffffd9;text-align:center}
 .coupon-card__identity{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:16px;border-top:1px solid rgba(255,255,255,.18);text-align:center}
 .coupon-card__slogan{font-size:17px;font-weight:700;color:#5accff;max-width:100%;overflow-wrap:anywhere}
 .coupon-card__about{font-size:13px;color:#ffffffbf;max-width:100%;overflow-wrap:anywhere;line-height:1.6}
