@@ -34,7 +34,10 @@ const choose = (value: string) => {
   fireEvent.click(screen.getByRole('option', { name: isProgram ? /Leadership program/ : /Safety basics/ }));
 };
 const pickScope = (name: string) => fireEvent.click(screen.getByRole('radio', { name }));
-const submit = () => fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+const submit = (codeName = 'Safety cohort') => {
+  fireEvent.change(screen.getByLabelText('Code name'), { target: { value: codeName } });
+  fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+};
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -94,9 +97,17 @@ describe('CreateCodeModal', () => {
     fireEvent.change(screen.getByLabelText('Number of uses'), { target: { value: '100' } });
     submit();
     await waitFor(() => expect(mockCreate).toHaveBeenCalledWith({
-      code: undefined, organization: 'Edrakk', maxUses: 100, expiresAt: undefined,
+      codeName: 'Safety cohort', code: undefined, organization: 'Edrakk', maxUses: 100, expiresAt: undefined,
     }));
     expect(mockCreate.mock.calls[0][0]).not.toHaveProperty('courseId');
+  });
+
+  it('requires a name even when the course is already selected', async () => {
+    renderModal();
+    choose(`course:${COURSE_KEY}`);
+    submit('   ');
+    expect(await screen.findByText('Enter a code name.')).toBeInTheDocument();
+    expect(mockCreate).not.toHaveBeenCalled();
   });
 
   it('asks for an organization when none is chosen', async () => {
@@ -124,7 +135,7 @@ describe('CreateCodeModal', () => {
     choose(`course:${COURSE_KEY}`);
     submit();
     await waitFor(() => expect(mockCreate).toHaveBeenCalledWith({
-      code: undefined, courseId: COURSE_KEY, maxUses: 1, expiresAt: undefined,
+      codeName: 'Safety cohort', code: undefined, courseId: COURSE_KEY, maxUses: 1, expiresAt: undefined,
     }));
     expect(onCreated).toHaveBeenCalledWith({ id: 11, code: 'ABC234' });
     expect(onClose).toHaveBeenCalled();
@@ -141,7 +152,7 @@ describe('CreateCodeModal', () => {
     fireEvent.change(screen.getByLabelText('Expires on (optional)'), { target: { value: '2026-12-31' } });
     submit();
     await waitFor(() => expect(mockCreate).toHaveBeenCalledWith({
-      code: 'RIYADH26', programUuid: PROGRAM_UUID, maxUses: 50, expiresAt: '2026-12-31',
+      codeName: 'Safety cohort', code: 'RIYADH26', programUuid: PROGRAM_UUID, maxUses: 50, expiresAt: '2026-12-31',
     }));
   });
 

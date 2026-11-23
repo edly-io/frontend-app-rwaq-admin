@@ -23,10 +23,86 @@ const messages = defineMessages({
   // ── Codes list ─────────────────────────────────────────────────────────────
   codesSearch: {
     id: 'rwaq.admin.enrollmentCodes.codes.search',
-    defaultMessage: 'Search by code, course, program or organization, or creator',
+    defaultMessage: 'Search by code, code name, course, program, organization or creator',
   },
   create: { id: 'rwaq.admin.enrollmentCodes.create', defaultMessage: 'Create code' },
   colCode: { id: 'rwaq.admin.enrollmentCodes.col.code', defaultMessage: 'Code' },
+  colCodeName: {
+    id: 'rwaq.admin.enrollmentCodes.col.codeName',
+    defaultMessage: 'Code name',
+  },
+  codeNameRequired: {
+    id: 'rwaq.admin.enrollmentCodes.create.codeNameRequired',
+    defaultMessage: 'Enter a code name.',
+  },
+  usesCodeNamePlaceholder: {
+    id: 'rwaq.admin.enrollmentCodes.uses.codeNamePlaceholder',
+    defaultMessage: 'Part of a code name',
+  },
+  infoColCode: {
+    id: 'rwaq.admin.enrollmentCodes.info.code',
+    defaultMessage: 'The code the learner enters to enroll.',
+  },
+  infoColCodeName: {
+    id: 'rwaq.admin.enrollmentCodes.info.codeName',
+    defaultMessage: 'The name the admin gave this code.',
+  },
+  infoColScope: {
+    id: 'rwaq.admin.enrollmentCodes.info.scope',
+    defaultMessage: 'Whether the code covers an organization, a course or a program.',
+  },
+  infoColItem: {
+    id: 'rwaq.admin.enrollmentCodes.info.item',
+    defaultMessage: 'The organization, course or program the code covers.',
+  },
+  infoUseItem: {
+    id: 'rwaq.admin.enrollmentCodes.info.useItem',
+    defaultMessage: 'The course or program the learner joined using the code.',
+  },
+  infoColOrganization: {
+    id: 'rwaq.admin.enrollmentCodes.info.organization',
+    defaultMessage: 'The organization associated with the code or its content.',
+  },
+  infoColCreatedBy: {
+    id: 'rwaq.admin.enrollmentCodes.info.createdBy',
+    defaultMessage: 'The username of the admin who created the code.',
+  },
+  infoColUsage: {
+    id: 'rwaq.admin.enrollmentCodes.info.usage',
+    defaultMessage: 'The number of learners who used the code and the maximum allowed.',
+  },
+  infoColExpires: {
+    id: 'rwaq.admin.enrollmentCodes.info.expires',
+    defaultMessage: 'The date when the code stops accepting new uses.',
+  },
+  infoColStatus: {
+    id: 'rwaq.admin.enrollmentCodes.info.status',
+    defaultMessage: 'The code is active, switched off, expired or used up.',
+  },
+  infoColActive: {
+    id: 'rwaq.admin.enrollmentCodes.info.active',
+    defaultMessage: 'Use the switch, when available, to turn the code on or off.',
+  },
+  infoColActions: {
+    id: 'rwaq.admin.enrollmentCodes.info.actions',
+    defaultMessage: 'The available actions for this code.',
+  },
+  infoColStudent: {
+    id: 'rwaq.admin.enrollmentCodes.info.student',
+    defaultMessage: 'The learner who used the code.',
+  },
+  infoColUsedOn: {
+    id: 'rwaq.admin.enrollmentCodes.info.usedOn',
+    defaultMessage: 'When the learner joined the course or program through the code.',
+  },
+  infoColTypedHere: {
+    id: 'rwaq.admin.enrollmentCodes.info.typedHere',
+    defaultMessage: 'Whether the learner entered the code for this enrollment or joined later through the same code.',
+  },
+  infoColEnrolled: {
+    id: 'rwaq.admin.enrollmentCodes.info.enrolled',
+    defaultMessage: 'Whether the learner is still enrolled or has left.',
+  },
   colItem: { id: 'rwaq.admin.enrollmentCodes.col.item', defaultMessage: 'Covers' },
   colScope: { id: 'rwaq.admin.enrollmentCodes.col.scope', defaultMessage: 'Scope' },
   colOrganization: { id: 'rwaq.admin.enrollmentCodes.col.organization', defaultMessage: 'Organization' },

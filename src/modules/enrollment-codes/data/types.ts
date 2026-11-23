@@ -34,6 +34,7 @@ export interface CodeItem {
 export interface EnrollmentCode {
   id: number;
   code: string;
+  codeName?: string;
   scope: CodeScope;
   item: CodeItem;
   maxUses: number;
@@ -70,6 +71,7 @@ export interface CodeListParams {
  */
 export interface CodeCreatePayload {
   code?: string;
+  codeName: string;
   courseId?: string;
   programUuid?: string;
   organization?: string;
@@ -96,6 +98,7 @@ export interface CodeUse {
   id: number;
   student: UseStudent;
   code: string;
+  codeName?: string;
   codeId: number;
   item: { kind: ItemKind; id: string; name: string };
   usedAt: string;
@@ -120,6 +123,7 @@ export interface CodeItemRow {
 export interface UseListParams {
   codeId?: number;
   code?: string;
+  codeName?: string;
   courseId?: string;
   programUuid?: string;
   organization?: string;

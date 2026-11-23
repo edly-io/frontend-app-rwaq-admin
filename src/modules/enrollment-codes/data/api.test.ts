@@ -82,19 +82,23 @@ describe('enrollment codes api', () => {
     post.mockResolvedValue({ data: { id: 9, code: 'ZZZ999', max_uses: 1 } });
 
     const created = await createEnrollmentCode({
-      code: undefined, courseId: 'course-v1:A+B+C', maxUses: 1, expiresAt: '2026-12-31',
+      codeName: 'Safety cohort', code: undefined, courseId: 'course-v1:A+B+C', maxUses: 1, expiresAt: '2026-12-31',
     });
 
     expect(post).toHaveBeenCalledWith(`${BASE}/`, {
-      course_id: 'course-v1:A+B+C', max_uses: 1, expires_at: '2026-12-31',
+      code_name: 'Safety cohort', course_id: 'course-v1:A+B+C', max_uses: 1, expires_at: '2026-12-31',
     });
     expect(created.maxUses).toBe(1);
   });
 
   it('creates a code for a program with a typed code', async () => {
     post.mockResolvedValue({ data: { id: 9 } });
-    await createEnrollmentCode({ code: 'RIYADH26', programUuid: 'uuid-1', maxUses: 50 });
-    expect(post).toHaveBeenCalledWith(`${BASE}/`, { code: 'RIYADH26', program_uuid: 'uuid-1', max_uses: 50 });
+    await createEnrollmentCode({
+      codeName: 'Riyadh cohort', code: 'RIYADH26', programUuid: 'uuid-1', maxUses: 50,
+    });
+    expect(post).toHaveBeenCalledWith(`${BASE}/`, {
+      code_name: 'Riyadh cohort', code: 'RIYADH26', program_uuid: 'uuid-1', max_uses: 50,
+    });
   });
 
   it('patches only what is given and sends null to clear the expiry', async () => {
@@ -199,8 +203,8 @@ describe('enrollment codes api', () => {
 
   it('creates an organization code with the organization short name', async () => {
     post.mockResolvedValue({ data: { id: 9, code: 'EDR100', scope: 'organization' } });
-    await createEnrollmentCode({ organization: 'Edrakk', maxUses: 100 });
-    expect(post).toHaveBeenCalledWith(`${BASE}/`, { organization: 'Edrakk', max_uses: 100 });
+    await createEnrollmentCode({ codeName: 'Edrakk cohort', organization: 'Edrakk', maxUses: 100 });
+    expect(post).toHaveBeenCalledWith(`${BASE}/`, { code_name: 'Edrakk cohort', organization: 'Edrakk', max_uses: 100 });
   });
 
   it('lists the uses with the organization and scope filters and the new row fields', async () => {

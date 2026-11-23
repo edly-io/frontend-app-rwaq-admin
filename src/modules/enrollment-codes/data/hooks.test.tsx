@@ -94,7 +94,7 @@ describe('enrollment codes hooks', () => {
     expect(mockApi.getEnrollmentCodes).toHaveBeenCalledTimes(1);
 
     await act(async () => {
-      await result.current.create.mutateAsync({ courseId: 'course-v1:A+B+C', maxUses: 1 });
+      await result.current.create.mutateAsync({ codeName: 'Safety cohort', courseId: 'course-v1:A+B+C', maxUses: 1 });
     });
     await waitFor(() => expect(mockApi.getEnrollmentCodes).toHaveBeenCalledTimes(2));
   });
