@@ -53,6 +53,8 @@ it('shows both list counts and requests each ordering from the first page', () =
     expect(useCategories).toHaveBeenLastCalledWith(expect.objectContaining({ ordering: field, page: 1 }));
     fireEvent.click(screen.getByRole('button', { name: label }));
     expect(useCategories).toHaveBeenLastCalledWith(expect.objectContaining({ ordering: `-${field}`, page: 1 }));
+    // The current sort is announced as the button's description.
+    expect(screen.getByRole('button', { name: label })).toHaveAccessibleDescription(/\S/);
   }
 });
 
