@@ -150,7 +150,7 @@ const messages = defineMessages({
   // ── Payment history ────────────────────────────────────────────────────────
   ordersSearch: {
     id: 'rwaq.admin.payments.orders.search',
-    defaultMessage: 'Search by username, email, order ID or coupon code',
+    defaultMessage: 'Search by full name, username, email, order ID or coupon code',
   },
   colOrder: { id: 'rwaq.admin.payments.col.order', defaultMessage: 'Order' },
   colDate: { id: 'rwaq.admin.payments.col.date', defaultMessage: 'Date and time (UTC)' },

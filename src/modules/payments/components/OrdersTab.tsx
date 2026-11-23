@@ -204,7 +204,8 @@ const OrdersTab = ({
       key: 'username',
       renderCell: (_value, row) => (
         <div className="min-width-0">
-          <div className="rwaq-user-cell__name" title={row.username}>
+          {row.fullName && <div className="rwaq-user-cell__name" title={row.fullName}>{row.fullName}</div>}
+          <div className={row.fullName ? 'rwaq-user-cell__meta' : 'rwaq-user-cell__name'} title={row.username}>
             <Link to={`/users/${row.userId}`}>{row.username}</Link>
           </div>
           <div className="rwaq-user-cell__meta" title={row.email}>{row.email}</div>
