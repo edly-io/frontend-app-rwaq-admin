@@ -18,6 +18,7 @@
 import { camelCaseObject, snakeCaseObject } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { getStudioApiUrl } from '@src/data/utils';
+import forceRefreshArgs from '@src/data/forceRefreshArgs';
 import type {
   OrgCreatePayload,
   OrgDetail,
@@ -142,15 +143,19 @@ export const getOrgReportCsvUrl = (name: OrgReportName): string => (
 );
 
 /** GET /rwaq/api/organizations/stats/ — tiles and the top-organizations chart of the Organizations list strip. */
-export const getOrgListStats = async (): Promise<OrgListStats> => {
-  const { data } = await getAuthenticatedHttpClient().get(`${getOrgsBaseUrl()}/stats/`);
+export const getOrgListStats = async (forceRefresh = false): Promise<OrgListStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getOrgsBaseUrl()}/stats/`,
+    ...forceRefreshArgs(forceRefresh),
+  );
   return camelCaseObject(data) as OrgListStats;
 };
 
 /** GET /rwaq/api/organizations/<short_name>/stats/ — passed, pass rate, stages, unenrolled and modes of one org. */
-export const getOrgStats = async (shortName: string): Promise<OrgStats> => {
+export const getOrgStats = async (shortName: string, forceRefresh = false): Promise<OrgStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getOrgsBaseUrl()}/${encodeURIComponent(shortName)}/stats/`,
+    ...forceRefreshArgs(forceRefresh),
   );
   return camelCaseObject(data) as OrgStats;
 };

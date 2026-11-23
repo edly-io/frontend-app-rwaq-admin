@@ -5,15 +5,28 @@
  * decides what goes inside. Collapsing keeps nothing in storage, and a collapsed strip lets
  * the page skip its requests (the page's strip passes `isOpen` to its hooks as `enabled`).
  */
-import { ReactNode, useId } from 'react';
-import { Alert, Button, Icon } from '@openedx/paragon';
-import { ExpandLess, ExpandMore } from '@openedx/paragon/icons';
-import { useIntl } from '@edx/frontend-platform/i18n';
+import {
+  ReactNode, useEffect, useId, useState,
+} from 'react';
+import {
+  Alert, Button, Icon,
+} from '@openedx/paragon';
+import { ExpandLess, ExpandMore, Refresh } from '@openedx/paragon/icons';
+import { IntlShape, useIntl } from '@edx/frontend-platform/i18n';
 import InfoTooltip from '@src/components/InfoTooltip';
+import dashboardMessages from '@src/modules/dashboard/messages';
 import messages from './messages';
 
 const ExpandLessIcon = () => <Icon src={ExpandLess} />;
 const ExpandMoreIcon = () => <Icon src={ExpandMore} />;
+
+/** "2026-08-28T09:14:00Z" to "Just now", "3 min ago" or "1 hr ago", with the dashboard's wording. */
+const formatRelativeTime = (isoString: string, intl: IntlShape): string => {
+  const diffMin = Math.floor((Date.now() - new Date(isoString).getTime()) / 60_000);
+  if (diffMin < 1) { return intl.formatMessage(dashboardMessages.relativeJustNow); }
+  if (diffMin < 60) { return intl.formatMessage(dashboardMessages.relativeMinutes, { count: diffMin }); }
+  return intl.formatMessage(dashboardMessages.relativeHours, { count: Math.floor(diffMin / 60) });
+};
 
 export interface StatsStripProps {
   isOpen: boolean;
@@ -25,14 +38,30 @@ export interface StatsStripProps {
   isForbidden?: boolean;
   hasFailedAll?: boolean;
   onRetry?: () => void;
+  /** When the figures were computed, as the backend stamps it. Shown next to the refresh button. */
+  generatedAt?: string;
+  /** Recompute the strip's figures. Without it the strip shows no refresh button. */
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
+  /** The last refresh failed. The tiles keep the figures they had. */
+  hasRefreshFailed?: boolean;
   children: ReactNode;
 }
 
 const StatsStrip = ({
-  isOpen, onToggle, note, info, isForbidden = false, hasFailedAll = false, onRetry, children,
+  isOpen, onToggle, note, info, isForbidden = false, hasFailedAll = false, onRetry,
+  generatedAt, onRefresh, isRefreshing = false, hasRefreshFailed = false, children,
 }: StatsStripProps) => {
   const intl = useIntl();
   const bodyId = useId();
+
+  // Tick every minute so "3 min ago" stays accurate.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!generatedAt) { return undefined; }
+    const id = setInterval(() => setTick((tick) => tick + 1), 60_000);
+    return () => clearInterval(id);
+  }, [generatedAt]);
 
   const renderBody = () => {
     if (isForbidden) {
@@ -52,7 +81,12 @@ const StatsStrip = ({
         </Alert>
       );
     }
-    return children;
+    return (
+      <>
+        {hasRefreshFailed && <Alert variant="danger">{intl.formatMessage(messages.refreshFailed)}</Alert>}
+        {children}
+      </>
+    );
   };
 
   return (
@@ -68,16 +102,35 @@ const StatsStrip = ({
           )}
           {note && <span className="rwaq-dash-card__sub">{note}</span>}
         </div>
-        <Button
-          variant="tertiary"
-          size="sm"
-          aria-expanded={isOpen}
-          aria-controls={bodyId}
-          onClick={onToggle}
-          iconAfter={isOpen ? ExpandLessIcon : ExpandMoreIcon}
-        >
-          {intl.formatMessage(isOpen ? messages.hide : messages.show)}
-        </Button>
+        <div className="d-flex align-items-center" style={{ gap: '0.5rem' }}>
+          {isOpen && generatedAt && (
+            <span className="small" style={{ color: 'var(--rwaq-muted, #6B757F)' }}>
+              {intl.formatMessage(dashboardMessages.lastUpdated, { time: formatRelativeTime(generatedAt, intl) })}
+            </span>
+          )}
+          {isOpen && onRefresh && (
+            <button
+              type="button"
+              aria-label={intl.formatMessage(messages.refresh)}
+              onClick={onRefresh}
+              aria-busy={isRefreshing}
+              disabled={isRefreshing}
+              className={`btn btn-tertiary btn-sm${isRefreshing ? ' rwaq-stats-refreshing' : ''}`}
+            >
+              <Icon src={Refresh} />
+            </button>
+          )}
+          <Button
+            variant="tertiary"
+            size="sm"
+            aria-expanded={isOpen}
+            aria-controls={bodyId}
+            onClick={onToggle}
+            iconAfter={isOpen ? ExpandLessIcon : ExpandMoreIcon}
+          >
+            {intl.formatMessage(isOpen ? messages.hide : messages.show)}
+          </Button>
+        </div>
       </div>
       <div id={bodyId} hidden={!isOpen}>
         {isOpen && renderBody()}

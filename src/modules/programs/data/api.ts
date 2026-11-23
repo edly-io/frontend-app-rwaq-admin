@@ -16,6 +16,7 @@
 import { camelCaseObject, snakeCaseObject } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { getStudioApiUrl } from '@src/data/utils';
+import forceRefreshArgs from '@src/data/forceRefreshArgs';
 import type {
   BulkEnrollResult,
   ProgramCourse,
@@ -153,13 +154,19 @@ export const triggerProgramReport = async (
 // ── Stats ─────────────────────────────────────────────────────────────────────
 
 /** GET /api/v1/admin/programs/stats/ — tiles and series of the Programs list strip. */
-export const getProgramListStats = async (): Promise<ProgramListStats> => {
-  const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/stats/`);
+export const getProgramListStats = async (forceRefresh = false): Promise<ProgramListStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getProgramsBaseUrl()}/stats/`,
+    ...forceRefreshArgs(forceRefresh),
+  );
   return camelCaseObject(data) as ProgramListStats;
 };
 
 /** GET /api/v1/admin/programs/{uuid}/stats/ — tiles and series of one program. */
-export const getProgramStats = async (uuid: string): Promise<ProgramStats> => {
-  const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/stats/`);
+export const getProgramStats = async (uuid: string, forceRefresh = false): Promise<ProgramStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getProgramsBaseUrl()}/${uuid}/stats/`,
+    ...forceRefreshArgs(forceRefresh),
+  );
   return camelCaseObject(data) as ProgramStats;
 };

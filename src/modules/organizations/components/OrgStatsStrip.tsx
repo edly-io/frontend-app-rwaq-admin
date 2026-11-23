@@ -17,13 +17,15 @@ import {
 } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import {
+  analyticsStatsRefresh,
   useAnalyticsBreakdowns,
   useAnalyticsSummary,
   useAnalyticsTrends,
 } from '@src/modules/dashboard/data/hooks';
 import StatTile from '@src/modules/dashboard/components/StatTile';
-import { useOrgStats } from '../data/hooks';
+import { orgStatsRefresh, useOrgStats } from '../data/hooks';
 import messages from '../messages';
 
 const TREND_MONTHS = 12;
@@ -41,6 +43,7 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
   const trendsQuery = useAnalyticsTrends({ org, months: TREND_MONTHS });
   const breakdownsQuery = useAnalyticsBreakdowns({ org });
   const state = summarizeQueries([summaryQuery, trendsQuery, breakdownsQuery]);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const orgStatsQuery = useOrgStats(org, isOpen);
 
   const summary = summaryQuery.isError ? undefined : summaryQuery.data;
@@ -92,6 +95,13 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
+      generatedAt={summary?.generatedAt}
+      onRefresh={() => refresh([
+        ...analyticsStatsRefresh({ org }, { org, months: TREND_MONTHS }),
+        orgStatsRefresh(org),
+      ])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         <StatsTileCard>

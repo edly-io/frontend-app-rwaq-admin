@@ -14,8 +14,9 @@ import StatsTiles, { StatsTileCard } from '@src/components/stats/StatsTiles';
 import { formatCount, isEmptySeries, monthlyChartData } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import StatTile from '@src/modules/dashboard/components/StatTile';
-import { useOrgListStats } from '../data/hooks';
+import { useOrgListStats, orgListStatsRefresh } from '../data/hooks';
 import messages from '../messages';
 
 const OrgListStatsStrip = () => {
@@ -23,6 +24,7 @@ const OrgListStatsStrip = () => {
   const [isOpen, setIsOpen] = useState(true);
   const query = useOrgListStats(isOpen);
   const state = summarizeQueries([query]);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
   const { isLoading } = query;
 
@@ -62,6 +64,10 @@ const OrgListStatsStrip = () => {
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
+      generatedAt={stats?.generatedAt}
+      onRefresh={() => refresh([orgListStatsRefresh()])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         {tile('listStatsActive', 'listStatsActiveInfo', tiles?.activeOrganizations)}

@@ -323,7 +323,7 @@ const CourseDetailPage = () => {
         </div>
       </div>
 
-      <CourseStatsStrip courseId={courseId} />
+      <CourseStatsStrip key={courseId} courseId={courseId} />
 
       {/* ── Info card ─────────────────────────────────────────────────────── */}
       <div className="rwaq-card">
