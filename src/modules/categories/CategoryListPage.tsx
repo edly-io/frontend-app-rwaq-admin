@@ -6,7 +6,8 @@
  */
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button, Chip } from '@openedx/paragon';
+import { Button, Chip, Icon } from '@openedx/paragon';
+import { ArrowDropDown, ArrowDropUp, ArrowDropUpDown } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
@@ -18,7 +19,7 @@ import type { AppliedChip } from '@src/components/SearchFilterBar';
 import { getCategoriesCsvUrl } from './data/api';
 import { useCategory, useCategories } from './data/hooks';
 import type {
-  CategorySummary, CategoryDetail, CategoryFilter, CategoryOrdering,
+  CategoryListRow, CategoryDetail, CategoryFilter, CategoryOrdering, CategoryCountOrdering,
 } from './data/types';
 import CategoryFormModal from './modals/CategoryFormModal';
 import messages from './messages';
@@ -38,6 +39,10 @@ const SORT_OPTIONS: { value: CategoryOrdering; label: MessageKey }[] = [
   { value: 'name', label: 'sortNameAsc' },
   { value: '-name', label: 'sortNameDesc' },
   { value: '-created', label: 'sortNewest' },
+  { value: 'courses_count', label: 'sortCoursesAsc' },
+  { value: '-courses_count', label: 'sortCoursesDesc' },
+  { value: 'enrollments_count', label: 'sortEnrollmentsAsc' },
+  { value: '-enrollments_count', label: 'sortEnrollmentsDesc' },
 ];
 
 const CategoryListPage = () => {
@@ -139,7 +144,36 @@ const CategoryListPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, filter, ordering, hasExplicitOrdering, intl, updateParams]);
 
-  const columns: ColumnDef<CategorySummary>[] = [
+  const countColumn = (
+    key: 'coursesCount' | 'enrollmentsCount',
+    orderingField: CategoryCountOrdering,
+    label: string,
+  ): ColumnDef<CategoryListRow> => {
+    const descending = `-${orderingField}` as const;
+    const nextOrder = ordering === orderingField ? descending : orderingField;
+    const sortIcon = {
+      [orderingField]: ArrowDropUp,
+      [descending]: ArrowDropDown,
+    }[ordering] ?? ArrowDropUpDown;
+    const nextSortLabel = sortOptions.find((option) => option.value === nextOrder)?.label;
+    return {
+      key,
+      label,
+      renderHeader: () => (
+        <button
+          type="button"
+          className="btn btn-link p-0 text-reset font-weight-bold d-inline-flex align-items-center"
+          title={nextSortLabel}
+          onClick={() => updateParams({ ordering: nextOrder })}
+        >
+          {label}
+          <Icon src={sortIcon} aria-hidden />
+        </button>
+      ),
+    };
+  };
+
+  const columns: ColumnDef<CategoryListRow>[] = [
     {
       label: intl.formatMessage(messages.colName),
       key: 'name',
@@ -160,6 +194,8 @@ const CategoryListPage = () => {
         </Chip>
       ),
     },
+    countColumn('coursesCount', 'courses_count', intl.formatMessage(messages.colCourses)),
+    countColumn('enrollmentsCount', 'enrollments_count', intl.formatMessage(messages.colEnrollments)),
     {
       label: intl.formatMessage(messages.colActions),
       headerClassName: 'rwaq-th--actions',

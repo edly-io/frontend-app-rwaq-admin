@@ -26,6 +26,8 @@ export interface ColumnDef<Row extends object = Record<string, unknown>> {
   id?: string;
   /** Explains the column: hovering the heading shows this, as on the dashboard's tiles. */
   info?: string;
+  /** Optional custom header content, such as a server-side sort button. */
+  renderHeader?: () => ReactNode;
   /** Custom cell renderer; receives the raw cell value and the full row object */
   renderCell?: (value: unknown, row: Row) => ReactNode;
 }
@@ -65,6 +67,7 @@ interface TableColumnMeta<Row extends object> {
   label: string;
   isLabelHidden?: boolean;
   info?: string;
+  renderHeader?: ColumnDef<Row>['renderHeader'];
   renderCell?: ColumnDef<Row>['renderCell'];
 }
 
@@ -78,6 +81,7 @@ interface TableColumnMeta<Row extends object> {
 const headerCache: Map<string, () => ReactNode> = new Map();
 
 const ColumnHeading = ({ meta }: { meta: TableColumnMeta<object> }) => {
+  if (meta.renderHeader) { return <span>{meta.renderHeader()}</span>; }
   if (meta.isLabelHidden) { return <span className="sr-only">{meta.label}</span>; }
   if (meta.info) {
     return <InfoTooltip text={meta.info}><span className="rwaq-th-info">{meta.label}</span></InfoTooltip>;
@@ -119,7 +123,11 @@ ExpanderHeading.toString = () => 'header:expander';
 const buildTableColumns = <Row extends object>(cols: ColumnDef<Row>[]) => cols.map((col) => {
   const id = col.id ?? col.key;
   const meta: TableColumnMeta<Row> = {
-    label: col.label, isLabelHidden: col.isLabelHidden, info: col.info, renderCell: col.renderCell,
+    label: col.label,
+    isLabelHidden: col.isLabelHidden,
+    info: col.info,
+    renderHeader: col.renderHeader,
+    renderCell: col.renderCell,
   };
   return {
     Header: headerFor(id),
