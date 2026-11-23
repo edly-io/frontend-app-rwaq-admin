@@ -134,6 +134,18 @@ const messages = defineMessages({
     id: 'rwaq.admin.courses.chip.startedAt',
     defaultMessage: 'Course Started at: {from} – {to}',
   },
+  enrollmentDateLabel: {
+    id: 'rwaq.admin.courses.enrollmentDate.label',
+    defaultMessage: 'Enrollment date',
+  },
+  chipEnrollmentDate: {
+    id: 'rwaq.admin.courses.chip.enrollmentDate',
+    defaultMessage: 'Enrollment date: {from} – {to}',
+  },
+  colEnrollmentsPeriod: {
+    id: 'rwaq.admin.courses.col.enrollmentsPeriod',
+    defaultMessage: 'Enrollments ({from} – {to})',
+  },
   // Actions
   view: {
     id: 'rwaq.admin.courses.action.view',

@@ -116,7 +116,7 @@ describe('PaymentsPage requests', () => {
     ));
 
     fireEvent.click(screen.getByRole('button', { name: /All time/ }));
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 30 days' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Last 30 days' }));
     await waitFor(() => expect(callsOf(mockApi.getPaymentOrders as jest.Mock)).toContainEqual(
       expect.objectContaining({ page: 1, startDate: expect.any(String) }),
     ));

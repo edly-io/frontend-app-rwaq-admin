@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import DateRangePicker from './DateRangePicker';
 
@@ -22,7 +22,7 @@ describe('DateRangePicker', () => {
     renderWrapper(
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />,
     );
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   it('clicking the toggle opens the panel with all preset options', () => {
@@ -30,11 +30,11 @@ describe('DateRangePicker', () => {
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />,
     );
     openDropdown();
-    const listbox = screen.getByRole('menu');
+    const listbox = screen.getByRole('group');
     expect(listbox).toBeInTheDocument();
     ['Last 30 days', 'Last 3 months', 'Last 6 months', 'Last 12 months',
       'Year to date', 'All time', 'Custom'].forEach((label) => {
-      expect(screen.getByRole('menuitem', { name: label })).toBeInTheDocument();
+      expect(within(screen.getByRole('group')).getByRole('button', { name: label })).toBeInTheDocument();
     });
   });
 
@@ -43,8 +43,8 @@ describe('DateRangePicker', () => {
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />,
     );
     openDropdown();
-    expect(screen.getByRole('menuitem', { name: 'All time' })).toHaveAttribute('aria-current', 'true');
-    expect(screen.getByRole('menuitem', { name: 'Last 30 days' })).not.toHaveAttribute('aria-current');
+    expect(within(screen.getByRole('group')).getByRole('button', { name: 'All time' })).toHaveAttribute('aria-current', 'true');
+    expect(within(screen.getByRole('group')).getByRole('button', { name: 'Last 30 days' })).not.toHaveAttribute('aria-current');
   });
 
   it('clicking a named preset calls onChange and closes the panel', () => {
@@ -53,13 +53,13 @@ describe('DateRangePicker', () => {
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
     );
     openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 30 days' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Last 30 days' }));
     expect(onChange).toHaveBeenCalledTimes(1);
     const [start, end] = onChange.mock.calls[0];
     expect(start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(end).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     // Panel closes after selection
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   it('clicking "All time" calls onChange with undefined/undefined and closes the panel', () => {
@@ -68,9 +68,9 @@ describe('DateRangePicker', () => {
       <DateRangePicker startDate="2025-01-01" endDate="2025-12-31" onChange={onChange} />,
     );
     openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'All time' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'All time' }));
     expect(onChange).toHaveBeenCalledWith(undefined, undefined);
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   it('clicking "Custom" keeps the panel open and shows date inputs without calling onChange', () => {
@@ -80,9 +80,9 @@ describe('DateRangePicker', () => {
     );
     openDropdown();
     expect(screen.queryByLabelText('From')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Custom' }));
     // Panel still open
-    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(screen.getByRole('group')).toBeInTheDocument();
     // Inputs now visible
     expect(screen.getByLabelText('From')).toBeInTheDocument();
     expect(screen.getByLabelText('To')).toBeInTheDocument();
@@ -109,7 +109,7 @@ describe('DateRangePicker', () => {
     fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-07-31' } });
     expect(onChange).not.toHaveBeenCalled();
     // Panel stays open
-    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(screen.getByRole('group')).toBeInTheDocument();
   });
 
   it('Apply button commits the range, closes the panel, and calls onChange', () => {
@@ -118,12 +118,12 @@ describe('DateRangePicker', () => {
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
     );
     openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Custom' }));
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-04-01' } });
     fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-07-31' } });
     fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
     expect(onChange).toHaveBeenCalledWith('2024-04-01', '2024-07-31');
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   it('Apply button is disabled until both dates are filled', () => {
@@ -131,7 +131,7 @@ describe('DateRangePicker', () => {
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />,
     );
     openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Custom' }));
     const applyBtn = screen.getByRole('button', { name: 'Apply' });
     expect(applyBtn).toBeDisabled();
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-04-01' } });
@@ -170,29 +170,29 @@ describe('DateRangePicker', () => {
   it('clicking outside the panel closes it', () => {
     renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />);
     openDropdown();
-    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(screen.getByRole('group')).toBeInTheDocument();
     fireEvent.mouseDown(document.body);
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   it('pressing Escape closes the panel', () => {
     renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={noop} />);
     openDropdown();
-    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(screen.getByRole('group')).toBeInTheDocument();
     fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   it('pressing Escape after filling custom dates does not call onChange', () => {
     const onChange = jest.fn();
     renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />);
     openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Custom' }));
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-04-01' } });
     fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-07-31' } });
     fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
     expect(onChange).not.toHaveBeenCalled();
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   // ── Untested presets (AUDIT-020) ─────────────────────────────────────────────
@@ -201,48 +201,48 @@ describe('DateRangePicker', () => {
     const onChange = jest.fn();
     renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />);
     openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 3 months' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Last 3 months' }));
     expect(onChange).toHaveBeenCalledTimes(1);
     const [start, end] = onChange.mock.calls[0];
     expect(start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(end).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   it('clicking "Last 6 months" calls onChange with valid ISO dates and closes the panel', () => {
     const onChange = jest.fn();
     renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />);
     openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 6 months' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Last 6 months' }));
     expect(onChange).toHaveBeenCalledTimes(1);
     const [start, end] = onChange.mock.calls[0];
     expect(start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(end).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   it('clicking "Last 12 months" calls onChange with valid ISO dates and closes the panel', () => {
     const onChange = jest.fn();
     renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />);
     openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 12 months' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Last 12 months' }));
     expect(onChange).toHaveBeenCalledTimes(1);
     const [start, end] = onChange.mock.calls[0];
     expect(start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(end).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   it('clicking "Year to date" calls onChange with valid ISO dates and closes the panel', () => {
     const onChange = jest.fn();
     renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />);
     openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Year to date' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Year to date' }));
     expect(onChange).toHaveBeenCalledTimes(1);
     const [start, end] = onChange.mock.calls[0];
     expect(start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(end).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   // ── Inverted range validation ────────────────────────────────────────────────
@@ -253,14 +253,14 @@ describe('DateRangePicker', () => {
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
     );
     openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Custom' }));
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-09-01' } });
     fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-03-01' } });
     fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
     expect(onChange).not.toHaveBeenCalled();
     expect(screen.getByRole('alert')).toHaveTextContent(/end date must be on or after start date/i);
     // Panel stays open so the user can correct the input
-    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(screen.getByRole('group')).toBeInTheDocument();
   });
 
   it('clears the error and applies the range when the user corrects the inverted end date', () => {
@@ -269,7 +269,7 @@ describe('DateRangePicker', () => {
       <DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />,
     );
     openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Custom' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Custom' }));
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-09-01' } });
     fireEvent.change(screen.getByLabelText('To'), { target: { value: '2024-03-01' } });
     fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
@@ -279,7 +279,7 @@ describe('DateRangePicker', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
     expect(onChange).toHaveBeenCalledWith('2024-09-01', '2024-12-31');
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   // ── Last 30 days — verify actual 30-day offset (AUDIT-014) ─────────────────
@@ -288,7 +288,7 @@ describe('DateRangePicker', () => {
     const onChange = jest.fn();
     renderWrapper(<DateRangePicker startDate={undefined} endDate={undefined} onChange={onChange} />);
     openDropdown();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 30 days' }));
+    fireEvent.click(within(screen.getByRole('group')).getByRole('button', { name: 'Last 30 days' }));
     const [start] = onChange.mock.calls[0];
     const diff = (Date.now() - new Date(start).getTime()) / (1000 * 60 * 60 * 24);
     expect(diff).toBeGreaterThanOrEqual(29);

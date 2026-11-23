@@ -78,19 +78,32 @@ export const getUserEnrollmentProgress = async (id: number): Promise<EnrollmentP
 };
 
 /** GET /api/v1/admin/users/stats/ — tiles and series of the Users list strip. */
-export const getUserListStats = async (forceRefresh = false): Promise<UserListStats> => {
+export const getUserListStats = async (
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
+): Promise<UserListStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getUsersBaseUrl()}/stats/`,
-    ...forceRefreshArgs(forceRefresh),
+    ...(startDate || endDate
+      ? [{ params: { start_date: startDate, end_date: endDate, ...(forceRefresh ? { force_refresh: 1 } : {}) } }]
+      : forceRefreshArgs(forceRefresh)),
   );
   return camelCaseObject(data) as UserListStats;
 };
 
 /** GET /api/v1/admin/users/{id}/stats/ — programs, last activity and subscription of one user. */
-export const getUserStats = async (id: number, forceRefresh = false): Promise<UserStats> => {
+export const getUserStats = async (
+  id: number,
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
+): Promise<UserStats> => {
   const { data } = await getAuthenticatedHttpClient().get(
     `${getUsersBaseUrl()}/${id}/stats/`,
-    ...forceRefreshArgs(forceRefresh),
+    ...(startDate || endDate
+      ? [{ params: { start_date: startDate, end_date: endDate, ...(forceRefresh ? { force_refresh: 1 } : {}) } }]
+      : forceRefreshArgs(forceRefresh)),
   );
   return camelCaseObject(data) as UserStats;
 };

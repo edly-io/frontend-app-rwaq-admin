@@ -7,9 +7,14 @@ const messages = defineMessages({
   stripTitle: { id: 'rwaq.admin.stats.title', defaultMessage: 'Statistics' },
   hide: { id: 'rwaq.admin.stats.hide', defaultMessage: 'Hide statistics' },
   show: { id: 'rwaq.admin.stats.show', defaultMessage: 'Show statistics' },
+  period: { id: 'rwaq.admin.stats.period', defaultMessage: 'Statistics period' },
   globalNote: {
     id: 'rwaq.admin.stats.globalNote',
-    defaultMessage: 'Totals for the whole platform, whatever the filters of the table.',
+    defaultMessage: 'Showing all time data.',
+  },
+  rangeNote: {
+    id: 'rwaq.admin.stats.rangeNote',
+    defaultMessage: 'Showing data for the selected range in UTC. Current-state figures are unchanged.',
   },
   forbidden: {
     id: 'rwaq.admin.stats.forbidden',

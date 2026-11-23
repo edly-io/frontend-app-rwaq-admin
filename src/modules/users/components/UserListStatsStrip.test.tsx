@@ -1,12 +1,12 @@
 /**
  * UserListStatsStrip — global tiles and a compact registrations chart, Not available instead of zero.
  */
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from '../data/hooks';
 import UserListStatsStrip from './UserListStatsStrip';
 
-jest.mock('../data/hooks', () => ({ useUserListStats: jest.fn() }));
+jest.mock('../data/hooks', () => ({ useUserListStats: jest.fn(), userListStatsRefresh: jest.fn() }));
 jest.mock('@src/components/charts/MetricChart', () => ({
   __esModule: true,
   default: ({ ariaLabel }: { ariaLabel: string }) => <div data-testid="metric-chart" aria-label={ariaLabel} />,
@@ -31,6 +31,17 @@ const query = (overrides = {}) => ({
 const mockQuery = (value: unknown) => (hooks.useUserListStats as jest.Mock).mockReturnValue(value);
 
 describe('UserListStatsStrip', () => {
+  it('passes the selected date range to the query and refresh', () => {
+    mockQuery(query());
+    renderWrapper(<UserListStatsStrip />);
+    fireEvent.click(screen.getByRole('button', { name: /All time/ }));
+    fireEvent.click(within(screen.getByRole('group', { name: 'Select time period' })).getByRole('button', { name: 'Last 30 days' }));
+    expect(hooks.useUserListStats).toHaveBeenLastCalledWith(true, expect.any(String), expect.any(String));
+    expect(screen.getByText('Showing data for the selected range in UTC. Current-state figures are unchanged.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
+    expect(hooks.userListStatsRefresh).toHaveBeenCalledWith(expect.any(String), expect.any(String));
+  });
+
   it('shows the global tiles and registrations chart', () => {
     mockQuery(query());
     renderWrapper(<UserListStatsStrip />);
@@ -39,7 +50,7 @@ describe('UserListStatsStrip', () => {
     expect(screen.getByText('800')).toBeInTheDocument();
     expect(screen.getByText('77')).toBeInTheDocument();
     expect(screen.getByText('300 of 500 still to sign in')).toBeInTheDocument();
-    expect(screen.getByText('Totals for the whole platform, whatever the filters of the table.')).toBeInTheDocument();
+    expect(screen.getByText('Showing all time data.')).toBeInTheDocument();
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(1);
   });
 
@@ -47,9 +58,9 @@ describe('UserListStatsStrip', () => {
     mockQuery(query());
     renderWrapper(<UserListStatsStrip />);
 
-    expect(hooks.useUserListStats).toHaveBeenCalledWith(true);
+    expect(hooks.useUserListStats).toHaveBeenCalledWith(true, undefined, undefined);
     fireEvent.click(screen.getByRole('button', { name: 'Hide statistics' }));
-    expect(hooks.useUserListStats).toHaveBeenLastCalledWith(false);
+    expect(hooks.useUserListStats).toHaveBeenLastCalledWith(false, undefined, undefined);
   });
 
   it('shows Not available for learners and activity when courseware cannot be read, never zero', () => {
