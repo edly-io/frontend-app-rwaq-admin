@@ -115,12 +115,12 @@ describe('UsesTab', () => {
 
   it('shows the scope, the organization and whether the learner typed the code here', () => {
     renderWrapper(<UsesTab onClearCode={jest.fn()} />);
-    ['Scope', 'Organization', 'Typed the code here'].forEach((name) => {
+    ['Scope', 'Organization', 'Redeemed the code'].forEach((name) => {
       expect(screen.getByRole('columnheader', { name })).toBeInTheDocument();
     });
     const first = screen.getByText('ABC234').closest('tr') as HTMLElement;
     expect(first).toHaveTextContent('Arbisoft');
-    expect(first).toHaveTextContent('Yes');
+    expect(first).toHaveTextContent('Redeemed');
     const second = screen.getByText('RIYADH26').closest('tr') as HTMLElement;
     expect(second).toHaveTextContent('Organization');
     expect(second).toHaveTextContent('Edrakk');

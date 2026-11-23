@@ -1,6 +1,7 @@
 /**
- * Edit an enrollment code. The code text and the course or program are read-only. The limit cannot go below
- * the uses so far (checked here and by the backend). Expiry and on/off can change.
+ * Edit an enrollment code. The name, limit, expiry and on/off can change. The code text and the course or program
+ * are read-only. The limit cannot go below
+ * the uses so far (checked here and by the backend). A code that has a name cannot lose it.
  * Only the fields that changed are sent.
  */
 import { useEffect, useState } from 'react';
@@ -16,10 +17,10 @@ import { readCodeError } from './codeErrors';
 import { toDateInput } from './codeDates';
 import { KindTag } from './CreateCodeModal';
 
-type FormField = 'maxUses' | 'expiresAt';
+type FormField = 'codeName' | 'maxUses' | 'expiresAt';
 type FieldErrors = Partial<Record<FormField, string>>;
 
-const BACKEND_FIELDS: Record<string, FormField> = { max_uses: 'maxUses', expires_at: 'expiresAt' };
+const BACKEND_FIELDS: Record<string, FormField> = { code_name: 'codeName', max_uses: 'maxUses', expires_at: 'expiresAt' };
 
 interface EditCodeModalProps {
   code: EnrollmentCode | null;
@@ -31,6 +32,7 @@ const EditCodeModal = ({ code, onClose }: EditCodeModalProps) => {
   const { showToast } = useToast();
   const mutation = useUpdateEnrollmentCode();
 
+  const [codeName, setCodeName] = useState('');
   const [maxUses, setMaxUses] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
   const [isActive, setIsActive] = useState(true);
@@ -39,6 +41,7 @@ const EditCodeModal = ({ code, onClose }: EditCodeModalProps) => {
 
   useEffect(() => {
     if (code) {
+      setCodeName(code.codeName ?? '');
       setMaxUses(String(code.maxUses));
       setExpiresAt(toDateInput(code.expiresAt));
       setIsActive(code.isActive);
@@ -55,6 +58,8 @@ const EditCodeModal = ({ code, onClose }: EditCodeModalProps) => {
     event?.preventDefault();
     const limit = Number(maxUses);
     const errors: FieldErrors = {};
+    const name = codeName.trim();
+    if (!name && code.codeName) { errors.codeName = intl.formatMessage(messages.codeNameRequired); }
     if (!Number.isInteger(limit) || limit < 1) {
       errors.maxUses = intl.formatMessage(messages.maxUsesInvalid);
     } else if (limit < code.usesCount) {
@@ -65,6 +70,7 @@ const EditCodeModal = ({ code, onClose }: EditCodeModalProps) => {
     if (Object.keys(errors).length > 0) { return; }
 
     const patch: CodePatch = {};
+    if (name !== (code.codeName ?? '')) { patch.codeName = name; }
     if (limit !== code.maxUses) { patch.maxUses = limit; }
     if (expiresAt !== toDateInput(code.expiresAt)) { patch.expiresAt = expiresAt || null; }
     if (isActive !== code.isActive) { patch.isActive = isActive; }
@@ -93,6 +99,17 @@ const EditCodeModal = ({ code, onClose }: EditCodeModalProps) => {
       isSubmitting={mutation.isPending}
     >
       {error && <p className="text-danger small">{error}</p>}
+
+      <Form.Group isInvalid={!!fieldErrors.codeName} controlId="enrollment-code-edit-name">
+        <Form.Label>{intl.formatMessage(messages.colCodeName)}</Form.Label>
+        <Form.Control
+          value={codeName}
+          maxLength={255}
+          autoComplete="off"
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setCodeName(event.target.value); clear('codeName'); }}
+        />
+        {fieldErrors.codeName && <Form.Control.Feedback type="invalid">{fieldErrors.codeName}</Form.Control.Feedback>}
+      </Form.Group>
 
       <Form.Group controlId="enrollment-code-edit-code">
         <Form.Label>{intl.formatMessage(messages.codeLabel)}</Form.Label>

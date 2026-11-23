@@ -81,6 +81,7 @@ export interface CodeCreatePayload {
 
 /** PATCH body. `expiresAt: null` clears the date. The code text and the item cannot change. */
 export interface CodePatch {
+  codeName?: string;
   maxUses?: number;
   expiresAt?: string | null;
   isActive?: boolean;

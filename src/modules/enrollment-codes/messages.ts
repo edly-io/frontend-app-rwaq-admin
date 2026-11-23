@@ -97,7 +97,7 @@ const messages = defineMessages({
   },
   infoColTypedHere: {
     id: 'rwaq.admin.enrollmentCodes.info.typedHere',
-    defaultMessage: 'Whether the learner entered the code for this enrollment or joined later through the same code.',
+    defaultMessage: 'Whether the learner redeemed the code for this enrollment or joined later through the same code.',
   },
   infoColEnrolled: {
     id: 'rwaq.admin.enrollmentCodes.info.enrolled',
@@ -106,7 +106,7 @@ const messages = defineMessages({
   colItem: { id: 'rwaq.admin.enrollmentCodes.col.item', defaultMessage: 'Covers' },
   colScope: { id: 'rwaq.admin.enrollmentCodes.col.scope', defaultMessage: 'Scope' },
   colOrganization: { id: 'rwaq.admin.enrollmentCodes.col.organization', defaultMessage: 'Organization' },
-  colTypedHere: { id: 'rwaq.admin.enrollmentCodes.col.typedHere', defaultMessage: 'Typed the code here' },
+  colTypedHere: { id: 'rwaq.admin.enrollmentCodes.col.typedHere', defaultMessage: 'Redeemed the code' },
   colCreatedBy: { id: 'rwaq.admin.enrollmentCodes.col.createdBy', defaultMessage: 'Created by' },
   colUsage: { id: 'rwaq.admin.enrollmentCodes.col.usage', defaultMessage: 'Used / limit' },
   colExpires: { id: 'rwaq.admin.enrollmentCodes.col.expires', defaultMessage: 'Expires' },
@@ -126,6 +126,11 @@ const messages = defineMessages({
     defaultMessage: '{count, plural, one {# item joined} other {# items joined}}',
   },
   yes: { id: 'rwaq.admin.enrollmentCodes.yes', defaultMessage: 'Yes' },
+  usesRedeemed: { id: 'rwaq.admin.enrollmentCodes.uses.redeemed', defaultMessage: 'Redeemed' },
+  usesJoinedThrough: {
+    id: 'rwaq.admin.enrollmentCodes.uses.joinedThrough',
+    defaultMessage: 'Joined through the same code',
+  },
   no: { id: 'rwaq.admin.enrollmentCodes.no', defaultMessage: 'No' },
   noExpiry: { id: 'rwaq.admin.enrollmentCodes.noExpiry', defaultMessage: 'Never' },
   kindCourse: { id: 'rwaq.admin.enrollmentCodes.kind.course', defaultMessage: 'Course' },

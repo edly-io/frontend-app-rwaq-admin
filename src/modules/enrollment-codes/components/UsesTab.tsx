@@ -206,7 +206,7 @@ const UsesTab = ({ codeId, codeLabel, onClearCode }: UsesTabProps) => {
       label: intl.formatMessage(messages.colTypedHere),
       info: intl.formatMessage(messages.infoColTypedHere),
       key: 'enteredCode',
-      renderCell: (value) => intl.formatMessage(value ? messages.yes : messages.no),
+      renderCell: (value) => intl.formatMessage(value ? messages.usesRedeemed : messages.usesJoinedThrough),
     },
     {
       label: intl.formatMessage(messages.colEnrolled),
