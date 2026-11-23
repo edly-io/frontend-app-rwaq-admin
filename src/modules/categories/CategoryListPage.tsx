@@ -161,9 +161,12 @@ const CategoryListPage = () => {
       ? sortOptions.find((option) => option.value === ordering)?.label
       : undefined;
     const stateId = `categories-sort-state-${key}`;
+    let ariaSort: 'ascending' | 'descending' | 'none' = 'none';
+    if (ordering === orderingField) { ariaSort = 'ascending'; } else if (ordering === descending) { ariaSort = 'descending'; }
     return {
       key,
       label,
+      ariaSort,
       renderHeader: () => (
         <>
           <Button

@@ -49,10 +49,13 @@ it('shows both list counts and requests each ordering from the first page', () =
   expect(within(row).getByRole('cell', { name: '12' })).toBeInTheDocument();
 
   for (const [label, field] of [['Courses', 'courses_count'], ['Enrollments', 'enrollments_count']]) {
+    expect(screen.getByRole('columnheader', { name: label })).toHaveAttribute('aria-sort', 'none');
     fireEvent.click(screen.getByRole('button', { name: label }));
     expect(useCategories).toHaveBeenLastCalledWith(expect.objectContaining({ ordering: field, page: 1 }));
+    expect(screen.getByRole('columnheader', { name: label })).toHaveAttribute('aria-sort', 'ascending');
     fireEvent.click(screen.getByRole('button', { name: label }));
     expect(useCategories).toHaveBeenLastCalledWith(expect.objectContaining({ ordering: `-${field}`, page: 1 }));
+    expect(screen.getByRole('columnheader', { name: label })).toHaveAttribute('aria-sort', 'descending');
     // The current sort is announced as the button's description.
     expect(screen.getByRole('button', { name: label })).toHaveAccessibleDescription(/\S/);
   }
