@@ -113,7 +113,7 @@ describe('UsesTab', () => {
     expect(second).toHaveTextContent('Left');
   });
 
-  it('shows the scope, the organization and whether the learner typed the code here', () => {
+  it('shows the scope, the organization and whether the learner redeemed the code', () => {
     renderWrapper(<UsesTab onClearCode={jest.fn()} />);
     ['Scope', 'Organization', 'Redeemed the code'].forEach((name) => {
       expect(screen.getByRole('columnheader', { name })).toBeInTheDocument();
@@ -124,7 +124,7 @@ describe('UsesTab', () => {
     const second = screen.getByText('RIYADH26').closest('tr') as HTMLElement;
     expect(second).toHaveTextContent('Organization');
     expect(second).toHaveTextContent('Edrakk');
-    expect(second).toHaveTextContent('No');
+    expect(second).toHaveTextContent('Joined through the same code');
   });
 
   it('filters by organization and scope, and the CSV follows', () => {

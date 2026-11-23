@@ -106,9 +106,12 @@ const EditCodeModal = ({ code, onClose }: EditCodeModalProps) => {
           value={codeName}
           maxLength={255}
           autoComplete="off"
+          aria-invalid={!!fieldErrors.codeName}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setCodeName(event.target.value); clear('codeName'); }}
         />
-        {fieldErrors.codeName && <Form.Control.Feedback type="invalid">{fieldErrors.codeName}</Form.Control.Feedback>}
+        {fieldErrors.codeName && (
+          <Form.Control.Feedback type="invalid" role="alert">{fieldErrors.codeName}</Form.Control.Feedback>
+        )}
       </Form.Group>
 
       <Form.Group controlId="enrollment-code-edit-code">
