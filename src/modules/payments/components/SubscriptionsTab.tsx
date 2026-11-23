@@ -41,7 +41,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.payments.subscriptions.how',
     defaultMessage: 'Amounts count WordPress payments in the range. Admin grants are listed but carry no amounts.',
   },
-  search: { id: 'rwaq.admin.payments.subscriptions.search', defaultMessage: 'Search by username or email' },
+  search: { id: 'rwaq.admin.payments.subscriptions.search', defaultMessage: 'Search by full name, username or email' },
   statusLabel: { id: 'rwaq.admin.payments.subscriptions.status', defaultMessage: 'Status' },
   statusAll: { id: 'rwaq.admin.payments.subscriptions.status-all', defaultMessage: 'All statuses' },
   active: { id: 'rwaq.admin.payments.subscriptions.status.active', defaultMessage: 'Active' },
@@ -218,7 +218,10 @@ const SubscriptionsTab = () => {
       key: 'learner',
       renderCell: (_value, row) => (
         <div className="min-width-0">
-          <div className="rwaq-user-cell__name" title={row.learner}>{row.learner}</div>
+          {row.fullName && <div className="rwaq-user-cell__name" title={row.fullName}>{row.fullName}</div>}
+          <div className={row.fullName ? 'rwaq-user-cell__meta' : 'rwaq-user-cell__name'} title={row.learner}>
+            {row.learner}
+          </div>
           <div className="rwaq-user-cell__meta" title={row.email}>{row.email}</div>
         </div>
       ),
