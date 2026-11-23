@@ -40,7 +40,10 @@ const LONG_ABOUT = `إحدى مبادرات جمعية أروقة المعرفة
   'لجميع المتعلمين في العالم العربي وخارجه '.repeat(4)}`;
 
 const renderCard = (ui: ReactElement, locale = 'en') => render(
-  <IntlProvider locale={locale} messages={{}}>
+  <IntlProvider
+    locale={locale}
+    messages={locale === 'ar' ? { 'rwaq.admin.enrollmentCodes.card.expires': 'ينتهي في {date}' } : {}}
+  >
     {ui}
   </IntlProvider>,
 );
@@ -55,12 +58,15 @@ describe('EnrollmentCodeCard', () => {
     );
     expect(container.querySelector('[data-qr="true"]')).not.toBeInTheDocument();
     expect(container.querySelector('.coupon-card__scan-hint')).not.toBeInTheDocument();
-    expect(container.querySelector('.coupon-card__quiz-title')).toHaveTextContent('صالح للتسجيل في: رواق');
+    expect(container.querySelector('.coupon-card__quiz-title')).toHaveTextContent('صالح للتسجيل في: إدراك');
   });
 
-  it.each(['en', 'ar'])('shows the Arabic organization name on the card for the %s interface', (locale) => {
+  it.each([
+    ['en', 'Rwaq'],
+    ['ar', 'رواق'],
+  ])('shows the organization name for the %s interface', (locale, expected) => {
     renderCard(<EnrollmentCodeCard card={{ ...baseCard, itemKind: 'organization', itemName: 'Rwaq' }} />, locale);
-    expect(screen.getByText('رواق', { selector: 'bdi' })).toBeInTheDocument();
+    expect(screen.getByText(expected, { selector: 'bdi' })).toBeInTheDocument();
   });
 
   it('falls back to the stored name if the Arabic name is blank', () => {
@@ -71,16 +77,14 @@ describe('EnrollmentCodeCard', () => {
     expect(screen.getByText('Rwaq', { selector: 'bdi' })).toBeInTheDocument();
   });
 
-  it.each(['en', 'ar'])('keeps the stored program name and shows the expiry in both languages for the %s interface', (locale) => {
+  it('keeps the stored program name and formats the expiry like the Codes table', () => {
     const expiresAt = '2026-12-31T23:59:59Z';
     renderCard(<EnrollmentCodeCard card={{
       ...baseCard, itemKind: 'program', itemName: 'Leadership', expiresAt,
     }}
-    />, locale);
+    />, 'ar');
     expect(screen.getByText('Leadership')).toBeInTheDocument();
-    const expiry = document.querySelector('.coupon-card__expiry');
-    expect(expiry).toHaveTextContent(`Expires on ${formatDate(expiresAt, 'en')} · ينتهي في ${formatDate(expiresAt, 'ar')}`);
-    expect(expiry?.querySelector('span[lang="ar"][dir="rtl"]')).toBeInTheDocument();
+    expect(screen.getByText(`ينتهي في ${formatDate(expiresAt, 'ar')}`)).toBeInTheDocument();
   });
 
   it('shows the fixed bilingual texts and the code', () => {
