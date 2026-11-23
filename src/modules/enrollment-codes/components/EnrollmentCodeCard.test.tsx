@@ -164,6 +164,10 @@ describe('EnrollmentCodeCard', () => {
     expect(EXPORT_WIDTH).toBe(840);
   });
 
+  it('forces Cairo on the card and everything in it, so the brand theme font rule cannot override it', () => {
+    expect(CARD_CSS).toMatch(/\.coupon-wrap,\.coupon-wrap \*\{font-family:'Cairo'[^}]*!important\}/);
+  });
+
   it('uses the approved colors and sizes', () => {
     expect(CARD_CSS).toContain('linear-gradient(135deg,#131f3c 0%,#1a2c55 55%,#2a4785 100%)');
     expect(CARD_CSS).toContain('.coupon-wrap{width:100%;max-width:840px');
