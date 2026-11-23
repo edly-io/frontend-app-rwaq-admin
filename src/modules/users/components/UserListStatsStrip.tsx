@@ -110,6 +110,7 @@ const UserListStatsStrip = () => {
           type="bar"
           data={registrations}
           maxXLabels={6}
+          formatCountAxis
           series={['registrations']}
           isLoading={isLoading}
           isUnavailable={query.isError}
