@@ -256,6 +256,21 @@ describe('CodesList', () => {
       }));
     });
 
+    it('names a code that had no name and sends only the name', async () => {
+      openEdit(makeCode({ usesCount: 4 }));
+      fireEvent.change(screen.getByLabelText('Code name'), { target: { value: '  Spring cohort ' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith({ id: 1, patch: { codeName: 'Spring cohort' } }));
+    });
+
+    it('lets an unnamed code stay unnamed but does not let a named code lose its name', async () => {
+      openEdit(makeCode({ usesCount: 4, codeName: 'Spring cohort' }));
+      fireEvent.change(screen.getByLabelText('Code name'), { target: { value: ' ' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(await screen.findByText('Enter a code name.')).toBeInTheDocument();
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
     it('shows a backend refusal on its field', async () => {
       mockUpdate.mockRejectedValue({
         response: { status: 400, data: { detail: 'Limit is below uses.', field: 'max_uses' } },
