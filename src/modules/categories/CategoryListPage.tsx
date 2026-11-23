@@ -177,7 +177,7 @@ const CategoryListPage = () => {
             {label}
             <Icon src={sortIcon} aria-hidden />
           </Button>
-          {currentSortLabel && <span id={stateId} className="sr-only">{currentSortLabel}</span>}
+          {currentSortLabel && <span id={stateId} hidden>{currentSortLabel}</span>}
         </>
       ),
     };
