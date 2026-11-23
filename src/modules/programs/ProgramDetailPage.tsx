@@ -192,9 +192,11 @@ const LearnersTab = ({ uuid, isSubscription }: { uuid: string; isSubscription: b
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   useEffect(() => {
-    const timer = setTimeout(() => { setDebouncedSearch(search.trim()); setPage(1); }, 300);
+    const timer = setTimeout(() => {
+      if (search.trim() !== debouncedSearch) { setDebouncedSearch(search.trim()); setPage(1); }
+    }, 300);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, debouncedSearch]);
   const [cancelError, setCancelError] = useState(false);
   const cancelInvite = useCancelProgramInvite(uuid);
   const { data, isLoading, isError } = useProgramLearners(uuid, page, debouncedSearch);
