@@ -12,8 +12,8 @@ const messages = defineMessages({
   none: { id: 'rwaq.admin.dashboard.none', defaultMessage: '—' },
 
   // ── KPI row ────────────────────────────────────────────────────────────────
-  kpiLearners: { id: 'rwaq.admin.dashboard.kpi.learners', defaultMessage: 'Active Learners' },
-  kpiEnrollments: { id: 'rwaq.admin.dashboard.kpi.enrollments', defaultMessage: 'Active Enrolments' },
+  kpiLearners: { id: 'rwaq.admin.dashboard.kpi.learners', defaultMessage: 'Learners with activity' },
+  kpiEnrollments: { id: 'rwaq.admin.dashboard.kpi.enrollments', defaultMessage: 'Enrollments with activity' },
   kpiCoursesRunning: { id: 'rwaq.admin.dashboard.kpi.coursesRunning', defaultMessage: 'Courses running' },
   kpiProgramsActive: { id: 'rwaq.admin.dashboard.kpi.programsActive', defaultMessage: 'Active Programs' },
   kpiRegistrations: { id: 'rwaq.admin.dashboard.kpi.registrations', defaultMessage: 'New Registrations this month' },
@@ -68,6 +68,7 @@ const messages = defineMessages({
   },
   modesTitle: { id: 'rwaq.admin.dashboard.modes.title', defaultMessage: 'Enrollment modes' },
   modeColMode: { id: 'rwaq.admin.dashboard.modes.colMode', defaultMessage: 'Mode' },
+  modeColEnrollments: { id: 'rwaq.admin.dashboard.modes.colEnrollments', defaultMessage: 'Active Enrolments' },
   modeColShare: { id: 'rwaq.admin.dashboard.modes.colShare', defaultMessage: 'Share' },
   modesHint: {
     id: 'rwaq.admin.dashboard.modes.hint',

@@ -314,7 +314,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.programs.listStats.archived.info',
     defaultMessage: 'Programs with status Archived, hidden ones included.',
   },
-  listStatsEnrollments: { id: 'rwaq.admin.programs.listStats.enrollments', defaultMessage: 'Program enrollments' },
+  listStatsEnrollments: { id: 'rwaq.admin.programs.listStats.enrollments', defaultMessage: 'Program enrollments (visible programs)' },
   listStatsEnrollmentsInfo: {
     id: 'rwaq.admin.programs.listStats.enrollments.info',
     defaultMessage: 'Active enrollments in programs that are not hidden, the same figure as the Dashboard. A learner in two programs counts twice.',
