@@ -209,12 +209,12 @@ const messages = defineMessages({
     id: 'rwaq.admin.orgs.stats.admins.info',
     defaultMessage: 'People with the organization admin role in this organization.',
   },
-  statsLearners: { id: 'rwaq.admin.orgs.stats.learners', defaultMessage: 'Learners' },
+  statsLearners: { id: 'rwaq.admin.orgs.stats.learners', defaultMessage: 'Learners with activity' },
   statsLearnersInfo: {
     id: 'rwaq.admin.orgs.stats.learners.info',
     defaultMessage: 'People with activity in a course of this organization and an active enrollment in it. Same figure as the Dashboard for this organization. Staff, superusers and service accounts are not counted.',
   },
-  statsActiveEnrollments: { id: 'rwaq.admin.orgs.stats.activeEnrollments', defaultMessage: 'Active enrollments' },
+  statsActiveEnrollments: { id: 'rwaq.admin.orgs.stats.activeEnrollments', defaultMessage: 'Enrollments with activity' },
   statsActiveEnrollmentsInfo: {
     id: 'rwaq.admin.orgs.stats.activeEnrollments.info',
     defaultMessage: 'Learner and course pairs with activity and an active enrollment. Same figure as the Dashboard for this organization.',

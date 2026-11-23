@@ -519,7 +519,7 @@ const messages = defineMessages({
   },
 
   // ── Stats strip (EDLYCSRWAQ-380) ───────────────────────────────────────────
-  statsActiveLearners: { id: 'rwaq.admin.courses.stats.activeLearners', defaultMessage: 'Active learners' },
+  statsActiveLearners: { id: 'rwaq.admin.courses.stats.activeLearners', defaultMessage: 'Learners with activity' },
   statsActiveLearnersInfo: {
     id: 'rwaq.admin.courses.stats.activeLearners.info',
     defaultMessage: 'People with activity in this course and an active enrollment. Staff, superusers and service accounts are not counted.',
@@ -594,7 +594,7 @@ const messages = defineMessages({
     id: 'rwaq.admin.courses.listStats.running.info',
     defaultMessage: 'Courses that have started and not ended yet, the same figure as the Dashboard.',
   },
-  listStatsEnrollments: { id: 'rwaq.admin.courses.listStats.enrollments', defaultMessage: 'Active enrollments' },
+  listStatsEnrollments: { id: 'rwaq.admin.courses.listStats.enrollments', defaultMessage: 'Enrollments with activity' },
   listStatsEnrollmentsInfo: {
     id: 'rwaq.admin.courses.listStats.enrollments.info',
     defaultMessage: 'Learner and course pairs with activity and an active enrollment, the same figure as the Dashboard. Staff, superusers and service accounts are not counted.',

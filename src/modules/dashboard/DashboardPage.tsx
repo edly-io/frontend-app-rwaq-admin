@@ -685,7 +685,7 @@ const DashboardPage = () => {
               columns={[
                 { label: intl.formatMessage(messages.modeColMode), render: (row) => modeLabel(intl, row.mode) },
                 {
-                  label: intl.formatMessage(messages.kpiEnrollments),
+                  label: intl.formatMessage(messages.modeColEnrollments),
                   render: (row) => formatCount(row.count),
                   isNumeric: true,
                 },
