@@ -103,6 +103,10 @@ const CategoryDetailPage = () => {
       key: 'run',
     },
     {
+      label: intl.formatMessage(messages.colEnrollments),
+      key: 'enrollmentsCount',
+    },
+    {
       label: intl.formatMessage(messages.colCourseActions),
       headerClassName: 'rwaq-th--actions',
       key: 'actions',
@@ -167,6 +171,10 @@ const CategoryDetailPage = () => {
             {
               label: intl.formatMessage(messages.detailCourseCount),
               value: coursePagination?.count ?? courseRows.length,
+            },
+            {
+              label: intl.formatMessage(messages.colEnrollments),
+              value: category.enrollmentsCount,
             },
           ]}
         />

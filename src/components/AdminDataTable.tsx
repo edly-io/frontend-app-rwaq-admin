@@ -3,7 +3,7 @@
  * pagination, sort, and filter. All consumers get the same consistent
  * loading/empty/error handling without repeating it.
  */
-import { ReactNode } from 'react';
+import { ReactNode, useLayoutEffect, useRef } from 'react';
 import { DataTable, Pagination, Spinner } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { adminDataTableMessages as messages } from './messages';
@@ -26,6 +26,10 @@ export interface ColumnDef<Row extends object = Record<string, unknown>> {
   id?: string;
   /** Explains the column: hovering the heading shows this, as on the dashboard's tiles. */
   info?: string;
+  /** How the table is sorted by this column right now, announced by screen readers on the heading cell. */
+  ariaSort?: 'ascending' | 'descending' | 'none';
+  /** Optional custom header content, such as a server-side sort button. */
+  renderHeader?: () => ReactNode;
   /** Custom cell renderer; receives the raw cell value and the full row object */
   renderCell?: (value: unknown, row: Row) => ReactNode;
 }
@@ -65,6 +69,7 @@ interface TableColumnMeta<Row extends object> {
   label: string;
   isLabelHidden?: boolean;
   info?: string;
+  renderHeader?: ColumnDef<Row>['renderHeader'];
   renderCell?: ColumnDef<Row>['renderCell'];
 }
 
@@ -78,6 +83,7 @@ interface TableColumnMeta<Row extends object> {
 const headerCache: Map<string, () => ReactNode> = new Map();
 
 const ColumnHeading = ({ meta }: { meta: TableColumnMeta<object> }) => {
+  if (meta.renderHeader) { return <span>{meta.renderHeader()}</span>; }
   if (meta.isLabelHidden) { return <span className="sr-only">{meta.label}</span>; }
   if (meta.info) {
     return <InfoTooltip text={meta.info}><span className="rwaq-th-info">{meta.label}</span></InfoTooltip>;
@@ -119,7 +125,11 @@ ExpanderHeading.toString = () => 'header:expander';
 const buildTableColumns = <Row extends object>(cols: ColumnDef<Row>[]) => cols.map((col) => {
   const id = col.id ?? col.key;
   const meta: TableColumnMeta<Row> = {
-    label: col.label, isLabelHidden: col.isLabelHidden, info: col.info, renderCell: col.renderCell,
+    label: col.label,
+    isLabelHidden: col.isLabelHidden,
+    info: col.info,
+    renderHeader: col.renderHeader,
+    renderCell: col.renderCell,
   };
   return {
     Header: headerFor(id),
@@ -147,6 +157,19 @@ const AdminDataTable = <Row extends object>({
   renderRowSubComponent,
 }: AdminDataTableProps<Row>) => {
   const intl = useIntl();
+  const shellRef = useRef<HTMLDivElement>(null);
+
+  // Paragon's header cell takes no extra attributes, so the sort state is set on the <th> after render.
+  useLayoutEffect(() => {
+    const cells = shellRef.current?.querySelectorAll('thead th');
+    if (!cells) { return; }
+    const offset = renderRowSubComponent ? 1 : 0;
+    columns.forEach((col, index) => {
+      const cell = cells[index + offset];
+      if (!cell) { return; }
+      if (col.ariaSort) { cell.setAttribute('aria-sort', col.ariaSort); } else { cell.removeAttribute('aria-sort'); }
+    });
+  });
 
   // An expandable table gets its expander first, so the toggle sits beside the row it opens.
   const tableColumns = renderRowSubComponent
@@ -191,6 +214,7 @@ const AdminDataTable = <Row extends object>({
 
   return (
     <div
+      ref={shellRef}
       className={isRefreshing ? 'rwaq-table-shell rwaq-table-shell--refreshing' : 'rwaq-table-shell'}
       aria-busy={isRefreshing}
       // Stale rows are not actionable: inert also blocks keyboard focus.

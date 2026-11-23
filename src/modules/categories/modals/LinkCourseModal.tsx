@@ -15,7 +15,7 @@ import { useToast } from '@src/components/ToastContext';
 import { getErrorReason } from '@src/data/httpError';
 import CoursePicker from '../components/CoursePicker';
 import { useLinkCourse } from '../data/hooks';
-import type { CategoryCourse } from '../data/types';
+import type { CategoryCourseSummary } from '../data/types';
 import messages from '../messages';
 
 interface LinkCourseModalProps {
@@ -33,7 +33,7 @@ const LinkCourseModal = ({
   const { showToast } = useToast();
   const linkMutation = useLinkCourse(categoryId);
 
-  const [course, setCourse] = useState<CategoryCourse | null>(null);
+  const [course, setCourse] = useState<CategoryCourseSummary | null>(null);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
 
   // A reopened modal should be blank, not holding the last selection/attempt.
