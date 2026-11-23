@@ -51,18 +51,21 @@ const UsesTab = ({ codeId, codeLabel, onClearCode }: UsesTabProps) => {
   const dates = useDateRange();
   const [codeInput, setCodeInput] = useState('');
   const codeText = useDebounced(codeInput.trim());
+  const [codeNameInput, setCodeNameInput] = useState('');
+  const codeName = useDebounced(codeNameInput.trim());
   const [item, setItem] = useState<PickedItem | null>(null);
   const itemKey = item ? `${item.kind}:${item.id}` : '';
   const [organization, setOrganization] = useState('');
   const [codeScope, setCodeScope] = useState('');
   const orgOptions = useOrgFilterOptions(organization);
   const idPart = codeId ? String(codeId) : '';
-  const scope = listScope(idPart, dates.startDate, dates.endDate, codeText, itemKey, organization, codeScope);
+  const scope = listScope(idPart, dates.startDate, dates.endDate, codeText, codeName, itemKey, organization, codeScope);
   const list = useListState('', {}, scope);
 
   const listParams: UseListParams = {
     codeId,
     code: codeText || undefined,
+    codeName: codeName || undefined,
     courseId: item?.kind === 'course' ? item.id : undefined,
     programUuid: item?.kind === 'program' ? item.id : undefined,
     organization: organization || undefined,
@@ -144,6 +147,7 @@ const UsesTab = ({ codeId, codeLabel, onClearCode }: UsesTabProps) => {
   const columns: ColumnDef<CodeUse>[] = [
     {
       label: intl.formatMessage(messages.colStudent),
+      info: intl.formatMessage(messages.infoColStudent),
       key: 'student',
       renderCell: (_value, row) => (
         <div className="min-width-0">
@@ -160,11 +164,19 @@ const UsesTab = ({ codeId, codeLabel, onClearCode }: UsesTabProps) => {
     },
     {
       label: intl.formatMessage(messages.colCode),
+      info: intl.formatMessage(messages.infoColCode),
       key: 'code',
       renderCell: (value) => <strong className="rwaq-order-cell">{value as string}</strong>,
     },
     {
+      label: intl.formatMessage(messages.colCodeName),
+      info: intl.formatMessage(messages.infoColCodeName),
+      key: 'codeName',
+      renderCell: (value) => (value as string) || '—',
+    },
+    {
       label: intl.formatMessage(messages.colItem),
+      info: intl.formatMessage(messages.infoUseItem),
       key: 'item',
       renderCell: (_value, row) => (
         <div className="rwaq-user-cell__name" title={row.item.name}>
@@ -175,25 +187,30 @@ const UsesTab = ({ codeId, codeLabel, onClearCode }: UsesTabProps) => {
     },
     {
       label: intl.formatMessage(messages.colScope),
+      info: intl.formatMessage(messages.infoColScope),
       key: 'scope',
       renderCell: (value) => intl.formatMessage(SCOPE_MESSAGE[value as CodeScope]),
     },
     {
       label: intl.formatMessage(messages.colOrganization),
+      info: intl.formatMessage(messages.infoColOrganization),
       key: 'organization',
     },
     {
       label: intl.formatMessage(messages.colUsedOn),
+      info: intl.formatMessage(messages.infoColUsedOn),
       key: 'usedAt',
       renderCell: (value) => formatDateTime(value as string, intl.locale),
     },
     {
       label: intl.formatMessage(messages.colTypedHere),
+      info: intl.formatMessage(messages.infoColTypedHere),
       key: 'enteredCode',
-      renderCell: (value) => intl.formatMessage(value ? messages.yes : messages.no),
+      renderCell: (value) => intl.formatMessage(value ? messages.usesRedeemed : messages.usesJoinedThrough),
     },
     {
       label: intl.formatMessage(messages.colEnrolled),
+      info: intl.formatMessage(messages.infoColEnrolled),
       key: 'stillEnrolled',
       renderCell: (value) => (
         <Badge variant={value ? 'success' : 'secondary'}>
@@ -214,6 +231,7 @@ const UsesTab = ({ codeId, codeLabel, onClearCode }: UsesTabProps) => {
         onClearAll={() => {
           list.clearAll();
           setCodeInput('');
+          setCodeNameInput('');
           setItem(null);
           setOrganization('');
           setCodeScope('');
@@ -239,6 +257,15 @@ const UsesTab = ({ codeId, codeLabel, onClearCode }: UsesTabProps) => {
             placeholder={intl.formatMessage(messages.usesCodePlaceholder)}
             autoComplete="off"
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => setCodeInput(event.target.value.toUpperCase())}
+          />
+        </Form.Group>
+        <Form.Group className="mb-0 mr-3" controlId="enrollment-code-uses-name">
+          <Form.Label className="sr-only">{intl.formatMessage(messages.colCodeName)}</Form.Label>
+          <Form.Control
+            value={codeNameInput}
+            placeholder={intl.formatMessage(messages.usesCodeNamePlaceholder)}
+            autoComplete="off"
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => setCodeNameInput(event.target.value)}
           />
         </Form.Group>
         <ItemPicker

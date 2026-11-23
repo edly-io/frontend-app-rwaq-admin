@@ -191,6 +191,7 @@ const CodesList = ({
   const columns: ColumnDef<EnrollmentCode>[] = [
     {
       label: intl.formatMessage(messages.colCode),
+      info: intl.formatMessage(messages.infoColCode),
       key: 'code',
       renderCell: (_value, row) => (
         <span className="d-inline-flex align-items-center">
@@ -209,26 +210,37 @@ const CodesList = ({
         </span>
       ),
     },
+    {
+      label: intl.formatMessage(messages.colCodeName),
+      info: intl.formatMessage(messages.infoColCodeName),
+      key: 'codeName',
+      renderCell: (value) => (value as string) || '—',
+    },
     ...(item ? [] : [{
       label: intl.formatMessage(messages.colScope),
+      info: intl.formatMessage(messages.infoColScope),
       key: 'scope',
       renderCell: (_value: unknown, row: EnrollmentCode) => <KindTag kind={row.scope} />,
     }, {
       label: intl.formatMessage(messages.colItem),
+      info: intl.formatMessage(messages.infoColItem),
       key: 'item',
       renderCell: (_value: unknown, row: EnrollmentCode) => (row.item
         ? <Link to={itemPath(row.item.kind, row.item.id)}>{row.item.name}</Link> : '—'),
     }, {
       label: intl.formatMessage(messages.colOrganization),
+      info: intl.formatMessage(messages.infoColOrganization),
       key: 'organization',
       renderCell: (_value: unknown, row: EnrollmentCode) => row.item?.organization || '—',
     }]),
     {
       label: intl.formatMessage(messages.colCreatedBy),
+      info: intl.formatMessage(messages.infoColCreatedBy),
       key: 'createdBy',
     },
     {
       label: intl.formatMessage(messages.colUsage),
+      info: intl.formatMessage(messages.infoColUsage),
       key: 'usesCount',
       renderCell: (_value, row) => (
         <>
@@ -243,11 +255,13 @@ const CodesList = ({
     },
     {
       label: intl.formatMessage(messages.colExpires),
+      info: intl.formatMessage(messages.infoColExpires),
       key: 'expiresAt',
       renderCell: (value) => (value ? formatDate(value as string, intl.locale) : intl.formatMessage(messages.noExpiry)),
     },
     {
       label: intl.formatMessage(messages.colStatus),
+      info: intl.formatMessage(messages.infoColStatus),
       key: 'status',
       renderCell: (value) => (
         <Badge variant={STATUS_VARIANT[value as CodeStatus]}>
@@ -257,6 +271,7 @@ const CodesList = ({
     },
     {
       label: intl.formatMessage(messages.colActive),
+      info: intl.formatMessage(messages.infoColActive),
       key: 'isActive',
       id: 'active',
       renderCell: (_value, row) => ((row.usesCount > 0 || !row.isActive) ? (
@@ -271,6 +286,7 @@ const CodesList = ({
     },
     {
       label: intl.formatMessage(messages.colActions),
+      info: intl.formatMessage(messages.infoColActions),
       key: 'actions',
       id: 'actions',
       renderCell: (_value, row) => (

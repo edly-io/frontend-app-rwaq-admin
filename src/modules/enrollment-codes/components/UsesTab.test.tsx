@@ -113,18 +113,18 @@ describe('UsesTab', () => {
     expect(second).toHaveTextContent('Left');
   });
 
-  it('shows the scope, the organization and whether the learner typed the code here', () => {
+  it('shows the scope, the organization and whether the learner redeemed the code', () => {
     renderWrapper(<UsesTab onClearCode={jest.fn()} />);
-    ['Scope', 'Organization', 'Typed the code here'].forEach((name) => {
+    ['Scope', 'Organization', 'Redeemed the code'].forEach((name) => {
       expect(screen.getByRole('columnheader', { name })).toBeInTheDocument();
     });
     const first = screen.getByText('ABC234').closest('tr') as HTMLElement;
     expect(first).toHaveTextContent('Arbisoft');
-    expect(first).toHaveTextContent('Yes');
+    expect(first).toHaveTextContent('Redeemed');
     const second = screen.getByText('RIYADH26').closest('tr') as HTMLElement;
     expect(second).toHaveTextContent('Organization');
     expect(second).toHaveTextContent('Edrakk');
-    expect(second).toHaveTextContent('No');
+    expect(second).toHaveTextContent('Joined through the same code');
   });
 
   it('filters by organization and scope, and the CSV follows', () => {
@@ -192,10 +192,12 @@ describe('UsesTab', () => {
     jest.useFakeTimers();
     renderWrapper(<UsesTab onClearCode={jest.fn()} />);
     fireEvent.change(screen.getByPlaceholderText('Part of a code'), { target: { value: 'abc' } });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Code name' }), { target: { value: '  Safety cohort ' } });
     expect(screen.getByPlaceholderText('Part of a code')).toHaveValue('ABC');
     expect(lastParams().code).toBeUndefined();
     await jest.advanceTimersByTimeAsync(400);
     expect(lastParams().code).toBe('ABC');
+    expect(lastParams().codeName).toBe('Safety cohort');
     jest.useRealTimers();
   });
 
