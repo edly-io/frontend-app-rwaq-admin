@@ -192,10 +192,12 @@ describe('UsesTab', () => {
     jest.useFakeTimers();
     renderWrapper(<UsesTab onClearCode={jest.fn()} />);
     fireEvent.change(screen.getByPlaceholderText('Part of a code'), { target: { value: 'abc' } });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Code name' }), { target: { value: '  Safety cohort ' } });
     expect(screen.getByPlaceholderText('Part of a code')).toHaveValue('ABC');
     expect(lastParams().code).toBeUndefined();
     await jest.advanceTimersByTimeAsync(400);
     expect(lastParams().code).toBe('ABC');
+    expect(lastParams().codeName).toBe('Safety cohort');
     jest.useRealTimers();
   });
 

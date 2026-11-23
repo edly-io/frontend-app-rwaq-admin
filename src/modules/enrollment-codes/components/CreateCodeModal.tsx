@@ -36,11 +36,12 @@ export const generateCode = (): string => {
   return Array.from(values, (value) => CODE_ALPHABET[value % CODE_ALPHABET.length]).join('');
 };
 
-type FormField = 'code' | 'item' | 'maxUses' | 'expiresAt';
+type FormField = 'code' | 'codeName' | 'item' | 'maxUses' | 'expiresAt';
 type FieldErrors = Partial<Record<FormField, string>>;
 
 const BACKEND_FIELDS: Record<string, FormField> = {
   code: 'code',
+  code_name: 'codeName',
   course_id: 'item',
   program_uuid: 'item',
   organization: 'item',
@@ -78,6 +79,7 @@ const CreateCodeModal = ({
   const mutation = useCreateEnrollmentCode();
 
   const [code, setCode] = useState('');
+  const [codeName, setCodeName] = useState('');
   const [scope, setScope] = useState<CodeScope>('course');
   const [picked, setPicked] = useState<PickedItem | null>(null);
   const [pickedOrg, setPickedOrg] = useState<PickedOrganization | null>(null);
@@ -90,6 +92,7 @@ const CreateCodeModal = ({
   useEffect(() => {
     if (isOpen) {
       setCode('');
+      setCodeName('');
       setScope('course');
       setPicked(null);
       setPickedOrg(null);
@@ -109,6 +112,7 @@ const CreateCodeModal = ({
 
   const validate = (): FieldErrors => {
     const errors: FieldErrors = {};
+    if (!codeName.trim()) { errors.codeName = intl.formatMessage(messages.codeNameRequired); }
     if (code && !CODE_PATTERN.test(code)) { errors.code = intl.formatMessage(messages.codeInvalid); }
     if (!item) {
       errors.item = intl.formatMessage(scope === 'organization' ? messages.organizationRequired : messages.itemRequired);
@@ -128,6 +132,7 @@ const CreateCodeModal = ({
     try {
       const created = await mutation.mutateAsync({
         code: code || undefined,
+        codeName: codeName.trim(),
         ...(item.kind === 'course' ? { courseId: item.id } : {}),
         ...(item.kind === 'program' ? { programUuid: item.id } : {}),
         ...(item.kind === 'organization' ? { organization: item.id } : {}),
@@ -156,6 +161,18 @@ const CreateCodeModal = ({
       isSubmitting={mutation.isPending}
     >
       {error && <p className="text-danger small">{error}</p>}
+
+      <Form.Group isInvalid={!!fieldErrors.codeName} controlId="enrollment-code-name">
+        <Form.Label>{intl.formatMessage(messages.colCodeName)}</Form.Label>
+        <Form.Control
+          value={codeName}
+          maxLength={255}
+          required
+          autoComplete="off"
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setCodeName(event.target.value); clear('codeName'); }}
+        />
+        {fieldErrors.codeName && <Form.Control.Feedback type="invalid">{fieldErrors.codeName}</Form.Control.Feedback>}
+      </Form.Group>
 
       <Form.Group isInvalid={!!fieldErrors.code} controlId="enrollment-code-code">
         <Form.Label>{intl.formatMessage(messages.codeLabelOptional)}</Form.Label>

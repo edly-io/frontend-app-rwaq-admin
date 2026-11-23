@@ -361,6 +361,7 @@ describe('CodesList', () => {
       <CodesList item={{ kind: 'course', id: COURSE_KEY, name: 'Safety basics' }} onViewUses={onViewUses} />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Create code' }));
+    fireEvent.change(screen.getByLabelText('Code name'), { target: { value: 'New cohort' } });
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
     const modal = await screen.findByTestId('share-modal');
     expect(modal).toHaveAttribute('data-code-id', '42');
