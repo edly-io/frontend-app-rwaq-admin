@@ -199,7 +199,6 @@ const messages = defineMessages({
   // ── Share card modal ───────────────────────────────────────────────────────
   cardTitleCreated: { id: 'rwaq.admin.enrollmentCodes.card.titleCreated', defaultMessage: 'Enrollment code created' },
   cardTitle: { id: 'rwaq.admin.enrollmentCodes.card.title', defaultMessage: 'Enrollment code' },
-  cardExpires: { id: 'rwaq.admin.enrollmentCodes.card.expires', defaultMessage: 'Expires on {date}' },
   cardLoading: { id: 'rwaq.admin.enrollmentCodes.card.loading', defaultMessage: 'Loading the card' },
   cardLoadFailed: {
     id: 'rwaq.admin.enrollmentCodes.card.loadFailed',

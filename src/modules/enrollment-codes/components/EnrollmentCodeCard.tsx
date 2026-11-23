@@ -1,7 +1,8 @@
 /**
  * The shareable enrollment code card: the code, what it is valid for, the platform's identity and a QR code.
  *
- * The card keeps its fixed bilingual headings. The organization name and expiry follow the interface locale.
+ * The card is the same for every admin: fixed bilingual headings, the organization's Arabic name when it has one
+ * (the line it sits in is Arabic) and the expiry in both languages, whatever the interface language is.
  * Only the platform settings that are set are shown. With no QR link (the public site address is not set) the
  * QR part is left out. The layout is plain CSS (CARD_CSS) with a container query,
  * so it follows the card's own width.
@@ -11,9 +12,7 @@
  */
 import { forwardRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { isRtl, useIntl } from '@edx/frontend-platform/i18n';
 import { localizedName } from '@src/data/localizedName';
-import messages from '../messages';
 import type { CodeCard } from '../data/types';
 import { linkIcon } from './cardIcons';
 import { formatDate } from './codeDates';
@@ -24,10 +23,9 @@ interface EnrollmentCodeCardProps {
 }
 
 const EnrollmentCodeCard = forwardRef<HTMLDivElement, EnrollmentCodeCardProps>(({ card, testId }, ref) => {
-  const intl = useIntl();
   const { platform } = card;
   const itemName = card.itemKind === 'organization'
-    ? localizedName(intl.locale, card.itemName, card.organizationArabicName?.trim())
+    ? localizedName('ar', card.itemName, card.organizationArabicName?.trim())
     : card.itemName;
   const links = (platform.links ?? []).filter((link) => link.text);
   const hasIdentity = Boolean(platform.slogan || platform.about || links.length);
@@ -63,10 +61,16 @@ const EnrollmentCodeCard = forwardRef<HTMLDivElement, EnrollmentCodeCardProps>((
               <bdi>{itemName}</bdi>
             </span>
             {card.expiresAt && (
-              <span className="coupon-card__expiry" dir={isRtl(intl.locale) ? 'rtl' : 'ltr'} lang={intl.locale}>
-                {intl.formatMessage(messages.cardExpires, {
-                  date: formatDate(card.expiresAt, intl.locale),
-                })}
+              <span className="coupon-card__expiry">
+                Expires on
+                {' '}
+                {formatDate(card.expiresAt, 'en')}
+                {' · '}
+                <span dir="rtl" lang="ar">
+                  ينتهي في
+                  {' '}
+                  {formatDate(card.expiresAt, 'ar')}
+                </span>
               </span>
             )}
           </div>
