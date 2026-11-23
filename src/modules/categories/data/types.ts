@@ -3,7 +3,7 @@
 // camelCase throughout: api.ts normalises the snake_case wire format at the
 // boundary, so nothing above it ever sees snake_case keys.
 
-/** Lightweight category row — returned by the list endpoint and the reverse lookup. */
+/** Lightweight category row returned by the reverse lookup. */
 export interface CategorySummary {
   id: number;
   name: string;
@@ -11,8 +11,14 @@ export interface CategorySummary {
   isActive: boolean;
 }
 
-/** A course linked to a category — hydrated with CourseOverview data by the backend. */
-export interface CategoryCourse {
+/** Category row returned by the list endpoint. */
+export interface CategoryListRow extends CategorySummary {
+  coursesCount: number;
+  enrollmentsCount: number;
+}
+
+/** Hydrated CourseOverview data used by the course picker. */
+export interface CategoryCourseSummary {
   courseKey: string;
   displayName: string;
   org: string;
@@ -20,9 +26,14 @@ export interface CategoryCourse {
   courseImageUrl: string | null;
 }
 
+export interface CategoryCourse extends CategoryCourseSummary {
+  enrollmentsCount: number;
+}
+
 /** Full category detail — from GET /rwaq/api/categories/<id>/ */
 export interface CategoryDetail extends CategorySummary {
   courses: CategoryCourse[];
+  enrollmentsCount: number;
 }
 
 /** Pagination envelope from GET /rwaq/api/categories/ */
@@ -35,7 +46,7 @@ export interface CategoryPagination {
 
 /** Paginated list response from GET /rwaq/api/categories/ */
 export interface CategoryListResponse {
-  results: CategorySummary[];
+  results: CategoryListRow[];
   pagination: CategoryPagination;
 }
 
@@ -60,7 +71,7 @@ export interface CategoryAvailableCourseParams {
 
 /** Paginated response from GET /rwaq/api/categories/<id>/available-courses/ */
 export interface CategoryAvailableCourseListResponse {
-  results: CategoryCourse[];
+  results: CategoryCourseSummary[];
   pagination: CategoryPagination;
 }
 
@@ -79,7 +90,8 @@ export interface CategoryPatch {
 }
 
 export type CategoryFilter = 'all' | 'active' | 'inactive';
-export type CategoryOrdering = 'name' | '-name' | '-created';
+export type CategoryCountOrdering = 'courses_count' | 'enrollments_count';
+export type CategoryOrdering = 'name' | '-name' | '-created' | CategoryCountOrdering | `-${CategoryCountOrdering}`;
 
 /** Query params for the category list endpoint */
 export interface CategoryListParams {
