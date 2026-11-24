@@ -293,7 +293,7 @@ describe('PaymentsPage', () => {
   it('keeps a date range per tab: choosing one on Overview does not narrow the other tabs', async () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: /All time/ }));
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Last 30 days' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Last 30 days' }));
 
     expect(hooks.usePaymentsSummary).toHaveBeenLastCalledWith(
       expect.objectContaining({ startDate: expect.any(String) }),

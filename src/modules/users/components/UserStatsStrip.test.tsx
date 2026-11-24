@@ -1,13 +1,13 @@
 /**
  * UserStatsStrip — enrollment figures from the list, programs and subscription from the stats endpoint.
  */
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from '../data/hooks';
 import type { UserEnrollment } from '../data/types';
 import UserStatsStrip from './UserStatsStrip';
 
-jest.mock('../data/hooks', () => ({ useUserStats: jest.fn() }));
+jest.mock('../data/hooks', () => ({ useUserStats: jest.fn(), userStatsRefresh: jest.fn() }));
 jest.mock('@src/components/charts/MetricChart', () => ({
   __esModule: true,
   default: ({ ariaLabel }: { ariaLabel: string }) => <div data-testid="metric-chart" aria-label={ariaLabel} />,
@@ -56,6 +56,17 @@ const renderStrip = (props = {}) => renderWrapper(
 );
 
 describe('UserStatsStrip', () => {
+  it('passes the selected date range to the query and refresh', () => {
+    mockStats(query());
+    renderStrip();
+    fireEvent.click(screen.getByRole('button', { name: /All time/ }));
+    fireEvent.click(within(screen.getByRole('group', { name: 'Select time period' })).getByRole('button', { name: 'Last 30 days' }));
+    expect(hooks.useUserStats).toHaveBeenLastCalledWith(7, true, expect.any(String), expect.any(String));
+    expect(screen.getByText('Showing data for the selected range in UTC. Current-state figures are unchanged.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
+    expect(hooks.userStatsRefresh).toHaveBeenCalledWith(7, expect.any(String), expect.any(String));
+  });
+
   it('shows the figures worked out from the enrollments list', () => {
     mockStats(query());
     renderStrip();
@@ -86,7 +97,7 @@ describe('UserStatsStrip', () => {
     mockStats(query());
     renderStrip();
 
-    expect(hooks.useUserStats).toHaveBeenCalledWith(7, true);
+    expect(hooks.useUserStats).toHaveBeenCalledWith(7, true, undefined, undefined);
     expect(screen.getByText('1 completed')).toBeInTheDocument();
     expect(screen.getByText('Active')).toBeInTheDocument();
     expect(screen.getByText(/^Ends /)).toBeInTheDocument();
@@ -149,6 +160,6 @@ describe('UserStatsStrip', () => {
     renderStrip();
 
     fireEvent.click(screen.getByRole('button', { name: 'Hide statistics' }));
-    expect(hooks.useUserStats).toHaveBeenLastCalledWith(7, false);
+    expect(hooks.useUserStats).toHaveBeenLastCalledWith(7, false, undefined, undefined);
   });
 });

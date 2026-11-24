@@ -9,6 +9,7 @@
  */
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { appId } from '@src/constants';
+import type { RefreshEntry } from '@src/components/stats/useStatsRefresh';
 import {
   getAnalyticsBreakdowns,
   getAnalyticsSummary,
@@ -61,3 +62,19 @@ export const useAnalyticsPlatformTotals = () => useQuery({
   queryFn: () => getPlatformTotals(),
   ...ANALYTICS_QUERY_OPTIONS,
 });
+
+/** What a strip's refresh button fetches again for the Dashboard's summary, trends and breakdowns of `params`. */
+export const analyticsStatsRefresh = (
+  params: AnalyticsParams,
+  trendsParams: AnalyticsParams,
+): RefreshEntry[] => [
+  { queryKey: analyticsQueryKeys.summary(params), fetch: () => getAnalyticsSummary({ ...params, forceRefresh: true }) },
+  {
+    queryKey: analyticsQueryKeys.trends(trendsParams),
+    fetch: () => getAnalyticsTrends({ ...trendsParams, forceRefresh: true }),
+  },
+  {
+    queryKey: analyticsQueryKeys.breakdowns(params),
+    fetch: () => getAnalyticsBreakdowns({ ...params, forceRefresh: true }),
+  },
+];

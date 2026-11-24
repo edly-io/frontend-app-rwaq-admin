@@ -2,6 +2,7 @@
  * Organizations TanStack Query hooks.
  * Components import from this file only — never from api.ts directly.
  */
+import type { RefreshEntry } from '@src/components/stats/useStatsRefresh';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { localizedName } from '@src/data/localizedName';
@@ -28,8 +29,10 @@ const orgQueryKeys = {
   list: (params: OrgListParams) => [...orgQueryKeys.lists(), params] as const,
   details: () => [...orgQueryKeys.all, 'detail'] as const,
   detail: (shortName: string) => [...orgQueryKeys.details(), shortName] as const,
-  listStats: () => [...orgQueryKeys.all, 'listStats'] as const,
-  stats: (shortName: string) => [...orgQueryKeys.all, 'stats', shortName] as const,
+  listStats: (startDate?: string, endDate?: string) => [...orgQueryKeys.all, 'listStats', startDate, endDate] as const,
+  stats: (shortName: string, startDate?: string, endDate?: string) => (
+    [...orgQueryKeys.all, 'stats', shortName, startDate, endDate] as const
+  ),
 };
 
 // ── Queries ──────────────────────────────────────────────────────────────────
@@ -132,17 +135,29 @@ export const useRemoveOrgAdmin = (shortName: string) => {
 };
 
 /** Tiles and chart of the Organizations list strip. Global, no params. Pass `enabled: false` while collapsed. */
-export const useOrgListStats = (enabled = true) => useQuery({
-  queryKey: orgQueryKeys.listStats(),
-  queryFn: getOrgListStats,
+export const useOrgListStats = (enabled = true, startDate?: string, endDate?: string) => useQuery({
+  queryKey: orgQueryKeys.listStats(startDate, endDate),
+  queryFn: () => getOrgListStats(false, startDate, endDate),
   enabled,
   staleTime: 5 * 60 * 1000,
 });
 
 /** Extra tiles of one organization page. Pass `enabled: false` while the strip is collapsed. */
-export const useOrgStats = (shortName: string, enabled = true) => useQuery({
-  queryKey: orgQueryKeys.stats(shortName),
-  queryFn: () => getOrgStats(shortName),
+export const useOrgStats = (shortName: string, enabled = true, startDate?: string, endDate?: string) => useQuery({
+  queryKey: orgQueryKeys.stats(shortName, startDate, endDate),
+  queryFn: () => getOrgStats(shortName, false, startDate, endDate),
   enabled,
   staleTime: 5 * 60 * 1000,
+});
+
+/** What the Organizations list strip's refresh button fetches again. */
+export const orgListStatsRefresh = (startDate?: string, endDate?: string): RefreshEntry => ({
+  queryKey: orgQueryKeys.listStats(startDate, endDate),
+  fetch: () => getOrgListStats(true, startDate, endDate),
+});
+
+/** What the organization page strip fetches again from its own stats endpoint (Dashboard queries are separate). */
+export const orgStatsRefresh = (shortName: string, startDate?: string, endDate?: string): RefreshEntry => ({
+  queryKey: orgQueryKeys.stats(shortName, startDate, endDate),
+  fetch: () => getOrgStats(shortName, true, startDate, endDate),
 });

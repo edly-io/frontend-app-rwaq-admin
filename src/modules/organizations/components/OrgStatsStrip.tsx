@@ -17,13 +17,16 @@ import {
 } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import {
+  analyticsStatsRefresh,
   useAnalyticsBreakdowns,
   useAnalyticsSummary,
   useAnalyticsTrends,
 } from '@src/modules/dashboard/data/hooks';
 import StatTile from '@src/modules/dashboard/components/StatTile';
-import { useOrgStats } from '../data/hooks';
+import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
+import { orgStatsRefresh, useOrgStats } from '../data/hooks';
 import messages from '../messages';
 
 const TREND_MONTHS = 12;
@@ -36,12 +39,17 @@ interface OrgStatsStripProps {
 const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
   const intl = useIntl();
   const [isOpen, setIsOpen] = useState(true);
+  const [startDate, setStartDate] = useState<string | undefined>();
+  const [endDate, setEndDate] = useState<string | undefined>();
 
-  const summaryQuery = useAnalyticsSummary({ org });
-  const trendsQuery = useAnalyticsTrends({ org, months: TREND_MONTHS });
-  const breakdownsQuery = useAnalyticsBreakdowns({ org });
+  const summaryQuery = useAnalyticsSummary({ org, startDate, endDate });
+  const trendsQuery = useAnalyticsTrends({
+    org, months: TREND_MONTHS, startDate, endDate,
+  });
+  const breakdownsQuery = useAnalyticsBreakdowns({ org, startDate, endDate });
   const state = summarizeQueries([summaryQuery, trendsQuery, breakdownsQuery]);
-  const orgStatsQuery = useOrgStats(org, isOpen);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
+  const orgStatsQuery = useOrgStats(org, isOpen, startDate, endDate);
 
   const summary = summaryQuery.isError ? undefined : summaryQuery.data;
   const trends = trendsQuery.isError ? undefined : trendsQuery.data;
@@ -89,9 +97,29 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
     <StatsStrip
       isOpen={isOpen}
       onToggle={() => setIsOpen((open) => !open)}
+      note={intl.formatMessage(startDate || endDate ? statsMessages.rangeNote : statsMessages.globalNote)}
+      datePicker={(
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+        />
+      )}
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
+      generatedAt={summary?.generatedAt}
+      onRefresh={() => refresh([
+        ...analyticsStatsRefresh({ org, startDate, endDate }, {
+          org, months: TREND_MONTHS, startDate, endDate,
+        }),
+        orgStatsRefresh(org, startDate, endDate),
+      ])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         <StatsTileCard>
@@ -153,7 +181,7 @@ const OrgStatsStrip = ({ org, adminCount }: OrgStatsStripProps) => {
       <div className="rwaq-dash-grid rwaq-dash-grid--thirds">
         <StatsChartCard
           title={intl.formatMessage(statsMessages.enrollmentsPerMonthTitle)}
-          subtitle={intl.formatMessage(statsMessages.lastTwelveMonths)}
+          subtitle={startDate || endDate ? undefined : intl.formatMessage(statsMessages.lastTwelveMonths)}
           info={intl.formatMessage(messages.statsEnrollmentsInfo)}
           type="bar"
           data={enrollmentSeries}

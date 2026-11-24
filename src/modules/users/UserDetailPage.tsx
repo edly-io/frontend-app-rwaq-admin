@@ -121,6 +121,7 @@ const UserDetailPage = () => {
       </div>
 
       <UserStatsStrip
+        key={userId}
         userId={userId}
         enrollments={enrollments}
         isEnrollmentsLoading={isLoadingEnrollments}

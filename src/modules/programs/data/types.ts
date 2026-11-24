@@ -17,6 +17,7 @@ export interface ProgramListPagination {
  *  NamespacedPageNumberPagination nests metadata under a `pagination` key. */
 export interface ProgramSubPage<T> {
   results: T[];
+  invitedCount?: number;
   pagination: {
     count: number;
     numPages: number;
@@ -97,6 +98,8 @@ export interface ProgramLearner {
   enrollmentDate: string | null;
   completionDate: string | null;
   isActive: boolean;
+  status?: 'enrolled' | 'invited';
+  courseFailures?: string[];
 }
 
 /** Sortable ordering values for the program list. */
@@ -170,6 +173,8 @@ export interface BulkEnrollCourseFailure {
  * outcome, so the caller gets the breakdown rather than an error.
  */
 export interface BulkEnrollResult {
+  invited: { email: string }[];
+  notificationFailures: { email: string }[];
   enrolled: BulkEnrollRow[];
   alreadyEnrolled: BulkEnrollRow[];
   failed: BulkEnrollFailure[];
