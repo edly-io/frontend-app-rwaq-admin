@@ -5,7 +5,9 @@
 export const CARD_CSS = `
 /* Scoped to the card: this string is also injected into the admin page. */
 .coupon-wrap,.coupon-wrap *,.coupon-wrap *::before,.coupon-wrap *::after{box-sizing:border-box}
-.coupon-wrap{width:100%;max-width:840px;container-type:inline-size;font-family:'Cairo','Segoe UI',Tahoma,sans-serif}
+.coupon-wrap{width:100%;max-width:840px;container-type:inline-size}
+/* The brand theme sets font-family on * with !important. Without this the card is not drawn in Cairo, the download finds no Cairo font to embed and falls back to the system font. */
+.coupon-wrap,.coupon-wrap *{font-family:'Cairo','Segoe UI',Tahoma,sans-serif!important}
 .coupon-card{display:flex;width:100%;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#131f3c 0%,#1a2c55 55%,#2a4785 100%);color:#fff;text-align:left}
 .coupon-card__main{flex:1;display:flex;flex-direction:column;gap:20px;padding:30px 36px 24px;min-width:0}
 .coupon-card__header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
