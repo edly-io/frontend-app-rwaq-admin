@@ -16,6 +16,7 @@
 import { camelCaseObject, snakeCaseObject } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { getStudioApiUrl } from '@src/data/utils';
+import forceRefreshArgs from '@src/data/forceRefreshArgs';
 import type {
   BulkEnrollResult,
   ProgramCourse,
@@ -90,13 +91,35 @@ export const bulkEnrollLearners = async (
   uuid: string,
   emails: string,
   reason = '',
+  autoEnroll = false,
+  notify = false,
 ): Promise<BulkEnrollResult> => {
   // reason is kept on the 0-price order recorded for each learner of a paid program.
   const { data } = await getAuthenticatedHttpClient().post(
     `${getProgramsBaseUrl()}/${uuid}/bulk-enroll/`,
-    { emails, reason },
+    {
+      emails, reason, auto_enroll: autoEnroll, notify,
+    },
   );
-  return camelCaseObject(data) as BulkEnrollResult;
+  // Only map indices to addresses when JavaScript and Python parsing agree.
+  const addresses = /^[\x20-\x7e\t\r\n]*$/.test(emails)
+    ? [...new Set(emails.toLowerCase().split(/[,;\s]+/).filter(Boolean))] : [];
+  const addressFor = (index: number) => addresses[index] ?? `#${index + 1}`;
+  const result = camelCaseObject(data) as Omit<BulkEnrollResult, 'failed' | 'courseFailures' | 'notificationFailures'> & {
+    failed: { index: number; email?: string; reason: string }[];
+    courseFailures: { index: number; email?: string; courseId: string; reason: string }[];
+    notificationFailures: { index: number; email?: string }[];
+  };
+  return {
+    ...result,
+    failed: (result.failed ?? []).map((item) => ({ ...item, email: item.email ?? addressFor(item.index) })),
+    courseFailures: (result.courseFailures ?? []).map((item) => ({
+      ...item, email: item.email ?? addressFor(item.index),
+    })),
+    notificationFailures: (result.notificationFailures ?? []).map((item) => ({
+      ...item, email: item.email ?? addressFor(item.index),
+    })),
+  };
 };
 
 /**
@@ -117,11 +140,20 @@ export const unenrollProgramLearner = async (
   );
 };
 
-export const getProgramLearners = async (uuid: string, page = 1, search = ''): Promise<ProgramSubPage<ProgramLearner>> => {
+export const getProgramLearners = async (
+  uuid: string,
+  page = 1,
+  search = '',
+): Promise<ProgramSubPage<ProgramLearner>> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/learners/`, {
     params: { page, page_size: 10, ...(search ? { search } : {}) },
   });
   return camelCaseObject(data) as ProgramSubPage<ProgramLearner>;
+};
+
+/** Cancel a pending invitation. */
+export const cancelProgramInvite = async (uuid: string, inviteId: number): Promise<void> => {
+  await getAuthenticatedHttpClient().delete(`${getProgramsBaseUrl()}/${uuid}/invites/${inviteId}/`);
 };
 
 // ── Report tasks ───────────────────────────────────────────────────────────────
@@ -153,13 +185,32 @@ export const triggerProgramReport = async (
 // ── Stats ─────────────────────────────────────────────────────────────────────
 
 /** GET /api/v1/admin/programs/stats/ — tiles and series of the Programs list strip. */
-export const getProgramListStats = async (): Promise<ProgramListStats> => {
-  const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/stats/`);
+export const getProgramListStats = async (
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
+): Promise<ProgramListStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getProgramsBaseUrl()}/stats/`,
+    ...(startDate || endDate
+      ? [{ params: { start_date: startDate, end_date: endDate, ...(forceRefresh ? { force_refresh: 1 } : {}) } }]
+      : forceRefreshArgs(forceRefresh)),
+  );
   return camelCaseObject(data) as ProgramListStats;
 };
 
 /** GET /api/v1/admin/programs/{uuid}/stats/ — tiles and series of one program. */
-export const getProgramStats = async (uuid: string): Promise<ProgramStats> => {
-  const { data } = await getAuthenticatedHttpClient().get(`${getProgramsBaseUrl()}/${uuid}/stats/`);
+export const getProgramStats = async (
+  uuid: string,
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
+): Promise<ProgramStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getProgramsBaseUrl()}/${uuid}/stats/`,
+    ...(startDate || endDate
+      ? [{ params: { start_date: startDate, end_date: endDate, ...(forceRefresh ? { force_refresh: 1 } : {}) } }]
+      : forceRefreshArgs(forceRefresh)),
+  );
   return camelCaseObject(data) as ProgramStats;
 };

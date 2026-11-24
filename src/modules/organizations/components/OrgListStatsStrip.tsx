@@ -14,15 +14,20 @@ import StatsTiles, { StatsTileCard } from '@src/components/stats/StatsTiles';
 import { formatCount, isEmptySeries, monthlyChartData } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import StatTile from '@src/modules/dashboard/components/StatTile';
-import { useOrgListStats } from '../data/hooks';
+import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
+import { useOrgListStats, orgListStatsRefresh } from '../data/hooks';
 import messages from '../messages';
 
 const OrgListStatsStrip = () => {
   const intl = useIntl();
   const [isOpen, setIsOpen] = useState(true);
-  const query = useOrgListStats(isOpen);
+  const [startDate, setStartDate] = useState<string | undefined>();
+  const [endDate, setEndDate] = useState<string | undefined>();
+  const query = useOrgListStats(isOpen, startDate, endDate);
   const state = summarizeQueries([query]);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = query.isError ? undefined : query.data;
   const { isLoading } = query;
 
@@ -58,10 +63,24 @@ const OrgListStatsStrip = () => {
     <StatsStrip
       isOpen={isOpen}
       onToggle={() => setIsOpen((open) => !open)}
-      note={intl.formatMessage(statsMessages.globalNote)}
+      note={intl.formatMessage(startDate || endDate ? statsMessages.rangeNote : statsMessages.globalNote)}
+      datePicker={(
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+        />
+)}
       isForbidden={state.isForbidden}
       hasFailedAll={state.hasFailedAll}
       onRetry={state.retry}
+      generatedAt={stats?.generatedAt}
+      onRefresh={() => refresh([orgListStatsRefresh(startDate, endDate)])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         {tile('listStatsActive', 'listStatsActiveInfo', tiles?.activeOrganizations)}
@@ -85,7 +104,7 @@ const OrgListStatsStrip = () => {
         />
         <StatsChartCard
           title={intl.formatMessage(messages.listStatsAddedTitle)}
-          subtitle={intl.formatMessage(statsMessages.lastTwelveMonths)}
+          subtitle={startDate || endDate ? undefined : intl.formatMessage(statsMessages.lastTwelveMonths)}
           info={intl.formatMessage(messages.listStatsAddedInfo)}
           type="bar"
           data={added}

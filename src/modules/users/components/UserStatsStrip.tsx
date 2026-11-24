@@ -16,8 +16,10 @@ import {
 } from '@src/components/stats/format';
 import statsMessages from '@src/components/stats/messages';
 import summarizeQueries from '@src/components/stats/queryState';
+import useStatsRefresh from '@src/components/stats/useStatsRefresh';
 import StatTile from '@src/modules/dashboard/components/StatTile';
-import { useUserStats } from '../data/hooks';
+import DateRangePicker from '@src/modules/dashboard/components/DateRangePicker';
+import { useUserStats, userStatsRefresh } from '../data/hooks';
 import type { EnrollmentProgress, SubscriptionState, UserEnrollment } from '../data/types';
 import {
   enrollmentsByMonth, enrollmentTiles, modeCounts, overallCompletion,
@@ -47,11 +49,14 @@ const UserStatsStrip = ({
 }: UserStatsStripProps) => {
   const intl = useIntl();
   const [isOpen, setIsOpen] = useState(true);
-  const statsQuery = useUserStats(userId, isOpen);
+  const [startDate, setStartDate] = useState<string | undefined>();
+  const [endDate, setEndDate] = useState<string | undefined>();
+  const statsQuery = useUserStats(userId, isOpen, startDate, endDate);
   const state = summarizeQueries([statsQuery]);
+  const { isRefreshing, hasFailed: hasRefreshFailed, refresh } = useStatsRefresh();
   const stats = statsQuery.isError ? undefined : statsQuery.data;
   const { locale } = intl;
-  const { isLoading: isStatsLoading } = statsQuery;
+  const isStatsLoading = statsQuery.isLoading;
 
   const rows = enrollments;
   const tiles = rows ? enrollmentTiles(rows) : undefined;
@@ -62,8 +67,8 @@ const UserStatsStrip = ({
     [rows, intl],
   );
   const monthSeries = useMemo(
-    () => monthlyChartData(rows ? enrollmentsByMonth(rows, new Date()) : [], 'enrollments', locale),
-    [rows, locale],
+    () => monthlyChartData(rows ? enrollmentsByMonth(rows, new Date(), 12, startDate, endDate) : [], 'enrollments', locale),
+    [rows, locale, startDate, endDate],
   );
 
   const formatDate = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleDateString(locale) : null);
@@ -96,9 +101,24 @@ const UserStatsStrip = ({
     <StatsStrip
       isOpen={isOpen}
       onToggle={() => setIsOpen((open) => !open)}
+      note={intl.formatMessage(startDate || endDate ? statsMessages.rangeNote : statsMessages.globalNote)}
+      datePicker={(
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+        />
+)}
       isForbidden={state.isForbidden}
       hasFailedAll={false}
       onRetry={state.retry}
+      generatedAt={stats?.generatedAt}
+      onRefresh={() => refresh([userStatsRefresh(userId, startDate, endDate)])}
+      isRefreshing={isRefreshing}
+      hasRefreshFailed={hasRefreshFailed}
     >
       <StatsTiles>
         {tile('statsActiveEnrollments', 'statsActiveEnrollmentsInfo', formatCount(tiles?.active), {
@@ -162,7 +182,7 @@ const UserStatsStrip = ({
         />
         <StatsChartCard
           title={intl.formatMessage(statsMessages.enrollmentsPerMonthTitle)}
-          subtitle={intl.formatMessage(statsMessages.lastTwelveMonths)}
+          subtitle={startDate || endDate ? undefined : intl.formatMessage(statsMessages.lastTwelveMonths)}
           info={intl.formatMessage(messages.statsEnrollmentsMonthInfo)}
           type="bar"
           data={monthSeries}

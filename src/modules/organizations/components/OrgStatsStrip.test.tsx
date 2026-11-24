@@ -126,9 +126,9 @@ describe('OrgStatsStrip', () => {
     mockQueries(ok(summary), ok(trends), ok(breakdowns));
     renderWrapper(<OrgStatsStrip org="QAOrg" adminCount={2} />);
 
-    expect(orgHooks.useOrgStats).toHaveBeenCalledWith('QAOrg', true);
+    expect(orgHooks.useOrgStats).toHaveBeenCalledWith('QAOrg', true, undefined, undefined);
     fireEvent.click(screen.getByRole('button', { name: 'Hide statistics' }));
-    expect(orgHooks.useOrgStats).toHaveBeenLastCalledWith('QAOrg', false);
+    expect(orgHooks.useOrgStats).toHaveBeenLastCalledWith('QAOrg', false, undefined, undefined);
   });
 
   it('shows the seven tiles of the organization endpoint with their numbers', () => {

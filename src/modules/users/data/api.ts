@@ -23,6 +23,7 @@
 import { camelCaseObject, snakeCaseObject } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { getApiUrl, getStudioApiUrl } from '@src/data/utils';
+import forceRefreshArgs from '@src/data/forceRefreshArgs';
 import type {
   ChangeModePayload,
   EnrollableCourse,
@@ -77,14 +78,33 @@ export const getUserEnrollmentProgress = async (id: number): Promise<EnrollmentP
 };
 
 /** GET /api/v1/admin/users/stats/ — tiles and series of the Users list strip. */
-export const getUserListStats = async (): Promise<UserListStats> => {
-  const { data } = await getAuthenticatedHttpClient().get(`${getUsersBaseUrl()}/stats/`);
+export const getUserListStats = async (
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
+): Promise<UserListStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getUsersBaseUrl()}/stats/`,
+    ...(startDate || endDate
+      ? [{ params: { start_date: startDate, end_date: endDate, ...(forceRefresh ? { force_refresh: 1 } : {}) } }]
+      : forceRefreshArgs(forceRefresh)),
+  );
   return camelCaseObject(data) as UserListStats;
 };
 
 /** GET /api/v1/admin/users/{id}/stats/ — programs, last activity and subscription of one user. */
-export const getUserStats = async (id: number): Promise<UserStats> => {
-  const { data } = await getAuthenticatedHttpClient().get(`${getUsersBaseUrl()}/${id}/stats/`);
+export const getUserStats = async (
+  id: number,
+  forceRefresh = false,
+  startDate?: string,
+  endDate?: string,
+): Promise<UserStats> => {
+  const { data } = await getAuthenticatedHttpClient().get(
+    `${getUsersBaseUrl()}/${id}/stats/`,
+    ...(startDate || endDate
+      ? [{ params: { start_date: startDate, end_date: endDate, ...(forceRefresh ? { force_refresh: 1 } : {}) } }]
+      : forceRefreshArgs(forceRefresh)),
+  );
   return camelCaseObject(data) as UserStats;
 };
 

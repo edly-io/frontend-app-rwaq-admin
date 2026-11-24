@@ -1,12 +1,14 @@
 /**
  * CourseListStatsStrip — global tiles over the whole catalog, three compact charts, Not available instead of zero.
  */
-import { fireEvent, screen } from '@testing-library/react';
+import {
+  fireEvent, screen, waitFor, within,
+} from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
 import * as hooks from '../data/hooks';
 import CourseListStatsStrip from './CourseListStatsStrip';
 
-jest.mock('../data/hooks', () => ({ useCourseListStats: jest.fn() }));
+jest.mock('../data/hooks', () => ({ useCourseListStats: jest.fn(), courseListStatsRefresh: jest.fn() }));
 jest.mock('@src/components/charts/MetricChart', () => ({
   __esModule: true,
   default: ({ ariaLabel }: { ariaLabel: string }) => <div data-testid="metric-chart" aria-label={ariaLabel} />,
@@ -50,13 +52,46 @@ describe('CourseListStatsStrip', () => {
     expect(screen.getAllByTestId('metric-chart')).toHaveLength(3);
   });
 
+  it('passes a selected range to the query and refresh', () => {
+    mockQuery(query());
+    renderWrapper(<CourseListStatsStrip />);
+    fireEvent.click(screen.getByRole('button', { name: /Statistics period/ }));
+    fireEvent.click(within(screen.getByRole('group', { name: 'Select time period' })).getByRole('button', { name: 'Last 30 days' }));
+    expect(hooks.useCourseListStats).toHaveBeenLastCalledWith(true, expect.any(String), expect.any(String));
+    expect(screen.getByText('Showing data for the selected range in UTC. Current-state figures are unchanged.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
+    expect(hooks.courseListStatsRefresh).toHaveBeenCalledWith(expect.any(String), expect.any(String));
+  });
+
+  it('refreshes the strip with the cache bypass and shows the new figures', async () => {
+    const fresh = { ...stats, tiles: { ...stats.tiles, courses: 777 } };
+    const fetch = jest.fn().mockResolvedValue(fresh);
+    (hooks.courseListStatsRefresh as jest.Mock).mockReturnValue({ queryKey: ['x'], fetch });
+    mockQuery(query());
+    renderWrapper(<CourseListStatsStrip />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+  });
+
+  it('keeps existing figures visible while refreshing', async () => {
+    const fetch = jest.fn(() => new Promise(() => {}));
+    (hooks.courseListStatsRefresh as jest.Mock).mockReturnValue({ queryKey: ['x'], fetch });
+    mockQuery(query());
+    renderWrapper(<CourseListStatsStrip />);
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh statistics' }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('120')).toBeInTheDocument();
+  });
+
   it('fetches only while expanded, because it runs over the whole catalog', () => {
     mockQuery(query());
     renderWrapper(<CourseListStatsStrip />);
 
-    expect(hooks.useCourseListStats).toHaveBeenCalledWith(true);
+    expect(hooks.useCourseListStats).toHaveBeenCalledWith(true, undefined, undefined);
     fireEvent.click(screen.getByRole('button', { name: 'Hide statistics' }));
-    expect(hooks.useCourseListStats).toHaveBeenLastCalledWith(false);
+    expect(hooks.useCourseListStats).toHaveBeenLastCalledWith(false, undefined, undefined);
   });
 
   it('shows Not available for enrollments and certificates that could not be read, never zero', () => {

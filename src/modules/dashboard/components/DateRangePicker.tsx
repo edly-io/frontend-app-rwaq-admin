@@ -15,7 +15,7 @@
  * explicit user click, so React's state is always current by the time it runs.
  */
 import {
-  useEffect, useRef, useState, useCallback,
+  useEffect, useId, useRef, useState, useCallback,
 } from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Button } from '@openedx/paragon';
@@ -107,6 +107,7 @@ const DateRangePicker = ({
   startDate, endDate, onChange, minWidth, size = 'sm', label,
 }: DateRangePickerProps) => {
   const intl = useIntl();
+  const inputId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLDivElement>(null);
 
@@ -229,7 +230,6 @@ const DateRangePicker = ({
           size={size}
           onClick={() => setIsOpen((o) => !o)}
           aria-expanded={isOpen}
-          aria-haspopup="menu"
           style={{
             whiteSpace: 'nowrap',
             ...(minWidth ? {
@@ -245,7 +245,7 @@ const DateRangePicker = ({
       {/* Dropdown panel */}
       {isOpen && (
         <div
-          role="menu"
+          role="group"
           aria-label={intl.formatMessage(messages.dateRangePickerLabel)}
           style={{
             position: 'absolute',
@@ -268,7 +268,6 @@ const DateRangePicker = ({
               <button
                 key={preset.key}
                 type="button"
-                role="menuitem"
                 aria-current={isActive ? 'true' : undefined}
                 onClick={() => handlePresetClick(preset)}
                 style={{
@@ -312,7 +311,7 @@ const DateRangePicker = ({
             >
               <div>
                 <label
-                  htmlFor="date-range-start"
+                  htmlFor={`${inputId}-start`}
                   style={{
                     display: 'block',
                     fontSize: '0.6875rem',
@@ -326,7 +325,7 @@ const DateRangePicker = ({
                   {intl.formatMessage(messages.dateRangeStart)}
                 </label>
                 <input
-                  id="date-range-start"
+                  id={`${inputId}-start`}
                   type="date"
                   className="form-control form-control-sm"
                   value={pendingStart}
@@ -335,7 +334,7 @@ const DateRangePicker = ({
               </div>
               <div>
                 <label
-                  htmlFor="date-range-end"
+                  htmlFor={`${inputId}-end`}
                   style={{
                     display: 'block',
                     fontSize: '0.6875rem',
@@ -349,7 +348,7 @@ const DateRangePicker = ({
                   {intl.formatMessage(messages.dateRangeEnd)}
                 </label>
                 <input
-                  id="date-range-end"
+                  id={`${inputId}-end`}
                   type="date"
                   className="form-control form-control-sm"
                   value={pendingEnd}
