@@ -37,7 +37,7 @@ const getCategoriesBaseUrl = () => getApiUrl('/rwaq/api/categories');
 
 // ── List ─────────────────────────────────────────────────────────────────────
 
-/** GET /rwaq/api/categories/?page=&page_size= */
+/** GET /rwaq/api/categories/?page=&page_size=&ordering= */
 export const getCategories = async (params: CategoryListParams = {}): Promise<CategoryListResponse> => {
   const { data } = await getAuthenticatedHttpClient().get(`${getCategoriesBaseUrl()}/`, {
     params: snakeCaseObject(params),

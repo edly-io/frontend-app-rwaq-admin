@@ -19,7 +19,7 @@ import {
 import { Search } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { useAvailableCoursesForCategory } from '../data/hooks';
-import type { CategoryCourse } from '../data/types';
+import type { CategoryCourseSummary } from '../data/types';
 import messages from '../messages';
 
 /** Long enough that typing a course name is one request, short enough to feel live. */
@@ -30,8 +30,8 @@ const LOAD_MORE_THRESHOLD_PX = 48;
 
 interface CoursePickerProps {
   categoryId: number;
-  selected: CategoryCourse | null;
-  onSelect: (course: CategoryCourse | null) => void;
+  selected: CategoryCourseSummary | null;
+  onSelect: (course: CategoryCourseSummary | null) => void;
   error?: string;
 }
 

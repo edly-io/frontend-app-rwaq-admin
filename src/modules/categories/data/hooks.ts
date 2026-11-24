@@ -120,6 +120,7 @@ export const useLinkCourse = (categoryId: number) => {
   return useMutation({
     mutationFn: (courseId: string) => linkCourseToCategory(categoryId, courseId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: categoryQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: categoryQueryKeys.coursesAll(categoryId) });
       queryClient.invalidateQueries({ queryKey: categoryQueryKeys.detail(categoryId) });
     },
@@ -133,6 +134,7 @@ export const useUnlinkCourse = (categoryId: number) => {
   return useMutation({
     mutationFn: (courseId: string) => unlinkCourseFromCategory(categoryId, courseId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: categoryQueryKeys.lists() });
       queryClient.invalidateQueries({ queryKey: categoryQueryKeys.coursesAll(categoryId) });
       queryClient.invalidateQueries({ queryKey: categoryQueryKeys.detail(categoryId) });
     },

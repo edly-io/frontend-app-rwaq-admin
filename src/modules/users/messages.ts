@@ -494,7 +494,7 @@ const messages = defineMessages({
   },
 
   // ── Users list stats strip (EDLYCSRWAQ-380) ────────────────────────────────
-  listStatsLearners: { id: 'rwaq.admin.users.listStats.learners', defaultMessage: 'Learners' },
+  listStatsLearners: { id: 'rwaq.admin.users.listStats.learners', defaultMessage: 'Learners with activity' },
   listStatsLearnersInfo: {
     id: 'rwaq.admin.users.listStats.learners.info',
     defaultMessage: 'People with activity in a course and an active enrollment in it, the same figure as the Dashboard. Staff, superusers and service accounts are not counted.',
