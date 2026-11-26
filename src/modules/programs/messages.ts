@@ -222,6 +222,10 @@ const messages = defineMessages({
     id: 'rwaq.admin.programs.learners.unenroll.success',
     defaultMessage: 'Unenrolled {name} from the program.',
   },
+  unenrollLearnerPartial: {
+    id: 'rwaq.admin.programs.learners.unenroll.partial',
+    defaultMessage: 'Unenrolled {name} from the program. The learner remains enrolled in these courses: {courses}',
+  },
   unenrollLearnerError: {
     id: 'rwaq.admin.programs.learners.unenroll.error',
     defaultMessage: 'Could not unenroll the learner. Try again.',

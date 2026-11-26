@@ -52,8 +52,11 @@ const UnenrollLearnerModal = ({ onClose, uuid, learner }: UnenrollLearnerModalPr
     setHasTriedSubmit(true);
     if (!hasReason(reason)) { return; }
     try {
-      await mutation.mutateAsync({ userId: learner.id, reason: resolveReason(reason) });
-      showToast(intl.formatMessage(messages.unenrollLearnerSuccess, { name: learner.name, siteName: getSiteName() }));
+      const failures = await mutation.mutateAsync({ userId: learner.id, reason: resolveReason(reason) });
+      const skipped = Object.entries(failures ?? {}).map(([course, failure]) => `${course}: ${failure}`).join('; ');
+      showToast(skipped
+        ? intl.formatMessage(messages.unenrollLearnerPartial, { name: learner.name, courses: skipped })
+        : intl.formatMessage(messages.unenrollLearnerSuccess, { name: learner.name, siteName: getSiteName() }));
       onClose();
     } catch (error) {
       logError(error);

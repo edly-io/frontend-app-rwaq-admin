@@ -4,7 +4,7 @@ const messages = defineMessages({
   title: { id: 'rwaq.admin.payments.title', defaultMessage: 'Orders & Payments' },
   errorTitle: { id: 'rwaq.admin.payments.error', defaultMessage: 'Could not load payments.' },
   forbiddenTitle: {
-    id: 'rwaq.admin.payments.forbidden',
+    id: 'rwaq.admin.payments.forbiddenV2',
     defaultMessage: 'You do not have access to {siteName} Orders & Payments.',
   },
 

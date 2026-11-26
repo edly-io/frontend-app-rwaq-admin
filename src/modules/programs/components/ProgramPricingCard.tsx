@@ -42,7 +42,8 @@ const BACKEND_FIELDS: Record<string, PricingField> = {
 const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
   const intl = useIntl();
   const { data: capabilities } = useAdminCapabilities();
-  const canSetSubscription = capabilities?.role !== 'org_admin' && program?.canSetSubscription !== false;
+  const readOnly = !capabilities?.isAdmin && !capabilities?.isSuperuser;
+  const canSetSubscription = program?.canSetSubscription !== false;
   const subscriptionLocked = !canSetSubscription && program?.pricingCategory === 'is_part_of_subscription';
   const { mutateAsync, isPending } = useUpdateProgram(program.uuid);
 
@@ -155,14 +156,14 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
         >
           <Form.Radio
             value="is_free"
-            disabled={isPending || subscriptionLocked}
+            disabled={isPending || subscriptionLocked || readOnly}
             description={intl.formatMessage(messages.pricingFreeDescription)}
           >
             {intl.formatMessage(messages.pricingFree)}
           </Form.Radio>
           <Form.Radio
             value="is_paid"
-            disabled={isPending || subscriptionLocked}
+            disabled={isPending || subscriptionLocked || readOnly}
             description={intl.formatMessage(messages.pricingPaidDescription)}
           >
             {intl.formatMessage(messages.pricingPaid)}
@@ -170,7 +171,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
           {(canSetSubscription || subscriptionLocked) && (
           <Form.Radio
             value="is_part_of_subscription"
-            disabled={isPending || subscriptionLocked}
+            disabled={isPending || subscriptionLocked || readOnly}
             description={intl.formatMessage(messages.pricingSubscriptionDescription, { siteName: getSiteName() })}
           >
             {intl.formatMessage(messages.pricingSubscription)}
@@ -179,7 +180,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
           <div className="d-flex align-items-start justify-content-between w-100">
             <Form.Radio
               value="is_enrollment_code"
-              disabled={isPending || subscriptionLocked}
+              disabled={isPending || subscriptionLocked || readOnly}
               description={intl.formatMessage(messages.pricingEnrollmentCodeDescription)}
             >
               {intl.formatMessage(messages.pricingEnrollmentCode)}
@@ -217,7 +218,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
               min="0"
               step="0.01"
               value={regularPrice}
-              disabled={isPending || subscriptionLocked}
+              disabled={isPending || subscriptionLocked || readOnly}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setRegularPrice(e.target.value); touched('regularPrice'); }}
               onBlur={() => setFieldError('regularPrice', validateRegularPrice())}
             />
@@ -233,7 +234,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
               min="0"
               step="0.01"
               value={salePrice}
-              disabled={isPending || subscriptionLocked}
+              disabled={isPending || subscriptionLocked || readOnly}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setSalePrice(e.target.value);
                 touched('salePrice');
@@ -264,7 +265,7 @@ const ProgramPricingCard = ({ program }: ProgramPricingCardProps) => {
         </>
       )}
 
-      <Button variant="primary" size="sm" onClick={handleSave} disabled={isPending || subscriptionLocked}>
+      <Button variant="primary" size="sm" onClick={handleSave} disabled={isPending || subscriptionLocked || readOnly}>
         {intl.formatMessage(isPending ? messages.pricingSaving : messages.pricingSave)}
       </Button>
     </div>

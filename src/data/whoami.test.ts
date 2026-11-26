@@ -1,9 +1,8 @@
-import { getAuthenticatedHttpClient, getAuthenticatedUser } from '@edx/frontend-platform/auth';
+import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { getAdminCapabilities } from './whoami';
 
 jest.mock('@edx/frontend-platform/auth', () => ({
   getAuthenticatedHttpClient: jest.fn(),
-  getAuthenticatedUser: jest.fn(),
 }));
 
 jest.mock('@edx/frontend-platform', () => {
@@ -28,27 +27,9 @@ describe('getAdminCapabilities', () => {
     });
   });
 
-  it('denies a staff claim when the endpoint is missing', async () => {
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({
-      get: jest.fn().mockRejectedValue(notFound),
-    });
-    (getAuthenticatedUser as jest.Mock).mockReturnValue({ username: 'staffer', administrator: true });
-
-    const capabilities = await getAdminCapabilities();
-    // A staff claim alone cannot establish panel access.
-    expect(capabilities.canAccessAdminPanel).toBe(false);
-    expect(capabilities.isGlobalStaff).toBe(true);
-    // The claim cannot report this, so it must not be invented.
-    expect(capabilities.isSuperuser).toBe(false);
-  });
-
-  it('still denies on 404 when the claim shows no staff access', async () => {
-    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({
-      get: jest.fn().mockRejectedValue(notFound),
-    });
-    (getAuthenticatedUser as jest.Mock).mockReturnValue({ username: 'learner', administrator: false });
-
-    await expect(getAdminCapabilities()).resolves.toMatchObject({ canAccessAdminPanel: false });
+  it('reports a missing endpoint as an error, never as an access denial', async () => {
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ get: jest.fn().mockRejectedValue(notFound) });
+    await expect(getAdminCapabilities()).rejects.toEqual(notFound);
   });
 
   it('rethrows anything other than a 404, so a real failure is not read as access', async () => {

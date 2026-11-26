@@ -24,7 +24,6 @@ import {
 } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { RWAQ_LOGO } from '@src/assets/rwaqLogo';
-import { useAdminCapabilities } from '@src/data/whoami';
 import { sideNavMessages as messages } from './messages';
 
 // ── Nav item config ───────────────────────────────────────────────────────────
@@ -190,8 +189,6 @@ const SideNav = ({ onNavigate }: SideNavProps) => {
   // host-sensitive theming redirect, which serves the stock grey Open edX mark
   // on any host without the indigo theme bound. See assets/rwaqLogo.
   const logoUrl = RWAQ_LOGO;
-  const { data: capabilities } = useAdminCapabilities();
-  const canAccess = Boolean(capabilities?.canAccessAdminPanel);
 
   return (
     <div className="rwaq-admin-sidebar" style={sidebarStyle}>
@@ -222,7 +219,7 @@ const SideNav = ({ onNavigate }: SideNavProps) => {
         aria-label={intl.formatMessage(messages.navAriaLabel)}
         style={{ padding: '1rem 0.75rem', flex: 1 }}
       >
-        {NAV_ITEMS.filter(() => canAccess).map((item) => (
+        {NAV_ITEMS.map((item) => (
           <NavItem key={item.to} def={item} onNavigate={onNavigate} />
         ))}
 

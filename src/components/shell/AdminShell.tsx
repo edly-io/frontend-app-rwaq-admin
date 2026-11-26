@@ -23,6 +23,7 @@ import { Container, Skeleton } from '@openedx/paragon';
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { getLocale, isRtl, useIntl } from '@edx/frontend-platform/i18n';
 import { useAdminCapabilities } from '@src/data/whoami';
+import { getErrorStatus } from '@src/data/httpError';
 import SideNav from './SideNav';
 import TopBar from './TopBar';
 import ErrorState from '../ErrorState';
@@ -32,14 +33,16 @@ const BREAKPOINT_MD = 768;
 
 // ── Guard ─────────────────────────────────────────────────────────────────────
 
-type GuardState = 'pending' | 'allowed' | 'denied' | 'error';
+type GuardState = 'pending' | 'allowed' | 'denied' | 'error' | 'missing-endpoint';
 
 const useStaffGuard = (): GuardState => {
   const navigate = useNavigate();
   const isSignedIn = getAuthenticatedUser() !== null;
   // Only asked once signed in — an anonymous caller would just get a 401 and
   // the redirect below is the right answer for them anyway.
-  const { data, isLoading, isError } = useAdminCapabilities();
+  const {
+    data, isLoading, isError, error,
+  } = useAdminCapabilities();
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -52,7 +55,7 @@ const useStaffGuard = (): GuardState => {
   // A network failure (5xx, timeout, offline) is distinct from a permission
   // denial: the user may have access but the /me/ call just failed transiently.
   // Show a retryable error rather than "Access Denied" so they know to refresh.
-  if (isError) { return 'error'; }
+  if (isError) { return getErrorStatus(error) === 404 ? 'missing-endpoint' : 'error'; }
   if (!data) { return 'denied'; }
 
   return data.canAccessAdminPanel ? 'allowed' : 'denied';
@@ -174,14 +177,14 @@ const AdminShell = () => {
     return null;
   }
 
-  if (guardState === 'error') {
+  if (guardState === 'error' || guardState === 'missing-endpoint') {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <Container>
           <ErrorState
             statusCode={503}
             title={intl.formatMessage(messages.networkErrorTitle)}
-            body={intl.formatMessage(messages.networkErrorBody)}
+            body={intl.formatMessage(guardState === 'missing-endpoint' ? messages.missingEndpointBody : messages.networkErrorBody)}
           />
         </Container>
       </div>

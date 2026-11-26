@@ -1,5 +1,5 @@
-import { getErrorReason } from '@src/data/httpError';
 import { useAdminCapabilities } from '@src/data/whoami';
+import { getErrorReason } from '@src/data/httpError';
 /**
  * Course type and price for one course, on the admin course detail page.
  *
@@ -47,8 +47,9 @@ const BACKEND_FIELDS: Record<string, PricingField> = {
 const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   const intl = useIntl();
   const { data: capabilities } = useAdminCapabilities();
+  const canManageSettings = !!(capabilities?.isAdmin || capabilities?.isSuperuser);
   const { data: pricing, isLoading, isError } = useCoursePricing(courseId);
-  const canSetSubscription = capabilities?.role !== 'org_admin' && pricing?.canSetSubscription !== false;
+  const canSetSubscription = pricing?.canSetSubscription !== false;
   const subscriptionLocked = !canSetSubscription && pricing?.pricingCategory === 'is_part_of_subscription';
   const { mutateAsync: updatePricing, isPending } = useUpdateCoursePricing(courseId);
 
@@ -352,7 +353,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
           <Form.Checkbox
             name="pricingManagedByAdmin"
             checked={managedByAdmin}
-            disabled={isBusy}
+            disabled={isBusy || !canManageSettings}
             description={intl.formatMessage(messages.pricingManagedHint)}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setManagedByAdmin(e.target.checked);
@@ -382,7 +383,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
               <Form.Checkbox
                 name="hideFromCatalog"
                 checked={hideFromCatalog}
-                disabled={isBusy || !isCodeCourse}
+                disabled={isBusy || !isCodeCourse || !canManageSettings}
                 description={intl.formatMessage(enrollmentCodeMessages.hideFromCatalogHelp)}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   setHideFromCatalog(e.target.checked);
@@ -398,7 +399,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
 
         {settingsError && <Alert variant="danger">{settingsError}</Alert>}
         {settingsSaved && <Alert variant="success">{intl.formatMessage(messages.settingsSaved)}</Alert>}
-        <Button variant="primary" size="sm" onClick={handleSaveManagement} disabled={isBusy}>
+        <Button variant="primary" size="sm" onClick={handleSaveManagement} disabled={isBusy || !canManageSettings}>
           {intl.formatMessage(isPending ? messages.pricingSaving : messages.settingsSave)}
         </Button>
       </div>

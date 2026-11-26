@@ -40,7 +40,7 @@ const renderCard = (pricing: Partial<CoursePricing> = {}) => {
 const save = () => fireEvent.click(screen.getByRole('button', { name: 'Save pricing' }));
 
 beforeEach(() => {
-  (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'superuser' } });
+  (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'superuser', isSuperuser: true } });
   jest.clearAllMocks();
   (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: undefined });
   mockUpdate.mockResolvedValue(basePricing);
@@ -48,6 +48,15 @@ beforeEach(() => {
 });
 
 describe('CoursePricingCard', () => {
+  it('keeps course settings read-only for an organization admin', () => {
+    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'org_admin' } });
+    renderCard({ pricingCategory: 'is_enrollment_code' });
+    expect(screen.getByRole('checkbox', { name: /Manage course type and pricing/ })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: /Hide from catalog/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save settings' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save pricing' })).toBeEnabled();
+  });
+
   it.each([403, 409])('shows a server refusal for settings writes (%s)', async (status) => {
     mockUpdate.mockRejectedValue({ response: { status, data: { detail: 'Settings cannot be changed.' } } });
     renderCard();
@@ -55,9 +64,8 @@ describe('CoursePricingCard', () => {
     expect(await screen.findByText('Settings cannot be changed.')).toBeInTheDocument();
   });
 
-  it('hides subscription for organization admins', () => {
-    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'org_admin' } });
-    renderCard();
+  it('hides subscription when the server disallows changes', () => {
+    renderCard({ canSetSubscription: false });
     expect(screen.queryByRole('radio', { name: 'Part of Subscription' })).not.toBeInTheDocument();
   });
 
@@ -417,4 +425,4 @@ describe('CoursePricingCard', () => {
   });
 });
 
-jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn(() => ({ data: { role: 'superuser' } })) }));
+jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn(() => ({ data: { role: 'superuser', isSuperuser: true } })) }));

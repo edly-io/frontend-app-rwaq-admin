@@ -110,11 +110,12 @@ export const unenrollProgramLearner = async (
   uuid: string,
   userId: number,
   reason: string,
-): Promise<void> => {
-  await getAuthenticatedHttpClient().delete(
+): Promise<Record<string, string>> => {
+  const { data } = await getAuthenticatedHttpClient().delete(
     `${getProgramsBaseUrl()}/${uuid}/learners/${userId}/`,
     { data: { reason } },
   );
+  return data?.course_failures ?? {};
 };
 
 export const getProgramLearners = async (uuid: string, page = 1, search = ''): Promise<ProgramSubPage<ProgramLearner>> => {

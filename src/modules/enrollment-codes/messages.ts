@@ -4,7 +4,7 @@ const messages = defineMessages({
   // ── Page ───────────────────────────────────────────────────────────────────
   title: { id: 'rwaq.admin.enrollmentCodes.title', defaultMessage: 'Enrollment codes' },
   forbiddenTitle: {
-    id: 'rwaq.admin.enrollmentCodes.forbidden',
+    id: 'rwaq.admin.enrollmentCodes.forbiddenV2',
     defaultMessage: 'You do not have access to {siteName} enrollment codes.',
   },
   errorTitle: { id: 'rwaq.admin.enrollmentCodes.error', defaultMessage: 'Could not load enrollment codes.' },

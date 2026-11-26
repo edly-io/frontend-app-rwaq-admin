@@ -30,6 +30,16 @@ const createWrapper = () => {
 };
 
 describe('useUnenrollProgramLearner', () => {
+  it('preserves skipped course identifiers and refusal reasons', async () => {
+    const failures = { 'course-v1:Other+COURSE+2026': 'Outside your organization.' };
+    (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({
+      delete: jest.fn().mockResolvedValue({ data: { course_failures: failures } }),
+    });
+    const { result } = renderHook(() => useUnenrollProgramLearner('abc-123'), { wrapper: createWrapper() });
+    result.current.mutate({ userId: 7, reason: 'Enrollment correction' });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual(failures);
+  });
   it('sends the reason in the DELETE body, not the query string', async () => {
     const httpDelete = jest.fn().mockResolvedValue({ data: undefined });
     (getAuthenticatedHttpClient as jest.Mock).mockReturnValue({ delete: httpDelete });

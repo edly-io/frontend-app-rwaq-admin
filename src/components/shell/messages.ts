@@ -8,8 +8,12 @@ export const adminShellMessages = defineMessages({
     defaultMessage: 'Access denied',
   },
   accessDeniedBody: {
-    id: 'rwaq.admin.shell.accessDeniedBody',
+    id: 'rwaq.admin.shell.accessDeniedBodyV2',
     defaultMessage: 'You do not have access to the admin panel. Contact a platform administrator if you need access.',
+  },
+  missingEndpointBody: {
+    id: 'rwaq.admin.shell.missingEndpointBody',
+    defaultMessage: 'The admin service is not available on this server. Contact a platform administrator and try again later.',
   },
   networkErrorTitle: {
     id: 'rwaq.admin.shell.networkErrorTitle',

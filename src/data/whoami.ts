@@ -1,9 +1,8 @@
 /** Capabilities returned by the admin API. */
-import { getAuthenticatedHttpClient, getAuthenticatedUser } from '@edx/frontend-platform/auth';
+import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { camelCaseObject } from '@edx/frontend-platform';
 import { useQuery } from '@tanstack/react-query';
 import { appId } from '@src/constants';
-import { getErrorStatus } from './httpError';
 import { getStudioApiUrl } from './utils';
 
 export interface AdminCapabilities {
@@ -18,34 +17,10 @@ export interface AdminCapabilities {
   canAccessAdminPanel: boolean;
 }
 
-/** A staff claim cannot establish panel access, so a missing endpoint denies it. */
-const capabilitiesFromJwtClaim = (): AdminCapabilities => {
-  const user = getAuthenticatedUser() as
-    { username?: string; administrator?: boolean } | null;
-  const isStaff = user?.administrator === true;
-  return {
-    username: user?.username ?? '',
-    // The claim cannot tell us this — frontend-platform never surfaces it.
-    isSuperuser: false,
-    isGlobalStaff: isStaff,
-    isAdmin: false,
-    isOrgAdmin: false,
-    orgAdminOf: [],
-    role: isStaff ? 'global_staff' : 'none',
-    canAccessAdminPanel: false,
-  };
-};
-
+/* A missing capabilities endpoint is an error, never an authorization decision. */
 export const getAdminCapabilities = async (): Promise<AdminCapabilities> => {
-  try {
-    const { data } = await getAuthenticatedHttpClient().get(getStudioApiUrl('/api/v1/admin/me/'));
-    return camelCaseObject(data) as AdminCapabilities;
-  } catch (error) {
-    if (getErrorStatus(error) === 404) {
-      return capabilitiesFromJwtClaim();
-    }
-    throw error;
-  }
+  const { data } = await getAuthenticatedHttpClient().get(getStudioApiUrl('/api/v1/admin/me/'));
+  return camelCaseObject(data) as AdminCapabilities;
 };
 
 /**

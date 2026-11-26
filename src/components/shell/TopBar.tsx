@@ -90,7 +90,7 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
     global_staff: messages.roleStaff,
     none: messages.roleLearner,
   };
-  const role = intl.formatMessage(roleMessages[capabilities?.role ?? 'none']);
+  const role = intl.formatMessage(roleMessages[capabilities?.role ?? 'none'] ?? roleMessages.none);
 
   const lms = (config?.LMS_BASE_URL as string) || '';
   const logoutUrl = (config?.LOGOUT_URL as string) ?? `${lms}/logout`;

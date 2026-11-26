@@ -32,7 +32,7 @@ const renderCard = (overrides: Partial<ProgramDetail> = {}) => renderWrapper(
 const save = () => fireEvent.click(screen.getByRole('button', { name: 'Save pricing' }));
 
 beforeEach(() => {
-  (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'superuser' } });
+  (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'superuser', isSuperuser: true } });
   jest.clearAllMocks();
   (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: undefined });
   mockUpdate.mockResolvedValue(makeProgram());
@@ -40,9 +40,15 @@ beforeEach(() => {
 });
 
 describe('ProgramPricingCard', () => {
-  it('hides subscription for organization admins', () => {
-    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'org_admin' } });
-    renderCard();
+  it('keeps program pricing read-only for organization admins', () => {
+    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'org_admin', isOrgAdmin: true } });
+    renderCard({ pricingCategory: 'is_paid', regularPrice: '100.00' });
+    expect(screen.getByRole('radio', { name: 'Free' })).toBeDisabled();
+    expect(screen.getByLabelText('Price before VAT (SAR)')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save pricing' })).toBeDisabled();
+  });
+  it('hides subscription when the server disallows changes', () => {
+    renderCard({ canSetSubscription: false });
     expect(screen.queryByRole('radio', { name: 'Part of Subscription' })).not.toBeInTheDocument();
   });
 
@@ -281,4 +287,4 @@ describe('ProgramPricingCard', () => {
   });
 });
 
-jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn(() => ({ data: { role: 'superuser' } })) }));
+jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn(() => ({ data: { role: 'superuser', isSuperuser: true } })) }));
