@@ -4,9 +4,12 @@
  */
 import { screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
+import { useAdminCapabilities } from '@src/data/whoami';
 import * as hooks from './data/hooks';
 import type { ProgramDetail } from './data/types';
 import ProgramDetailPage from './ProgramDetailPage';
+
+jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn() }));
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -47,6 +50,7 @@ const renderPage = (pricingCategory: string) => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { isSuperuser: true } });
   window.history.pushState({}, '', '/programs/uuid-1');
   (hooks.useProgramCourses as jest.Mock).mockReturnValue(empty);
   (hooks.useProgramLearners as jest.Mock).mockReturnValue(empty);
@@ -54,6 +58,13 @@ beforeEach(() => {
 });
 
 describe('ProgramDetailPage', () => {
+  it('disables program settings for an organization admin', () => {
+    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { isOrgAdmin: true } });
+    renderPage('is_paid');
+    expect(screen.getByRole('combobox')).toBeDisabled();
+    screen.getAllByRole('switch').forEach((control) => expect(control).toBeDisabled());
+  });
+
   it.each(['is_paid', 'is_enrollment_code'])('has only the Courses and Learners tabs for %s', (category) => {
     renderPage(category);
     expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['Courses', 'Learners']);
