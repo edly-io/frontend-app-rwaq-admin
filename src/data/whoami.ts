@@ -1,17 +1,4 @@
-/**
- * What the signed-in admin is allowed to do here.
- *
- * The panel is superuser-gated, and the MFE cannot determine that on its own:
- * Open edX's JWT does carry a `superuser` claim, but @edx/frontend-platform
- * maps only email, userId, username, roles, administrator and name onto its
- * authenticated-user object — and `administrator` is `is_staff`, not
- * `is_superuser`. Decoding the JWT cookie by hand would put the authorization
- * rule in a second place and let the two drift, so the server is asked instead.
- *
- * `/api/v1/admin/me/` is deliberately the one endpoint in this API that is not
- * superuser-only: a 403 cannot distinguish "you may not use this" from "the
- * server is broken", and the shell needs to tell those apart.
- */
+/** Capabilities returned by the admin API. */
 import { getAuthenticatedHttpClient, getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { camelCaseObject } from '@edx/frontend-platform';
 import { useQuery } from '@tanstack/react-query';
@@ -23,23 +10,15 @@ export interface AdminCapabilities {
   username: string;
   isSuperuser: boolean;
   isGlobalStaff: boolean;
+  isAdmin: boolean;
+  isOrgAdmin: boolean;
+  orgAdminOf: string[];
+  role: 'superuser' | 'admin' | 'org_admin' | 'global_staff' | 'none';
   /** The gate itself, named for its meaning so the UI never re-derives it. */
   canAccessAdminPanel: boolean;
 }
 
-/**
- * A 404 means the backend predates this endpoint, not that access is refused.
- *
- * The two deploy as separate artifacts, so an MFE can be live against a backend
- * without /me/. Treating that as a denial would lock every admin out of the
- * whole panel — superusers included — for the length of the deploy gap.
- *
- * So a missing endpoint falls back to the claim the older backend actually
- * gated on: `administrator`, which is is_staff. That is the correct answer for
- * that backend, and the server stays the enforcer regardless — every endpoint
- * checks permission itself, so a too-generous guess here shows the shell to
- * someone whose requests are still refused, rather than granting anything.
- */
+/** A staff claim cannot establish panel access, so a missing endpoint denies it. */
 const capabilitiesFromJwtClaim = (): AdminCapabilities => {
   const user = getAuthenticatedUser() as
     { username?: string; administrator?: boolean } | null;
@@ -49,7 +28,11 @@ const capabilitiesFromJwtClaim = (): AdminCapabilities => {
     // The claim cannot tell us this — frontend-platform never surfaces it.
     isSuperuser: false,
     isGlobalStaff: isStaff,
-    canAccessAdminPanel: isStaff,
+    isAdmin: false,
+    isOrgAdmin: false,
+    orgAdminOf: [],
+    role: isStaff ? 'global_staff' : 'none',
+    canAccessAdminPanel: false,
   };
 };
 
@@ -76,5 +59,5 @@ export const useAdminCapabilities = () => useQuery({
   queryKey: [appId, 'whoami'],
   queryFn: getAdminCapabilities,
   retry: false,
-  staleTime: 30 * 60 * 1000, // 30 minutes — matches JWT refresh cycle; ensures superuser downgrade is reflected
+  staleTime: 30 * 60 * 1000, // 30 minutes — matches JWT refresh cycle
 });

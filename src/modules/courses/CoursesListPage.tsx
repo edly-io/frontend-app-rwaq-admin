@@ -8,6 +8,7 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Badge, Button } from '@openedx/paragon';
+import { useAdminCapabilities } from '@src/data/whoami';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { getConfig } from '@edx/frontend-platform';
 import AdminDataTable from '@src/components/AdminDataTable';
@@ -53,6 +54,7 @@ const SORT_OPTIONS: { value: CourseOrdering; label: MessageKey }[] = [
 
 const CoursesListPage = () => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -117,7 +119,7 @@ const CoursesListPage = () => {
 
   const typeOptions: SelectOption[] = [
     { value: '', label: intl.formatMessage(messages.typeAll) },
-    ...COURSE_TYPE_OPTIONS.map((opt) => ({ value: opt.value, label: intl.formatMessage(messages[opt.label]) })),
+    ...COURSE_TYPE_OPTIONS.filter((opt) => capabilities?.role !== 'org_admin' || opt.value !== 'subscription').map((opt) => ({ value: opt.value, label: intl.formatMessage(messages[opt.label]) })),
   ];
 
   const appliedChips = useMemo(() => {

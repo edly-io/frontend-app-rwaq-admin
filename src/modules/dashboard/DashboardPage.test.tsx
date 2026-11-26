@@ -408,7 +408,7 @@ describe('DashboardPage — platform totals', () => {
   it('requests the totals without the date range or org', () => {
     setDataState();
     renderWrapper(<DashboardPage />);
-    expect(hooks.useAnalyticsPlatformTotals).toHaveBeenCalledWith();
+    expect(hooks.useAnalyticsPlatformTotals).toHaveBeenCalledWith(true);
   });
 
   it('shows Not available for every figure when the totals request fails', () => {
@@ -501,3 +501,5 @@ describe('DashboardPage — platform totals CSV', () => {
     expect(screen.getByRole('button', { name: /download csv/i })).toBeDisabled();
   });
 });
+
+jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: () => ({ data: { role: 'superuser', canAccessAdminPanel: true } }) }));

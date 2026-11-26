@@ -18,6 +18,23 @@ const row = (overrides: Partial<UserEnrollment>): UserEnrollment => ({
 });
 
 describe('EnrollmentsTable', () => {
+  it('prevents changes to a privileged user enrollment', () => {
+    const onChangeMode = jest.fn();
+    const onUnenroll = jest.fn();
+    renderWrapper(
+      <EnrollmentsTable
+        enrollments={[row({})]}
+        readOnlyReason="Only a superuser can change this user."
+        onChangeMode={onChangeMode}
+        onUnenroll={onUnenroll}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Change mode' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Unenroll' }));
+    expect(onChangeMode).not.toHaveBeenCalled();
+    expect(onUnenroll).not.toHaveBeenCalled();
+  });
+
   it('hides Change mode and Unenroll for subscription content and keeps them for other courses', () => {
     const onUnenroll = jest.fn();
     renderWrapper(

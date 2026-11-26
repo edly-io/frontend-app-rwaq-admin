@@ -1,3 +1,5 @@
+import { getErrorReason } from '@src/data/httpError';
+import { useAdminCapabilities } from '@src/data/whoami';
 /**
  * Course type and price for one course, on the admin course detail page.
  *
@@ -44,7 +46,10 @@ const BACKEND_FIELDS: Record<string, PricingField> = {
 
 const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
   const { data: pricing, isLoading, isError } = useCoursePricing(courseId);
+  const canSetSubscription = capabilities?.role !== 'org_admin' && pricing?.canSetSubscription !== false;
+  const subscriptionLocked = !canSetSubscription && pricing?.pricingCategory === 'is_part_of_subscription';
   const { mutateAsync: updatePricing, isPending } = useUpdateCoursePricing(courseId);
 
   // null means no type was chosen yet, so no radio is selected.
@@ -59,7 +64,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   const [saved, setSaved] = useState(false);
   const [removedCategories, setRemovedCategories] = useState<string[]>([]);
   const [settingsSaved, setSettingsSaved] = useState(false);
-  const [settingsError, setSettingsError] = useState(false);
+  const [settingsError, setSettingsError] = useState('');
 
   useEffect(() => {
     if (!pricing) { return; }
@@ -147,7 +152,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   };
 
   const handleSaveManagement = async () => {
-    setSettingsError(false);
+    setSettingsError('');
     try {
       await updatePricing({
         pricingManagedByAdmin: managedByAdmin,
@@ -157,7 +162,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
     } catch (err) {
       logError(err);
       setSettingsSaved(false);
-      setSettingsError(true);
+      setSettingsError(getErrorReason(err) ?? intl.formatMessage(messages.pricingErrorSaveFailed));
     }
   };
 
@@ -223,36 +228,38 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
           >
             <Form.Radio
               value="is_free"
-              disabled={isBusy || inProgram}
+              disabled={isBusy || inProgram || subscriptionLocked}
               description={intl.formatMessage(messages.pricingFreeDescription)}
             >
               {intl.formatMessage(messages.pricingFree)}
             </Form.Radio>
             <Form.Radio
               value="is_paid"
-              disabled={isBusy || inProgram}
+              disabled={isBusy || inProgram || subscriptionLocked}
               description={intl.formatMessage(messages.pricingPaidDescription)}
             >
               {intl.formatMessage(messages.pricingPaid)}
             </Form.Radio>
             <Form.Radio
               value="is_program_only"
-              disabled={isBusy || inProgram}
+              disabled={isBusy || inProgram || subscriptionLocked}
               description={intl.formatMessage(messages.pricingProgramOnlyDescription)}
             >
               {intl.formatMessage(messages.pricingProgramOnly)}
             </Form.Radio>
-            <Form.Radio
-              value="is_part_of_subscription"
-              disabled={isBusy || inProgram}
-              description={intl.formatMessage(messages.pricingSubscriptionDescription, { siteName: getSiteName() })}
-            >
-              {intl.formatMessage(messages.pricingSubscription)}
-            </Form.Radio>
+            {(canSetSubscription || subscriptionLocked) && (
+              <Form.Radio
+                value="is_part_of_subscription"
+                disabled={isBusy || inProgram || subscriptionLocked}
+                description={intl.formatMessage(messages.pricingSubscriptionDescription, { siteName: getSiteName() })}
+              >
+                {intl.formatMessage(messages.pricingSubscription)}
+              </Form.Radio>
+            )}
             <div className="d-flex align-items-start justify-content-between w-100">
               <Form.Radio
                 value="is_enrollment_code"
-                disabled={isBusy || inProgram}
+                disabled={isBusy || inProgram || subscriptionLocked}
                 description={intl.formatMessage(messages.pricingEnrollmentCodeDescription)}
               >
                 {intl.formatMessage(messages.pricingEnrollmentCode)}
@@ -335,7 +342,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
         </>
         )}
 
-        <Button variant="primary" size="sm" onClick={handleSave} disabled={isBusy}>
+        <Button variant="primary" size="sm" onClick={handleSave} disabled={isBusy || subscriptionLocked}>
           {intl.formatMessage(isPending ? messages.pricingSaving : messages.pricingSave)}
         </Button>
       </div>
@@ -350,7 +357,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setManagedByAdmin(e.target.checked);
               setSettingsSaved(false);
-              setSettingsError(false);
+              setSettingsError('');
             }}
           >
             {intl.formatMessage(messages.pricingManagedLabel)}
@@ -380,7 +387,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   setHideFromCatalog(e.target.checked);
                   setSettingsSaved(false);
-                  setSettingsError(false);
+                  setSettingsError('');
                 }}
               >
                 {intl.formatMessage(enrollmentCodeMessages.hideFromCatalog)}
@@ -389,7 +396,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
           </div>
         </OverlayTrigger>
 
-        {settingsError && <Alert variant="danger">{intl.formatMessage(messages.pricingErrorSaveFailed)}</Alert>}
+        {settingsError && <Alert variant="danger">{settingsError}</Alert>}
         {settingsSaved && <Alert variant="success">{intl.formatMessage(messages.settingsSaved)}</Alert>}
         <Button variant="primary" size="sm" onClick={handleSaveManagement} disabled={isBusy}>
           {intl.formatMessage(isPending ? messages.pricingSaving : messages.settingsSave)}

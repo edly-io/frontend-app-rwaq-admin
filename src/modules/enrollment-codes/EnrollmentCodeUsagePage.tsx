@@ -43,7 +43,7 @@ const EnrollmentCodeUsagePage = () => {
   const intl = useIntl();
   const { data, isLoading } = useAdminCapabilities();
   if (isLoading) { return <LoadingPage />; }
-  if (!data?.isSuperuser) {
+  if (!data?.canAccessAdminPanel) {
     return <ErrorState statusCode={403} title={intl.formatMessage(messages.forbiddenTitle, { siteName: getSiteName() })} />;
   }
   return <UsageContent />;

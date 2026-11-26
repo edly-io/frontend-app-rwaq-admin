@@ -1,3 +1,4 @@
+import { useAdminCapabilities } from '@src/data/whoami';
 /**
  * CoursePricingCard: course type radios, Paid-only price fields, blur
  * validation, the in-program note and backend error placement.
@@ -39,6 +40,7 @@ const renderCard = (pricing: Partial<CoursePricing> = {}) => {
 const save = () => fireEvent.click(screen.getByRole('button', { name: 'Save pricing' }));
 
 beforeEach(() => {
+  (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'superuser' } });
   jest.clearAllMocks();
   (codeHooks.useItemCodeCount as jest.Mock).mockReturnValue({ data: undefined });
   mockUpdate.mockResolvedValue(basePricing);
@@ -46,6 +48,26 @@ beforeEach(() => {
 });
 
 describe('CoursePricingCard', () => {
+  it.each([403, 409])('shows a server refusal for settings writes (%s)', async (status) => {
+    mockUpdate.mockRejectedValue({ response: { status, data: { detail: 'Settings cannot be changed.' } } });
+    renderCard();
+    fireEvent.click(screen.getByRole('button', { name: 'Save settings' }));
+    expect(await screen.findByText('Settings cannot be changed.')).toBeInTheDocument();
+  });
+
+  it('hides subscription for organization admins', () => {
+    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'org_admin' } });
+    renderCard();
+    expect(screen.queryByRole('radio', { name: 'Part of Subscription' })).not.toBeInTheDocument();
+  });
+
+  it('keeps an existing subscription read-only when the server disallows changes', () => {
+    renderCard({ pricingCategory: 'is_part_of_subscription', canSetSubscription: false });
+    expect(screen.getByRole('radio', { name: 'Part of Subscription' })).toBeDisabled();
+    expect(screen.getByRole('radio', { name: 'Free' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save pricing' })).toBeDisabled();
+  });
+
   it('shows the title, four types with descriptions and the lock help text', () => {
     renderCard();
     expect(screen.getByRole('heading', { name: 'Type of course' })).toBeInTheDocument();
@@ -394,3 +416,5 @@ describe('CoursePricingCard', () => {
     });
   });
 });
+
+jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn(() => ({ data: { role: 'superuser' } })) }));

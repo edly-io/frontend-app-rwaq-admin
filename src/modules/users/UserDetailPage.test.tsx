@@ -8,6 +8,7 @@
  */
 import { screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
+import { useAdminCapabilities } from '@src/data/whoami';
 import * as hooks from './data/hooks';
 import UserDetailPage from './UserDetailPage';
 import { getUserEnrollmentsCsvUrl } from './data/api';
@@ -65,6 +66,7 @@ const emptyProfileUser = {
 
 describe('UserDetailPage — Bug 1 regression: empty fields render "—" not raw i18n key', () => {
   beforeEach(() => {
+    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'superuser' } });
     (hooks.useUser as jest.Mock).mockReturnValue({
       data: emptyProfileUser, isLoading: false, isError: false,
     });
@@ -85,6 +87,16 @@ describe('UserDetailPage — Bug 1 regression: empty fields render "—" not raw
     (hooks.useEnrollableCourses as jest.Mock).mockReturnValue({
       data: [], isLoading: false, isError: false,
     });
+  });
+
+  it('makes a privileged user read-only for an Admin', () => {
+    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'admin' } });
+    (hooks.useUser as jest.Mock).mockReturnValue({
+      data: { ...emptyProfileUser, isPrivileged: true }, isLoading: false,
+    });
+    renderWrapper(<UserDetailPage />);
+    expect(screen.getByRole('button', { name: 'Edit user' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'Enroll in a course' })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('never shows the raw message id for an empty field', () => {
@@ -131,3 +143,5 @@ describe('UserDetailPage — Bug 1 regression: empty fields render "—" not raw
     expect(screen.getByText('RWAQ, ARBI')).toBeInTheDocument();
   });
 });
+
+jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn(() => ({ data: { role: 'superuser' } })) }));

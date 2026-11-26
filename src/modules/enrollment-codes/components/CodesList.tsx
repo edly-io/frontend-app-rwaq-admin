@@ -1,3 +1,4 @@
+import { getErrorReason, getErrorStatus } from '@src/data/httpError';
 /**
  * The list of enrollment codes, with its filters, create button and row actions.
  *
@@ -28,7 +29,6 @@ import ErrorState from '@src/components/ErrorState';
 import SearchFilterBar from '@src/components/SearchFilterBar';
 import type { AppliedChip } from '@src/components/SearchFilterBar';
 import { useToast } from '@src/components/ToastContext';
-import { getErrorStatus } from '@src/data/httpError';
 import {
   PAGE_SIZE, listScope, tablePagination, useListState,
 } from '@src/modules/payments/components/shared';
@@ -184,7 +184,7 @@ const CodesList = ({
       }));
     } catch (err) {
       logError(err);
-      showToast(intl.formatMessage(messages.switchFailed));
+      showToast(getErrorReason(err) ?? intl.formatMessage(messages.switchFailed));
     }
   };
 

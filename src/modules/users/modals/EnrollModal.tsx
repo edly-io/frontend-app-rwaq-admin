@@ -100,6 +100,7 @@ const EnrollModal = ({
       // 409 means the enrollment moved under us — the fix is to look again,
       // not to retry the same write, so it gets its own message.
       if (getErrorStatus(error) === 409) {
+        showToast(getErrorReason(error) ?? intl.formatMessage(messages.enrollmentWriteError));
         setIsConflict(true);
         return;
       }

@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button, Chip, Spinner } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
+import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import type { ColumnDef } from '@src/components/AdminDataTable';
 import type { EnrollmentProgress, UserEnrollment } from '../data/types';
 import messages from '../messages';
@@ -29,6 +30,7 @@ interface EnrollmentsTableProps {
   /** Progress per active course. It arrives after the table, so the column shows a spinner until then. */
   progress?: EnrollmentProgress[];
   isProgressLoading?: boolean;
+  readOnlyReason?: string;
   onChangeMode: (enrollment: UserEnrollment) => void;
   onUnenroll: (enrollment: UserEnrollment) => void;
 }
@@ -46,7 +48,7 @@ const COURSE_LABELS = {
 };
 
 const EnrollmentsTable = ({
-  enrollments, isLoading, progress, isProgressLoading = false, onChangeMode, onUnenroll,
+  enrollments, isLoading, progress, isProgressLoading = false, readOnlyReason, onChangeMode, onUnenroll,
 }: EnrollmentsTableProps) => {
   const intl = useIntl();
   const [page, setPage] = useState(1);
@@ -205,24 +207,28 @@ const EnrollmentsTable = ({
         <span className="text-muted small">{intl.formatMessage(messages.enrollmentSubscriptionNote)}</span>
       ) : (
         <div className="rwaq-row-actions">
-          <Button
-            variant="outline-primary"
-            size="sm"
-            disabled={!row.isActive}
-            onClick={() => onChangeMode(row)}
-            aria-label={`${intl.formatMessage(messages.modeChangeAction)}, ${row.courseName}`}
-          >
-            {intl.formatMessage(messages.modeChangeAction)}
-          </Button>
-          <Button
-            variant="outline-secondary"
-            size="sm"
-            disabled={!row.isActive}
-            onClick={() => onUnenroll(row)}
-            aria-label={`${intl.formatMessage(messages.unenrollAction)}, ${row.courseName}`}
-          >
-            {intl.formatMessage(messages.unenrollAction)}
-          </Button>
+          {readOnlyReason ? <DisabledButtonWithTooltip id={`mode-${row.courseId}`} tooltip={readOnlyReason} variant="outline-primary" size="sm">{intl.formatMessage(messages.modeChangeAction)}</DisabledButtonWithTooltip> : (
+            <Button
+              variant="outline-primary"
+              size="sm"
+              disabled={!row.isActive}
+              onClick={() => onChangeMode(row)}
+              aria-label={`${intl.formatMessage(messages.modeChangeAction)}, ${row.courseName}`}
+            >
+              {intl.formatMessage(messages.modeChangeAction)}
+            </Button>
+          )}
+          {readOnlyReason ? <DisabledButtonWithTooltip id={`unenroll-${row.courseId}`} tooltip={readOnlyReason} variant="outline-secondary" size="sm">{intl.formatMessage(messages.unenrollAction)}</DisabledButtonWithTooltip> : (
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              disabled={!row.isActive}
+              onClick={() => onUnenroll(row)}
+              aria-label={`${intl.formatMessage(messages.unenrollAction)}, ${row.courseName}`}
+            >
+              {intl.formatMessage(messages.unenrollAction)}
+            </Button>
+          )}
         </div>
       )),
     },

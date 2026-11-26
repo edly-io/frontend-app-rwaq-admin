@@ -37,8 +37,6 @@ interface NavItemDef {
   iconSrc: React.ComponentType<any>;
   isLive: boolean;
   exact?: boolean;
-  /** Shown only to superusers; the panel itself also admits global staff. */
-  superuserOnly?: boolean;
 }
 
 const NAV_ITEMS: NavItemDef[] = [
@@ -61,14 +59,13 @@ const NAV_ITEMS: NavItemDef[] = [
     to: '/categories', labelId: 'categories', iconSrc: LocalOffer, isLive: true,
   },
   {
-    to: '/payments', labelId: 'payments', iconSrc: Payments, isLive: true, superuserOnly: true,
+    to: '/payments', labelId: 'payments', iconSrc: Payments, isLive: true,
   },
   {
     to: '/enrollment-codes',
     labelId: 'enrollmentCodes',
     iconSrc: ConfirmationNumber,
     isLive: true,
-    superuserOnly: true,
   },
 ];
 
@@ -194,7 +191,7 @@ const SideNav = ({ onNavigate }: SideNavProps) => {
   // on any host without the indigo theme bound. See assets/rwaqLogo.
   const logoUrl = RWAQ_LOGO;
   const { data: capabilities } = useAdminCapabilities();
-  const isSuperuser = Boolean(capabilities?.isSuperuser);
+  const canAccess = Boolean(capabilities?.canAccessAdminPanel);
 
   return (
     <div className="rwaq-admin-sidebar" style={sidebarStyle}>
@@ -225,7 +222,7 @@ const SideNav = ({ onNavigate }: SideNavProps) => {
         aria-label={intl.formatMessage(messages.navAriaLabel)}
         style={{ padding: '1rem 0.75rem', flex: 1 }}
       >
-        {NAV_ITEMS.filter((item) => !item.superuserOnly || isSuperuser).map((item) => (
+        {NAV_ITEMS.filter(() => canAccess).map((item) => (
           <NavItem key={item.to} def={item} onNavigate={onNavigate} />
         ))}
 

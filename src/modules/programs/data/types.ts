@@ -55,6 +55,7 @@ export interface ProgramSummary {
 
 /** Full program detail from GET /api/v1/admin/programs/{uuid}/ */
 export interface ProgramDetail extends ProgramSummary {
+  canSetSubscription?: boolean;
   programNumber: string | null;
   slug: string | null;
   description: string;

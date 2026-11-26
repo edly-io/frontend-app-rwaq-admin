@@ -5,7 +5,7 @@ const messages = defineMessages({
   errorTitle: { id: 'rwaq.admin.payments.error', defaultMessage: 'Could not load payments.' },
   forbiddenTitle: {
     id: 'rwaq.admin.payments.forbidden',
-    defaultMessage: 'Orders & Payments are visible to {siteName} superadmins only.',
+    defaultMessage: 'You do not have access to {siteName} Orders & Payments.',
   },
 
   // ── Partner filter ─────────────────────────────────────────────────────────

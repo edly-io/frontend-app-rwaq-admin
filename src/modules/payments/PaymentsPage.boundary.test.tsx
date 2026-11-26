@@ -67,7 +67,7 @@ const tabReady = () => waitFor(() => expect(screen.queryByTestId('tab-loading'))
 beforeEach(() => {
   window.history.pushState({}, '', '/');
   (logError as jest.Mock).mockClear();
-  (whoami.useAdminCapabilities as jest.Mock).mockReturnValue({ data: { isSuperuser: true }, isLoading: false });
+  (whoami.useAdminCapabilities as jest.Mock).mockReturnValue({ data: { isSuperuser: true, canAccessAdminPanel: true, role: 'superuser' }, isLoading: false });
   (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({ data: summary, isLoading: false, isError: false });
   (orgHooks.useOrganizations as jest.Mock).mockReturnValue({ data: emptyPage, isLoading: false, isError: false });
   (hooks.useDownloadPaymentsCsv as jest.Mock).mockReturnValue({ mutateAsync: jest.fn(), isPending: false });
