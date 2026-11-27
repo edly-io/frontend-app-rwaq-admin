@@ -257,7 +257,9 @@ const OrgListPage = () => {
             },
           ]}
           appliedChips={appliedChips}
-          onClearAll={() => updateParams({ search: '', filter: '', ordering: '', created_from: '', created_to: '' })}
+          onClearAll={() => updateParams({
+            search: '', filter: '', ordering: '', created_from: '', created_to: '',
+          })}
           downloadAction={(
             <CsvDownloadButton
               url={getOrganizationsCsvUrl()}

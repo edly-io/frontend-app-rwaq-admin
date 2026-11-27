@@ -225,7 +225,6 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
       isSubmitting={mutation.isPending}
     >
       <section className="rwaq-form-section">
-        {/* Avatar upload UI — temporarily hidden; uncomment to restore.
         <div className="d-flex align-items-center mb-4" style={{ gap: '1.25rem' }}>
           <button
             type="button"
@@ -289,7 +288,6 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
             onChange={handleAvatarChange}
           />
         </div>
-        */}
 
         <Row>
           <Col xs={12} md={6}>

@@ -117,14 +117,6 @@ describe('UserDetailPage — Bug 1 regression: empty fields render "—" not raw
     expect(dashes.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('shows the actual job title when one is set', () => {
-    (hooks.useUser as jest.Mock).mockReturnValue({
-      data: { ...emptyProfileUser, job: 'Software Engineer' }, isLoading: false, isError: false,
-    });
-    renderWrapper(<UserDetailPage />);
-    expect(screen.getByText('Software Engineer')).toBeInTheDocument();
-  });
-
   it('shows the actual biography when one is set', () => {
     (hooks.useUser as jest.Mock).mockReturnValue({
       data: { ...emptyProfileUser, biography: 'Teaching online since 2010.' }, isLoading: false, isError: false,

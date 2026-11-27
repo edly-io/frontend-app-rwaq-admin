@@ -53,7 +53,7 @@ export const resolveParagonToken = (token: string, fallback: string): string => 
  * one hue stepping down in weight.
  */
 export const getSequentialChartColors = (): string[] => {
-  const accent = resolveParagonToken('--rwaq-accent', '#0A76DB');
+  const accent = resolveParagonToken('--rwaq-accent', '#dd1f25');
   return [
     accent,
     `color-mix(in srgb, ${accent} 72%, transparent)`,

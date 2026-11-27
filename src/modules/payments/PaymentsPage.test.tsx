@@ -129,7 +129,7 @@ describe('PaymentsPage', () => {
     setCapabilities(false);
     renderWrapper(<PaymentsPage />);
 
-    expect(screen.getByText('You do not have access to Arbisoft Orders & Payments.')).toBeInTheDocument();
+    expect(screen.getByText('You do not have access to Edly Orders & Payments.')).toBeInTheDocument();
     expect(hooks.usePaymentsSummary).not.toHaveBeenCalled();
   });
 
@@ -246,10 +246,10 @@ describe('PaymentsPage', () => {
     });
   });
 
-  it('offers Arbisoft (subscriptions) after the organizations and asks the summary for it', async () => {
+  it('offers Edly (subscriptions) after the organizations and asks the summary for it', async () => {
     await renderPage();
     const options = within(screen.getByLabelText('Partner')).getAllByRole('option').map((option) => option.textContent);
-    expect(options).toEqual(['All partners', 'Org A (TPA)', 'Arbisoft (subscriptions)']);
+    expect(options).toEqual(['All partners', 'Org A (TPA)', 'Edly (subscriptions)']);
 
     fireEvent.change(screen.getByLabelText('Partner'), { target: { value: '@subscriptions' } });
 
@@ -452,7 +452,7 @@ describe('PaymentsPage', () => {
       await renderPage();
 
       expect(lastOrdersParams().org).toBe('@subscriptions');
-      expect(screen.getByText('Partner: Arbisoft (subscriptions)')).toBeInTheDocument();
+      expect(screen.getByText('Partner: Edly (subscriptions)')).toBeInTheDocument();
       expect(screen.queryByText('Partner: @subscriptions')).not.toBeInTheDocument();
     });
 
@@ -462,7 +462,7 @@ describe('PaymentsPage', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
 
       expect(
-        within(screen.getByLabelText('Partner')).getByRole('option', { name: 'Arbisoft (subscriptions)' }),
+        within(screen.getByLabelText('Partner')).getByRole('option', { name: 'Edly (subscriptions)' }),
       ).toHaveValue('@subscriptions');
     });
 

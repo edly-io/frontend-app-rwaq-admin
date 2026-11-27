@@ -44,7 +44,9 @@ const EnrollmentCodeUsagePage = () => {
   const { data, isLoading } = useAdminCapabilities();
   if (isLoading) { return <LoadingPage />; }
   if (!data?.canAccessAdminPanel) {
-    return <ErrorState statusCode={403} title={intl.formatMessage(messages.forbiddenTitle, { siteName: getSiteName() })} />;
+    return (
+      <ErrorState statusCode={403} title={intl.formatMessage(messages.forbiddenTitle, { siteName: getSiteName() })} />
+    );
   }
   return <UsageContent />;
 };

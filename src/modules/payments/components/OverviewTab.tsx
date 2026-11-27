@@ -101,7 +101,10 @@ const TrendChart = ({
           height={CHART_HEIGHT}
           xLabelAngle={LABEL_ANGLE}
           maxXLabels={maxLabels}
-          {...(formatValue ? { valueFormatter: formatValue, yAxisWidth: isRtl(intl.locale) ? MONEY_AXIS_WIDTH_RTL : MONEY_AXIS_WIDTH } : {})}
+          {...(formatValue ? {
+            valueFormatter: formatValue,
+            yAxisWidth: isRtl(intl.locale) ? MONEY_AXIS_WIDTH_RTL : MONEY_AXIS_WIDTH,
+          } : {})}
         />
       </div>
     );

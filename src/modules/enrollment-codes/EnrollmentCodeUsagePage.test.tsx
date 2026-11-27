@@ -24,7 +24,7 @@ describe('EnrollmentCodeUsagePage', () => {
     });
     renderWrapper(<EnrollmentCodeUsagePage />);
     expect(hooks.useEnrollmentCode).not.toHaveBeenCalled();
-    expect(screen.getByText('You do not have access to Arbisoft enrollment codes.')).toBeInTheDocument();
+    expect(screen.getByText('You do not have access to Edly enrollment codes.')).toBeInTheDocument();
   });
 
   it('loads a code by URL for a superuser', () => {

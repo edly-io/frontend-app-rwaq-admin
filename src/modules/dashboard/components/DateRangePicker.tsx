@@ -28,8 +28,7 @@ const today = (): Date => new Date();
 // Use local date components rather than toISOString(): toISOString() reprojects
 // to UTC before slicing, so in UTC+3 at 01:30 local time the UTC date is still
 // the previous day and the wrong date gets sent to the backend.
-const isoDate = (d: Date): string =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const isoDate = (d: Date): string => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 const daysAgo = (n: number): string => {
   const d = today();

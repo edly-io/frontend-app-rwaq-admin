@@ -7,7 +7,9 @@
  */
 import { useState } from 'react';
 import DOMPurify from 'dompurify';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import {
+  Link, useNavigate, useParams, useSearchParams,
+} from 'react-router-dom';
 import {
   Alert, Button, Chip, Spinner,
 } from '@openedx/paragon';
@@ -42,7 +44,9 @@ const OrgCoursesTable = ({ org }: { org: string }) => {
   );
   const { data, isLoading, isError } = useCourses({ org, page, pageSize: PAGE_SIZE });
 
-  const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString() : intl.formatMessage(messages.detailNone));
+  const formatDate = (iso: string | null) => (
+    iso ? new Date(iso).toLocaleDateString() : intl.formatMessage(messages.detailNone)
+  );
 
   const columns: ColumnDef<CourseSummary>[] = [
     {

@@ -48,7 +48,7 @@ describe('InfoTooltip', () => {
   it('click while hovering pins — tooltip stays after mouse leave', () => {
     renderWrapper(<InfoTooltip text="Explanation text" />);
     fireEvent.mouseEnter(screen.getByRole('button'));
-    fireEvent.click(screen.getByRole('button'));  // hover → pinned
+    fireEvent.click(screen.getByRole('button')); // hover → pinned
     fireEvent.mouseLeave(screen.getByRole('button'));
     expect(screen.getByRole('tooltip')).toBeInTheDocument();
   });

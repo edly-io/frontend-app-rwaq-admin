@@ -64,7 +64,9 @@ const snakeTrendsResponse = {
 };
 
 const snakeBreakdownsResponse = {
-  course_lifecycle: { no_dates: 0, upcoming: 5, running: 20, ended: 55 },
+  course_lifecycle: {
+    no_dates: 0, upcoming: 5, running: 20, ended: 55,
+  },
   certificates: {
     total_courses: 80,
     courses_with_certificate: 50,

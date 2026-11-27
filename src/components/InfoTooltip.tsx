@@ -30,8 +30,6 @@ const TOOLTIP_W = 220;
 const InfoTooltip = ({
   text, ariaLabel = 'More information', children, disabled = false,
 }: InfoTooltipProps) => {
-  if (disabled) { return <>{children}</>; }
-
   const [vis, setVis] = useState<Vis>('hidden');
   // Icon mode: flip placement to avoid viewport overflow
   const [placement, setPlacement] = useState<Placement>('center');
@@ -56,8 +54,7 @@ const InfoTooltip = ({
     if (isTitleMode || !isVisible || !tooltipRef.current) { return; }
     const rect = tooltipRef.current.getBoundingClientRect();
     const vw = window.innerWidth;
-    if (rect.right > vw - 8) { setPlacement('right'); }
-    else if (rect.left < 8) { setPlacement('left'); }
+    if (rect.right > vw - 8) { setPlacement('right'); } else if (rect.left < 8) { setPlacement('left'); }
   }, [isVisible, placement, isTitleMode]);
 
   // Close on outside click or Escape (WCAG 1.4.13).
@@ -91,16 +88,18 @@ const InfoTooltip = ({
   };
 
   // Icon mode tooltip position (position:absolute, relative to wrapper).
-  const iconTipPos: React.CSSProperties = placement === 'right'
-    ? { right: 0, left: 'auto' }
-    : placement === 'left'
-      ? { left: 0, right: 'auto' }
-      : { left: '50%', transform: 'translateX(-50%)', right: 'auto' };
-  const iconArrowPos: React.CSSProperties = placement === 'right'
-    ? { right: '10px', left: 'auto' }
-    : placement === 'left'
-      ? { left: '10px', right: 'auto' }
-      : { left: '50%', transform: 'translateX(-50%)', right: 'auto' };
+  const positions: Record<Placement, React.CSSProperties> = {
+    right: { right: 0, left: 'auto' },
+    left: { left: 0, right: 'auto' },
+    center: { left: '50%', transform: 'translateX(-50%)', right: 'auto' },
+  };
+  const arrowPositions: Record<Placement, React.CSSProperties> = {
+    ...positions,
+    right: { right: '10px', left: 'auto' },
+    left: { left: '10px', right: 'auto' },
+  };
+  const iconTipPos = positions[placement];
+  const iconArrowPos = arrowPositions[placement];
 
   const tooltipBody = (extraStyle: React.CSSProperties, arrowStyle: React.CSSProperties) => (
     <div
@@ -141,6 +140,10 @@ const InfoTooltip = ({
     </div>
   );
 
+  // The fragment preserves arbitrary React children while returning a JSX element.
+  // eslint-disable-next-line react/jsx-no-useless-fragment
+  if (disabled) { return <>{children}</>; }
+
   return (
     <span
       ref={wrapRef}
@@ -153,6 +156,7 @@ const InfoTooltip = ({
       }}
     >
       {children ? (
+        /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */
         <span
           ref={triggerRef}
           // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
