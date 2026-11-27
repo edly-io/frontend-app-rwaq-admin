@@ -2,7 +2,6 @@
  * SideNav — persistent left sidebar, matching the edly-panel visual:
  * - Brand logo at top
  * - Icon + label NavLink items; active item = white rounded "pill" with brand-accent icon
- * - Collapsible "Settings" section (caret)
  * - "Coming soon" badge on the not-yet-built modules
  */
 import { getSiteName } from '@src/data/siteName';

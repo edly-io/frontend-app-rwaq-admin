@@ -101,6 +101,40 @@ const AsyncReportCard = ({
 
   const hasRunning = tasks?.some((t) => t.state === 'QUEUING' || t.state === 'IN_PROGRESS') ?? false;
 
+  const renderBody = () => {
+    if (isLoading) {
+      return (
+        <div className="d-flex justify-content-center py-3">
+          <Spinner animation="border" size="sm" screenReaderText={intl.formatMessage(messages.loadingHistory)} />
+        </div>
+      );
+    }
+    if (!tasks || tasks.length === 0) {
+      return (
+        <p className="text-muted small mb-0">{intl.formatMessage(messages.noReportsYet)}</p>
+      );
+    }
+    return (
+      <div style={{ overflowX: 'auto' }}>
+        <table className="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>{intl.formatMessage(messages.colGenerated)}</th>
+              <th>{intl.formatMessage(messages.colStatus)}</th>
+              <th>{intl.formatMessage(messages.colProcessed)}</th>
+              <th className="text-right">{intl.formatMessage(messages.colFile)}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tasks.map((task) => (
+              <TaskRow key={task.taskId} task={task} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
     <div className="rwaq-card">
       <div className="d-flex justify-content-between align-items-start flex-wrap rwaq-gap-md mb-3">
@@ -144,32 +178,7 @@ const AsyncReportCard = ({
         </Alert>
       )}
 
-      {isLoading ? (
-        <div className="d-flex justify-content-center py-3">
-          <Spinner animation="border" size="sm" screenReaderText={intl.formatMessage(messages.loadingHistory)} />
-        </div>
-      ) : (!tasks || tasks.length === 0) && (
-        <p className="text-muted small mb-0">{intl.formatMessage(messages.noReportsYet)}</p>
-      )}
-      {!isLoading && tasks && tasks.length > 0 && (
-        <div style={{ overflowX: 'auto' }}>
-          <table className="table table-sm mb-0">
-            <thead>
-              <tr>
-                <th>{intl.formatMessage(messages.colGenerated)}</th>
-                <th>{intl.formatMessage(messages.colStatus)}</th>
-                <th>{intl.formatMessage(messages.colProcessed)}</th>
-                <th className="text-right">{intl.formatMessage(messages.colFile)}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tasks.map((task) => (
-                <TaskRow key={task.taskId} task={task} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {renderBody()}
     </div>
   );
 };

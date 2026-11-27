@@ -38,10 +38,8 @@ export const sideNavMessages = defineMessages({
   categories: { id: 'rwaq.admin.sidenav.categories', defaultMessage: 'Categories' },
   payments: { id: 'rwaq.admin.sidenav.payments', defaultMessage: 'Orders & Payments' },
   enrollmentCodes: { id: 'rwaq.admin.sidenav.enrollmentCodes', defaultMessage: 'Enrollment codes' },
-  settings: { id: 'rwaq.admin.sidenav.settings', defaultMessage: 'Settings' },
   comingSoon: { id: 'rwaq.admin.sidenav.comingSoon', defaultMessage: 'Soon' },
   navAriaLabel: { id: 'rwaq.admin.sidenav.navAriaLabel', defaultMessage: 'Admin navigation' },
-  settingsToggle: { id: 'rwaq.admin.sidenav.settingsToggle', defaultMessage: 'Toggle settings menu' },
 });
 
 // ── TopBar ────────────────────────────────────────────────────────────────────
