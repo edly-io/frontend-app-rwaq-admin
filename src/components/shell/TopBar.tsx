@@ -22,6 +22,7 @@ import {
 import { getAuthenticatedUser } from '@edx/frontend-platform/auth';
 import { getConfig } from '@edx/frontend-platform';
 import { useIntl } from '@edx/frontend-platform/i18n';
+import { useAdminCapabilities } from '@src/data/whoami';
 import { RWAQ_LOGO } from '@src/assets/rwaqLogo';
 import { useThemeVariant } from './useThemeVariant';
 import { topBarMessages as messages, sideNavMessages } from './messages';
@@ -81,9 +82,15 @@ const TopBar = ({ onMenuToggle, isMobile = false }: TopBarProps) => {
   const displayName = user?.name || user?.username || '';
   const email = user?.email || '';
   const username = user?.username || '';
-  const role = user?.administrator
-    ? intl.formatMessage(messages.roleAdmin)
-    : intl.formatMessage(messages.roleStaff);
+  const { data: capabilities } = useAdminCapabilities();
+  const roleMessages = {
+    superuser: messages.roleSuperuser,
+    admin: messages.roleAdmin,
+    org_admin: messages.roleOrgAdmin,
+    global_staff: messages.roleStaff,
+    none: messages.roleLearner,
+  };
+  const role = intl.formatMessage(roleMessages[capabilities?.role ?? 'none'] ?? roleMessages.none);
 
   const lms = (config?.LMS_BASE_URL as string) || '';
   const logoutUrl = (config?.LOGOUT_URL as string) ?? `${lms}/logout`;

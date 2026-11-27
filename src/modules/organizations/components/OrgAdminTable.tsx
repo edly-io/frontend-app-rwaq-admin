@@ -1,3 +1,4 @@
+import { getErrorReason } from '@src/data/httpError';
 /**
  * An organization's Organization Admin roster.
  *
@@ -46,7 +47,7 @@ const OrgAdminTable = ({ shortName, members }: OrgAdminTableProps) => {
       setPendingRemoval(null);
     } catch (error) {
       logError(error);
-      showToast(intl.formatMessage(messages.genericError));
+      showToast(getErrorReason(error) ?? intl.formatMessage(messages.genericError));
       setPendingRemoval(null);
     }
   };

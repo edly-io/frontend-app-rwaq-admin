@@ -13,6 +13,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@openedx/paragon';
+import { useAdminCapabilities } from '@src/data/whoami';
+import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
@@ -99,6 +101,7 @@ type ModalState =
 
 const UsersListPage = () => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [modal, setModal] = useState<ModalState>({ kind: 'none' });
@@ -285,14 +288,20 @@ const UsersListPage = () => {
           >
             {intl.formatMessage(messages.view)}
           </Button>
-          <Button
-            variant="outline-secondary"
-            size="sm"
-            onClick={() => setModal({ kind: 'edit', userId: row.id as number })}
-            aria-label={`${intl.formatMessage(messages.edit)} ${row.name as string}`}
-          >
-            {intl.formatMessage(messages.edit)}
-          </Button>
+          {capabilities?.role === 'admin' && row.isPrivileged ? (
+            <DisabledButtonWithTooltip id={`user-edit-${row.id}`} tooltip={intl.formatMessage(messages.privilegedReadOnly)} variant="outline-secondary" size="sm" ariaLabel={`${intl.formatMessage(messages.edit)} ${row.name as string}`}>
+              {intl.formatMessage(messages.edit)}
+            </DisabledButtonWithTooltip>
+          ) : (
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              onClick={() => setModal({ kind: 'edit', userId: row.id as number })}
+              aria-label={`${intl.formatMessage(messages.edit)} ${row.name as string}`}
+            >
+              {intl.formatMessage(messages.edit)}
+            </Button>
+          )}
         </div>
       ),
     },

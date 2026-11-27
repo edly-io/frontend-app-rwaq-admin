@@ -1,3 +1,4 @@
+import { useAdminCapabilities } from '@src/data/whoami';
 /**
  * Payment history — every order, one row each. A row opens to show its
  * courses and programs (linked to their detail pages) and its coupons.
@@ -67,6 +68,7 @@ const OrdersTab = ({
   org, onOrgChange, subscription, onSubscriptionChange, onClearUrlFilters,
 }: OrdersTabProps) => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
   const dates = useDateRange();
   const params = { org: org || undefined, startDate: dates.startDate, endDate: dates.endDate };
   const list = useListState(
@@ -76,7 +78,7 @@ const OrdersTab = ({
   );
   const partner = usePartnerFilter(params, onOrgChange);
   // Under a partner the backend narrows each order to that partner's items and totals them separately.
-  const hasPartner = Boolean(params.org);
+  const hasPartner = capabilities?.role === 'org_admin' || Boolean(params.org);
   const listParams: OrderListParams = {
     ...params,
     source: (list.filters.source || undefined) as OrderSource | undefined,
@@ -100,7 +102,9 @@ const OrdersTab = ({
   const typeOptions = [
     { value: '', label: intl.formatMessage(messages.filterAll) },
     { value: 'content', label: intl.formatMessage(messages.typeFilterContent) },
-    { value: 'subscription', label: intl.formatMessage(messages.typeFilterSubscription) },
+    ...(capabilities?.role === 'org_admin' ? [] : [
+      { value: 'subscription', label: intl.formatMessage(messages.typeFilterSubscription) },
+    ]),
   ];
   const planLabel = (plan: string | null) => {
     if (plan === 'monthly') { return intl.formatMessage(messages.planMonthly); }

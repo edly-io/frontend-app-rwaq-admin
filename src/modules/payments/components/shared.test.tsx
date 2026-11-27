@@ -1,3 +1,4 @@
+import { useAdminCapabilities } from '@src/data/whoami';
 /**
  * The pieces every payments tab shares: list paging state, dates in UTC, and
  * the CSV button with the real hook and api behind it (only the http client
@@ -138,6 +139,7 @@ describe('CsvButton', () => {
   };
 
   beforeEach(() => {
+    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'superuser' } });
     jest.useFakeTimers({ advanceTimers: true });
     jest.clearAllMocks();
     get.mockReset();
@@ -244,3 +246,5 @@ describe('CsvButton', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Download CSV' })).toBeEnabled());
   });
 });
+
+jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn(() => ({ data: { role: 'superuser' } })) }));

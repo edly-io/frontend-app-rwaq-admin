@@ -97,7 +97,7 @@ export const useUpdateProgram = (uuid: string) => {
 export const useUnenrollProgramLearner = (uuid: string) => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, { userId: number; reason: string }>({
+  return useMutation<Record<string, string>, Error, { userId: number; reason: string }>({
     mutationFn: ({ userId, reason }) => unenrollProgramLearner(uuid, userId, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: programQueryKeys.learners(uuid) });

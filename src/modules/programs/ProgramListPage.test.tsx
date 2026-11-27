@@ -149,3 +149,5 @@ describe('ProgramListPage organization name', () => {
     expect(screen.queryByText('Arbisoft Academy')).not.toBeInTheDocument();
   });
 });
+
+jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: () => ({ data: { role: 'superuser', canAccessAdminPanel: true } }) }));

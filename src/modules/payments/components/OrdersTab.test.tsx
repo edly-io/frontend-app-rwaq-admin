@@ -1,3 +1,4 @@
+import { useAdminCapabilities } from '@src/data/whoami';
 /**
  * Payment history: the amount columns and the expanded row, with and without a
  * partner chosen. Under a partner the backend narrows each order to that
@@ -120,11 +121,20 @@ const firstRow = () => {
 
 beforeEach(() => {
   jest.resetAllMocks();
+  (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'superuser' } });
   (orgHooks.useOrganizations as jest.Mock).mockReturnValue({ data: undefined });
   (hooks.useDownloadPaymentsCsv as jest.Mock).mockReturnValue({ mutateAsync: jest.fn(), isPending: false });
 });
 
 describe('Payment history amounts', () => {
+  it('uses scoped order amounts for organization admins without an explicit partner filter', () => {
+    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'org_admin' } });
+    mockOrders([tpaOrder]);
+    renderTab();
+    expect(firstRow()['Order value (SAR)']).toBe('100.00');
+    expect(firstRow()['Total collected (SAR)']).toBe('93.33');
+  });
+
   it('shows the whole order without a partner', () => {
     mockOrders([wholeOrder]);
     renderTab();
@@ -242,6 +252,13 @@ describe('Payment history amounts', () => {
 });
 
 describe('Payment history subscriptions entry', () => {
+  it('does not offer subscription filters to organization admins', () => {
+    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'org_admin' } });
+    mockOrders([wholeOrder]);
+    renderTab();
+    expect(screen.queryByRole('option', { name: /subscriptions/i })).not.toBeInTheDocument();
+  });
+
   it('passes the subscriptions value to the backend as org', () => {
     mockOrders([wholeOrder]);
     renderTab('@subscriptions');
@@ -447,3 +464,5 @@ describe('Payment history subscription orders', () => {
     expect(screen.getByText('Subscription: buyer5, Monthly')).toBeInTheDocument();
   });
 });
+
+jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn(() => ({ data: { role: 'superuser' } })) }));

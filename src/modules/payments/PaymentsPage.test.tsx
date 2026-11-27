@@ -94,10 +94,11 @@ const orgsPage = {
 };
 
 const setCapabilities = (isSuperuser: boolean, isLoading = false) => {
-  (whoami.useAdminCapabilities as jest.Mock).mockReturnValue({ data: { isSuperuser }, isLoading });
+  (whoami.useAdminCapabilities as jest.Mock).mockReturnValue({ data: { isSuperuser, canAccessAdminPanel: isSuperuser, role: isSuperuser ? 'superuser' : 'global_staff' }, isLoading });
 };
 
 beforeEach(() => {
+  jest.clearAllMocks();
   window.history.pushState({}, '', '/');
   setCapabilities(true);
   (hooks.usePaymentsSummary as jest.Mock).mockReturnValue({ data: summary, isLoading: false, isError: false });
@@ -112,11 +113,23 @@ const renderPage = async () => { renderWrapper(<PaymentsPage />); await tabReady
 const openTab = async (name: string) => { fireEvent.click(screen.getByRole('tab', { name })); await tabReady(); };
 
 describe('PaymentsPage', () => {
+  it('omits subscription figures and chart series for organization admins', async () => {
+    (whoami.useAdminCapabilities as jest.Mock).mockReturnValue({
+      data: { role: 'org_admin', canAccessAdminPanel: true }, isLoading: false,
+    });
+    await renderPage();
+    expect(screen.queryByText('Subscription net sales')).not.toBeInTheDocument();
+    screen.getAllByTestId('metric-chart').forEach((chart) => {
+      expect(chart).not.toHaveAttribute('data-series', expect.stringContaining('Subscription'));
+    });
+    expect(screen.queryByRole('option', { name: /subscriptions/i })).not.toBeInTheDocument();
+  });
+
   it('refuses a non-superuser and fetches nothing', () => {
     setCapabilities(false);
     renderWrapper(<PaymentsPage />);
 
-    expect(screen.getByText('Orders & Payments are visible to Edly superadmins only.')).toBeInTheDocument();
+    expect(screen.getByText('You do not have access to Edly Orders & Payments.')).toBeInTheDocument();
     expect(hooks.usePaymentsSummary).not.toHaveBeenCalled();
   });
 

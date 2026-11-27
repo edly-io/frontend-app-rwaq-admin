@@ -1,3 +1,4 @@
+import { useAdminCapabilities } from '@src/data/whoami';
 /**
  * Pieces the payments tabs share: money formatting, list state, the CSV
  * button, the tab heading and the partner filter.
@@ -190,6 +191,7 @@ export const usePartnerFilter = (
   onOrgChange: (org: string) => void,
 ): { group: FilterGroup; chip: AppliedChip | null } => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
   const { data } = useOrganizations({ ordering: 'name', pageSize: 100 });
   const partners = data?.results ?? [];
   const org = params.org ?? '';
@@ -200,7 +202,12 @@ export const usePartnerFilter = (
       value: partner.shortName,
       label: partner.name === partner.shortName ? partner.name : `${partner.name} (${partner.shortName})`,
     })),
-    { value: SUBSCRIPTIONS_ORG, label: intl.formatMessage(messages.partnerSubscriptions, { siteName: getSiteName() }) },
+    ...(capabilities?.role === 'org_admin' ? [] : [
+      {
+        value: SUBSCRIPTIONS_ORG,
+        label: intl.formatMessage(messages.partnerSubscriptions, { siteName: getSiteName() }),
+      },
+    ]),
   ];
   // A partner in the URL may be beyond the first 100 options.
   if (org && !options.some((option) => option.value === org)) {

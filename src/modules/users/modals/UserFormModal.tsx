@@ -146,7 +146,6 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
             profileVisibility: values.profileVisibility,
             isActive: values.isActive,
             isGlobalStaff: values.isGlobalStaff,
-            isSuperuser: values.isSuperuser,
           };
           const created = await createMutation.mutateAsync(payload);
           savedUserId = created.id;

@@ -51,7 +51,7 @@ jest.mock('./components/UsesTab', () => ({
 }));
 
 const asUser = (isSuperuser: boolean) => (whoami.useAdminCapabilities as jest.Mock).mockReturnValue({
-  data: { isSuperuser }, isLoading: false,
+  data: { isSuperuser, canAccessAdminPanel: isSuperuser, role: isSuperuser ? 'superuser' : 'global_staff' }, isLoading: false,
 });
 
 beforeEach(() => {
@@ -66,7 +66,7 @@ describe('EnrollmentCodesPage', () => {
   it('is for superusers only', () => {
     asUser(false);
     renderWrapper(<EnrollmentCodesPage />);
-    expect(screen.getByText('Enrollment codes are visible to Edly superadmins only.')).toBeInTheDocument();
+    expect(screen.getByText('You do not have access to Edly enrollment codes.')).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Codes' })).not.toBeInTheDocument();
   });
 

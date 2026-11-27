@@ -73,6 +73,7 @@ const UnenrollModal = ({
       onClose();
     } catch (error) {
       if (getErrorStatus(error) === 409) {
+        showToast(getErrorReason(error) ?? intl.formatMessage(messages.enrollmentWriteError));
         setIsConflict(true);
         return;
       }

@@ -159,6 +159,7 @@ export type CoursePricingCategory =
   | 'is_free' | 'is_paid' | 'is_program_only' | 'is_part_of_subscription' | 'is_enrollment_code';
 
 export interface CoursePricing {
+  canSetSubscription?: boolean;
   /** null when no type was chosen yet (a legacy course with no pricing row). It behaves as free. */
   pricingCategory: CoursePricingCategory | null;
   /** Decimal strings, not numbers — avoids float rounding on money. */

@@ -4,6 +4,7 @@
 import { defineMessages } from '@edx/frontend-platform/i18n';
 
 const messages = defineMessages({
+  privilegedReadOnly: { id: 'rwaq.admin.users.privilegedReadOnly', defaultMessage: 'Only a superuser can change this user.' },
   // ── Page ───────────────────────────────────────────────────────────────────
   title: { id: 'rwaq.admin.users.title', defaultMessage: 'User Management' },
   addUser: { id: 'rwaq.admin.users.addUser', defaultMessage: 'Add user' },

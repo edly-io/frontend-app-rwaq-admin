@@ -1,3 +1,4 @@
+import { getErrorReason, getErrorStatus } from '@src/data/httpError';
 /**
  * CourseDetailPage — course info + Student Management + Course Team.
  *
@@ -25,9 +26,9 @@ import DetailGrid from '@src/components/DetailGrid';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import ErrorState from '@src/components/ErrorState';
 import { useToast } from '@src/components/ToastContext';
-import { getErrorStatus } from '@src/data/httpError';
 import { localizedName } from '@src/data/localizedName';
 import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
+import { useAdminCapabilities } from '@src/data/whoami';
 import { useEnrollableCourses } from '@src/modules/users/data/hooks';
 import modeLabel from '@src/modules/users/modeLabel';
 import {
@@ -72,6 +73,8 @@ type ModalState =
 
 const CourseDetailPage = () => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
+  const canManageStaff = capabilities?.role === 'admin' || capabilities?.role === 'superuser';
   const navigate = useNavigate();
   const { courseId: rawCourseId = '' } = useParams();
   const courseId = decodeURIComponent(rawCourseId);
@@ -137,7 +140,7 @@ const CourseDetailPage = () => {
     data: staff,
     isLoading: isLoadingStaff,
     isError: isStaffError,
-  } = useCourseStaff(courseId);
+  } = useCourseStaff(courseId, canManageStaff);
 
   const csvMutation = useDownloadCourseEnrollmentsCsv(courseId);
   const removeStaffMutation = useRemoveCourseStaff(courseId);
@@ -162,7 +165,7 @@ const CourseDetailPage = () => {
       showToast(intl.formatMessage(messages.staffRemovedSuccess, { name: member.name || member.username }));
     } catch (err) {
       logError(err);
-      showToast(intl.formatMessage(messages.staffRemoveFailed));
+      showToast(getErrorReason(err) ?? intl.formatMessage(messages.staffRemoveFailed));
     }
   };
 
@@ -412,6 +415,7 @@ const CourseDetailPage = () => {
       <CoursePricingCard courseId={courseId} />
 
       {/* ── Course Team ────────────────────────────────────────────────────── */}
+      {canManageStaff && (
       <div className="rwaq-card">
         <div className="d-flex justify-content-between align-items-start flex-wrap rwaq-gap-sm mb-4">
           <div>
@@ -432,31 +436,32 @@ const CourseDetailPage = () => {
         </div>
 
         {isStaffError && (
-          <Alert variant="danger">{intl.formatMessage(messages.staffErrorTitle)}</Alert>
+        <Alert variant="danger">{intl.formatMessage(messages.staffErrorTitle)}</Alert>
         )}
 
         {!isStaffError && !isLoadingStaff && allStaffRows.length === 0 && (
-          <p className="text-muted text-center py-5 mb-0">
-            {intl.formatMessage(messages.staffEmpty)}
-          </p>
+        <p className="text-muted text-center py-5 mb-0">
+          {intl.formatMessage(messages.staffEmpty)}
+        </p>
         )}
 
         {!isStaffError && (isLoadingStaff || allStaffRows.length > 0) && (
-          <AdminDataTable
-            columns={staffColumns}
-            data={staffRows}
-            isLoading={isLoadingStaff}
-            caption={intl.formatMessage(messages.staffSectionTitle)}
-            pagination={{
-              currentPage: safeStaffPage,
-              pageCount: staffPageCount,
-              itemCount: allStaffRows.length,
-              pageSize: STAFF_PAGE_SIZE,
-              onPageChange: (page: number) => setStaffPage(page),
-            }}
-          />
+        <AdminDataTable
+          columns={staffColumns}
+          data={staffRows}
+          isLoading={isLoadingStaff}
+          caption={intl.formatMessage(messages.staffSectionTitle)}
+          pagination={{
+            currentPage: safeStaffPage,
+            pageCount: staffPageCount,
+            itemCount: allStaffRows.length,
+            pageSize: STAFF_PAGE_SIZE,
+            onPageChange: (page: number) => setStaffPage(page),
+          }}
+        />
         )}
       </div>
+      )}
 
       {/* ── Modals ──────────────────────────────────────────────────────────── */}
       <EnrollUserModal

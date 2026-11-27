@@ -12,6 +12,7 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Chip } from '@openedx/paragon';
+import { useAdminCapabilities } from '@src/data/whoami';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
 import type { ColumnDef } from '@src/components/AdminDataTable';
@@ -110,6 +111,7 @@ function activeFilterId(searchParams: URLSearchParams): string {
 
 const ProgramListPage = () => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -395,7 +397,7 @@ const ProgramListPage = () => {
               value: programType,
               options: [
                 { value: '', label: intl.formatMessage(messages.typeAll) },
-                ...TYPE_OPTIONS.map((opt) => ({ value: opt.value, label: intl.formatMessage(messages[opt.label]) })),
+                ...TYPE_OPTIONS.filter((opt) => capabilities?.role !== 'org_admin' || opt.value !== 'subscription').map((opt) => ({ value: opt.value, label: intl.formatMessage(messages[opt.label]) })),
               ],
               onChange: (value) => updateParams({ type: value }),
             },

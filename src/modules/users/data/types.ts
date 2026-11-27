@@ -48,6 +48,7 @@ export interface UserSummary {
   createdAt: string;
   lastLogin: string | null;
   isActive: boolean;
+  isPrivileged?: boolean;
   isEmailConfirmed: boolean;
   authenticationMethod: string;
   isProfilePublic: boolean;

@@ -20,6 +20,7 @@ import { getSiteName } from '@src/data/siteName';
 import {
   useEffect, useMemo, useRef, useState,
 } from 'react';
+import { useAdminCapabilities } from '@src/data/whoami';
 import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Icon, Skeleton } from '@openedx/paragon';
 import { Refresh } from '@openedx/paragon/icons';
@@ -105,6 +106,8 @@ const csvCell = (value: string | number | null | undefined): string => {
 
 const DashboardPage = () => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
+  const isOrgAdmin = capabilities?.role === 'org_admin';
 
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -142,7 +145,7 @@ const DashboardPage = () => {
   const summaryQuery = useAnalyticsSummary(params);
   const trendsQuery = useAnalyticsTrends(trendsParams);
   const breakdownsQuery = useAnalyticsBreakdowns(params);
-  const platformTotalsQuery = useAnalyticsPlatformTotals();
+  const platformTotalsQuery = useAnalyticsPlatformTotals(Boolean(capabilities) && !isOrgAdmin);
 
   // Show skeletons during refresh by tracking it in local state, then inject
   // the fresh data atomically into the cache so every widget updates together.
@@ -157,12 +160,12 @@ const DashboardPage = () => {
         getAnalyticsSummary({ ...params, ...forceParams }),
         getAnalyticsTrends({ ...trendsParams, ...forceParams }),
         getAnalyticsBreakdowns({ ...params, ...forceParams }),
-        getPlatformTotals(forceParams),
+        isOrgAdmin ? Promise.resolve(undefined) : getPlatformTotals(forceParams),
       ]);
       queryClient.setQueryData(analyticsQueryKeys.summary(params), freshSummary);
       queryClient.setQueryData(analyticsQueryKeys.trends(trendsParams), freshTrends);
       queryClient.setQueryData(analyticsQueryKeys.breakdowns(params), freshBreakdowns);
-      queryClient.setQueryData(analyticsQueryKeys.platformTotals(), freshPlatformTotals);
+      if (freshPlatformTotals) { queryClient.setQueryData(analyticsQueryKeys.platformTotals(), freshPlatformTotals); }
     } catch {
       setRefreshError(intl.formatMessage(messages.errorTitle));
     } finally {
@@ -942,14 +945,18 @@ const DashboardPage = () => {
       {/* ── 4. All-time platform totals ─────────────────────────────────────── */}
       {/* Below a divider, away from the date-filtered figures: the range does not apply here.
           A separator's children are presentational, so the caption is also its accessible name. */}
-      <div
-        className="rwaq-dash-divider"
-        role="separator"
-        aria-label={intl.formatMessage(messages.platformTotalsDivider)}
-      >
-        {intl.formatMessage(messages.platformTotalsDivider)}
-      </div>
-      {renderPlatformTotals()}
+      {!isOrgAdmin && (
+        <>
+          <div
+            className="rwaq-dash-divider"
+            role="separator"
+            aria-label={intl.formatMessage(messages.platformTotalsDivider)}
+          >
+            {intl.formatMessage(messages.platformTotalsDivider)}
+          </div>
+          {renderPlatformTotals()}
+        </>
+      )}
     </div>
   );
 };
