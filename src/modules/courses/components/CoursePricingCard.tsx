@@ -15,6 +15,7 @@ import { getErrorReason } from '@src/data/httpError';
  * An Enrollment code course can be hidden from the public catalog. After saving that type on a course with no
  * code yet, a banner offers adding one (the Enrollment codes page, opened with this course filled in).
  */
+import { isPlatformAdmin } from '@src/data/permissions';
 import { getSiteName } from '@src/data/siteName';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -48,7 +49,7 @@ const CoursePricingCard = ({ courseId }: CoursePricingCardProps) => {
   const intl = useIntl();
   const { data: capabilities } = useAdminCapabilities();
   const canManageSettings = !!(capabilities?.isAdmin || capabilities?.isSuperuser || capabilities?.isOrgAdmin);
-  const canManageCatalog = !!(capabilities?.isAdmin || capabilities?.isSuperuser);
+  const canManageCatalog = isPlatformAdmin(capabilities?.role);
   const { data: pricing, isLoading, isError } = useCoursePricing(courseId);
   const canSetSubscription = pricing?.canSetSubscription !== false;
   const subscriptionLocked = !canSetSubscription && pricing?.pricingCategory === 'is_part_of_subscription';
