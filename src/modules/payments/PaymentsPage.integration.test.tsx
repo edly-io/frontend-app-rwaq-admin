@@ -98,7 +98,7 @@ const callsOf = (fn: jest.Mock) => fn.mock.calls.map(([params]) => params as Rec
 beforeEach(() => {
   window.history.pushState({}, '', '/');
   jest.resetAllMocks();
-  (whoami.useAdminCapabilities as jest.Mock).mockReturnValue({ data: { isSuperuser: true }, isLoading: false });
+  (whoami.useAdminCapabilities as jest.Mock).mockReturnValue({ data: { isSuperuser: true, canAccessAdminPanel: true, role: 'superuser' }, isLoading: false });
   mockApi.getPaymentsSummary.mockResolvedValue(summary as never);
   (orgHooks.useOrganizations as jest.Mock).mockReturnValue({ data: pageOf([partner]), isLoading: false });
   mockApi.getPaymentOrders.mockResolvedValue(pageOf([order(1)], 3, 25) as never);

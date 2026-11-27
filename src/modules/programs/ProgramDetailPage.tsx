@@ -28,6 +28,7 @@ import DetailGrid from '@src/components/DetailGrid';
 import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import { useToast } from '@src/components/ToastContext';
+import { useAdminCapabilities } from '@src/data/whoami';
 import ProgramPricingCard from './components/ProgramPricingCard';
 import ProgramStatsStrip from './components/ProgramStatsStrip';
 import ProgramStatusChips from './components/ProgramStatusChips';
@@ -61,6 +62,8 @@ const SettingsCard = ({
   const intl = useIntl();
   const { showToast } = useToast();
   const { mutate, isPending } = useUpdateProgram(uuid);
+  const { data: capabilities } = useAdminCapabilities();
+  const readOnly = !capabilities?.isAdmin && !capabilities?.isSuperuser;
 
   const patch = (update: ProgramPatch) => {
     mutate(update, {
@@ -84,7 +87,7 @@ const SettingsCard = ({
             <Form.Control
               as="select"
               value={status}
-              disabled={isPending}
+              disabled={isPending || readOnly}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => patch({ status: e.target.value as ProgramStatus })}
             >
               <option value="draft">{intl.formatMessage(messages.statusDraft)}</option>
@@ -99,7 +102,7 @@ const SettingsCard = ({
             <Form.Switch
               id={`program-${uuid}-is-hide`}
               checked={isHide}
-              disabled={isPending}
+              disabled={isPending || readOnly}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => patch({ isHide: e.target.checked })}
             >
               {intl.formatMessage(messages.settingIsHideHelp)}
@@ -107,7 +110,7 @@ const SettingsCard = ({
             <Form.Switch
               id={`program-${uuid}-is-featured`}
               checked={isFeatured}
-              disabled={isPending}
+              disabled={isPending || readOnly}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => patch({ isFeatured: e.target.checked })}
             >
               {intl.formatMessage(messages.settingIsFeaturedHelp)}

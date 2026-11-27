@@ -8,10 +8,12 @@ export const adminShellMessages = defineMessages({
     defaultMessage: 'Access denied',
   },
   accessDeniedBody: {
-    id: 'rwaq.admin.shell.accessDeniedBody',
-    defaultMessage: 'The admin panel is available to superusers only. If you need access, '
-      + 'ask an existing superuser to grant it from this panel, or a platform administrator '
-      + 'to set it in Django admin.',
+    id: 'rwaq.admin.shell.accessDeniedBodyV2',
+    defaultMessage: 'You do not have access to the admin panel. Contact a platform administrator if you need access.',
+  },
+  missingEndpointBody: {
+    id: 'rwaq.admin.shell.missingEndpointBody',
+    defaultMessage: 'The admin service is not available on this server. Contact a platform administrator and try again later.',
   },
   networkErrorTitle: {
     id: 'rwaq.admin.shell.networkErrorTitle',
@@ -50,6 +52,9 @@ export const topBarMessages = defineMessages({
   account: { id: 'rwaq.admin.topbar.account', defaultMessage: 'Account menu' },
   darkMode: { id: 'rwaq.admin.topbar.darkMode', defaultMessage: 'Dark Mode' },
   roleAdmin: { id: 'rwaq.admin.topbar.role.admin', defaultMessage: 'Administrator' },
+  roleSuperuser: { id: 'rwaq.admin.topbar.role.superuser', defaultMessage: 'Superuser' },
+  roleOrgAdmin: { id: 'rwaq.admin.topbar.role.orgAdmin', defaultMessage: 'Organization admin' },
+  roleLearner: { id: 'rwaq.admin.topbar.role.learner', defaultMessage: 'Learner' },
   roleStaff: { id: 'rwaq.admin.topbar.role.staff', defaultMessage: 'Staff' },
   profile: { id: 'rwaq.admin.topbar.profile', defaultMessage: 'Profile' },
   accountSettings: { id: 'rwaq.admin.topbar.accountSettings', defaultMessage: 'Account' },

@@ -9,6 +9,7 @@
 import { getSiteName } from '@src/data/siteName';
 import { useEffect, useState } from 'react';
 import { logError } from '@edx/frontend-platform/logging';
+import { Button, ModalDialog } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
@@ -33,15 +34,37 @@ const UnenrollLearnerModal = ({ onClose, uuid, learner }: UnenrollLearnerModalPr
   const mutation = useUnenrollProgramLearner(uuid);
   const [reason, setReason] = useState<ReasonValues>(emptyReason);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
+  const [partialResult, setPartialResult] = useState<string | null>(null);
 
   useEffect(() => {
     if (learner) {
       setReason(emptyReason);
       setHasTriedSubmit(false);
+      setPartialResult(null);
     }
   }, [learner]);
 
   if (!learner) { return null; }
+
+  if (partialResult) {
+    return (
+      <ModalDialog
+        title={intl.formatMessage(messages.unenrollLearnerTitle)}
+        isOpen
+        onClose={onClose}
+        hasCloseButton
+        isOverflowVisible={false}
+      >
+        <ModalDialog.Header>
+          <ModalDialog.Title>{intl.formatMessage(messages.unenrollLearnerTitle)}</ModalDialog.Title>
+        </ModalDialog.Header>
+        <ModalDialog.Body>{partialResult}</ModalDialog.Body>
+        <ModalDialog.Footer>
+          <Button onClick={onClose}>{intl.formatMessage(messages.bulkEnrollClose)}</Button>
+        </ModalDialog.Footer>
+      </ModalDialog>
+    );
+  }
 
   const reasonError = hasTriedSubmit && !hasReason(reason)
     ? intl.formatMessage(usersMessages.reasonRequired)
@@ -52,9 +75,14 @@ const UnenrollLearnerModal = ({ onClose, uuid, learner }: UnenrollLearnerModalPr
     setHasTriedSubmit(true);
     if (!hasReason(reason)) { return; }
     try {
-      await mutation.mutateAsync({ userId: learner.id, reason: resolveReason(reason) });
-      showToast(intl.formatMessage(messages.unenrollLearnerSuccess, { name: learner.name, siteName: getSiteName() }));
-      onClose();
+      const failures = await mutation.mutateAsync({ userId: learner.id, reason: resolveReason(reason) });
+      const skipped = Object.entries(failures ?? {}).map(([course, failure]) => `${course}: ${failure}`).join('; ');
+      if (skipped) {
+        setPartialResult(intl.formatMessage(messages.unenrollLearnerPartial, { name: learner.name, courses: skipped }));
+      } else {
+        showToast(intl.formatMessage(messages.unenrollLearnerSuccess, { name: learner.name, siteName: getSiteName() }));
+        onClose();
+      }
     } catch (error) {
       logError(error);
       showToast(getErrorReason(error) ?? intl.formatMessage(messages.unenrollLearnerError));

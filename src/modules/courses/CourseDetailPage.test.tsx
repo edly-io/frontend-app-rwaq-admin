@@ -4,6 +4,7 @@
  */
 import { screen } from '@testing-library/react';
 import { renderWrapper } from '@src/setupTest';
+import { useAdminCapabilities } from '@src/data/whoami';
 import * as hooks from './data/hooks';
 import CourseDetailPage from './CourseDetailPage';
 
@@ -37,6 +38,7 @@ const renderPage = (pricingCategory: string) => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'superuser' } });
   window.history.pushState({}, '', `/courses/${encodeURIComponent(COURSE_ID)}`);
   (hooks.useCourse as jest.Mock).mockReturnValue({
     data: {
@@ -61,6 +63,13 @@ beforeEach(() => {
 });
 
 describe('CourseDetailPage', () => {
+  it('does not load or show course team management for an org admin', () => {
+    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'org_admin' } });
+    renderPage('is_paid');
+    expect(hooks.useCourseStaff).toHaveBeenCalledWith(COURSE_ID, false);
+    expect(screen.queryByText('Course Team')).not.toBeInTheDocument();
+  });
+
   it.each(['is_paid', 'is_enrollment_code'])('renders the whole page with no tabs for %s', (category) => {
     renderPage(category);
     expect(screen.queryByRole('tab')).not.toBeInTheDocument();
@@ -76,3 +85,5 @@ describe('CourseDetailPage', () => {
     expect(screen.getByTestId('pricing-card')).toBeVisible();
   });
 });
+
+jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: jest.fn(() => ({ data: { role: 'superuser' } })) }));

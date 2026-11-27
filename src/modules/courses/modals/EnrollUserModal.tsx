@@ -87,7 +87,7 @@ const EnrollUserModal = ({
       onClose();
     } catch (error) {
       if (getErrorStatus(error) === 409) {
-        setConflictMessage(intl.formatMessage(messages.enrollModalConflict));
+        setConflictMessage(getErrorReason(error) ?? intl.formatMessage(messages.enrollModalConflict));
         return;
       }
       logError(error);

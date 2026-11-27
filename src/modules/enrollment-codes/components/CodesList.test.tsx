@@ -85,6 +85,14 @@ beforeEach(() => {
 });
 
 describe('CodesList', () => {
+  it.each([403, 409])('shows the server refusal for a %s write', async (status) => {
+    mockUpdate.mockRejectedValue({ response: { status, data: { detail: 'This change is not allowed.' } } });
+    withCodes(makeCode({ usesCount: 3 }));
+    renderWrapper(<CodesList onViewUses={onViewUses} />);
+    fireEvent.click(within(rowOf('ABC234')).getByRole('switch', { name: 'On' }));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith('This change is not allowed.'));
+  });
+
   it('shows the code, the item with a Course tag and a link to its page, creator, usage, expiry and status', () => {
     withCodes(
       makeCode({ usesCount: 3, maxUses: 10, expiresAt: '2026-12-31T00:00:00Z' }),

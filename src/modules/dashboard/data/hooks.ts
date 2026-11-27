@@ -56,7 +56,8 @@ export const useAnalyticsBreakdowns = (params: AnalyticsParams = {}) => useQuery
 });
 
 /** All-time platform totals. Not tied to the date range, so the key has no params. */
-export const useAnalyticsPlatformTotals = () => useQuery({
+export const useAnalyticsPlatformTotals = (enabled = true) => useQuery({
+  enabled,
   queryKey: analyticsQueryKeys.platformTotals(),
   queryFn: () => getPlatformTotals(),
   ...ANALYTICS_QUERY_OPTIONS,

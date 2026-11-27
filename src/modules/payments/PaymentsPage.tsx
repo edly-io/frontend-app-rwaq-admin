@@ -115,9 +115,11 @@ const TabPanel = ({ active, children }: { active: boolean; children: ReactNode }
 const PaymentsDashboard = () => {
   const intl = useIntl();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { data: capabilities } = useAdminCapabilities();
+  const isOrgAdmin = capabilities?.role === 'org_admin';
 
   const tabParam = searchParams.get('tab') as PaymentsTab | null;
-  const tab: PaymentsTab = tabParam && TABS.includes(tabParam) ? tabParam : 'overview';
+  const tab: PaymentsTab = tabParam && TABS.includes(tabParam) && !(isOrgAdmin && tabParam === 'subscriptions') ? tabParam : 'overview';
   const org = (searchParams.get('org') ?? '').trim();
   const subscriptionParam = Number(searchParams.get('subscription'));
   const subscription = Number.isInteger(subscriptionParam) && subscriptionParam > 0 ? subscriptionParam : undefined;
@@ -172,11 +174,13 @@ const PaymentsDashboard = () => {
               />
             </TabPanel>
           </Tab>
+          {!isOrgAdmin && (
           <Tab eventKey="subscriptions" title={intl.formatMessage(messages.tabSubscriptions)}>
             <TabPanel active={tab === 'subscriptions'}>
               <SubscriptionsTab />
             </TabPanel>
           </Tab>
+          )}
         </Tabs>
       </div>
     </div>
@@ -192,7 +196,7 @@ const PaymentsPage = () => {
   const { data: capabilities, isLoading } = useAdminCapabilities();
 
   if (isLoading) { return <LoadingPage />; }
-  if (!capabilities?.isSuperuser) {
+  if (!capabilities?.canAccessAdminPanel) {
     return (
       <div className="rwaq-page">
         <ErrorState statusCode={403} title={intl.formatMessage(messages.forbiddenTitle, { siteName: getSiteName() })} />

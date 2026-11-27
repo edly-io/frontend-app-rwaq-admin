@@ -1,3 +1,4 @@
+import { getErrorReason } from '@src/data/httpError';
 /**
  * CategoryDetailPage — view a category's info and manage its linked courses.
  *
@@ -57,7 +58,7 @@ const CategoryDetailPage = () => {
       setCoursePage(1);
     } catch (err) {
       logError(err);
-      showToast(intl.formatMessage(messages.toastUnlinkError));
+      showToast(getErrorReason(err) ?? intl.formatMessage(messages.toastUnlinkError));
       setPendingUnlink(null);
     }
   };

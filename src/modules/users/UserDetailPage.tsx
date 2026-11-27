@@ -18,6 +18,8 @@ import {
 } from '@openedx/paragon';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import DetailGrid from '@src/components/DetailGrid';
+import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
+import { useAdminCapabilities } from '@src/data/whoami';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import { getUserEnrollmentsCsvUrl } from './data/api';
@@ -38,6 +40,7 @@ const ALL_ROLES_VISIBLE = 99;
 
 const UserDetailPage = () => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
   const { id = '' } = useParams();
   const userId = Number(id);
 
@@ -82,6 +85,8 @@ const UserDetailPage = () => {
 
   const rows = enrollments ?? [];
   const displayName = user.name || user.username;
+  const readOnly = capabilities?.role === 'admin' && user.isPrivileged;
+  const readOnlyReason = intl.formatMessage(messages.privilegedReadOnly);
 
   return (
     <div className="rwaq-page">
@@ -109,13 +114,17 @@ const UserDetailPage = () => {
           </div>
 
           <div className="rwaq-header-actions">
-            <Button variant="outline-primary" onClick={() => setIsEditing(true)}>
-              {intl.formatMessage(messages.editUser)}
-            </Button>
+            {readOnly ? <DisabledButtonWithTooltip id="user-edit" tooltip={readOnlyReason} variant="outline-primary">{intl.formatMessage(messages.editUser)}</DisabledButtonWithTooltip> : (
+              <Button variant="outline-primary" onClick={() => setIsEditing(true)}>
+                {intl.formatMessage(messages.editUser)}
+              </Button>
+            )}
             <CsvDownloadButton url={getUserEnrollmentsCsvUrl(userId)} params={{}} fallbackName="user_courses" />
-            <Button variant="primary" onClick={() => setIsEnrolling(true)}>
-              {intl.formatMessage(messages.enrollAction)}
-            </Button>
+            {readOnly ? <DisabledButtonWithTooltip id="user-enroll" tooltip={readOnlyReason}>{intl.formatMessage(messages.enrollAction)}</DisabledButtonWithTooltip> : (
+              <Button variant="primary" onClick={() => setIsEnrolling(true)}>
+                {intl.formatMessage(messages.enrollAction)}
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -227,6 +236,7 @@ const UserDetailPage = () => {
             isLoading={isLoadingEnrollments}
             progress={progress}
             isProgressLoading={isProgressLoading}
+            readOnlyReason={readOnly ? readOnlyReason : undefined}
             onChangeMode={setModeTarget}
             onUnenroll={setUnenrollTarget}
           />

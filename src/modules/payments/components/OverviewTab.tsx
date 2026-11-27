@@ -1,3 +1,4 @@
+import { useAdminCapabilities } from '@src/data/whoami';
 /**
  * Overview — the KPI tiles and the trends for one date range and, optionally,
  * one partner. Nothing on this tab is a list: the orders are on Payment history.
@@ -121,6 +122,8 @@ const TrendChart = ({
 
 const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
+  const isOrgAdmin = capabilities?.role === 'org_admin';
   const dates = useDateRange();
   const params = { org: org || undefined, startDate: dates.startDate, endDate: dates.endDate };
   const partner = usePartnerFilter(params, onOrgChange);
@@ -211,7 +214,7 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
           summary?.content.netSales,
           intl.formatMessage(messages.infoContentNetSales, { orders: summary?.content.orders ?? 0 }),
         )}
-        {money(
+        {!isOrgAdmin && money(
           intl.formatMessage(messages.kpiSubscriptionNetSales),
           summary?.subscriptions.netSales,
           intl.formatMessage(messages.infoSubscriptionNetSales, { orders: summary?.subscriptions.orders ?? 0 }),
@@ -245,10 +248,10 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
           info={intl.formatMessage(messages.infoChartCollected)}
           series={[
             { key: intl.formatMessage(messages.seriesContent), value: (point) => Number(point.content.netSales) },
-            {
+            ...(!isOrgAdmin ? [{
               key: intl.formatMessage(messages.seriesSubscriptions),
-              value: (point) => Number(point.subscriptions.netSales),
-            },
+              value: (point: SeriesPoint) => Number(point.subscriptions.netSales),
+            }] : []),
           ]}
           formatValue={formatMoneyValue}
         />
@@ -259,7 +262,10 @@ const OverviewTab = ({ org, onOrgChange }: ListTabProps) => {
           info={intl.formatMessage(messages.infoChartOrders)}
           series={[
             { key: intl.formatMessage(messages.seriesContent), value: (point) => point.content.orders },
-            { key: intl.formatMessage(messages.seriesSubscriptions), value: (point) => point.subscriptions.orders },
+            ...(!isOrgAdmin ? [{
+              key: intl.formatMessage(messages.seriesSubscriptions),
+              value: (point: SeriesPoint) => point.subscriptions.orders,
+            }] : []),
           ]}
         />
       </div>

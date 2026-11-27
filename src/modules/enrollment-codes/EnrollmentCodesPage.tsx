@@ -161,7 +161,7 @@ const EnrollmentCodesPage = () => {
   const { data: capabilities, isLoading } = useAdminCapabilities();
 
   if (isLoading) { return <LoadingPage />; }
-  if (!capabilities?.isSuperuser) {
+  if (!capabilities?.canAccessAdminPanel) {
     return (
       <div className="rwaq-page">
         <ErrorState statusCode={403} title={intl.formatMessage(messages.forbiddenTitle, { siteName: getSiteName() })} />

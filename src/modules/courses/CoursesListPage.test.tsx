@@ -211,3 +211,5 @@ describe('CoursesListPage period', () => {
     expect(lastCall().startDate).toBeUndefined();
   });
 });
+
+jest.mock('@src/data/whoami', () => ({ useAdminCapabilities: () => ({ data: { role: 'superuser', canAccessAdminPanel: true } }) }));
