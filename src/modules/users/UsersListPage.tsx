@@ -14,6 +14,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@openedx/paragon';
 import { useAdminCapabilities } from '@src/data/whoami';
+import { isPlatformAdmin } from '@src/data/permissions';
 import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import AdminDataTable from '@src/components/AdminDataTable';
@@ -36,6 +37,7 @@ import type {
   RoleBadge, SearchBy, UserFilter, UserOrdering, UserSummary,
 } from './data/types';
 import messages from './messages';
+import FindUserByEmailModal from './modals/FindUserByEmailModal';
 
 const PAGE_SIZE = 10;
 const DEFAULT_ORDERING: UserOrdering = '-created';
@@ -97,11 +99,15 @@ const SORT_OPTIONS: { value: UserOrdering; label: MessageKey }[] = [
 type ModalState =
   | { kind: 'none' }
   | { kind: 'add' }
+  | { kind: 'find' }
   | { kind: 'edit'; userId: number };
 
 const UsersListPage = () => {
   const intl = useIntl();
   const { data: capabilities } = useAdminCapabilities();
+  const canWrite = isPlatformAdmin(capabilities?.role);
+  const isOrgAdmin = capabilities?.role === 'org_admin';
+  const pageTitle = intl.formatMessage(isOrgAdmin ? messages.titleOrg : messages.title);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [modal, setModal] = useState<ModalState>({ kind: 'none' });
@@ -288,11 +294,12 @@ const UsersListPage = () => {
           >
             {intl.formatMessage(messages.view)}
           </Button>
-          {capabilities?.role === 'admin' && row.isPrivileged ? (
+          {canWrite && capabilities?.role === 'admin' && row.isPrivileged && (
             <DisabledButtonWithTooltip id={`user-edit-${row.id}`} tooltip={intl.formatMessage(messages.privilegedReadOnly)} variant="outline-secondary" size="sm" ariaLabel={`${intl.formatMessage(messages.edit)} ${row.name as string}`}>
               {intl.formatMessage(messages.edit)}
             </DisabledButtonWithTooltip>
-          ) : (
+          )}
+          {canWrite && !(capabilities?.role === 'admin' && row.isPrivileged) && (
             <Button
               variant="outline-secondary"
               size="sm"
@@ -313,12 +320,21 @@ const UsersListPage = () => {
     <div className="rwaq-page rwaq-page--fit">
       <div className="rwaq-page-header">
         <div className="d-flex justify-content-between align-items-center flex-wrap rwaq-gap-sm">
-          <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
-          <Button variant="primary" onClick={() => setModal({ kind: 'add' })}>
-            {intl.formatMessage(messages.addUser)}
-          </Button>
+          <h1 className="rwaq-page-title">{pageTitle}</h1>
+          <div className="d-flex rwaq-gap-sm">
+            <Button variant="outline-primary" onClick={() => setModal({ kind: 'find' })}>
+              {intl.formatMessage(messages.findByEmail)}
+            </Button>
+            {canWrite && (
+              <Button variant="primary" onClick={() => setModal({ kind: 'add' })}>
+                {intl.formatMessage(messages.addUser)}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
+
+      {isOrgAdmin && <p className="rwaq-page-description">{intl.formatMessage(messages.descriptionOrg)}</p>}
 
       <UserListStatsStrip />
 
@@ -378,7 +394,7 @@ const UsersListPage = () => {
             data={data?.results ?? []}
             isLoading={isLoading}
             isRefreshing={isPlaceholderData}
-            caption={intl.formatMessage(messages.title)}
+            caption={pageTitle}
             pagination={data ? {
               currentPage: page,
               pageCount: data.pagination?.numPages
@@ -390,6 +406,15 @@ const UsersListPage = () => {
           />
         )}
       </div>
+
+      <FindUserByEmailModal
+        isOpen={modal.kind === 'find'}
+        onClose={() => setModal({ kind: 'none' })}
+        onFound={(userId) => {
+          setModal({ kind: 'none' });
+          navigate(`/users/${userId}`);
+        }}
+      />
 
       <UserFormModal
         isOpen={modal.kind === 'add'}

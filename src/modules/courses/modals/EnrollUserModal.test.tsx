@@ -35,10 +35,17 @@ describe('EnrollUserModal modes', () => {
   });
 
   it('offers honor and audit for a free course', async () => {
-    renderModal();
+    renderModal({ availableModes: ['honor', 'audit'] });
     await userEvent.click(screen.getByText('pick user'));
     const select = screen.getByLabelText('Mode') as HTMLSelectElement;
     expect(Array.from(select.options).map((option) => option.value)).toEqual(['honor', 'audit']);
+  });
+
+  it('does not offer a mode or enable submission before modes are available', async () => {
+    renderModal();
+    await userEvent.click(screen.getByText('pick user'));
+    expect(screen.queryByLabelText('Mode')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Enroll' })).toBeDisabled();
   });
 
   it('hides the modes while they load so honor never shows for a paid course', async () => {

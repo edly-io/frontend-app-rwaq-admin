@@ -4,10 +4,21 @@
 import { defineMessages } from '@edx/frontend-platform/i18n';
 
 const messages = defineMessages({
+  permissionDenied: { id: 'rwaq.admin.users.permissionDenied', defaultMessage: 'You do not have permission to perform this action.' },
   privilegedReadOnly: { id: 'rwaq.admin.users.privilegedReadOnly', defaultMessage: 'Only a superuser can change this user.' },
   // ── Page ───────────────────────────────────────────────────────────────────
   title: { id: 'rwaq.admin.users.title', defaultMessage: 'User Management' },
   addUser: { id: 'rwaq.admin.users.addUser', defaultMessage: 'Add user' },
+  titleOrg: { id: 'rwaq.admin.users.titleOrg', defaultMessage: 'Users in your organizations' },
+  descriptionOrg: {
+    id: 'rwaq.admin.users.descriptionOrg',
+    defaultMessage: 'Learners, instructors and staff enrolled in or assigned to your organizations\' courses and programs. You can open any learner by email, but only enroll them in your own courses and programs.',
+  },
+  findByEmail: { id: 'rwaq.admin.users.findByEmail', defaultMessage: 'Find user by email' },
+  findByEmailTitle: { id: 'rwaq.admin.users.findByEmailTitle', defaultMessage: 'Find user by email' },
+  findByEmailLabel: { id: 'rwaq.admin.users.findByEmailLabel', defaultMessage: 'Email address' },
+  findByEmailSubmit: { id: 'rwaq.admin.users.findByEmailSubmit', defaultMessage: 'Open user' },
+  findByEmailFailed: { id: 'rwaq.admin.users.findByEmailFailed', defaultMessage: 'Could not find this user.' },
   errorTitle: { id: 'rwaq.admin.users.error.title', defaultMessage: 'Could not load users' },
 
   // ── Search ─────────────────────────────────────────────────────────────────

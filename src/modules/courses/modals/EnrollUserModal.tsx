@@ -25,23 +25,21 @@ interface EnrollUserModalProps {
   onClose: () => void;
   courseId: string;
   courseName: string;
-  /** Modes available for this course. Falls back to the platform's common set. */
+  /** Modes available for this course. */
   availableModes?: string[];
   /** True while the course's modes load, so a Paid course never flashes honor or audit. */
   modesLoading?: boolean;
 }
 
-const DEFAULT_MODES = ['honor', 'audit'];
-
 const EnrollUserModal = ({
-  isOpen, onClose, courseId, courseName, availableModes = DEFAULT_MODES, modesLoading = false,
+  isOpen, onClose, courseId, courseName, availableModes, modesLoading = false,
 }: EnrollUserModalProps) => {
   const intl = useIntl();
   const { showToast } = useToast();
   const mutation = useEnrollUserInCourse(courseId);
 
   const [user, setUser] = useState<UserSummary | null>(null);
-  const [mode, setMode] = useState(availableModes[0] ?? 'honor');
+  const [mode, setMode] = useState(availableModes?.[0] ?? '');
   const [reason, setReason] = useState<ReasonValues>(emptyReason);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
   const [conflictMessage, setConflictMessage] = useState('');
@@ -50,7 +48,7 @@ const EnrollUserModal = ({
   useEffect(() => {
     if (isOpen) {
       setUser(null);
-      setMode(availableModes[0] ?? 'honor');
+      setMode(availableModes?.[0] ?? '');
       setReason(emptyReason);
       setHasTriedSubmit(false);
       setConflictMessage('');
@@ -60,9 +58,9 @@ const EnrollUserModal = ({
 
   // When mode options change (e.g. course loaded), reset to first
   useEffect(() => {
-    setMode(availableModes[0] ?? 'honor');
+    setMode(availableModes?.[0] ?? '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availableModes.join(',')]);
+  }, [availableModes?.join(',')]);
 
   const userError = hasTriedSubmit && !user
     ? intl.formatMessage(messages.enrollModalUserRequired)
@@ -75,7 +73,7 @@ const EnrollUserModal = ({
     event?.preventDefault();
     setHasTriedSubmit(true);
     setConflictMessage('');
-    if (!user || !mode || modesLoading || !hasReason(reason)) { return; }
+    if (!user || !mode || !availableModes?.includes(mode) || modesLoading || !hasReason(reason)) { return; }
 
     try {
       await mutation.mutateAsync({
@@ -104,6 +102,7 @@ const EnrollUserModal = ({
       submitLabel={intl.formatMessage(messages.enrollModalSubmit)}
       cancelLabel={intl.formatMessage(messages.enrollModalCancel)}
       isSubmitting={mutation.isPending || modesLoading}
+      isSubmitDisabled={!mode || !availableModes?.includes(mode)}
     >
       {conflictMessage && (
         <p className="text-danger small">{conflictMessage}</p>
@@ -111,7 +110,7 @@ const EnrollUserModal = ({
 
       <UserPicker selected={user} onSelect={setUser} error={userError} />
 
-      {user && !modesLoading && availableModes.length > 0 && (
+      {user && !modesLoading && (availableModes?.length ?? 0) > 0 && (
         <Form.Group>
           <Form.Label>{intl.formatMessage(messages.enrollModalModeLabel)}</Form.Label>
           <Form.Control
@@ -119,7 +118,7 @@ const EnrollUserModal = ({
             value={mode}
             onChange={(event: React.ChangeEvent<HTMLSelectElement>) => setMode(event.target.value)}
           >
-            {availableModes.map((slug) => (
+            {availableModes?.map((slug) => (
               <option key={slug} value={slug}>{modeLabel(intl, slug)}</option>
             ))}
           </Form.Control>

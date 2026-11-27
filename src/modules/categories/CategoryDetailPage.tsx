@@ -1,3 +1,5 @@
+import { useAdminCapabilities } from '@src/data/whoami';
+import { isPlatformAdmin } from '@src/data/permissions';
 import { getErrorReason } from '@src/data/httpError';
 /**
  * CategoryDetailPage — view a category's info and manage its linked courses.
@@ -29,6 +31,8 @@ import messages from './messages';
 
 const CategoryDetailPage = () => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
+  const canWrite = isPlatformAdmin(capabilities?.role);
   const { id: rawId = '' } = useParams();
   const categoryId = parseInt(rawId, 10);
   const { showToast } = useToast();
@@ -135,9 +139,11 @@ const CategoryDetailPage = () => {
           <h1 className="rwaq-page-title">{category.name}</h1>
 
           <div className="rwaq-header-actions">
+            {canWrite && (
             <Button variant="outline-primary" onClick={() => setIsEditing(true)}>
               {intl.formatMessage(messages.editCategory)}
             </Button>
+            )}
             <Button variant="primary" onClick={() => setIsLinking(true)}>
               {intl.formatMessage(messages.linkCourse)}
             </Button>

@@ -11,7 +11,7 @@ import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
-import { getErrorReason } from '@src/data/httpError';
+import { getErrorReason, getErrorStatus } from '@src/data/httpError';
 import { useCreateCategory, useUpdateCategory } from '../data/hooks';
 import type { CategoryCreatePayload, CategoryDetail, CategoryPatch } from '../data/types';
 import messages from '../messages';
@@ -151,7 +151,9 @@ const CategoryFormModal = ({ isOpen, onClose, category }: CategoryFormModalProps
 
       {mutation.isError && (
         <Alert variant="danger" className="mt-4 mb-0">
-          {getErrorReason(mutation.error) ?? intl.formatMessage(messages.genericError)}
+          {getErrorStatus(mutation.error) === 403
+            ? intl.formatMessage(messages.permissionDenied)
+            : getErrorReason(mutation.error) ?? intl.formatMessage(messages.genericError)}
         </Alert>
       )}
     </FormModal>

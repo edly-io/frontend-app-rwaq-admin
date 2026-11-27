@@ -48,12 +48,15 @@ beforeEach(() => {
 });
 
 describe('CoursePricingCard', () => {
-  it('keeps course settings read-only for an organization admin', () => {
-    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'org_admin' } });
+  it('allows organization admins to save the lock without changing catalog visibility', async () => {
+    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'org_admin', isOrgAdmin: true } });
     renderCard({ pricingCategory: 'is_enrollment_code' });
-    expect(screen.getByRole('checkbox', { name: /Manage course type and pricing/ })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: /Manage course type and pricing/ })).toBeEnabled();
     expect(screen.getByRole('checkbox', { name: /Hide from catalog/ })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Save settings' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save settings' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('checkbox', { name: /Manage course type and pricing/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save settings' }));
+    expect(mockUpdate).toHaveBeenCalledWith({ pricingManagedByAdmin: true });
     expect(screen.getByRole('button', { name: 'Save pricing' })).toBeEnabled();
   });
 
