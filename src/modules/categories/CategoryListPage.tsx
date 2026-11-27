@@ -1,3 +1,5 @@
+import { useAdminCapabilities } from '@src/data/whoami';
+import { isPlatformAdmin } from '@src/data/permissions';
 /**
  * CategoryListPage — list all categories, create new ones.
  *
@@ -42,6 +44,8 @@ const SORT_OPTIONS: { value: CategoryOrdering; label: MessageKey }[] = [
 
 const CategoryListPage = () => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
+  const canWrite = isPlatformAdmin(capabilities?.role);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -174,6 +178,7 @@ const CategoryListPage = () => {
           >
             {intl.formatMessage(messages.view)}
           </Button>
+          {canWrite && (
           <Button
             variant="outline-secondary"
             size="sm"
@@ -182,6 +187,7 @@ const CategoryListPage = () => {
           >
             {intl.formatMessage(messages.edit)}
           </Button>
+          )}
         </div>
       ),
     },
@@ -192,9 +198,11 @@ const CategoryListPage = () => {
       <div className="rwaq-page-header">
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
           <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
+          {canWrite && (
           <Button variant="primary" onClick={() => setIsCreating(true)}>
             {intl.formatMessage(messages.addCategory)}
           </Button>
+          )}
         </div>
       </div>
 

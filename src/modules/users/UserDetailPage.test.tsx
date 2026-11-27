@@ -89,6 +89,12 @@ describe('UserDetailPage — Bug 1 regression: empty fields render "—" not raw
     });
   });
 
+  it.each([['org_admin', false], ['admin', true], ['superuser', true]])('shows edit for %s: %s', (role, allowed) => {
+    (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role } });
+    renderWrapper(<UserDetailPage />);
+    expect(Boolean(screen.queryByRole('button', { name: 'Edit user' }))).toBe(allowed);
+  });
+
   it('makes a privileged user read-only for an Admin', () => {
     (useAdminCapabilities as jest.Mock).mockReturnValue({ data: { role: 'admin' } });
     (hooks.useUser as jest.Mock).mockReturnValue({

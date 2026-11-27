@@ -4,6 +4,7 @@
 import { defineMessages } from '@edx/frontend-platform/i18n';
 
 const messages = defineMessages({
+  permissionDenied: { id: 'rwaq.admin.organizations.permissionDenied', defaultMessage: 'You do not have permission to perform this action.' },
   // ── List page ──────────────────────────────────────────────────────────────
   title: { id: 'rwaq.admin.orgs.title', defaultMessage: 'Organizations' },
   addOrg: { id: 'rwaq.admin.orgs.addOrg', defaultMessage: 'Add organization' },

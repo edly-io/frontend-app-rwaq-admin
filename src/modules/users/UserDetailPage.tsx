@@ -20,6 +20,7 @@ import { useIntl } from '@edx/frontend-platform/i18n';
 import DetailGrid from '@src/components/DetailGrid';
 import DisabledButtonWithTooltip from '@src/components/DisabledButtonWithTooltip';
 import { useAdminCapabilities } from '@src/data/whoami';
+import { isPlatformAdmin } from '@src/data/permissions';
 import ProfileAvatar from '@src/components/ProfileAvatar';
 import CsvDownloadButton from '@src/components/CsvDownloadButton';
 import { getUserEnrollmentsCsvUrl } from './data/api';
@@ -41,6 +42,7 @@ const ALL_ROLES_VISIBLE = 99;
 const UserDetailPage = () => {
   const intl = useIntl();
   const { data: capabilities } = useAdminCapabilities();
+  const canWrite = isPlatformAdmin(capabilities?.role);
   const { id = '' } = useParams();
   const userId = Number(id);
 
@@ -114,7 +116,8 @@ const UserDetailPage = () => {
           </div>
 
           <div className="rwaq-header-actions">
-            {readOnly ? <DisabledButtonWithTooltip id="user-edit" tooltip={readOnlyReason} variant="outline-primary">{intl.formatMessage(messages.editUser)}</DisabledButtonWithTooltip> : (
+            {canWrite && readOnly && <DisabledButtonWithTooltip id="user-edit" tooltip={readOnlyReason} variant="outline-primary">{intl.formatMessage(messages.editUser)}</DisabledButtonWithTooltip>}
+            {canWrite && !readOnly && (
               <Button variant="outline-primary" onClick={() => setIsEditing(true)}>
                 {intl.formatMessage(messages.editUser)}
               </Button>

@@ -185,3 +185,15 @@ export const uploadUserImage = async (id: number, file: File): Promise<void> => 
   form.append('image', file);
   await getAuthenticatedHttpClient().post(getApiUrl(`/api/v1/admin/users/${id}/image/`), form);
 };
+
+export interface UserLookup {
+  id: number;
+  name: string;
+  email: string;
+}
+
+/** Find the account with this email, for enrollment. 404 when none exists or the caller may not open it. */
+export const lookupUserByEmail = async (email: string): Promise<UserLookup> => {
+  const { data } = await getAuthenticatedHttpClient().get(`${getUsersBaseUrl()}/lookup/`, { params: { email } });
+  return data;
+};

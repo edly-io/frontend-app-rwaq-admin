@@ -1,3 +1,5 @@
+import { useAdminCapabilities } from '@src/data/whoami';
+import { isPlatformAdmin } from '@src/data/permissions';
 /**
  * OrgListPage — Organizations, built on the same primitives as User Management
  * so the two admin surfaces read as one product: SearchFilterBar for the action
@@ -49,6 +51,8 @@ const SORT_OPTIONS: { value: OrgOrdering; label: MessageKey }[] = [
 
 const OrgListPage = () => {
   const intl = useIntl();
+  const { data: capabilities } = useAdminCapabilities();
+  const canWrite = isPlatformAdmin(capabilities?.role);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   // Create mode carries no org; edit mode needs the full detail, which the list
@@ -225,9 +229,11 @@ const OrgListPage = () => {
       <div className="rwaq-page-header">
         <div className="d-flex justify-content-between align-items-center flex-wrap rwaq-gap-sm">
           <h1 className="rwaq-page-title">{intl.formatMessage(messages.title)}</h1>
+          {canWrite && (
           <Button variant="primary" onClick={() => setIsCreating(true)}>
             {intl.formatMessage(messages.addOrg)}
           </Button>
+          )}
         </div>
       </div>
 

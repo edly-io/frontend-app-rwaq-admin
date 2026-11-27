@@ -22,7 +22,7 @@ import { logError } from '@edx/frontend-platform/logging';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import FormModal from '@src/components/FormModal';
 import { useToast } from '@src/components/ToastContext';
-import { getErrorReason } from '@src/data/httpError';
+import { getErrorReason, getErrorStatus } from '@src/data/httpError';
 import RoleGrantFields, { RoleGrantValues } from '../components/RoleGrantFields';
 import COUNTRIES from '../data/countries';
 import { useCreateUser, useUpdateUser } from '../data/hooks';
@@ -149,7 +149,9 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
       } catch (error) {
         logError(error);
         showToast(intl.formatMessage(messages.toastError, {
-          reason: getErrorReason(error) ?? intl.formatMessage(messages.genericError),
+          reason: getErrorStatus(error) === 403
+            ? intl.formatMessage(messages.permissionDenied)
+            : getErrorReason(error) ?? intl.formatMessage(messages.genericError),
         }));
         return;
       }
