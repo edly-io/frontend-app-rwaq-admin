@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { defineMessages, useIntl } from '@edx/frontend-platform/i18n';
 
 const messages = defineMessages({
@@ -32,8 +33,11 @@ interface Props {
   onChange: (from: string, to: string) => void;
 }
 
-const ExportDateFilter = ({ kind, from, to, onChange }: Props) => {
+const ExportDateFilter = ({
+  kind, from, to, onChange,
+}: Props) => {
   const intl = useIntl();
+  const id = useId();
   const fromLabel = intl.formatMessage(kind === 'joined' ? messages.joinedFrom : messages.createdFrom);
   const toLabel = intl.formatMessage(kind === 'joined' ? messages.joinedTo : messages.createdTo);
   const preset = ['month', 'lastMonth', 'year'].find(key => {
@@ -42,9 +46,9 @@ const ExportDateFilter = ({ kind, from, to, onChange }: Props) => {
   }) ?? (from || to ? 'custom' : 'all');
   return (
     <div className="d-flex flex-wrap align-items-end mb-3" style={{ gap: '0.75rem' }}>
-      <label className="mb-0">
+      <label htmlFor={`${id}-preset`} className="mb-0">
         {intl.formatMessage(messages.presets)}
-        <select className="form-control" value={preset} onChange={event => onChange(...presetRange(event.target.value))}>
+        <select id={`${id}-preset`} className="form-control" value={preset} onChange={event => onChange(...presetRange(event.target.value))}>
           <option value="all">{intl.formatMessage(messages.all)}</option>
           <option value="month">{intl.formatMessage(messages.month)}</option>
           <option value="lastMonth">{intl.formatMessage(messages.lastMonth)}</option>
@@ -52,13 +56,13 @@ const ExportDateFilter = ({ kind, from, to, onChange }: Props) => {
           <option value="custom" disabled>{intl.formatMessage(messages.custom)}</option>
         </select>
       </label>
-      <label className="mb-0">
+      <label htmlFor={`${id}-from`} className="mb-0">
         {fromLabel}
-        <input type="date" className="form-control" value={from} onChange={event => onChange(event.target.value, to)} />
+        <input id={`${id}-from`} type="date" className="form-control" value={from} onChange={event => onChange(event.target.value, to)} />
       </label>
-      <label className="mb-0">
+      <label htmlFor={`${id}-to`} className="mb-0">
         {toLabel}
-        <input type="date" className="form-control" value={to} onChange={event => onChange(from, event.target.value)} />
+        <input id={`${id}-to`} type="date" className="form-control" value={to} onChange={event => onChange(from, event.target.value)} />
       </label>
     </div>
   );

@@ -22,7 +22,7 @@ describe('EnrollmentCodeUsagePage', () => {
     (whoami.useAdminCapabilities as jest.Mock).mockReturnValue({ data: { isSuperuser: false } });
     renderWrapper(<EnrollmentCodeUsagePage />);
     expect(hooks.useEnrollmentCode).not.toHaveBeenCalled();
-    expect(screen.getByText('Enrollment codes are visible to Arbisoft superadmins only.')).toBeInTheDocument();
+    expect(screen.getByText('Enrollment codes are visible to Edly superadmins only.')).toBeInTheDocument();
   });
 
   it('loads a code by URL for a superuser', () => {

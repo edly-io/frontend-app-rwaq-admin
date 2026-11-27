@@ -150,7 +150,9 @@ const ReportTriggerRow = ({
       onError: (err) => {
         const axiosDetail = (err as { response?: { data?: { detail?: string } } })
           ?.response?.data?.detail;
-        setTriggerError(axiosDetail || (err as { message?: string })?.message || intl.formatMessage(messages.errorTriggerFallback));
+        setTriggerError(
+          axiosDetail || (err as { message?: string })?.message || intl.formatMessage(messages.errorTriggerFallback),
+        );
       },
     });
   };
@@ -341,55 +343,6 @@ const DownloadsTable = ({
     (prev) => { const next = new URLSearchParams(prev); next.set('dp', String(p)); return next; },
     { replace: true },
   );
-
-  const DOWNLOADS_COLUMNS: ColumnDef<ReportDownloadRow>[] = [
-    {
-      key: 'reportLabel',
-      label: intl.formatMessage(messages.colReportType),
-    },
-    {
-      key: 'state',
-      label: intl.formatMessage(messages.colStatus),
-      renderCell: (value) => <StateBadge state={value as TaskState} />,
-    },
-    {
-      key: 'created',
-      label: intl.formatMessage(messages.colGenerated),
-      renderCell: (value) => (
-        <span style={{ whiteSpace: 'nowrap' }}>
-          {new Date(value as string).toLocaleString()}
-        </span>
-      ),
-    },
-    {
-      key: 'modified',
-      label: intl.formatMessage(messages.colElapsed),
-      id: 'elapsed',
-      renderCell: (value, row) => (
-        <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-          {elapsedLabel(row.created, value as string | null, row.state)}
-        </span>
-      ),
-    },
-    {
-      key: 'downloadUrl',
-      label: intl.formatMessage(messages.colDownload),
-      renderCell: (value) => (
-        value ? (
-          <a
-            href={value as string}
-            className="btn btn-sm btn-outline-primary d-inline-flex align-items-center"
-            style={{ gap: '0.375rem', whiteSpace: 'nowrap' }}
-          >
-            <DownloadIcon />
-            {intl.formatMessage(messages.btnDownload)}
-          </a>
-        ) : (
-          <span className="text-muted small">—</span>
-        )
-      ),
-    },
-  ];
 
   if (isError) {
     return <Alert variant="warning" className="mb-0">{intl.formatMessage(messages.errorLoadReports)}</Alert>;

@@ -14,7 +14,7 @@
  */
 import { getSiteName } from '@src/data/siteName';
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
   Alert,
   Button,
@@ -350,7 +350,6 @@ const TabBar = ({ active, onChange, labels }: TabBarProps) => (
 
 const ProgramDetailPage = () => {
   const intl = useIntl();
-  const navigate = useNavigate();
   const { uuid = '' } = useParams();
   const {
     data: program, isLoading, isError, error,

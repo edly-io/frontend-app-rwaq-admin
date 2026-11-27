@@ -99,7 +99,11 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  // Avatar controls are temporarily hidden in the form below.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [avatarTypeError, setAvatarTypeError] = useState<string | null>(null);
+  // Avatar controls are temporarily hidden in the form below.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const isEdit = user !== null;
@@ -195,6 +199,8 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
 
   const ALLOWED_IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif'];
 
+  // Avatar controls are temporarily hidden in the form below.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     // eslint-disable-next-line no-param-reassign
@@ -213,6 +219,8 @@ const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
     });
   };
 
+  // Avatar controls are temporarily hidden in the form below.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const currentAvatarSrc = avatarPreview ?? user?.image ?? null;
 
   return (

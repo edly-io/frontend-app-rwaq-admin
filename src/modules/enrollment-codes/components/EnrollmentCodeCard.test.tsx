@@ -126,7 +126,7 @@ describe('EnrollmentCodeCard', () => {
   });
 
   it('uses the approved colors and sizes', () => {
-    expect(CARD_CSS).toContain('linear-gradient(135deg,#082a5e 0%,#0D3F8A 55%,#0A76DB 100%)');
+    expect(CARD_CSS).toContain('linear-gradient(135deg,#510b0f 0%,#97161a 55%,#dd1f25 100%)');
     expect(CARD_CSS).toContain('.coupon-wrap{width:100%;max-width:840px');
     expect(CARD_CSS).toMatch(/\.coupon-card__qr img,\.coupon-card__qr svg\{[^}]*width:170px;height:170px/);
     expect(CARD_CSS).toMatch(/\.coupon-card__logo-tile\{background:#fff/);

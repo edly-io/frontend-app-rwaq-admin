@@ -6,7 +6,7 @@ export const CARD_CSS = `
 /* Scoped to the card: this string is also injected into the admin page. */
 .coupon-wrap,.coupon-wrap *,.coupon-wrap *::before,.coupon-wrap *::after{box-sizing:border-box}
 .coupon-wrap{width:100%;max-width:840px;container-type:inline-size;font-family:'Cairo','Segoe UI',Tahoma,sans-serif}
-.coupon-card{display:flex;width:100%;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#082a5e 0%,#0D3F8A 55%,#0A76DB 100%);color:#fff;text-align:left}
+.coupon-card{display:flex;width:100%;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#510b0f 0%,#97161a 55%,#dd1f25 100%);color:#fff;text-align:left}
 .coupon-card__main{flex:1;display:flex;flex-direction:column;gap:20px;padding:30px 36px 24px;min-width:0}
 .coupon-card__header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
 .coupon-card__logo-tile{background:#fff;border-radius:12px;padding:6px 14px;display:flex;align-items:center}

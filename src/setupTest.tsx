@@ -7,7 +7,7 @@ import { AppContext } from '@edx/frontend-platform/react';
 import { mergeConfig } from '@edx/frontend-platform';
 import { IntlProvider } from '@edx/frontend-platform/i18n';
 
-mergeConfig({ SITE_NAME: 'Arbisoft' });
+mergeConfig({ SITE_NAME: 'Edly' });
 
 const mockAppContext = {
   authenticatedUser: {

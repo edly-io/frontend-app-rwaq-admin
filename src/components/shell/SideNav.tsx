@@ -6,7 +6,6 @@
  * - "Coming soon" badge on the not-yet-built modules
  */
 import { getSiteName } from '@src/data/siteName';
-import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Icon } from '@openedx/paragon';
 import {
@@ -18,9 +17,6 @@ import {
   LocalOffer,
   Payments,
   ConfirmationNumber,
-  Settings,
-  ExpandMore,
-  ExpandLess,
 } from '@openedx/paragon/icons';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { RWAQ_LOGO } from '@src/assets/rwaqLogo';
@@ -122,62 +118,6 @@ const NavItem = ({ def, onNavigate }: NavItemProps) => {
         </span>
       )}
     </NavLink>
-  );
-};
-
-// ── Settings group ────────────────────────────────────────────────────────────
-
-const SettingsGroup = () => {
-  const intl = useIntl();
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="mt-1">
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-label={intl.formatMessage(messages.settingsToggle)}
-        onClick={() => setOpen((prev) => !prev)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          padding: '0.625rem 1rem',
-          borderRadius: '0.5rem',
-          width: '100%',
-          border: 'none',
-          background: 'transparent',
-          fontWeight: 500,
-          fontSize: '0.9375rem',
-          color: 'var(--pgn-color-gray-700, #273F58)',
-          cursor: 'pointer',
-          textAlign: 'start',
-        }}
-      >
-        <Icon
-          src={Settings}
-          style={{ color: 'var(--pgn-color-gray-500, #6B757F)', flexShrink: 0 }}
-        />
-        <span style={{ flex: 1 }}>{intl.formatMessage(messages.settings)}</span>
-        <Icon
-          src={open ? ExpandLess : ExpandMore}
-          style={{ color: 'var(--pgn-color-gray-500, #6B757F)', flexShrink: 0 }}
-        />
-      </button>
-      {/* Settings sub-items placeholder — expandable in future phases */}
-      {open && (
-        <div
-          style={{
-            paddingInlineStart: '2.5rem',
-            paddingBottom: '0.25rem',
-            fontSize: '0.875rem',
-            color: 'var(--pgn-color-gray-500, #6B757F)',
-          }}
-        >
-          {/* Future settings items here */}
-        </div>
-      )}
-    </div>
   );
 };
 

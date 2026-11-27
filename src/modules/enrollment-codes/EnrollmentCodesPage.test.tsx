@@ -66,7 +66,7 @@ describe('EnrollmentCodesPage', () => {
   it('is for superusers only', () => {
     asUser(false);
     renderWrapper(<EnrollmentCodesPage />);
-    expect(screen.getByText('Enrollment codes are visible to Arbisoft superadmins only.')).toBeInTheDocument();
+    expect(screen.getByText('Enrollment codes are visible to Edly superadmins only.')).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Codes' })).not.toBeInTheDocument();
   });
 

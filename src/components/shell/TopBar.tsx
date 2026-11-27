@@ -60,7 +60,7 @@ const AccountToggle = forwardRef<HTMLButtonElement, AccountToggleProps>(
       aria-label={label}
       style={{
         ...circleBtn,
-        background: 'var(--pgn-color-primary-500, #0A76DB)',
+        background: 'var(--pgn-color-primary-500, #dd1f25)',
         color: '#fff',
         border: 'none',
         fontSize: '0.875rem',

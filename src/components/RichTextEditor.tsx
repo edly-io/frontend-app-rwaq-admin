@@ -25,10 +25,10 @@ const injectAuxPointerFix = () => {
   if (auxFixRefCount > 1) { return; }
   const style = document.createElement('style');
   style.id = STYLE_ID;
-  style.textContent = [
+  style.textContent = `${[
     '.tox-tinymce-aux[data-focus-on-hidden]',
     '.tox-tinymce[data-focus-on-hidden]',
-  ].join(',') + ' { pointer-events: auto !important; }';
+  ].join(',')} { pointer-events: auto !important; }`;
   document.head.appendChild(style);
 };
 
@@ -43,7 +43,6 @@ const removeAuxPointerFix = () => {
 const isDarkTheme = () => (
   document.documentElement.getAttribute('data-paragon-theme-variant') === 'dark'
 );
-
 
 /**
  * Find the nearest scrollable ancestor of an element.
@@ -64,12 +63,13 @@ const getScrollParent = (el: HTMLElement): HTMLElement | null => {
 
 /** Set iframe body colours to match the active theme. */
 const syncIframeBody = (body: HTMLElement) => {
+  const { style } = body;
   if (isDarkTheme()) {
-    body.style.backgroundColor = '#1e2126';
-    body.style.color = '#dee1e6';
+    style.backgroundColor = '#1e2126';
+    style.color = '#dee1e6';
   } else {
-    body.style.backgroundColor = '';
-    body.style.color = '';
+    style.backgroundColor = '';
+    style.color = '';
   }
 };
 

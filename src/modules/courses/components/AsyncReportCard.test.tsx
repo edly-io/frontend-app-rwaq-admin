@@ -141,7 +141,9 @@ describe('AsyncReportCard — State 4: tasks table', () => {
 
   it('renders a QUEUING task with its badge', () => {
     (reportsHooks.useCourseReportTasks as jest.Mock).mockReturnValue({
-      data: [{ ...baseTask, taskId: 'task-queuing', state: 'QUEUING', downloadUrl: null, succeeded: null, total: null }],
+      data: [{
+        ...baseTask, taskId: 'task-queuing', state: 'QUEUING', downloadUrl: null, succeeded: null, total: null,
+      }],
       isLoading: false,
       isError: false,
     });
@@ -151,7 +153,9 @@ describe('AsyncReportCard — State 4: tasks table', () => {
 
   it('renders a FAILURE task with its badge', () => {
     (reportsHooks.useCourseReportTasks as jest.Mock).mockReturnValue({
-      data: [{ ...baseTask, taskId: 'task-fail', state: 'FAILURE', downloadUrl: null }],
+      data: [{
+        ...baseTask, taskId: 'task-fail', state: 'FAILURE', downloadUrl: null,
+      }],
       isLoading: false,
       isError: false,
     });

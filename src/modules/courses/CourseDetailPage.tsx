@@ -261,7 +261,9 @@ const CourseDetailPage = () => {
           size="sm"
           onClick={() => handleRemoveStaff(row as unknown as CourseStaffMember)}
           disabled={removeStaffMutation.isPending}
-          aria-label={intl.formatMessage(messages.removeStaffAriaLabel, { username: (row as unknown as CourseStaffMember).username })}
+          aria-label={intl.formatMessage(messages.removeStaffAriaLabel, {
+            username: (row as unknown as CourseStaffMember).username,
+          })}
         >
           {intl.formatMessage(messages.removeStaff)}
         </Button>
